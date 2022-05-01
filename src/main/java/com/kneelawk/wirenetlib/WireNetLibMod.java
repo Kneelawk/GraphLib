@@ -13,9 +13,9 @@ public class WireNetLibMod implements ModInitializer {
     @Override
     public void onInitialize() {
         ServerChunkEvents.CHUNK_LOAD.register(
-                (world, chunk) -> StorageHelper.getController(world).onChunkLoad(chunk.getPos()));
+                (world, chunk) -> StorageHelper.getController(world).onWorldChunkLoad(chunk.getPos()));
         ServerChunkEvents.CHUNK_UNLOAD.register(
-                (world, chunk) -> StorageHelper.getController(world).onChunkUnload(chunk.getPos()));
+                (world, chunk) -> StorageHelper.getController(world).onWorldChunkUnload(chunk.getPos()));
         ServerWorldTickEvents.END.register((server, world) -> StorageHelper.getController(world).tick());
     }
 }

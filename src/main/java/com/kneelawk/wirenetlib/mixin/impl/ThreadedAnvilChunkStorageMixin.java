@@ -1,5 +1,6 @@
 package com.kneelawk.wirenetlib.mixin.impl;
 
+import com.kneelawk.wirenetlib.Constants;
 import com.kneelawk.wirenetlib.WireNetLibMod;
 import com.kneelawk.wirenetlib.mixin.api.WireNetworkControllerAccess;
 import com.kneelawk.wirenetlib.wire.WireNetworkController;
@@ -48,7 +49,8 @@ public class ThreadedAnvilChunkStorageMixin implements WireNetworkControllerAcce
             CallbackInfo ci
     ) {
         controller = new WireNetworkController(serverWorld,
-                session.getWorldDirectory(serverWorld.getRegistryKey()).resolve("wirenetlib/wirenet"), syncChunkWrites);
+                session.getWorldDirectory(serverWorld.getRegistryKey()).resolve(Constants.DATA_DIRNAME)
+                        .resolve(Constants.MOD_ID).resolve(Constants.WIRENET_DIRNAME), syncChunkWrites);
     }
 
     @Inject(method = "close", at = @At("HEAD"))
