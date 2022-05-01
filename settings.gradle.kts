@@ -11,7 +11,3 @@ pluginManagement {
 }
 
 rootProject.name = "wirenetlib"
-
-include("common")
-include("fabric")
-include("quilt")
