@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.kneelawk.wirenetlib.mixin.impl",
+  "compatibilityLevel": "JAVA_17",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "StorageIoWorkerAccessor",
+    "ThreadedAnvilChunkStorageMixin"
+  ]
+}
