@@ -1,4 +1,4 @@
-package com.kneelawk.wirenetlib.world;
+package com.kneelawk.graphlib.world;
 
 import net.minecraft.nbt.NbtCompound;
 

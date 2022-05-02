@@ -10,4 +10,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "wirenetlib"
+rootProject.name = "graphlib"

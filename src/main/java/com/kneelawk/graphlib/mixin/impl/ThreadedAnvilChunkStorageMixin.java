@@ -1,9 +1,9 @@
-package com.kneelawk.wirenetlib.mixin.impl;
+package com.kneelawk.graphlib.mixin.impl;
 
-import com.kneelawk.wirenetlib.Constants;
-import com.kneelawk.wirenetlib.WireNetLibMod;
-import com.kneelawk.wirenetlib.mixin.api.WireNetworkControllerAccess;
-import com.kneelawk.wirenetlib.wire.WireNetworkController;
+import com.kneelawk.graphlib.Constants;
+import com.kneelawk.graphlib.GraphLibMod;
+import com.kneelawk.graphlib.mixin.api.GraphControllerAccess;
+import com.kneelawk.graphlib.graph.GraphController;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
@@ -27,9 +27,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public class ThreadedAnvilChunkStorageMixin implements WireNetworkControllerAccess {
+public class ThreadedAnvilChunkStorageMixin implements GraphControllerAccess {
     @Unique
-    private WireNetworkController controller;
+    private GraphController controller;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void onCreate(
@@ -48,9 +48,9 @@ public class ThreadedAnvilChunkStorageMixin implements WireNetworkControllerAcce
             boolean syncChunkWrites,
             CallbackInfo ci
     ) {
-        controller = new WireNetworkController(serverWorld,
+        controller = new GraphController(serverWorld,
                 session.getWorldDirectory(serverWorld.getRegistryKey()).resolve(Constants.DATA_DIRNAME)
-                        .resolve(Constants.MOD_ID).resolve(Constants.WIRENET_DIRNAME), syncChunkWrites);
+                        .resolve(Constants.MOD_ID).resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
     }
 
     @Inject(method = "close", at = @At("HEAD"))
@@ -58,7 +58,7 @@ public class ThreadedAnvilChunkStorageMixin implements WireNetworkControllerAcce
         try {
             controller.close();
         } catch (Exception e) {
-            WireNetLibMod.log.error("Error saving wire network controller.", e);
+            GraphLibMod.log.error("Error saving graph controller.", e);
         }
     }
 
@@ -68,7 +68,7 @@ public class ThreadedAnvilChunkStorageMixin implements WireNetworkControllerAcce
     }
 
     @Override
-    public WireNetworkController wirenetlib_getWireNetworkController() {
+    public GraphController graphlib_getGraphController() {
         return controller;
     }
 }

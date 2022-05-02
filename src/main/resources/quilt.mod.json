@@ -2,24 +2,24 @@
   "schema_version": 1,
   "quilt_loader": {
     "group": "com.kneelawk",
-    "id": "wirenetlib",
+    "id": "graphlib",
     "version": "${version}",
     "metadata": {
-      "name": "WireNet Lib",
-      "description": "Library for helping mods that use wire networks, like Wired Redstone.",
+      "name": "Graph Lib",
+      "description": "Library for helping mods that use graph networks, like Wired Redstone.",
       "contributors": {
         "Kneelawk": "Owner",
         "2xsaiko": "Original Author"
       },
       "contact": {
-        "homepage": "https://github.com/Kneelawk/WireNetLib",
-        "issues": "https://github.com/Kneelawk/WireNetLib/issues",
-        "sources": "https://github.com/Kneelawk/WireNetLib"
+        "homepage": "https://github.com/Kneelawk/GraphLib",
+        "issues": "https://github.com/Kneelawk/GraphLib/issues",
+        "sources": "https://github.com/Kneelawk/GraphLib"
       },
       "license": "MIT"
     },
     "entrypoints": {
-      "init": "com.kneelawk.wirenetlib.WireNetLibMod"
+      "init": "com.kneelawk.graphlib.GraphLibMod"
     },
     "depends": [
       {
@@ -39,5 +39,6 @@
         "versions": ">=17"
       }
     ]
-  }
+  },
+  "mixin": "graphlib.mixins.json"
 }

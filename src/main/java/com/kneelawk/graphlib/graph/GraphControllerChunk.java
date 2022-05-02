@@ -1,6 +1,6 @@
-package com.kneelawk.wirenetlib.wire;
+package com.kneelawk.graphlib.graph;
 
-import com.kneelawk.wirenetlib.world.StorageChunk;
+import com.kneelawk.graphlib.world.StorageChunk;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectLinkedOpenHashMap;
@@ -12,18 +12,17 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import java.util.UUID;
 
-public class WireNetworkChunk implements StorageChunk {
+public class GraphControllerChunk implements StorageChunk {
     final ChunkSectionPos chunkPos;
 
     Short2ObjectMap<ObjectSet<UUID>> graphsInPos = new Short2ObjectLinkedOpenHashMap<>();
     ObjectSet<UUID> graphsInChunk = new ObjectLinkedOpenHashSet<>();
 
-    public WireNetworkChunk(NbtCompound nbt, ChunkSectionPos chunkPos) {
+    public GraphControllerChunk(NbtCompound nbt, ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
 
         NbtList inChunkList = nbt.getList("inChunk", NbtType.INT_ARRAY);
@@ -47,7 +46,7 @@ public class WireNetworkChunk implements StorageChunk {
         }
     }
 
-    public WireNetworkChunk(ChunkSectionPos chunkPos) {
+    public GraphControllerChunk(ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
     }
 

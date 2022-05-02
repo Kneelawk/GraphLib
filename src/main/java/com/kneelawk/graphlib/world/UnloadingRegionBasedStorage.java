@@ -1,8 +1,8 @@
-package com.kneelawk.wirenetlib.world;
+package com.kneelawk.graphlib.world;
 
-import com.kneelawk.wirenetlib.WireNetLibMod;
-import com.kneelawk.wirenetlib.mixin.api.StorageHelper;
-import com.kneelawk.wirenetlib.util.ChunkPillarUnloadTimer;
+import com.kneelawk.graphlib.GraphLibMod;
+import com.kneelawk.graphlib.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.util.ChunkPillarUnloadTimer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -83,7 +83,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                                         ChunkSectionPos.from(pos.getX(), sectionY, pos.getZ()));
                                 pillar.put(sectionY, section);
                             } catch (Exception e) {
-                                WireNetLibMod.log.error("Error loading chunk {} section {}. Discarding chunk section.",
+                                GraphLibMod.log.error("Error loading chunk {} section {}. Discarding chunk section.",
                                         chunkPos, sectionY, e);
                             }
                         }
@@ -104,7 +104,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                     return created;
                 }
             } catch (Exception e) {
-                WireNetLibMod.log.error("Error loading chunk pillar {}. Discarding chunk.", chunkPos, e);
+                GraphLibMod.log.error("Error loading chunk pillar {}. Discarding chunk.", chunkPos, e);
 
                 R created = createNew.apply(pos);
                 pillar.put(pos.getY(), created);
@@ -139,7 +139,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                             section.toNbt(nbt);
                             sectionsTag.put(String.valueOf(sectionY), nbt);
                         } catch (Exception e) {
-                            WireNetLibMod.log.error("Error saving chunk {}, section {}", pos, sectionY, e);
+                            GraphLibMod.log.error("Error saving chunk {}, section {}", pos, sectionY, e);
                         }
                     }
                 }

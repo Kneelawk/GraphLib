@@ -1,4 +1,4 @@
-package com.kneelawk.wirenetlib.util;
+package com.kneelawk.graphlib.util;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;

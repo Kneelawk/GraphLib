@@ -1,4 +1,4 @@
-package com.kneelawk.wirenetlib.mixin.impl;
+package com.kneelawk.graphlib.mixin.impl;
 
 import net.minecraft.world.storage.StorageIoWorker;
 import org.spongepowered.asm.mixin.Mixin;
