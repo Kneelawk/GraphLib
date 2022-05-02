@@ -38,6 +38,10 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
         }
     }
 
+    public boolean isChunkLoaded(ChunkSectionPos pos) {
+        return loadedChunks.contains(pos.asLong());
+    }
+
     public void onChunkUse(ChunkSectionPos pos) {
         loadedChunks.add(pos.asLong());
         if (!worldLoadedChunks.contains(pos.toChunkPos().toLong())) {

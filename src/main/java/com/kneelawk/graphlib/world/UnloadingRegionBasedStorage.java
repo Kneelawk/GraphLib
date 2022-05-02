@@ -12,6 +12,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.storage.StorageIoWorker;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -49,10 +50,6 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
         worker.close();
     }
 
-    protected boolean isWorldChunkLoaded(ChunkPos pos) {
-        return timer.isWorldChunkLoad(pos);
-    }
-
     public void onWorldChunkLoad(ChunkPos pos) {
         timer.onWorldChunkLoad(pos);
     }
@@ -74,22 +71,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
             try {
                 NbtCompound root = worker.getNbt(chunkPos);
                 if (root != null) {
-                    for (int sectionY = world.getBottomSectionCoord();
-                         sectionY < world.getTopSectionCoord(); sectionY++) {
-                        NbtCompound sectionTag = root.getCompound(String.valueOf(sectionY));
-                        if (sectionTag != null) {
-                            try {
-                                R section = loadFromNbt.apply(sectionTag,
-                                        ChunkSectionPos.from(pos.getX(), sectionY, pos.getZ()));
-                                pillar.put(sectionY, section);
-                            } catch (Exception e) {
-                                GraphLibMod.log.error("Error loading chunk {} section {}. Discarding chunk section.",
-                                        chunkPos, sectionY, e);
-                            }
-                        }
-                    }
-
-                    loadedChunks.put(longPos, pillar);
+                    loadChunkPillar(chunkPos, pillar, root);
 
                     R section = pillar.get(pos.getY());
                     if (section == null) {
@@ -112,6 +94,54 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                 return created;
             }
         }
+    }
+
+    @Nullable
+    public R getIfExists(ChunkSectionPos pos) {
+        ChunkPos chunkPos = pos.toChunkPos();
+        long longPos = chunkPos.toLong();
+        Int2ObjectMap<R> pillar = loadedChunks.get(longPos);
+        if (pillar != null) {
+            timer.onChunkUse(chunkPos);
+            return pillar.computeIfAbsent(pos.getY(), (y) -> createNew.apply(pos));
+        } else {
+            // try and load the pillar
+            try {
+                NbtCompound root = worker.getNbt(chunkPos);
+                if (root != null) {
+                    timer.onChunkUse(chunkPos);
+                    pillar = new Int2ObjectOpenHashMap<>();
+                    loadChunkPillar(chunkPos, pillar, root);
+
+                    return pillar.get(pos.getY());
+                } else {
+                    return null;
+                }
+            } catch (Exception e) {
+                GraphLibMod.log.error("Error loading chunk pillar {}.", chunkPos, e);
+
+                return null;
+            }
+        }
+    }
+
+    private void loadChunkPillar(ChunkPos chunkPos, Int2ObjectMap<R> pillar, NbtCompound root) {
+        for (int sectionY = world.getBottomSectionCoord();
+             sectionY < world.getTopSectionCoord(); sectionY++) {
+            NbtCompound sectionTag = root.getCompound(String.valueOf(sectionY));
+            if (sectionTag != null) {
+                try {
+                    R section = loadFromNbt.apply(sectionTag,
+                            ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z));
+                    pillar.put(sectionY, section);
+                } catch (Exception e) {
+                    GraphLibMod.log.error("Error loading chunk {} section {}. Discarding chunk section.",
+                            chunkPos, sectionY, e);
+                }
+            }
+        }
+
+        loadedChunks.put(chunkPos.toLong(), pillar);
     }
 
     public void tick() {

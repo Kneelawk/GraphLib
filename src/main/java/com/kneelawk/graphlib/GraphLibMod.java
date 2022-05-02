@@ -1,14 +1,20 @@
 package com.kneelawk.graphlib;
 
+import com.kneelawk.graphlib.graph.GraphController;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
+import net.minecraft.server.world.ServerWorld;
 import org.quiltmc.qsl.lifecycle.api.event.ServerWorldTickEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GraphLibMod implements ModInitializer {
     public static Logger log = LoggerFactory.getLogger(Constants.MOD_ID);
+
+    public static GraphController getController(ServerWorld world) {
+        return StorageHelper.getController(world);
+    }
 
     @Override
     public void onInitialize() {
