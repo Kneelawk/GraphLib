@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "graphlib",
+  "version": "${version}",
+  "name": "Graph Lib",
+  "description": "Library for helping mods that use graph networks, like Wired Redstone.",
+  "authors": [
+    "2xsaiko",
+    "Kneelawk"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Kneelawk/GraphLib",
+    "issues": "https://github.com/Kneelawk/GraphLib/issues",
+    "sources": "https://github.com/Kneelawk/GraphLib"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "value": "com.kneelawk.graphlib.GraphLibMod"
+      }
+    ]
+  },
+  "mixins": [
+    "graphlib.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.13.0",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  }
+}
