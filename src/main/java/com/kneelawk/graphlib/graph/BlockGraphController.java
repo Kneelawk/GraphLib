@@ -8,7 +8,7 @@ import net.minecraft.util.math.ChunkPos;
 
 import java.nio.file.Path;
 
-public class GraphController extends UnloadingRegionBasedStorage<GraphControllerChunk> {
+public class BlockGraphController extends UnloadingRegionBasedStorage<BlockGraphChunk> {
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
@@ -20,9 +20,9 @@ public class GraphController extends UnloadingRegionBasedStorage<GraphController
 
     private final Path graphsDir;
 
-    public GraphController(ServerWorld world, Path path, boolean syncChunkWrites) {
-        super(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites, GraphControllerChunk::new,
-                GraphControllerChunk::new);
+    public BlockGraphController(ServerWorld world, Path path, boolean syncChunkWrites) {
+        super(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites, BlockGraphChunk::new,
+                BlockGraphChunk::new);
         this.world = world;
         graphsDir = path.resolve(Constants.GRAPHS_DIRNAME);
         timer = new ChunkSectionUnloadTimer(world.getBottomSectionCoord(), world.getTopSectionCoord(), MAX_AGE);

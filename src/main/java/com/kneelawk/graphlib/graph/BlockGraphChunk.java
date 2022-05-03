@@ -16,13 +16,13 @@ import net.minecraft.util.math.ChunkSectionPos;
 
 import java.util.UUID;
 
-public class GraphControllerChunk implements StorageChunk {
+public class BlockGraphChunk implements StorageChunk {
     final ChunkSectionPos chunkPos;
 
     Short2ObjectMap<ObjectSet<UUID>> graphsInPos = new Short2ObjectLinkedOpenHashMap<>();
     ObjectSet<UUID> graphsInChunk = new ObjectLinkedOpenHashSet<>();
 
-    public GraphControllerChunk(NbtCompound nbt, ChunkSectionPos chunkPos) {
+    public BlockGraphChunk(NbtCompound nbt, ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
 
         NbtList inChunkList = nbt.getList("inChunk", NbtType.INT_ARRAY);
@@ -46,7 +46,7 @@ public class GraphControllerChunk implements StorageChunk {
         }
     }
 
-    public GraphControllerChunk(ChunkSectionPos chunkPos) {
+    public BlockGraphChunk(ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
     }
 

@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.world;
 
-import com.kneelawk.graphlib.GraphLibMod;
+import com.kneelawk.graphlib.GraphLib;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
 import com.kneelawk.graphlib.util.ChunkPillarUnloadTimer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -86,7 +86,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                     return created;
                 }
             } catch (Exception e) {
-                GraphLibMod.log.error("Error loading chunk pillar {}. Discarding chunk.", chunkPos, e);
+                GraphLib.log.error("Error loading chunk pillar {}. Discarding chunk.", chunkPos, e);
 
                 R created = createNew.apply(pos);
                 pillar.put(pos.getY(), created);
@@ -118,7 +118,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                     return null;
                 }
             } catch (Exception e) {
-                GraphLibMod.log.error("Error loading chunk pillar {}.", chunkPos, e);
+                GraphLib.log.error("Error loading chunk pillar {}.", chunkPos, e);
 
                 return null;
             }
@@ -135,7 +135,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                             ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z));
                     pillar.put(sectionY, section);
                 } catch (Exception e) {
-                    GraphLibMod.log.error("Error loading chunk {} section {}. Discarding chunk section.",
+                    GraphLib.log.error("Error loading chunk {} section {}. Discarding chunk section.",
                             chunkPos, sectionY, e);
                 }
             }
@@ -169,7 +169,7 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                             section.toNbt(nbt);
                             sectionsTag.put(String.valueOf(sectionY), nbt);
                         } catch (Exception e) {
-                            GraphLibMod.log.error("Error saving chunk {}, section {}", pos, sectionY, e);
+                            GraphLib.log.error("Error saving chunk {}, section {}", pos, sectionY, e);
                         }
                     }
                 }

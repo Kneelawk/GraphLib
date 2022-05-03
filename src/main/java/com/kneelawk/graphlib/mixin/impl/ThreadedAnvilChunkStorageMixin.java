@@ -1,9 +1,9 @@
 package com.kneelawk.graphlib.mixin.impl;
 
 import com.kneelawk.graphlib.Constants;
-import com.kneelawk.graphlib.GraphLibMod;
-import com.kneelawk.graphlib.mixin.api.GraphControllerAccess;
-import com.kneelawk.graphlib.graph.GraphController;
+import com.kneelawk.graphlib.GraphLib;
+import com.kneelawk.graphlib.graph.BlockGraphController;
+import com.kneelawk.graphlib.mixin.api.BlockGraphControllerAccess;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
@@ -27,9 +27,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public class ThreadedAnvilChunkStorageMixin implements GraphControllerAccess {
+public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAccess {
     @Unique
-    private GraphController controller;
+    private BlockGraphController controller;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void onCreate(
@@ -48,7 +48,7 @@ public class ThreadedAnvilChunkStorageMixin implements GraphControllerAccess {
             boolean syncChunkWrites,
             CallbackInfo ci
     ) {
-        controller = new GraphController(serverWorld,
+        controller = new BlockGraphController(serverWorld,
                 session.getWorldDirectory(serverWorld.getRegistryKey()).resolve(Constants.DATA_DIRNAME)
                         .resolve(Constants.MOD_ID).resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
     }
@@ -58,7 +58,7 @@ public class ThreadedAnvilChunkStorageMixin implements GraphControllerAccess {
         try {
             controller.close();
         } catch (Exception e) {
-            GraphLibMod.log.error("Error saving graph controller.", e);
+            GraphLib.log.error("Error saving graph controller.", e);
         }
     }
 
@@ -68,7 +68,7 @@ public class ThreadedAnvilChunkStorageMixin implements GraphControllerAccess {
     }
 
     @Override
-    public GraphController graphlib_getGraphController() {
+    public BlockGraphController graphlib_getGraphController() {
         return controller;
     }
 }
