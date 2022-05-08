@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.node;
+package com.kneelawk.graphlib.graph;
 
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;

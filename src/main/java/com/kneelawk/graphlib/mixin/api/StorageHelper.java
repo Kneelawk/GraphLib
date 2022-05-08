@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.mixin.api;
 
-import com.kneelawk.graphlib.mixin.impl.StorageIoWorkerAccessor;
 import com.kneelawk.graphlib.graph.BlockGraphController;
+import com.kneelawk.graphlib.mixin.impl.StorageIoWorkerAccessor;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.storage.StorageIoWorker;
 

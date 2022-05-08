@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.graph.struct;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -9,6 +9,11 @@ import java.util.stream.Stream;
 // Translated from 2xsaiko's HCTM-Base Graph code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt
 
+/**
+ * General purpose graph data structure.
+ *
+ * @param <T> the type of data this graph contains in each node.
+ */
 public final class Graph<T> implements Iterable<Node<T>> {
     private final Set<Node<T>> nodes = new LinkedHashSet<>();
 

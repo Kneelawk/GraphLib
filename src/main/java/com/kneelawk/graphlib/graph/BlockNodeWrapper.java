@@ -4,8 +4,6 @@ package com.kneelawk.graphlib.graph;
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
 
 import com.kneelawk.graphlib.GraphLib;
-import com.kneelawk.graphlib.node.BlockNode;
-import com.kneelawk.graphlib.node.BlockNodeDecoder;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;

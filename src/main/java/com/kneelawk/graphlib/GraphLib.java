@@ -1,8 +1,8 @@
 package com.kneelawk.graphlib;
 
 import com.kneelawk.graphlib.graph.BlockGraphController;
+import com.kneelawk.graphlib.graph.BlockNodeDecoder;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
-import com.kneelawk.graphlib.node.BlockNodeDecoder;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;

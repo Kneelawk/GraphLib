@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.graph;
 
 import com.kneelawk.graphlib.Constants;
 import com.kneelawk.graphlib.GraphLib;
-import com.kneelawk.graphlib.node.BlockNode;
+import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.world.UnloadingRegionBasedStorage;
 import it.unimi.dsi.fastutil.longs.*;
@@ -184,7 +184,8 @@ public class BlockGraphController implements AutoCloseable {
                 chunk.graphsInPos.remove(local);
             }
         } else {
-            GraphLib.log.warn("Tried to remove graph from non-existent chunk. Id: {}, chunk: {}, block: {}", id, sectionPos, pos);
+            GraphLib.log.warn("Tried to remove graph from non-existent chunk. Id: {}, chunk: {}, block: {}", id,
+                    sectionPos, pos);
         }
     }
 

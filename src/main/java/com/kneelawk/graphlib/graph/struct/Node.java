@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.graph.struct;
 
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -7,6 +7,11 @@ import java.util.Set;
 // Translated from 2xsaiko's HCTM-Base Graph code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt
 
+/**
+ * Node in a general purpose graph data structure.
+ *
+ * @param <T> the type of data this node contains.
+ */
 public final class Node<T> {
     private final T data;
     private final Set<Link<T>> connections;
