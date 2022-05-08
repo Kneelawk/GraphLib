@@ -2,10 +2,7 @@ package com.kneelawk.graphlib.graph;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -29,8 +26,8 @@ public final class Graph<T> implements Iterable<Node<T>> {
         }
     }
 
-    public Set<Graph<T>> split() {
-        Set<Graph<T>> result = new LinkedHashSet<>();
+    public List<Graph<T>> split() {
+        List<Graph<T>> result = new ArrayList<>();
         Set<Node<T>> toBeChecked = new LinkedHashSet<>(nodes);
 
         while (!toBeChecked.isEmpty()) {
@@ -108,5 +105,9 @@ public final class Graph<T> implements Iterable<Node<T>> {
 
     public Stream<Node<T>> stream() {
         return nodes.stream();
+    }
+
+    public boolean isEmpty() {
+        return nodes.isEmpty();
     }
 }

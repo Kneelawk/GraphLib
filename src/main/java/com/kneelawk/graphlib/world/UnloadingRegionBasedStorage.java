@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implements AutoCloseable {
+public class UnloadingRegionBasedStorage<R extends StorageChunk> implements AutoCloseable {
     /**
      * The max chunk age is 1 minute.
      */
@@ -47,11 +47,14 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
 
     @Override
     public void close() throws IOException {
+        saveAll();
+
         worker.close();
     }
 
     public void onWorldChunkLoad(ChunkPos pos) {
         timer.onWorldChunkLoad(pos);
+        loadChunkPillar(pos);
     }
 
     public void onWorldChunkUnload(ChunkPos pos) {
@@ -99,11 +102,10 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
     @Nullable
     public R getIfExists(ChunkSectionPos pos) {
         ChunkPos chunkPos = pos.toChunkPos();
-        long longPos = chunkPos.toLong();
-        Int2ObjectMap<R> pillar = loadedChunks.get(longPos);
+        Int2ObjectMap<R> pillar = loadedChunks.get(chunkPos.toLong());
         if (pillar != null) {
             timer.onChunkUse(chunkPos);
-            return pillar.computeIfAbsent(pos.getY(), (y) -> createNew.apply(pos));
+            return pillar.get(pos.getY());
         } else {
             // try and load the pillar
             try {
@@ -121,6 +123,22 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
                 GraphLib.log.error("Error loading chunk pillar {}.", chunkPos, e);
 
                 return null;
+            }
+        }
+    }
+
+    private void loadChunkPillar(ChunkPos chunkPos) {
+        if (!loadedChunks.containsKey(chunkPos.toLong())) {
+            // try and load the pillar
+            try {
+                NbtCompound root = worker.getNbt(chunkPos);
+                if (root != null) {
+                    timer.onChunkUse(chunkPos);
+                    Int2ObjectMap<R> pillar = new Int2ObjectOpenHashMap<>();
+                    loadChunkPillar(chunkPos, pillar, root);
+                }
+            } catch (Exception e) {
+                GraphLib.log.error("Error loading chunk pillar {}.", chunkPos, e);
             }
         }
     }
@@ -151,6 +169,12 @@ public abstract class UnloadingRegionBasedStorage<R extends StorageChunk> implem
             saveChunk(pos);
             loadedChunks.remove(pos.toLong());
             timer.onChunkUnload(pos);
+        }
+    }
+
+    private void saveAll() {
+        for (long key : loadedChunks.keySet()) {
+            saveChunk(new ChunkPos(key));
         }
     }
 

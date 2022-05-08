@@ -13,7 +13,20 @@ import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public record BlockNodeWrapper<T extends BlockNode>(@NotNull BlockPos pos, @NotNull T node) {
+import java.util.Objects;
+
+public final class BlockNodeWrapper<T extends BlockNode> {
+    private final @NotNull BlockPos pos;
+    private final @NotNull T node;
+
+    long graphId;
+
+    public BlockNodeWrapper(@NotNull BlockPos pos, @NotNull T node, long graphId) {
+        this.pos = pos;
+        this.node = node;
+        this.graphId = graphId;
+    }
+
     public NbtCompound toTag() {
         NbtCompound tag = new NbtCompound();
 
@@ -32,7 +45,7 @@ public record BlockNodeWrapper<T extends BlockNode>(@NotNull BlockPos pos, @NotN
     }
 
     @Nullable
-    public static BlockNodeWrapper<BlockNode> fromTag(NbtCompound tag) {
+    public static BlockNodeWrapper<BlockNode> fromTag(NbtCompound tag, long graphId) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
@@ -51,6 +64,35 @@ public record BlockNodeWrapper<T extends BlockNode>(@NotNull BlockPos pos, @NotN
             return null;
         }
 
-        return new BlockNodeWrapper<>(pos, node);
+        return new BlockNodeWrapper<>(pos, node, graphId);
+    }
+
+    public @NotNull BlockPos pos() {
+        return pos;
+    }
+
+    public @NotNull T node() {
+        return node;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (BlockNodeWrapper) obj;
+        return Objects.equals(this.pos, that.pos) &&
+                Objects.equals(this.node, that.node);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pos, node);
+    }
+
+    @Override
+    public String toString() {
+        return "BlockNodeWrapper[" +
+                "pos=" + pos + ", " +
+                "node=" + node + ']';
     }
 }

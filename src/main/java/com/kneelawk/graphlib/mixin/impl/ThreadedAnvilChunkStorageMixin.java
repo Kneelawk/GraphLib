@@ -58,13 +58,17 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
         try {
             controller.close();
         } catch (Exception e) {
-            GraphLib.log.error("Error saving graph controller.", e);
+            GraphLib.log.error("Error closing graph controller.", e);
         }
     }
 
     @Inject(method = "save(Lnet/minecraft/world/chunk/Chunk;)Z", at = @At("HEAD"))
     public void onSave(Chunk chunk, CallbackInfoReturnable<Boolean> cir) {
-        controller.saveChunk(chunk.getPos());
+        try {
+            controller.saveChunk(chunk.getPos());
+        } catch (Exception e) {
+            GraphLib.log.error("Error saving graph controller.", e);
+        }
     }
 
     @Override
