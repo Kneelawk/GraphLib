@@ -8,7 +8,6 @@ import com.kneelawk.graphlib.graph.struct.Link;
 import com.kneelawk.graphlib.graph.struct.Node;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -31,7 +30,7 @@ import java.util.stream.Stream;
 
 public class BlockGraph {
     public static BlockGraph fromTag(BlockGraphController controller, long id, NbtCompound tag) {
-        NbtList chunksTag = tag.getList("chunks", NbtType.LONG);
+        NbtList chunksTag = tag.getList("chunks", NbtElement.LONG_TYPE);
         LongSet chunks = new LongLinkedOpenHashSet();
 
         for (NbtElement chunkElement : chunksTag) {
@@ -40,8 +39,8 @@ public class BlockGraph {
 
         BlockGraph graph = new BlockGraph(controller, id, chunks);
 
-        NbtList nodesTag = tag.getList("nodes", NbtType.COMPOUND);
-        NbtList linksTag = tag.getList("links", NbtType.COMPOUND);
+        NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
+        NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
 
         List<@Nullable Node<BlockNodeWrapper<?>>> nodes = new ArrayList<>();
 

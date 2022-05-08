@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.ShortIterator;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -24,17 +23,17 @@ public class BlockGraphChunk implements StorageChunk {
     public BlockGraphChunk(NbtCompound nbt, ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
 
-        NbtList inChunkList = nbt.getList("inChunk", NbtType.LONG);
+        NbtList inChunkList = nbt.getList("inChunk", NbtElement.LONG_TYPE);
         for (NbtElement element : inChunkList) {
             graphsInChunk.add(((NbtLong) element).longValue());
         }
 
-        NbtList inPosList = nbt.getList("inPos", NbtType.COMPOUND);
+        NbtList inPosList = nbt.getList("inPos", NbtElement.COMPOUND_TYPE);
         for (NbtElement element : inPosList) {
             NbtCompound com = (NbtCompound) element;
             // positions are bytes because they are only 0-15
             BlockPos pos = new BlockPos(com.getByte("x"), com.getByte("y"), com.getByte("z"));
-            NbtList ids = com.getList("ids", NbtType.LONG);
+            NbtList ids = com.getList("ids", NbtElement.LONG_TYPE);
             if (!ids.isEmpty()) {
                 LongSet inPos = graphsInPos.computeIfAbsent(ChunkSectionPos.packLocal(pos),
                         s -> new LongLinkedOpenHashSet());
