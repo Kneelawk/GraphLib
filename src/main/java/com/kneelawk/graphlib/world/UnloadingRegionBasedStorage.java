@@ -12,6 +12,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.storage.StorageIoWorker;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -36,9 +37,9 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     private final Long2ObjectMap<Int2ObjectMap<R>> loadedChunks = new Long2ObjectOpenHashMap<>();
 
-    public UnloadingRegionBasedStorage(ServerWorld world, Path path, boolean syncChunkWrites,
-                                       BiFunction<NbtCompound, ChunkSectionPos, R> loadFromNbt,
-                                       Function<ChunkSectionPos, R> createNew) {
+    public UnloadingRegionBasedStorage(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites,
+                                       @NotNull BiFunction<@NotNull NbtCompound, @NotNull ChunkSectionPos, @NotNull R> loadFromNbt,
+                                       @NotNull Function<@NotNull ChunkSectionPos, @NotNull R> createNew) {
         this.world = world;
         this.loadFromNbt = loadFromNbt;
         this.createNew = createNew;
@@ -52,16 +53,16 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         worker.close();
     }
 
-    public void onWorldChunkLoad(ChunkPos pos) {
+    public void onWorldChunkLoad(@NotNull ChunkPos pos) {
         timer.onWorldChunkLoad(pos);
         loadChunkPillar(pos);
     }
 
-    public void onWorldChunkUnload(ChunkPos pos) {
+    public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         timer.onWorldChunkUnload(pos);
     }
 
-    public R getOrCreate(ChunkSectionPos pos) {
+    public @NotNull R getOrCreate(@NotNull ChunkSectionPos pos) {
         ChunkPos chunkPos = pos.toChunkPos();
         timer.onChunkUse(chunkPos);
         long longPos = chunkPos.toLong();
@@ -100,7 +101,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
     }
 
     @Nullable
-    public R getIfExists(ChunkSectionPos pos) {
+    public R getIfExists(@NotNull ChunkSectionPos pos) {
         ChunkPos chunkPos = pos.toChunkPos();
         Int2ObjectMap<R> pillar = loadedChunks.get(chunkPos.toLong());
         if (pillar != null) {
@@ -127,7 +128,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         }
     }
 
-    private void loadChunkPillar(ChunkPos chunkPos) {
+    private void loadChunkPillar(@NotNull ChunkPos chunkPos) {
         if (!loadedChunks.containsKey(chunkPos.toLong())) {
             // try and load the pillar
             try {
@@ -143,7 +144,8 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         }
     }
 
-    private void loadChunkPillar(ChunkPos chunkPos, Int2ObjectMap<R> pillar, NbtCompound root) {
+    private void loadChunkPillar(@NotNull ChunkPos chunkPos, @NotNull Int2ObjectMap<R> pillar,
+                                 @NotNull NbtCompound root) {
         for (int sectionY = world.getBottomSectionCoord();
              sectionY < world.getTopSectionCoord(); sectionY++) {
             NbtCompound sectionTag = root.getCompound(String.valueOf(sectionY));
@@ -178,7 +180,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         }
     }
 
-    public void saveChunk(ChunkPos pos) {
+    public void saveChunk(@NotNull ChunkPos pos) {
         if (!loadedChunks.isEmpty()) {
             NbtCompound root = new NbtCompound();
 

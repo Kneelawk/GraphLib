@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public interface FullWireBlockNode extends BlockNode {
     default boolean canConnect(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Direction onSide,
-                       @Nullable Direction wireSide, @NotNull Node<BlockNodeWrapper<?>> other) {
+                               @Nullable Direction wireSide, @NotNull Node<BlockNodeWrapper<?>> other) {
         return true;
     }
 }

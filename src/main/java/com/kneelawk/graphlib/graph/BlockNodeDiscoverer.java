@@ -2,6 +2,7 @@ package com.kneelawk.graphlib.graph;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 
@@ -21,5 +22,5 @@ public interface BlockNodeDiscoverer {
      * @param pos   the position to check at.
      * @return all the {@link BlockNode}s that should be here.
      */
-    Collection<BlockNode> getNodesInBlock(ServerWorld world, BlockPos pos);
+    @NotNull Collection<BlockNode> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
 }

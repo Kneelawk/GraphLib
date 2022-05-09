@@ -25,7 +25,7 @@ public final class BlockNodeWrapper<T extends BlockNode> {
         this.graphId = graphId;
     }
 
-    public NbtCompound toTag() {
+    public @NotNull NbtCompound toTag() {
         NbtCompound tag = new NbtCompound();
 
         tag.putInt("x", pos.getX());
@@ -43,7 +43,7 @@ public final class BlockNodeWrapper<T extends BlockNode> {
     }
 
     @Nullable
-    public static BlockNodeWrapper<BlockNode> fromTag(NbtCompound tag, long graphId) {
+    public static BlockNodeWrapper<BlockNode> fromTag(@NotNull NbtCompound tag, long graphId) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));

@@ -19,7 +19,7 @@ public record Link<T>(@NotNull Node<T> first, @NotNull Node<T> second) {
         return Objects.equals(first, node) || Objects.equals(second, node);
     }
 
-    public Node<T> other(@NotNull Node<T> node) {
+    public @NotNull Node<T> other(@NotNull Node<T> node) {
         if (Objects.equals(first, node)) {
             return first;
         } else {

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWireConnectionFilter {
-    boolean accepts(BlockNode self, BlockNode other);
+    boolean accepts(@NotNull BlockNode self, @NotNull BlockNode other);
 
     @Override
     default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,

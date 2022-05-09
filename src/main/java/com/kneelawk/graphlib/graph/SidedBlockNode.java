@@ -1,7 +1,8 @@
 package com.kneelawk.graphlib.graph;
 
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.NotNull;
 
 public interface SidedBlockNode extends BlockNode {
-    Direction getSide();
+    @NotNull Direction getSide();
 }

@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,13 +24,13 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
         this.topSectionCoord = topSectionCoord;
     }
 
-    protected void removeUnloadMark(ChunkPos pos) {
+    protected void removeUnloadMark(@NotNull ChunkPos pos) {
         for (int y = bottomSectionCoord; y < topSectionCoord; y++) {
             toUnload.remove(ChunkSectionPos.asLong(pos.x, y, pos.z));
         }
     }
 
-    protected void markForUnloading(ChunkPos pos) {
+    protected void markForUnloading(@NotNull ChunkPos pos) {
         for (int y = bottomSectionCoord; y < topSectionCoord; y++) {
             long longPos = ChunkSectionPos.asLong(pos.x, y, pos.z);
             if (loadedChunks.contains(longPos)) {
@@ -38,18 +39,18 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
         }
     }
 
-    public boolean isChunkLoaded(ChunkSectionPos pos) {
+    public boolean isChunkLoaded(@NotNull ChunkSectionPos pos) {
         return loadedChunks.contains(pos.asLong());
     }
 
-    public void onChunkUse(ChunkSectionPos pos) {
+    public void onChunkUse(@NotNull ChunkSectionPos pos) {
         loadedChunks.add(pos.asLong());
         if (!worldLoadedChunks.contains(pos.toChunkPos().toLong())) {
             toUnload.put(pos.asLong(), tickAge + maxAge);
         }
     }
 
-    public void onChunkUnload(ChunkSectionPos pos) {
+    public void onChunkUnload(@NotNull ChunkSectionPos pos) {
         loadedChunks.remove(pos.asLong());
         toUnload.remove(pos.asLong());
     }

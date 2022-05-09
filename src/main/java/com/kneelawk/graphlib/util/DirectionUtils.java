@@ -28,7 +28,7 @@ public final class DirectionUtils {
     }
 
     @Contract(pure = true)
-    public static Direction[] perpendiculars(@NotNull Direction side) {
+    public static @NotNull Direction[] perpendiculars(@NotNull Direction side) {
         return PERPENDICULARS[side.getId()];
     }
 }

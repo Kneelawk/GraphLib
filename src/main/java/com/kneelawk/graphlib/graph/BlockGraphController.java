@@ -15,6 +15,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     private boolean stateDirty = false;
     private long nextGraphId = 0L;
 
-    public BlockGraphController(ServerWorld world, Path path, boolean syncChunkWrites) {
+    public BlockGraphController(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
                 BlockGraphChunk::new, BlockGraphChunk::new);
         this.world = world;
@@ -73,14 +74,14 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
     // ---- Lifecycle Methods ---- //
 
-    public void onWorldChunkLoad(ChunkPos pos) {
+    public void onWorldChunkLoad(@NotNull ChunkPos pos) {
         chunks.onWorldChunkLoad(pos);
         timer.onWorldChunkLoad(pos);
 
         loadGraphs(pos);
     }
 
-    public void onWorldChunkUnload(ChunkPos pos) {
+    public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         chunks.onWorldChunkUnload(pos);
         timer.onWorldChunkUnload(pos);
     }
@@ -93,7 +94,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         unloadGraphs();
     }
 
-    public void saveChunk(ChunkPos pos) {
+    public void saveChunk(@NotNull ChunkPos pos) {
         chunks.saveChunk(pos);
         saveState();
     }
@@ -112,18 +113,18 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     // ---- Public Interface Methods ---- //
 
     @Override
-    public Stream<Node<BlockNodeWrapper<?>>> getNodesAt(BlockPos pos) {
+    public @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull BlockPos pos) {
         // no need for a .distict() here, because you should never have the same node be part of multiple graphs
         return getGraphsInPos(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
 
     @Override
-    public Stream<Node<BlockNodeWrapper<?>>> getNodesAt(SidedPos pos) {
+    public @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull SidedPos pos) {
         return getGraphsInPos(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
                 .flatMap(g -> g.getNodesAt(pos));
     }
 
-    public LongStream getGraphsInPos(BlockPos pos) {
+    public @NotNull LongStream getGraphsInPos(@NotNull BlockPos pos) {
         BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
         if (chunk != null) {
             return chunk.graphsInPos.get(ChunkSectionPos.packLocal(pos)).longStream();
@@ -132,25 +133,25 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         }
     }
 
-    public void onChanged(BlockPos pos) {
+    public void onChanged(@NotNull BlockPos pos) {
         Set<BlockNode> nodes = GraphLib.getNodesInBlock(world, pos);
         onNodesChanged(pos, nodes);
     }
 
-    public void onChanged(Iterable<BlockPos> poses) {
+    public void onChanged(@NotNull Iterable<BlockPos> poses) {
         for (BlockPos pos : poses) {
             // I couldn't figure out how to optimise this much, so I'm just calling onChanged for every block-pos
             onChanged(pos);
         }
     }
 
-    public void updateConnections(BlockPos pos) {
+    public void updateConnections(@NotNull BlockPos pos) {
         for (var node : getNodesAt(pos).toList()) {
             updateNodeConnections(node);
         }
     }
 
-    public void updateConnections(SidedPos pos) {
+    public void updateConnections(@NotNull SidedPos pos) {
         for (var node : getNodesAt(pos).toList()) {
             updateNodeConnections(node);
         }
@@ -175,7 +176,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         return graph;
     }
 
-    public BlockGraph createGraph() {
+    public @NotNull BlockGraph createGraph() {
         BlockGraph graph = new BlockGraph(this, getNextGraphId());
         loadedGraphs.put(graph.getId(), graph);
         return graph;
@@ -212,7 +213,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
     // ---- Internal Methods ---- //
 
-    void addGraphInPos(long id, BlockPos pos) {
+    void addGraphInPos(long id, @NotNull BlockPos pos) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
         BlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
         chunk.addGraphInPos(id, pos);
@@ -220,7 +221,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         timer.onChunkUse(sectionPos);
     }
 
-    void removeGraphInPos(long id, BlockPos pos) {
+    void removeGraphInPos(long id, @NotNull BlockPos pos) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
         BlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
@@ -246,7 +247,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         }
     }
 
-    void removeGraphInPoses(long id, Iterable<BlockPos> poses, LongIterable chunkPoses) {
+    void removeGraphInPoses(long id, @NotNull Iterable<BlockPos> poses, @NotNull LongIterable chunkPoses) {
         for (BlockPos pos : poses) {
             removeGraphInPos(id, pos);
         }
@@ -257,7 +258,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
     // ---- Node Update Methods ---- //
 
-    void scheduleUpdate(Node<BlockNodeWrapper<?>> node) {
+    void scheduleUpdate(@NotNull Node<BlockNodeWrapper<?>> node) {
         toUpdate.add(node);
     }
 
@@ -270,7 +271,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
     // ---- Private Methods ---- //
 
-    private void onNodesChanged(BlockPos pos, Set<BlockNode> nodes) {
+    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNode> nodes) {
         Set<BlockNode> newNodes = new LinkedHashSet<>(nodes);
 
         for (long graphId : getGraphsInPos(pos).toArray()) {
@@ -297,7 +298,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         }
     }
 
-    private void updateNodeConnections(Node<BlockNodeWrapper<?>> node) {
+    private void updateNodeConnections(@NotNull Node<BlockNodeWrapper<?>> node) {
         long nodeGraphId = node.data().graphId;
         BlockGraph graph = getGraph(nodeGraphId);
 
@@ -336,7 +337,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         graph.split();
     }
 
-    private void loadGraphs(ChunkPos pos) {
+    private void loadGraphs(@NotNull ChunkPos pos) {
         for (int y = world.getBottomSectionCoord(); y < world.getTopSectionCoord(); y++) {
             BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.x, y, pos.z));
             if (chunk != null) {
@@ -390,11 +391,11 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         return loadedGraphs.containsKey(id) || Files.exists(getGraphFile(id));
     }
 
-    private Path getGraphFile(long id) {
+    private @NotNull Path getGraphFile(long id) {
         return graphsDir.resolve(String.format("%016X.dat", id));
     }
 
-    private void writeGraph(BlockGraph graph) {
+    private void writeGraph(@NotNull BlockGraph graph) {
         Path graphFile = getGraphFile(graph.getId());
 
         NbtCompound root = new NbtCompound();

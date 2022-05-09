@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.util;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.math.ChunkPos;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class ChunkUnloadTimer {
     protected final long maxAge;
@@ -15,21 +16,21 @@ public abstract class ChunkUnloadTimer {
         tickAge = 0;
     }
 
-    public void onWorldChunkLoad(ChunkPos pos) {
+    public void onWorldChunkLoad(@NotNull ChunkPos pos) {
         worldLoadedChunks.add(pos.toLong());
         removeUnloadMark(pos);
     }
 
-    protected abstract void removeUnloadMark(ChunkPos pos);
+    protected abstract void removeUnloadMark(@NotNull ChunkPos pos);
 
-    public void onWorldChunkUnload(ChunkPos pos) {
+    public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         worldLoadedChunks.remove(pos.toLong());
         markForUnloading(pos);
     }
 
-    protected abstract void markForUnloading(ChunkPos pos);
+    protected abstract void markForUnloading(@NotNull ChunkPos pos);
 
-    public boolean isWorldChunkLoad(ChunkPos pos) {
+    public boolean isWorldChunkLoad(@NotNull ChunkPos pos) {
         return worldLoadedChunks.contains(pos.toLong());
     }
 

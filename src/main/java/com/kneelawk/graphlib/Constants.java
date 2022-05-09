@@ -1,6 +1,8 @@
 package com.kneelawk.graphlib;
 
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 public final class Constants {
     private Constants() {
@@ -13,7 +15,8 @@ public final class Constants {
     public static final String GRAPHS_DIRNAME = "graphs";
     public static final String STATE_FILENAME = "state.dat";
 
-    public static Identifier id(String path) {
+    @Contract("_ -> new")
+    public static @NotNull Identifier id(String path) {
         return new Identifier(MOD_ID, path);
     }
 }

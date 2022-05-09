@@ -7,12 +7,13 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 
 public interface BlockNode {
-    Identifier getTypeId();
+    @NotNull Identifier getTypeId();
 
     @Nullable NbtElement toTag();
 
@@ -28,7 +29,8 @@ public interface BlockNode {
      * @return all nodes this node can connect to.
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, NodeView, BlockPos, SidedWireConnectionFilter)
      */
-    Collection<Node<BlockNodeWrapper<?>>> findConnections(ServerWorld world, NodeView nodeView, BlockPos pos);
+    @NotNull Collection<Node<BlockNodeWrapper<?>>> findConnections(@NotNull ServerWorld world,
+                                                                   @NotNull NodeView nodeView, @NotNull BlockPos pos);
 
     /**
      * Determines whether this node can connect to another node.
@@ -43,13 +45,14 @@ public interface BlockNode {
      * @return whether this node can connect to the other node.
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, SidedWireConnectionFilter, Node)
      */
-    boolean canConnect(ServerWorld world, NodeView nodeView, BlockPos pos, Node<BlockNodeWrapper<?>> other);
+    boolean canConnect(@NotNull ServerWorld world, @NotNull NodeView nodeView, @NotNull BlockPos pos,
+                       @NotNull Node<BlockNodeWrapper<?>> other);
 
-    void onChanged(ServerWorld world, BlockPos pos);
+    void onChanged(@NotNull ServerWorld world, @NotNull BlockPos pos);
 
     @Override
     int hashCode();
 
     @Override
-    boolean equals(Object o);
+    boolean equals(@Nullable Object o);
 }

@@ -1,5 +1,7 @@
 package com.kneelawk.graphlib.graph.struct;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -25,22 +27,22 @@ public final class Node<T> {
         return data;
     }
 
-    public Set<Link<T>> connections() {
+    public @NotNull Set<Link<T>> connections() {
         return connections;
     }
 
-    public void onAdded(Node<T> other) {
+    public void onAdded(@NotNull Node<T> other) {
     }
 
-    public void onRemoved(Node<T> other) {
+    public void onRemoved(@NotNull Node<T> other) {
         connections.removeIf(link -> link.contains(other));
     }
 
-    public void onLink(Link<T> link) {
+    public void onLink(@NotNull Link<T> link) {
         connections.add(link);
     }
 
-    public void onUnlink(Link<T> link) {
+    public void onUnlink(@NotNull Link<T> link) {
         connections.remove(link);
     }
 

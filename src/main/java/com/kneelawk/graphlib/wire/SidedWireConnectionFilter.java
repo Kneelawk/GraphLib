@@ -12,7 +12,7 @@ public interface SidedWireConnectionFilter {
                        @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
                        @NotNull Node<BlockNodeWrapper<?>> other);
 
-    default SidedWireConnectionFilter and(SidedWireConnectionFilter otherFilter) {
+    default SidedWireConnectionFilter and(@NotNull SidedWireConnectionFilter otherFilter) {
         return (self, world, pos, inDirection, connectionType, other) ->
                 canConnect(self, world, pos, inDirection, connectionType, other) &&
                         otherFilter.canConnect(self, world, pos, inDirection, connectionType, other);

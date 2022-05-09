@@ -1,7 +1,8 @@
 package com.kneelawk.graphlib.mixin.api;
 
 import com.kneelawk.graphlib.graph.BlockGraphController;
+import org.jetbrains.annotations.NotNull;
 
 public interface BlockGraphControllerAccess {
-    BlockGraphController graphlib_getGraphController();
+    @NotNull BlockGraphController graphlib_getGraphController();
 }

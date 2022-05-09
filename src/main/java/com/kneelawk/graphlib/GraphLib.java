@@ -12,6 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ public final class GraphLib {
      *
      * @param discoverer the discoverer used for detecting the nodes in a given block position.
      */
-    public static void registerDiscoverer(BlockNodeDiscoverer discoverer) {
+    public static void registerDiscoverer(@NotNull BlockNodeDiscoverer discoverer) {
         BLOCK_NODE_DISCOVERERS.add(discoverer);
     }
 
@@ -57,7 +58,7 @@ public final class GraphLib {
      * @param pos   the position to check at.
      * @return a set of all the {@link BlockNode}s that should be at that position.
      */
-    public static Set<BlockNode> getNodesInBlock(ServerWorld world, BlockPos pos) {
+    public static @NotNull Set<BlockNode> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos) {
         return BLOCK_NODE_DISCOVERERS.stream().flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
@@ -68,7 +69,7 @@ public final class GraphLib {
      * @param world the world whose BlockGraphController is to be obtained.
      * @return the BlockGraphController of the given world.
      */
-    public static BlockGraphController getController(ServerWorld world) {
+    public static @NotNull BlockGraphController getController(@NotNull ServerWorld world) {
         return StorageHelper.getController(world);
     }
 

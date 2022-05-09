@@ -13,7 +13,7 @@ public interface FullWireConnectionFilter {
                        @NotNull Direction onSide, @Nullable Direction wireSide,
                        @NotNull Node<BlockNodeWrapper<?>> other);
 
-    default FullWireConnectionFilter and(FullWireConnectionFilter otherFilter) {
+    default FullWireConnectionFilter and(@NotNull FullWireConnectionFilter otherFilter) {
         return (self, world, pos, onSide, wireSide, other) -> canConnect(self, world, pos, onSide, wireSide, other) &&
                 otherFilter.canConnect(self, world, pos, onSide, wireSide, other);
     }

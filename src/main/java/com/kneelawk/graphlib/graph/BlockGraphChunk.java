@@ -13,6 +13,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtLong;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import org.jetbrains.annotations.NotNull;
 
 public class BlockGraphChunk implements StorageChunk {
     final ChunkSectionPos chunkPos;
@@ -20,7 +21,7 @@ public class BlockGraphChunk implements StorageChunk {
     Short2ObjectMap<LongSet> graphsInPos = new Short2ObjectLinkedOpenHashMap<>();
     LongSet graphsInChunk = new LongLinkedOpenHashSet();
 
-    public BlockGraphChunk(NbtCompound nbt, ChunkSectionPos chunkPos) {
+    public BlockGraphChunk(@NotNull NbtCompound nbt, @NotNull ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
 
         NbtList inChunkList = nbt.getList("inChunk", NbtElement.LONG_TYPE);
@@ -44,12 +45,12 @@ public class BlockGraphChunk implements StorageChunk {
         }
     }
 
-    public BlockGraphChunk(ChunkSectionPos chunkPos) {
+    public BlockGraphChunk(@NotNull ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
     }
 
     @Override
-    public void toNbt(NbtCompound nbt) {
+    public void toNbt(@NotNull NbtCompound nbt) {
         NbtList inChunkList = new NbtList();
         for (long id : graphsInChunk) {
             inChunkList.add(NbtLong.of(id));
@@ -74,7 +75,7 @@ public class BlockGraphChunk implements StorageChunk {
         nbt.put("inPos", inPosList);
     }
 
-    public void addGraphInPos(long id, BlockPos pos) {
+    public void addGraphInPos(long id, @NotNull BlockPos pos) {
         graphsInChunk.add(id);
         graphsInPos.computeIfAbsent(ChunkSectionPos.packLocal(pos), s -> new LongLinkedOpenHashSet()).add(id);
     }

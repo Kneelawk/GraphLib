@@ -4,15 +4,17 @@ import com.kneelawk.graphlib.graph.BlockGraphController;
 import com.kneelawk.graphlib.mixin.impl.StorageIoWorkerAccessor;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.storage.StorageIoWorker;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 
 public class StorageHelper {
-    public static StorageIoWorker newWorker(Path path, boolean syncChunkWrites, String name) {
+    public static @NotNull StorageIoWorker newWorker(@NotNull Path path, boolean syncChunkWrites,
+                                                     @NotNull String name) {
         return StorageIoWorkerAccessor.create(path, syncChunkWrites, name);
     }
 
-    public static BlockGraphController getController(ServerWorld world) {
+    public static @NotNull BlockGraphController getController(@NotNull ServerWorld world) {
         return ((BlockGraphControllerAccess) world.getChunkManager().threadedAnvilChunkStorage).graphlib_getGraphController();
     }
 }

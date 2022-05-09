@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public interface SidedWireBlockNode extends SidedBlockNode {
     default boolean canConnect(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Direction inDirection,
-                       @NotNull WireConnectionType connectionType, @NotNull Node<BlockNodeWrapper<?>> other) {
+                               @NotNull WireConnectionType connectionType, @NotNull Node<BlockNodeWrapper<?>> other) {
         return true;
     }
 }

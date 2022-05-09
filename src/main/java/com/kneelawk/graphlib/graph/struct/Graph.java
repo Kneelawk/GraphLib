@@ -17,21 +17,21 @@ import java.util.stream.Stream;
 public final class Graph<T> implements Iterable<Node<T>> {
     private final Set<Node<T>> nodes = new LinkedHashSet<>();
 
-    public Node<T> add(T data) {
+    public @NotNull Node<T> add(T data) {
         Node<T> node = new Node<>(data);
         nodes.forEach(n -> n.onAdded(node));
         nodes.add(node);
         return node;
     }
 
-    public void remove(Node<T> node) {
+    public void remove(@NotNull Node<T> node) {
         if (nodes.contains(node)) {
             nodes.remove(node);
             nodes.forEach(n -> n.onRemoved(node));
         }
     }
 
-    public List<Graph<T>> split() {
+    public @NotNull List<Graph<T>> split() {
         List<Graph<T>> result = new ArrayList<>();
         Set<Node<T>> toBeChecked = new LinkedHashSet<>(nodes);
 
@@ -49,7 +49,7 @@ public final class Graph<T> implements Iterable<Node<T>> {
         return result;
     }
 
-    private void descend(Set<Node<T>> connected, Set<Node<T>> toBeChecked, Node<T> node) {
+    private void descend(@NotNull Set<Node<T>> connected, @NotNull Set<Node<T>> toBeChecked, @NotNull Node<T> node) {
         connected.add(node);
         toBeChecked.remove(node);
 
@@ -62,24 +62,24 @@ public final class Graph<T> implements Iterable<Node<T>> {
         }
     }
 
-    private void moveBulkUnchecked(Graph<T> into, Set<Node<T>> nodes) {
+    private void moveBulkUnchecked(@NotNull Graph<T> into, @NotNull Set<Node<T>> nodes) {
         this.nodes.removeAll(nodes);
         into.nodes.addAll(nodes);
     }
 
-    public void join(Graph<T> other) {
+    public void join(@NotNull Graph<T> other) {
         this.nodes.addAll(other.nodes);
         other.nodes.clear();
     }
 
-    public Link<T> link(Node<T> a, Node<T> b) {
+    public @NotNull Link<T> link(@NotNull Node<T> a, @NotNull Node<T> b) {
         Link<T> link = new Link<>(a, b);
         a.onLink(link);
         b.onLink(link);
         return link;
     }
 
-    public void unlink(Node<T> a, Node<T> b) {
+    public void unlink(@NotNull Node<T> a, @NotNull Node<T> b) {
         Link<T> link1 = new Link<>(a, b);
         Link<T> link2 = new Link<>(b, a);
         a.onUnlink(link1);
@@ -88,7 +88,7 @@ public final class Graph<T> implements Iterable<Node<T>> {
         b.onUnlink(link2);
     }
 
-    public boolean contains(Node<T> node) {
+    public boolean contains(@NotNull Node<T> node) {
         return nodes.contains(node);
     }
 
@@ -99,16 +99,17 @@ public final class Graph<T> implements Iterable<Node<T>> {
     }
 
     @Override
-    public void forEach(Consumer<? super Node<T>> action) {
+    public void forEach(@NotNull Consumer<? super Node<T>> action) {
         nodes.forEach(action);
     }
 
+    @NotNull
     @Override
     public Spliterator<Node<T>> spliterator() {
         return nodes.spliterator();
     }
 
-    public Stream<Node<T>> stream() {
+    public @NotNull Stream<Node<T>> stream() {
         return nodes.stream();
     }
 
