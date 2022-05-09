@@ -1,6 +1,7 @@
 package com.kneelawk.graphlib.graph;
 
 import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.wire.SidedWireBlockNode;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -24,6 +25,7 @@ public interface BlockNode {
      * @param nodeView the world of nodes.
      * @param pos      this node's block-position.
      * @return all nodes this node can connect to.
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, NodeView, BlockPos)
      */
     Collection<Node<BlockNodeWrapper<?>>> findConnections(ServerWorld world, NodeView nodeView, BlockPos pos);
 
@@ -38,6 +40,7 @@ public interface BlockNode {
      * @param pos      this node's block-position.
      * @param other    the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, Node)
      */
     boolean canConnect(ServerWorld world, NodeView nodeView, BlockPos pos, Node<BlockNodeWrapper<?>> other);
 
