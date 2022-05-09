@@ -4,6 +4,7 @@ import com.kneelawk.graphlib.Constants;
 import com.kneelawk.graphlib.GraphLib;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.util.ChunkSectionUnloadTimer;
+import com.kneelawk.graphlib.util.SidedPos;
 import com.kneelawk.graphlib.world.UnloadingRegionBasedStorage;
 import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -21,11 +22,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-public class BlockGraphController implements AutoCloseable {
+public class BlockGraphController implements AutoCloseable, NodeView {
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
@@ -55,6 +60,13 @@ public class BlockGraphController implements AutoCloseable {
         graphsDir = path.resolve(Constants.GRAPHS_DIRNAME);
         stateFile = path.resolve(Constants.STATE_FILENAME);
         timer = new ChunkSectionUnloadTimer(world.getBottomSectionCoord(), world.getTopSectionCoord(), MAX_AGE);
+
+        try {
+            Files.createDirectories(graphsDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to create graphs dir: '" + graphsDir + "'. This is a fatal exception.",
+                    e);
+        }
 
         loadState();
     }
@@ -99,13 +111,48 @@ public class BlockGraphController implements AutoCloseable {
 
     // ---- Public Interface Methods ---- //
 
+    @Override
     public Stream<Node<BlockNodeWrapper<?>>> getNodesAt(BlockPos pos) {
+        // no need for a .distict() here, because you should never have the same node be part of multiple graphs
+        return getGraphsInPos(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
+    }
+
+    @Override
+    public Stream<Node<BlockNodeWrapper<?>>> getNodesAt(SidedPos pos) {
+        return getGraphsInPos(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
+                .flatMap(g -> g.getNodesAt(pos));
+    }
+
+    public LongStream getGraphsInPos(BlockPos pos) {
         BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
         if (chunk != null) {
-            return chunk.graphsInPos.get(ChunkSectionPos.packLocal(pos)).longStream().mapToObj(this::getGraph)
-                    .filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
+            return chunk.graphsInPos.get(ChunkSectionPos.packLocal(pos)).longStream();
         } else {
-            return Stream.empty();
+            return LongStream.empty();
+        }
+    }
+
+    public void onChanged(BlockPos pos) {
+        Set<BlockNode> nodes = GraphLib.getNodesInBlock(world, pos);
+        onNodesChanged(pos, nodes);
+    }
+
+    public void onChanged(Iterable<BlockPos> poses) {
+        for (BlockPos pos : poses) {
+            // I couldn't figure out how to optimise this much, so I'm just calling onChanged for every block-pos
+            onChanged(pos);
+        }
+    }
+
+    public void updateConnections(BlockPos pos) {
+        for (var node : getNodesAt(pos).toList()) {
+            updateNodeConnections(node);
+        }
+    }
+
+    public void updateConnections(SidedPos pos) {
+        for (var node : getNodesAt(pos).toList()) {
+            updateNodeConnections(node);
         }
     }
 
@@ -208,7 +255,7 @@ public class BlockGraphController implements AutoCloseable {
         }
     }
 
-    // ---- Private Methods ---- //
+    // ---- Node Update Methods ---- //
 
     void scheduleUpdate(Node<BlockNodeWrapper<?>> node) {
         toUpdate.add(node);
@@ -219,6 +266,74 @@ public class BlockGraphController implements AutoCloseable {
             BlockNodeWrapper<?> data = node.data();
             data.node().onChanged(world, data.pos());
         }
+    }
+
+    // ---- Private Methods ---- //
+
+    private void onNodesChanged(BlockPos pos, Set<BlockNode> nodes) {
+        Set<BlockNode> newNodes = new LinkedHashSet<>(nodes);
+
+        for (long graphId : getGraphsInPos(pos).toArray()) {
+            BlockGraph graph = getGraph(graphId);
+            if (graph == null) {
+                GraphLib.log.warn("Encountered invalid graph in position when detecting node changes. Id: {}, pos: {}",
+                        graphId, pos);
+                continue;
+            }
+
+            for (var node : graph.getNodesAt(pos).toList()) {
+                BlockNode bn = node.data().node();
+                if (!nodes.contains(bn)) {
+                    graph.destroyNode(node);
+                }
+                newNodes.remove(bn);
+            }
+        }
+
+        for (BlockNode bn : newNodes) {
+            BlockGraph newGraph = createGraph();
+            Node<BlockNodeWrapper<?>> node = newGraph.createNode(pos, bn);
+            updateNodeConnections(node);
+        }
+    }
+
+    private void updateNodeConnections(Node<BlockNodeWrapper<?>> node) {
+        long nodeGraphId = node.data().graphId;
+        BlockGraph graph = getGraph(nodeGraphId);
+
+        if (graph == null) {
+            GraphLib.log.warn("Tried to update node with invalid graph id. Node: {}", node);
+            return;
+        }
+
+        var oldConnections = node.connections().stream().map(link -> link.other(node))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        var wantedConnections = new LinkedHashSet<>(node.data().node().findConnections(world, this, node.data().pos()));
+        wantedConnections.removeIf(other -> !other.data().node().canConnect(world, this, other.data().pos(), node));
+        var newConnections = wantedConnections.stream()
+                .filter(other -> other.data().graphId != nodeGraphId || !oldConnections.contains(other)).toList();
+        var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
+
+        for (var other : newConnections) {
+            long otherGraphId = other.data().graphId;
+            if (otherGraphId != nodeGraphId) {
+                BlockGraph otherGraph = getGraph(otherGraphId);
+                if (otherGraph == null) {
+                    GraphLib.log.warn("Tried to connect to node with invalid graph id. Node: {}", other);
+                    continue;
+                }
+                graph.merge(otherGraph);
+            }
+
+            graph.link(node, other);
+        }
+
+        for (var other : removedConnections) {
+            graph.unlink(node, other);
+        }
+
+        // Split should never leave graph empty. It also should clean up after itself.
+        graph.split();
     }
 
     private void loadGraphs(ChunkPos pos) {

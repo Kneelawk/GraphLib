@@ -6,6 +6,7 @@ import com.kneelawk.graphlib.GraphLib;
 import com.kneelawk.graphlib.graph.struct.Graph;
 import com.kneelawk.graphlib.graph.struct.Link;
 import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.util.SidedPos;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.nbt.NbtCompound;
@@ -141,6 +142,16 @@ public class BlockGraph {
 
     public Stream<Node<BlockNodeWrapper<?>>> getNodesAt(BlockPos pos) {
         return nodesInPos.get(pos).stream();
+    }
+
+    public Stream<Node<BlockNodeWrapper<?>>> getNodesAt(SidedPos pos) {
+        return nodesInPos.get(pos.pos()).stream()
+                .filter(node -> node.data().node() instanceof SidedBlockNode sidedNode &&
+                        sidedNode.getSide() == pos.side());
+    }
+
+    public Stream<Node<BlockNodeWrapper<?>>> getNodes() {
+        return graph.stream();
     }
 
     private void rebuildRefs() {

@@ -91,6 +91,7 @@ public final class BlockNodeWrapper<T extends BlockNode> {
     public String toString() {
         return "BlockNodeWrapper[" +
                 "pos=" + pos + ", " +
+                "graphId=" + graphId + ", " +
                 "node=" + node + ']';
     }
 }
