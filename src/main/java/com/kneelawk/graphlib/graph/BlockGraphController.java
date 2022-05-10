@@ -127,7 +127,12 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     public @NotNull LongStream getGraphsInPos(@NotNull BlockPos pos) {
         BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
         if (chunk != null) {
-            return chunk.graphsInPos.get(ChunkSectionPos.packLocal(pos)).longStream();
+            LongSet graphsInPos = chunk.graphsInPos.get(ChunkSectionPos.packLocal(pos));
+            if (graphsInPos != null) {
+                return graphsInPos.longStream();
+            } else {
+                return LongStream.empty();
+            }
         } else {
             return LongStream.empty();
         }
