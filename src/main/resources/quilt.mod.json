@@ -18,8 +18,9 @@
       },
       "license": "MIT"
     },
+    "intermediate_mappings": "net.fabricmc:intermediary",
     "entrypoints": {
-      "init": "com.kneelawk.graphlib.GraphLibMod"
+      "init": "com.kneelawk.graphlib.GraphLibQuiltMod"
     },
     "depends": [
       {

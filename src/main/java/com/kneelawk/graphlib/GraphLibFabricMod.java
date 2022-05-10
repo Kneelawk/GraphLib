@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 @SuppressWarnings("unused")
-public class GraphLibMod implements ModInitializer {
+public class GraphLibFabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
         GraphLib.register();
