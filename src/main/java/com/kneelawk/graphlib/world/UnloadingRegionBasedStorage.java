@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -155,10 +156,11 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     private void loadChunkPillar(@NotNull ChunkPos chunkPos, @NotNull Int2ObjectMap<R> pillar,
                                  @NotNull NbtCompound root) {
+        NbtCompound sectionsTag = root.getCompound("Sections");
         for (int sectionY = world.getBottomSectionCoord();
              sectionY < world.getTopSectionCoord(); sectionY++) {
-            NbtCompound sectionTag = root.getCompound(String.valueOf(sectionY));
-            if (sectionTag != null) {
+            if (sectionsTag.contains(String.valueOf(sectionY), NbtElement.COMPOUND_TYPE)) {
+                NbtCompound sectionTag = sectionsTag.getCompound(String.valueOf(sectionY));
                 try {
                     R section = loadFromNbt.apply(sectionTag,
                             ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z));
