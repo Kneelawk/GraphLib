@@ -117,13 +117,15 @@ public class BlockGraph {
 
         for (var link : nodes.stream().flatMap(node -> node.connections().stream()).distinct().toList()) {
             if (!nodeIndexMap.containsKey(link.first())) {
-                GraphLib.log.warn("Attempted to save link with non-existent node: {}, offending node: {}", link.first(),
-                        link.second());
+                GraphLib.log.warn(
+                        "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
+                        id, link.second(), link.first());
                 continue;
             }
             if (!nodeIndexMap.containsKey(link.second())) {
-                GraphLib.log.warn("Attempted to save link with non-existent node: {}, offending node: {}",
-                        link.second(), link.first());
+                GraphLib.log.warn(
+                        "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
+                        id, link.first(), link.second());
                 continue;
             }
 
