@@ -105,6 +105,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     public void saveChunk(@NotNull ChunkPos pos) {
         chunks.saveChunk(pos);
         saveState();
+        saveGraphs(pos);
     }
 
     @Override
@@ -360,6 +361,20 @@ public class BlockGraphController implements AutoCloseable, NodeView {
             if (chunk != null) {
                 for (long id : chunk.graphsInChunk) {
                     getGraph(id);
+                }
+            }
+        }
+    }
+
+    private void saveGraphs(@NotNull ChunkPos pos) {
+        for (int y = world.getBottomSectionCoord(); y < world.getTopSectionCoord(); y++) {
+            BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.x, y, pos.z));
+            if (chunk != null) {
+                for (long id : chunk.graphsInChunk) {
+                    BlockGraph loadedGraph = loadedGraphs.get(id);
+                    if (loadedGraph != null) {
+                        writeGraph(loadedGraph);
+                    }
                 }
             }
         }
