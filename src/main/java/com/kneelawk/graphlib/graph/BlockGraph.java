@@ -183,6 +183,15 @@ public class BlockGraph {
         return graph.stream();
     }
 
+    /**
+     * Gets the number of nodes in this graph.
+     *
+     * @return the number of nodes in this graph.
+     */
+    public int size() {
+        return graph.size();
+    }
+
     private void rebuildRefs() {
         // Ok, we did end up needing this "rebuildRefs" after all, but only under specific circumstances
         chunks.clear();

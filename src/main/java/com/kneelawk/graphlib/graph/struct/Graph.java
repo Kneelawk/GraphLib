@@ -116,4 +116,8 @@ public final class Graph<T> implements Iterable<Node<T>> {
     public boolean isEmpty() {
         return nodes.isEmpty();
     }
+
+    public int size() {
+        return nodes.size();
+    }
 }

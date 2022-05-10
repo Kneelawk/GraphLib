@@ -405,26 +405,40 @@ public class BlockGraphController implements AutoCloseable, NodeView {
                 .filter(other -> other.data().graphId != nodeGraphId || !oldConnections.contains(other)).toList();
         var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
 
+        long mergedGraphId = nodeGraphId;
+        BlockGraph mergedGraph = graph;
+
         for (var other : newConnections) {
             long otherGraphId = other.data().graphId;
-            if (otherGraphId != nodeGraphId) {
+            if (otherGraphId != mergedGraphId) {
                 BlockGraph otherGraph = getGraph(otherGraphId);
                 if (otherGraph == null) {
                     GraphLib.log.warn("Tried to connect to node with invalid graph id. Node: {}", other);
                     continue;
                 }
-                graph.merge(otherGraph);
+
+                // merge the smaller graph into the larger graph
+                if (otherGraph.size() > mergedGraph.size()) {
+                    // merge self graph into the other graph because that would mean less node moves
+                    otherGraph.merge(mergedGraph);
+                    mergedGraph = otherGraph;
+                    mergedGraphId = otherGraphId;
+                } else {
+                    mergedGraph.merge(otherGraph);
+                }
             }
 
-            graph.link(node, other);
+            mergedGraph.link(node, other);
         }
 
         for (var other : removedConnections) {
-            graph.unlink(node, other);
+            mergedGraph.unlink(node, other);
         }
 
-        // Split should never leave graph empty. It also should clean up after itself.
-        graph.split();
+        if (!removedConnections.isEmpty()) {
+            // Split should never leave graph empty. It also should clean up after itself.
+            mergedGraph.split();
+        }
     }
 
     private void loadGraphs(@NotNull ChunkPos pos) {
