@@ -37,6 +37,8 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     private final Long2ObjectMap<Int2ObjectMap<R>> loadedChunks = new Long2ObjectOpenHashMap<>();
 
+    private boolean closed = false;
+
     public UnloadingRegionBasedStorage(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites,
                                        @NotNull BiFunction<@NotNull NbtCompound, @NotNull ChunkSectionPos, @NotNull R> loadFromNbt,
                                        @NotNull Function<@NotNull ChunkSectionPos, @NotNull R> createNew) {
@@ -48,12 +50,19 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     @Override
     public void close() throws IOException {
+        closed = true;
+
         saveAll();
 
         worker.close();
     }
 
     public void onWorldChunkLoad(@NotNull ChunkPos pos) {
+        if (closed) {
+            // ignore chunk loads if we're closed
+            return;
+        }
+
         timer.onWorldChunkLoad(pos);
         loadChunkPillar(pos);
     }

@@ -54,6 +54,8 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     private boolean stateDirty = false;
     private long prevGraphId = -1L;
 
+    private boolean closed = false;
+
     public BlockGraphController(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
                 BlockGraphChunk::new, BlockGraphChunk::new);
@@ -75,6 +77,12 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     // ---- Lifecycle Methods ---- //
 
     public void onWorldChunkLoad(@NotNull ChunkPos pos) {
+        if (closed) {
+            // Ignore chunk loads if we're closed.
+            // In case something decides to try and load a chunk while saving data :/
+            return;
+        }
+
         chunks.onWorldChunkLoad(pos);
         timer.onWorldChunkLoad(pos);
 
@@ -101,9 +109,12 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
     @Override
     public void close() throws Exception {
+        closed = true;
+
         chunks.close();
 
-        // handle any pending updates before we shut down, cause that stuff can't be saved
+        // Handle any pending updates before we shut down, cause that stuff can't be saved.
+        // Note: This may cause chunk loads. I might need to remove this.
         handleUpdates();
 
         saveAllGraphs();
@@ -272,6 +283,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
             BlockNodeWrapper<?> data = node.data();
             data.node().onChanged(world, data.pos());
         }
+        toUpdate.clear();
     }
 
     // ---- Private Methods ---- //
