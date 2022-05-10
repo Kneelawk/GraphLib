@@ -11,29 +11,33 @@ import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.thread.ThreadExecutor;
 import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.ChunkStatusChangeListener;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.level.storage.LevelStorage;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
 public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAccess {
+    @Shadow
+    @Final
+    ServerWorld world;
+
     @Unique
     private BlockGraphController controller;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    public void onCreate(
+    private void onCreate(
             ServerWorld serverWorld,
             LevelStorage.Session session,
             DataFixer dataFixer,
@@ -54,21 +58,13 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
                         .resolve(Constants.MOD_ID).resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
     }
 
-    @Inject(method = "close", at = @At("HEAD"))
-    public void onClose(CallbackInfo ci) {
+    @Inject(method = "save(Z)V", at = @At("HEAD"))
+    private void onSave(boolean flush, CallbackInfo ci) {
         try {
-            controller.close();
+            controller.saveAll();
         } catch (Exception e) {
-            GraphLib.log.error("Error closing graph controller.", e);
-        }
-    }
-
-    @Inject(method = "save(Lnet/minecraft/world/chunk/Chunk;)Z", at = @At("HEAD"))
-    public void onSave(Chunk chunk, CallbackInfoReturnable<Boolean> cir) {
-        try {
-            controller.saveChunk(chunk.getPos());
-        } catch (Exception e) {
-            GraphLib.log.error("Error saving graph controller.", e);
+            GraphLib.log.error("Error saving graph controller. World: '{}'/{}", world,
+                    world.getRegistryKey().getValue(), e);
         }
     }
 

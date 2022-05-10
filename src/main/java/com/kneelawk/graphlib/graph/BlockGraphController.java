@@ -92,9 +92,6 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         chunks.onWorldChunkUnload(pos);
         timer.onWorldChunkUnload(pos);
-
-        // should probably save chunks now as well as later
-        saveChunk(pos);
     }
 
     public void tick() {
@@ -111,8 +108,21 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         chunks.saveChunk(pos);
     }
 
+    public void saveAll() {
+        GraphLib.log.info("Saving block-graph for '{}'/{}", world, world.getRegistryKey().getValue());
+
+        saveAllGraphs();
+        saveState();
+
+        chunks.saveAll();
+    }
+
     @Override
     public void close() throws Exception {
+        if (closed) {
+            return;
+        }
+
         closed = true;
 
         // Handle any pending updates before we shut down, cause that stuff can't be saved.

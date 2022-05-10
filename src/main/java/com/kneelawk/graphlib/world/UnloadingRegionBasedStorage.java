@@ -51,6 +51,10 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     @Override
     public void close() throws IOException {
+        if (closed) {
+            return;
+        }
+
         closed = true;
 
         saveAll();
@@ -70,9 +74,6 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         timer.onWorldChunkUnload(pos);
-
-        // should probably save a chunk that's being unloaded
-        saveChunk(pos);
     }
 
     public @NotNull R getOrCreate(@NotNull ChunkSectionPos pos) {
@@ -188,7 +189,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         }
     }
 
-    private void saveAll() {
+    public void saveAll() {
         for (long key : loadedChunks.keySet()) {
             saveChunk(new ChunkPos(key));
         }
