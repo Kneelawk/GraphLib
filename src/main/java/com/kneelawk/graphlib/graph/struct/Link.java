@@ -21,9 +21,9 @@ public record Link<T>(@NotNull Node<T> first, @NotNull Node<T> second) {
 
     public @NotNull Node<T> other(@NotNull Node<T> node) {
         if (Objects.equals(first, node)) {
-            return first;
-        } else {
             return second;
+        } else {
+            return first;
         }
     }
 }
