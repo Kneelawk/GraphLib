@@ -52,7 +52,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     private final ObjectSet<Node<BlockNodeWrapper<?>>> toUpdate = new ObjectLinkedOpenHashSet<>();
 
     private boolean stateDirty = false;
-    private long nextGraphId = 0L;
+    private long prevGraphId = -1L;
 
     public BlockGraphController(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
@@ -386,10 +386,10 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
     private long getNextGraphId() {
         do {
-            nextGraphId++;
-        } while (graphExists(nextGraphId));
+            prevGraphId++;
+        } while (graphExists(prevGraphId));
         markStateDirty();
-        return nextGraphId;
+        return prevGraphId;
     }
 
     private boolean graphExists(long id) {
@@ -440,7 +440,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
             try (InputStream is = Files.newInputStream(stateFile)) {
                 NbtCompound root = NbtIo.readCompressed(is);
                 NbtCompound data = root.getCompound("data");
-                nextGraphId = data.getLong("nextGraphId");
+                prevGraphId = data.getLong("prevGraphId");
             } catch (Exception e) {
                 GraphLib.log.error("Error loading graph controller state file.", e);
             }
@@ -452,7 +452,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
             NbtCompound root = new NbtCompound();
 
             NbtCompound data = new NbtCompound();
-            data.putLong("nextGraphId", nextGraphId);
+            data.putLong("prevGraphId", prevGraphId);
 
             root.put("data", data);
 
