@@ -64,6 +64,12 @@ tasks {
         }
     }
 
+    javadoc {
+        options {
+            optionFiles(file("javadoc-options.txt"))
+        }
+    }
+
     test {
         useJUnit()
     }

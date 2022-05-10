@@ -1,0 +1,2 @@
+-link https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/1.18.2+build.23/quilt-mappings-1.18.2+build.23-javadoc.jar/
+-link https://javadoc.io/doc/org.jetbrains/annotations/latest/
