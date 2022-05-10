@@ -1,5 +1,8 @@
 package com.kneelawk.graphlib.wire;
 
+/**
+ * The type of connection a sided wire block node could be forming.
+ */
 public enum WireConnectionType {
     /**
      * Inside corner connection to a wire within the same block.

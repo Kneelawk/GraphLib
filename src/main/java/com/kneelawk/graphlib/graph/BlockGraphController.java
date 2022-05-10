@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+/**
+ * Holds and manages all block graphs for a given world.
+ */
 public class BlockGraphController implements AutoCloseable, NodeView {
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
@@ -137,18 +140,36 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
     // ---- Public Interface Methods ---- //
 
+    /**
+     * Gets all nodes in the given block-position.
+     *
+     * @param pos the block-position to get nodes in.
+     * @return a stream of the nodes in the given block-position.
+     */
     @Override
     public @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull BlockPos pos) {
         // no need for a .distict() here, because you should never have the same node be part of multiple graphs
         return getGraphsInPos(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
 
+    /**
+     * Gets all nodes in the given sided block-position.
+     *
+     * @param pos the sided block-position to get the nodes in.
+     * @return a stream of the nodes in the given sided block-position.
+     */
     @Override
     public @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull SidedPos pos) {
         return getGraphsInPos(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
                 .flatMap(g -> g.getNodesAt(pos));
     }
 
+    /**
+     * Gets the IDs of all graph with nodes in the given block-position.
+     *
+     * @param pos the block-position to get the IDs of graphs with nodes at.
+     * @return a stream of all the IDs of graphs with nodes in the given block-position.
+     */
     public @NotNull LongStream getGraphsInPos(@NotNull BlockPos pos) {
         BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
         if (chunk != null) {
@@ -163,11 +184,23 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         }
     }
 
+    /**
+     * Notifies the controller that a block-position has been changed and may need to have its nodes and connections
+     * recalculated.
+     *
+     * @param pos the changed block-position.
+     */
     public void onChanged(@NotNull BlockPos pos) {
         Set<BlockNode> nodes = GraphLib.getNodesInBlock(world, pos);
         onNodesChanged(pos, nodes);
     }
 
+    /**
+     * Notifies the controller that a list of block-positions have been changed and may need to have their nodes and
+     * connections recalculated.
+     *
+     * @param poses the iterable of all the block-positions that might have been changed.
+     */
     public void onChanged(@NotNull Iterable<BlockPos> poses) {
         for (BlockPos pos : poses) {
             // I couldn't figure out how to optimise this much, so I'm just calling onChanged for every block-pos
@@ -175,18 +208,34 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         }
     }
 
+    /**
+     * Updates the connections for all the nodes at the given block-position.
+     *
+     * @param pos the block-position of the nodes to update connections for.
+     */
     public void updateConnections(@NotNull BlockPos pos) {
         for (var node : getNodesAt(pos).toList()) {
             updateNodeConnections(node);
         }
     }
 
+    /**
+     * Updates the connections for all the nodes at the given sided block-position.
+     *
+     * @param pos the sided block-position of the nodes to update connections for.
+     */
     public void updateConnections(@NotNull SidedPos pos) {
         for (var node : getNodesAt(pos).toList()) {
             updateNodeConnections(node);
         }
     }
 
+    /**
+     * Gets the graph with the given ID.
+     *
+     * @param id the ID of the graph to get.
+     * @return the graph with the given ID.
+     */
     @Nullable
     public BlockGraph getGraph(long id) {
         BlockGraph graph = loadedGraphs.get(id);
@@ -206,12 +255,22 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         return graph;
     }
 
+    /**
+     * Creates a new graph and stores it, assigning it an ID.
+     *
+     * @return the newly-created graph.
+     */
     public @NotNull BlockGraph createGraph() {
         BlockGraph graph = new BlockGraph(this, getNextGraphId());
         loadedGraphs.put(graph.getId(), graph);
         return graph;
     }
 
+    /**
+     * Deletes a graph and all nodes it contains.
+     *
+     * @param id the ID of the graph to delete.
+     */
     public void destroyGraph(long id) {
         BlockGraph graph = getGraph(id);
         if (graph == null) {

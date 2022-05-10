@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, obtaining a
- * {@link BlockGraphController}, or registering {@link BlockNodeDecoder}s and BlockNodeFinders.
+ * {@link BlockGraphController}, or registering {@link BlockNodeDecoder}s and {@link BlockNodeDiscoverer}s.
  */
 public final class GraphLib {
     private static final Identifier BLOCK_NODE_DECODER_IDENTIFIER = Constants.id("block_node_decoder");

@@ -30,9 +30,12 @@ import java.util.stream.Stream;
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
 
+/**
+ * Holds and manages a set of block nodes.
+ */
 public class BlockGraph {
-    public static @NotNull BlockGraph fromTag(@NotNull BlockGraphController controller, long id,
-                                              @NotNull NbtCompound tag) {
+    static @NotNull BlockGraph fromTag(@NotNull BlockGraphController controller, long id,
+                                       @NotNull NbtCompound tag) {
         NbtList chunksTag = tag.getList("chunks", NbtElement.LONG_TYPE);
         LongSet chunks = new LongLinkedOpenHashSet();
 
@@ -90,7 +93,7 @@ public class BlockGraph {
         this.chunks.addAll(chunks);
     }
 
-    public @NotNull NbtCompound toTag() {
+    @NotNull NbtCompound toTag() {
         NbtCompound tag = new NbtCompound();
 
         NbtList chunksTag = new NbtList();
@@ -140,20 +143,42 @@ public class BlockGraph {
         return tag;
     }
 
+    /**
+     * Gets this graph's graph ID.
+     *
+     * @return the ID of this graph.
+     */
     public long getId() {
         return id;
     }
 
+    /**
+     * Gets all the nodes in this graph in the given block-position.
+     *
+     * @param pos the block-position to get the nodes in.
+     * @return a stream of all the nodes in this graph in the given block-position.
+     */
     public @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull BlockPos pos) {
         return nodesInPos.get(pos).stream();
     }
 
+    /**
+     * Gets all the nodes in this graph in the given sided block-position.
+     *
+     * @param pos the sided block-position to get the nodes in.
+     * @return a stream of all the nodes in this graph in the given sided block-position.
+     */
     public @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull SidedPos pos) {
         return nodesInPos.get(pos.pos()).stream()
                 .filter(node -> node.data().node() instanceof SidedBlockNode sidedNode &&
                         sidedNode.getSide() == pos.side());
     }
 
+    /**
+     * Gets all the nodes in this graph.
+     *
+     * @return a stream of all the nodes in this graph.
+     */
     public @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodes() {
         return graph.stream();
     }
@@ -171,7 +196,7 @@ public class BlockGraph {
         }
     }
 
-    public @NotNull Node<BlockNodeWrapper<?>> createNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
+    @NotNull Node<BlockNodeWrapper<?>> createNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
         Node<BlockNodeWrapper<?>> graphNode = graph.add(new BlockNodeWrapper<>(pos, node, id));
         nodesInPos.put(pos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
@@ -180,7 +205,7 @@ public class BlockGraph {
         return graphNode;
     }
 
-    public void destroyNode(@NotNull Node<BlockNodeWrapper<?>> node) {
+    void destroyNode(@NotNull Node<BlockNodeWrapper<?>> node) {
         // see if removing this node means removing a block-pos or a chunk
         BlockPos removedPos = node.data().pos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
@@ -228,19 +253,19 @@ public class BlockGraph {
         }
     }
 
-    public void link(@NotNull Node<BlockNodeWrapper<?>> a, @NotNull Node<BlockNodeWrapper<?>> b) {
+    void link(@NotNull Node<BlockNodeWrapper<?>> a, @NotNull Node<BlockNodeWrapper<?>> b) {
         graph.link(a, b);
         controller.scheduleUpdate(a);
         controller.scheduleUpdate(b);
     }
 
-    public void unlink(@NotNull Node<BlockNodeWrapper<?>> a, @NotNull Node<BlockNodeWrapper<?>> b) {
+    void unlink(@NotNull Node<BlockNodeWrapper<?>> a, @NotNull Node<BlockNodeWrapper<?>> b) {
         graph.unlink(a, b);
         controller.scheduleUpdate(a);
         controller.scheduleUpdate(b);
     }
 
-    public void merge(@NotNull BlockGraph other) {
+    void merge(@NotNull BlockGraph other) {
         if (other.id == id) {
             // we cannot merge with ourselves
             return;
@@ -262,7 +287,7 @@ public class BlockGraph {
         controller.destroyGraph(other.id);
     }
 
-    public @NotNull List<BlockGraph> split() {
+    @NotNull List<BlockGraph> split() {
         var newGraphs = graph.split();
 
         if (!newGraphs.isEmpty()) {
