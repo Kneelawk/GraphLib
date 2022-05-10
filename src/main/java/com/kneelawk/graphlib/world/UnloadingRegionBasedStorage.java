@@ -181,22 +181,20 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
     }
 
     public void saveChunk(@NotNull ChunkPos pos) {
-        if (!loadedChunks.isEmpty()) {
+        Int2ObjectMap<R> sections = loadedChunks.get(pos.toLong());
+        if (sections != null) {
             NbtCompound root = new NbtCompound();
 
             NbtCompound sectionsTag = new NbtCompound();
-            Int2ObjectMap<R> sections = loadedChunks.get(pos.toLong());
-            if (sections != null) {
-                for (int sectionY = world.getBottomSectionCoord(); sectionY < world.getTopSectionCoord(); sectionY++) {
-                    R section = sections.get(sectionY);
-                    if (section != null) {
-                        try {
-                            NbtCompound nbt = new NbtCompound();
-                            section.toNbt(nbt);
-                            sectionsTag.put(String.valueOf(sectionY), nbt);
-                        } catch (Exception e) {
-                            GraphLib.log.error("Error saving chunk {}, section {}", pos, sectionY, e);
-                        }
+            for (int sectionY = world.getBottomSectionCoord(); sectionY < world.getTopSectionCoord(); sectionY++) {
+                R section = sections.get(sectionY);
+                if (section != null) {
+                    try {
+                        NbtCompound nbt = new NbtCompound();
+                        section.toNbt(nbt);
+                        sectionsTag.put(String.valueOf(sectionY), nbt);
+                    } catch (Exception e) {
+                        GraphLib.log.error("Error saving chunk {}, section {}", pos, sectionY, e);
                     }
                 }
             }
