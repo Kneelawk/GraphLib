@@ -103,16 +103,14 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     }
 
     public void saveChunk(@NotNull ChunkPos pos) {
-        chunks.saveChunk(pos);
         saveState();
         saveGraphs(pos);
+        chunks.saveChunk(pos);
     }
 
     @Override
     public void close() throws Exception {
         closed = true;
-
-        chunks.close();
 
         // Handle any pending updates before we shut down, cause that stuff can't be saved.
         // Note: This may cause chunk loads. I might need to remove this.
@@ -120,6 +118,8 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
         saveAllGraphs();
         saveState();
+
+        chunks.close();
     }
 
     // ---- Public Interface Methods ---- //
@@ -367,14 +367,16 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     }
 
     private void saveGraphs(@NotNull ChunkPos pos) {
+        LongSet chunkSectionPillar = new LongOpenHashSet(world.getTopSectionCoord() - world.getBottomSectionCoord());
         for (int y = world.getBottomSectionCoord(); y < world.getTopSectionCoord(); y++) {
-            BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.x, y, pos.z));
-            if (chunk != null) {
-                for (long id : chunk.graphsInChunk) {
-                    BlockGraph loadedGraph = loadedGraphs.get(id);
-                    if (loadedGraph != null) {
-                        writeGraph(loadedGraph);
-                    }
+            chunkSectionPillar.add(ChunkSectionPos.asLong(pos.x, y, pos.z));
+        }
+
+        for (BlockGraph loadedGraph : loadedGraphs.values()) {
+            for (long graphChunk : loadedGraph.chunks) {
+                if (chunkSectionPillar.contains(graphChunk)) {
+                    writeGraph(loadedGraph);
+                    break;
                 }
             }
         }
