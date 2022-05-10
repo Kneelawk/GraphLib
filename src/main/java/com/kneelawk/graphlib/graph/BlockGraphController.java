@@ -92,6 +92,9 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         chunks.onWorldChunkUnload(pos);
         timer.onWorldChunkUnload(pos);
+
+        // should probably save chunks now as well as later
+        saveChunk(pos);
     }
 
     public void tick() {

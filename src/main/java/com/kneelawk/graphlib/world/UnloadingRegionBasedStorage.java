@@ -70,6 +70,9 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         timer.onWorldChunkUnload(pos);
+
+        // should probably save a chunk that's being unloaded
+        saveChunk(pos);
     }
 
     public @NotNull R getOrCreate(@NotNull ChunkSectionPos pos) {
