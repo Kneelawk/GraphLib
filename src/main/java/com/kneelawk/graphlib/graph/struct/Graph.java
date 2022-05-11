@@ -50,14 +50,23 @@ public final class Graph<T> implements Iterable<Node<T>> {
     }
 
     private void descend(@NotNull Set<Node<T>> connected, @NotNull Set<Node<T>> toBeChecked, @NotNull Node<T> node) {
+        Deque<Node<T>> stack = new ArrayDeque<>();
+        stack.push(node);
+
         connected.add(node);
         toBeChecked.remove(node);
 
-        for (Link<T> link : node.connections()) {
-            Node<T> a = link.other(node);
+        while (!stack.isEmpty()) {
+            Node<T> cur = stack.pop();
 
-            if (toBeChecked.contains(a)) {
-                descend(connected, toBeChecked, a);
+            for (Link<T> link : cur.connections()) {
+                Node<T> a = link.other(cur);
+
+                if (toBeChecked.contains(a)) {
+                    stack.push(a);
+                    connected.add(a);
+                    toBeChecked.remove(a);
+                }
             }
         }
     }
