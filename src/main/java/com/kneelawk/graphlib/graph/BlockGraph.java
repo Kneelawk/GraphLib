@@ -220,6 +220,17 @@ public class BlockGraph {
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node);
 
+        // schedule updates for each of the node's connected nodes
+        for (Link<BlockNodeWrapper<?>> link : node.connections()) {
+            // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
+            // yet, as it will be when these updates are actually applied
+            controller.scheduleUpdate(link.other(node));
+        }
+        controller.scheduleUpdate(node);
+
+        // actually remove the node
+        graph.remove(node);
+
         // check to see if the pos or chunk are used by any of our other nodes
         for (var ourNode : graph) {
             BlockPos pos = ourNode.data().pos();
@@ -242,15 +253,6 @@ public class BlockGraph {
             controller.removeGraphInChunk(id, chunkLong);
             chunks.remove(chunkLong);
         }
-
-        // schedule updates for each of the node's connected nodes
-        for (Link<BlockNodeWrapper<?>> link : node.connections()) {
-            // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
-            // yet, as it will be when these updates are actually applied
-            controller.scheduleUpdate(link.other(node));
-        }
-        controller.scheduleUpdate(node);
-        graph.remove(node);
 
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
