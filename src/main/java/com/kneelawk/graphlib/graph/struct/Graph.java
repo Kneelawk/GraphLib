@@ -101,6 +101,15 @@ public final class Graph<T> implements Iterable<Node<T>> {
         return nodes.contains(node);
     }
 
+    @SafeVarargs
+    public final boolean contains(@NotNull Node<T>... nodes) {
+        for (Node<T> node : nodes) {
+            if (!contains(node))
+                return false;
+        }
+        return true;
+    }
+
     @NotNull
     @Override
     public Iterator<Node<T>> iterator() {

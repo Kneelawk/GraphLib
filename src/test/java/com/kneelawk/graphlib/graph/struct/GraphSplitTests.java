@@ -24,9 +24,8 @@ public class GraphSplitTests {
         assertTrue("Either the new graph or the old graph should contain C.",
                 newGraph.contains(c) || graph.contains(c));
         assertTrue("Either the new graph or the old graph should contain both A and B.",
-                (newGraph.contains(a) && newGraph.contains(b)) || (graph.contains(a) && graph.contains(b)));
+                newGraph.contains(a, b) || graph.contains(a, b));
 
-        assertFalse("The same graph should not contain both A and C.",
-                (newGraph.contains(a) && newGraph.contains(c)) || (graph.contains(a) && graph.contains(c)));
+        assertFalse("The same graph should not contain both A and C.", newGraph.contains(a, c) || graph.contains(a, c));
     }
 }
