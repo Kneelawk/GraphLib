@@ -33,17 +33,35 @@ public final class Graph<T> implements Iterable<Node<T>> {
 
     public @NotNull List<Graph<T>> split() {
         List<Graph<T>> result = new ArrayList<>();
+        int largestGraphSize = 0;
+        int largestGraphIndex = 0;
+
         Set<Node<T>> toBeChecked = new LinkedHashSet<>(nodes);
+        Set<Node<T>> connected = new LinkedHashSet<>();
 
         while (!toBeChecked.isEmpty()) {
-            Set<Node<T>> connected = new LinkedHashSet<>();
+            connected.clear();
             descend(connected, toBeChecked, toBeChecked.iterator().next());
 
             if (!toBeChecked.isEmpty()) {
                 Graph<T> newGraph = new Graph<>();
                 moveBulkUnchecked(newGraph, connected);
+
+                if (newGraph.size() > largestGraphSize) {
+                    largestGraphSize = newGraph.size();
+                    largestGraphIndex = result.size();
+                }
+
                 result.add(newGraph);
             }
+        }
+
+        if (connected.size() < largestGraphSize) {
+            // find the largest graph and make it ours
+            Graph<T> newGraph = new Graph<>();
+            moveBulkUnchecked(newGraph, connected);
+            Graph<T> largestGraph = result.set(largestGraphIndex, newGraph);
+            join(largestGraph);
         }
 
         return result;
