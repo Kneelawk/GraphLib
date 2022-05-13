@@ -48,6 +48,7 @@ jobs:
           repository: Kneelawk/kneelawk.github.io
           ref: src
           path: deploy
+          persist-credentials: false
       - name: Publish To Deployment Repository Maven
         run: ./gradlew publishAllPublicationsToPublishRepoRepository
         env:
