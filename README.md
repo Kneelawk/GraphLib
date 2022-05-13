@@ -8,6 +8,12 @@
 
 Library for helping mods that use graph networks, like Wired Redstone.
 
+## GraphLib and HCTM-Base
+This library is based on [HCTM-Base by 2xsaiko][HCTM-Base] and is essentially a rewrite of his block-graph-network code
+in Java with some optimizations. Credit goes to 2xsaiko for designing this system in the first place.
+
+[HCTM-Base]: https://github.com/2xsaiko/hctm-base
+
 ## Depending on GraphLib
 GraphLib can be added to a gradle project's dependencies like such:
 ```groovy
