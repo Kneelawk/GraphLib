@@ -1,11 +1,14 @@
 package com.kneelawk.graphlib;
 
+import com.kneelawk.graphlib.command.GraphLibCommand;
 import com.kneelawk.graphlib.graph.BlockGraphController;
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeDecoder;
 import com.kneelawk.graphlib.graph.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
+import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.serialization.Lifecycle;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -84,5 +87,9 @@ public final class GraphLib {
     static void register() {
         Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_DECODER_IDENTIFIER,
                 BLOCK_NODE_DECODER);
+    }
+
+    static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
+        GraphLibCommand.register(dispatcher);
     }
 }

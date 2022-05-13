@@ -209,6 +209,16 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     }
 
     /**
+     * Notifies the controller that a list of block-positions have been changed and may need to have their nodes and
+     * connections recalculated.
+     *
+     * @param posStream the stream ob all the block-positions that might have been changed.
+     */
+    public void onChanged(@NotNull Stream<BlockPos> posStream) {
+        posStream.forEach(this::onChanged);
+    }
+
+    /**
      * Updates the connections for all the nodes at the given block-position.
      *
      * @param pos the block-position of the nodes to update connections for.

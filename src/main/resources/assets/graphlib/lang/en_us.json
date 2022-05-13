@@ -1,0 +1,4 @@
+{
+  "commands.graphlib.graphlib.updateblocks.starting": "Updating GraphLib block-nodes from %s to %s... This could cause some lag.",
+  "commands.graphlib.graphlib.updateblocks.success": "Finished updating GraphLib block-nodes from %s to %s."
+}
