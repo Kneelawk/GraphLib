@@ -205,7 +205,9 @@ public class BlockGraph {
         }
     }
 
-    @NotNull Node<BlockNodeWrapper<?>> createNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
+    @NotNull Node<BlockNodeWrapper<?>> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
+        BlockPos pos = blockPos.toImmutable();
+
         Node<BlockNodeWrapper<?>> graphNode = graph.add(new BlockNodeWrapper<>(pos, node, id));
         nodesInPos.put(pos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());

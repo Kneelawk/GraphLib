@@ -20,7 +20,7 @@ public final class BlockNodeWrapper<T extends BlockNode> {
     long graphId;
 
     public BlockNodeWrapper(@NotNull BlockPos pos, @NotNull T node, long graphId) {
-        this.pos = pos;
+        this.pos = pos.toImmutable();
         this.node = node;
         this.graphId = graphId;
     }
