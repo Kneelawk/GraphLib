@@ -1,0 +1,74 @@
+name: release
+
+on:
+  push:
+    tags:
+      # matches things like v0.1.2+1.18.2
+      - 'v[0-9]+.[0-9]+.[0-9]+\+[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get Tag Version
+        uses: dawidd6/action-get-tag@v1
+        id: tag_version
+      - name: Get Project Version
+        # script to remove the 'v' from the beginning of the tag version
+        uses: actions/github-script@v6
+        id: project_version
+        env:
+          TAG_VERSION: ${{ steps.tag_version.outputs.tag }}
+        with:
+          script: return process.env.TAG_VERSION.substring(1)
+          result-encoding: string
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup JDK 17
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./gradlew
+      - name: Build
+        run: ./gradlew build
+        env:
+          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
+      - name: Github Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: changelogs/changelog-${{ steps.tag_version.outputs.tag }}.md
+          files: build/libs/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Next is the rather cursed maven and javadoc deployment mechanism
+      - name: Checkout Deployment Repository
+        uses: actions/checkout@v2
+        with:
+          repository: Kneelawk/kneelawk.github.io
+          ref: src
+          path: deploy
+      - name: Publish To Deployment Repository Maven
+        run: ./gradlew publishAllPublicationsToPublishRepoRepository
+        with:
+          PUBLISH_REPO: deploy/src/maven/
+      - name: Generate Javadocs
+        run: ./gradlew javadoc
+      - name: Create Docs Directory
+        run: mkdir -p deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}
+      - name: Copy To Deployment Repository Javadocs
+        run: cp -rf build/docs/javadoc deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}/
+      - name: Commit Deployment Repository Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m 'Publish GraphLib ${{ steps.tag_version.outputs.tag }}'
+        working-directory: deploy
+      - name: Push Deployment Repository
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.PUBLISH_TOKEN }}
+          branch: src
+          directory: deploy
+          repository: Kneelawk/kneelawk.github.io

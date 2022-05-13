@@ -5,8 +5,19 @@ plugins {
 
 val maven_group: String by project
 group = maven_group
-val mod_version: String by project
-version = mod_version
+
+// System to get the release version if this project is being built as part of a release
+val modVersion: String = if (System.getenv("RELEASE_TAG") != null) {
+    val releaseTag = System.getenv("RELEASE_TAG")
+    val modVersion = releaseTag.substring(1)
+    println("Detected Release Version: $modVersion")
+    modVersion
+} else {
+    val mod_version: String by project
+    println("Detected Local Version: $mod_version")
+    mod_version
+}
+version = modVersion
 
 val archives_base_name: String by project
 base {
@@ -36,13 +47,13 @@ dependencies {
 
 tasks {
     processResources {
-        inputs.property("version", mod_version)
+        inputs.property("version", modVersion)
 
         filesMatching("quilt.mod.json") {
-            expand(mapOf("version" to mod_version))
+            expand(mapOf("version" to modVersion))
         }
         filesMatching("fabric.mod.json") {
-            expand(mapOf("version" to mod_version))
+            expand(mapOf("version" to modVersion))
         }
     }
 
@@ -80,7 +91,7 @@ publishing {
         create<MavenPublication>("mavenJava") {
             groupId = maven_group
             artifactId = project.name
-            version = mod_version
+            version = modVersion
 
             from(components["java"])
         }
