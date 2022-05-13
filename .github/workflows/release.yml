@@ -50,7 +50,7 @@ jobs:
           path: deploy
       - name: Publish To Deployment Repository Maven
         run: ./gradlew publishAllPublicationsToPublishRepoRepository
-        with:
+        env:
           PUBLISH_REPO: deploy/src/maven/
       - name: Generate Javadocs
         run: ./gradlew javadoc
