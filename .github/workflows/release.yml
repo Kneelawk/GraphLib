@@ -52,9 +52,12 @@ jobs:
       - name: Publish To Deployment Repository Maven
         run: ./gradlew publishAllPublicationsToPublishRepoRepository
         env:
+          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
           PUBLISH_REPO: deploy/src/maven/
       - name: Generate Javadocs
         run: ./gradlew javadoc
+        env:
+          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
       - name: Create Docs Directory
         run: mkdir -p deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}
       - name: Copy To Deployment Repository Javadocs
