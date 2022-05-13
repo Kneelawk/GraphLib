@@ -40,7 +40,7 @@ jobs:
           body_path: changelogs/changelog-${{ steps.tag_version.outputs.tag }}.md
           files: build/libs/*
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
       # Next is the rather cursed maven and javadoc deployment mechanism
       - name: Checkout Deployment Repository
         uses: actions/checkout@v2
