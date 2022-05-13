@@ -34,11 +34,16 @@ dependencies {
         addLayer(quiltMappings.mappings("org.quiltmc:quilt-mappings:${libs.versions.quilt.mappings.get()}:v2"))
     })
 
+    // Using modCompileOnly & modLocalRuntime so that these dependencies don't get brought into any projects that depend
+    // on this one.
+
     // Quilt Loader
-    modImplementation(libs.quilt.loader)
+    modCompileOnly(libs.quilt.loader)
+    modLocalRuntime(libs.quilt.loader)
 
     // Quilted Fabric Api
-    modImplementation(libs.quilted.fabric.api)
+    modCompileOnly(libs.quilted.fabric.api)
+    modLocalRuntime(libs.quilted.fabric.api)
 
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.
