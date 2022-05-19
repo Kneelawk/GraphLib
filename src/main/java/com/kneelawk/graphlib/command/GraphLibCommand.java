@@ -26,6 +26,7 @@ public class GraphLibCommand {
                                 )
                         )
                 )
+                .then(literal("removeemptygraphs").executes(context -> removeEmptyGraphsCommand(context.getSource())))
         );
     }
 
@@ -40,6 +41,14 @@ public class GraphLibCommand {
                 true);
 
         return 15;
+    }
+
+    private static int removeEmptyGraphsCommand(ServerCommandSource source) {
+        int result = GraphLib.getController(source.getWorld()).removeEmptyGraphs();
+
+        source.sendFeedback(Constants.command("graphlib.removeemptygraphs.success", result), true);
+
+        return result;
     }
 
     private static MutableText blockPosText(BlockPos pos) {

@@ -27,6 +27,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -292,6 +294,41 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         destroyGraphImpl(graph);
     }
 
+    /**
+     * Called by the <code>/graphlib removeemptygraphs</code> command.
+     * <p>
+     * Removes all empty graphs. Graphs should never be empty, but it could theoretically happen if a mod isn't using
+     * GraphLib correctly.
+     *
+     * @return the number of empty graphs removed.
+     */
+    public int removeEmptyGraphs() {
+        int removed = 0;
+
+        for (long id : getExistingGraphs()) {
+            if (loadedGraphs.containsKey(id)) {
+                BlockGraph graph = loadedGraphs.get(id);
+
+                if (graph.isEmpty()) {
+                    GraphLib.log.warn(
+                            "Encountered empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
+                            graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
+
+                    // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
+                    destroyGraphImpl(graph);
+
+                    removed++;
+                }
+            } else {
+                if (readGraph(id) == null) {
+                    removed++;
+                }
+            }
+        }
+
+        return removed;
+    }
+
     // ---- Internal Methods ---- //
 
     void addGraphInPos(long id, @NotNull BlockPos pos) {
@@ -507,6 +544,36 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         return graphsDir.resolve(String.format("%016X.dat", id));
     }
 
+    private static final Pattern GRAPH_ID_PATTERN = Pattern.compile("^(?<id>[\\da-fA-F]+)\\.dat$");
+
+    private @NotNull LongList getExistingGraphs() {
+        LongList ids = new LongArrayList();
+        ids.addAll(loadedGraphs.keySet());
+
+        try (Stream<Path> children = Files.list(graphsDir)) {
+            children.forEach(child -> {
+                String filename = child.getFileName().toString();
+                Matcher matcher = GRAPH_ID_PATTERN.matcher(filename);
+
+                if (matcher.matches()) {
+                    try {
+                        long id = Long.parseLong(matcher.group("id"));
+                        ids.add(id);
+                    } catch (NumberFormatException e) {
+                        GraphLib.log.warn("Encountered NumberFormatException while parsing graph id from filename: {}",
+                                filename, e);
+                    }
+                } else {
+                    GraphLib.log.warn("Encountered non-graph file in graphs dir: {}", child);
+                }
+            });
+        } catch (IOException e) {
+            GraphLib.log.error("Error listing children of {}", graphsDir, e);
+        }
+
+        return ids;
+    }
+
     private void writeGraph(@NotNull BlockGraph graph) {
         Path graphFile = getGraphFile(graph.getId());
 
@@ -544,7 +611,16 @@ public class BlockGraphController implements AutoCloseable, NodeView {
                 return graph;
             }
         } catch (IOException e) {
-            GraphLib.log.error("Unable to load graph {}.", id, e);
+            GraphLib.log.error("Unable to load graph {}. Removing graph...", id, e);
+
+            if (Files.exists(graphFile)) {
+                try {
+                    Files.delete(graphFile);
+                } catch (IOException ex) {
+                    GraphLib.log.error("Error deleting broken graph file: {}", graphFile, ex);
+                }
+            }
+
             return null;
         }
     }
