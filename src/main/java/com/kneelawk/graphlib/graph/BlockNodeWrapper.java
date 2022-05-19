@@ -72,6 +72,10 @@ public final class BlockNodeWrapper<T extends BlockNode> {
     public @NotNull T node() {
         return node;
     }
+    
+    public long getGraphId() {
+        return graphId;
+    }
 
     @Override
     public boolean equals(Object obj) {
