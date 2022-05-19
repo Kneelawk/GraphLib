@@ -411,6 +411,11 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         }
 
         for (BlockNode bn : newNodes) {
+            if (bn == null) {
+                GraphLib.log.warn("Something tried to add a null BlockNode! Ignoring...");
+                continue;
+            }
+
             BlockGraph newGraph = createGraph();
             Node<BlockNodeWrapper<?>> node = newGraph.createNode(pos, bn);
             updateNodeConnections(node);
