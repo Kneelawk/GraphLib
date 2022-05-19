@@ -192,6 +192,15 @@ public class BlockGraph {
         return graph.size();
     }
 
+    /**
+     * Gets whether this graph is empty.
+     *
+     * @return <code>true</code> if this graph has no nodes, <code>false</code> otherwise.
+     */
+    public boolean isEmpty() {
+        return graph.isEmpty();
+    }
+
     private void rebuildRefs() {
         // Ok, we did end up needing this "rebuildRefs" after all, but only under specific circumstances
         chunks.clear();

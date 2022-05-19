@@ -289,25 +289,7 @@ public class BlockGraphController implements AutoCloseable, NodeView {
             return;
         }
 
-        loadedGraphs.remove(id);
-        try {
-            Files.deleteIfExists(getGraphFile(id));
-        } catch (IOException e) {
-            GraphLib.log.error("Error removing graph file. Id: {}", id, e);
-        }
-
-        for (long sectionPos : graph.chunks) {
-            BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(sectionPos));
-            if (chunk != null) {
-                // Note: if this is changed to only remove from block-poses that the graph actually occupies, make sure
-                // not to get those block-poses from the block-graph's graph, because the block-graph's graph will often
-                // already have been cleared by the time this function is called.
-                chunk.removeGraph(id);
-            } else {
-                GraphLib.log.warn("Attempted to destroy graph in chunk that does not exist. Id: {}, chunk: {}", id,
-                        ChunkSectionPos.from(sectionPos));
-            }
-        }
+        destroyGraphImpl(graph);
     }
 
     // ---- Internal Methods ---- //
@@ -549,10 +531,45 @@ public class BlockGraphController implements AutoCloseable, NodeView {
         try (InputStream is = Files.newInputStream(graphFile)) {
             NbtCompound root = NbtIo.readCompressed(is);
             NbtCompound data = root.getCompound("data");
-            return BlockGraph.fromTag(this, id, data);
+            BlockGraph graph = BlockGraph.fromTag(this, id, data);
+            if (graph.isEmpty()) {
+                GraphLib.log.warn(
+                        "Loaded empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
+                        graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
+
+                // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
+                destroyGraphImpl(graph);
+                return null;
+            } else {
+                return graph;
+            }
         } catch (IOException e) {
             GraphLib.log.error("Unable to load graph {}.", id, e);
             return null;
+        }
+    }
+
+    private void destroyGraphImpl(BlockGraph graph) {
+        long id = graph.getId();
+
+        loadedGraphs.remove(id);
+        try {
+            Files.deleteIfExists(getGraphFile(id));
+        } catch (IOException e) {
+            GraphLib.log.error("Error removing graph file. Id: {}", id, e);
+        }
+
+        for (long sectionPos : graph.chunks) {
+            BlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(sectionPos));
+            if (chunk != null) {
+                // Note: if this is changed to only remove from block-poses that the graph actually occupies, make sure
+                // not to get those block-poses from the block-graph's graph, because the block-graph's graph will often
+                // already have been cleared by the time this function is called.
+                chunk.removeGraph(id);
+            } else {
+                GraphLib.log.warn("Attempted to destroy graph in chunk that does not exist. Id: {}, chunk: {}", id,
+                        ChunkSectionPos.from(sectionPos));
+            }
         }
     }
 
