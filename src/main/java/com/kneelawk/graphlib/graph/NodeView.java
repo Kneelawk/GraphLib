@@ -17,7 +17,7 @@ public interface NodeView {
      * @param pos the block-position to get the nodes in.
      * @return a stream of all the nodes in the given block-position.
      */
-    @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull BlockPos pos);
+    @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull BlockPos pos);
 
     /**
      * Gets the nodes in the given sided block-position.
@@ -25,5 +25,5 @@ public interface NodeView {
      * @param pos the sided block-position to get the nodes in.
      * @return a stream of all the nodes in the given sided block-position.
      */
-    @NotNull Stream<Node<BlockNodeWrapper<?>>> getNodesAt(@NotNull SidedPos pos);
+    @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos);
 }

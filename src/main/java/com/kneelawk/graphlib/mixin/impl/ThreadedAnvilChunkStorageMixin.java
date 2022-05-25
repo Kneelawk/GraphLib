@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.mixin.impl;
 
 import com.kneelawk.graphlib.Constants;
 import com.kneelawk.graphlib.GraphLib;
-import com.kneelawk.graphlib.graph.BlockGraphController;
+import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.BlockGraphControllerAccess;
 import com.mojang.datafixers.DataFixer;
 import net.minecraft.server.WorldGenerationProgressListener;
@@ -34,7 +34,7 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
     ServerWorld world;
 
     @Unique
-    private BlockGraphController controller;
+    private SimpleBlockGraphController controller;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onCreate(
@@ -53,7 +53,7 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
             boolean syncChunkWrites,
             CallbackInfo ci
     ) {
-        controller = new BlockGraphController(serverWorld,
+        controller = new SimpleBlockGraphController(serverWorld,
                 session.getWorldDirectory(serverWorld.getRegistryKey()).resolve(Constants.DATA_DIRNAME)
                         .resolve(Constants.MOD_ID).resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
     }
@@ -69,7 +69,7 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
     }
 
     @Override
-    public @NotNull BlockGraphController graphlib_getGraphController() {
+    public @NotNull SimpleBlockGraphController graphlib_getGraphController() {
         return controller;
     }
 }

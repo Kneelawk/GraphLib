@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.mixin.api;
 
-import com.kneelawk.graphlib.graph.BlockGraphController;
+import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.impl.StorageIoWorkerAccessor;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.storage.StorageIoWorker;
@@ -14,7 +14,7 @@ public class StorageHelper {
         return StorageIoWorkerAccessor.create(path, syncChunkWrites, name);
     }
 
-    public static @NotNull BlockGraphController getController(@NotNull ServerWorld world) {
+    public static @NotNull SimpleBlockGraphController getController(@NotNull ServerWorld world) {
         return ((BlockGraphControllerAccess) world.getChunkManager().threadedAnvilChunkStorage).graphlib_getGraphController();
     }
 }

@@ -1,9 +1,12 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.graph.simple;
 
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
 
 import com.kneelawk.graphlib.GraphLib;
+import com.kneelawk.graphlib.graph.BlockNode;
+import com.kneelawk.graphlib.graph.BlockNodeDecoder;
+import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
@@ -13,13 +16,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public final class BlockNodeWrapper<T extends BlockNode> {
+public final class SimpleBlockNodeHolder implements BlockNodeHolder {
     private final @NotNull BlockPos pos;
-    private final @NotNull T node;
+    private final @NotNull BlockNode node;
 
     long graphId;
 
-    public BlockNodeWrapper(@NotNull BlockPos pos, @NotNull T node, long graphId) {
+    public SimpleBlockNodeHolder(@NotNull BlockPos pos, @NotNull BlockNode node, long graphId) {
         this.pos = pos.toImmutable();
         this.node = node;
         this.graphId = graphId;
@@ -43,7 +46,7 @@ public final class BlockNodeWrapper<T extends BlockNode> {
     }
 
     @Nullable
-    public static BlockNodeWrapper<BlockNode> fromTag(@NotNull NbtCompound tag, long graphId) {
+    public static SimpleBlockNodeHolder fromTag(@NotNull NbtCompound tag, long graphId) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
@@ -62,17 +65,20 @@ public final class BlockNodeWrapper<T extends BlockNode> {
             return null;
         }
 
-        return new BlockNodeWrapper<>(pos, node, graphId);
+        return new SimpleBlockNodeHolder(pos, node, graphId);
     }
 
-    public @NotNull BlockPos pos() {
+    @Override
+    public @NotNull BlockPos getPos() {
         return pos;
     }
 
-    public @NotNull T node() {
+    @Override
+    public @NotNull BlockNode getNode() {
         return node;
     }
-    
+
+    @Override
     public long getGraphId() {
         return graphId;
     }
@@ -81,7 +87,7 @@ public final class BlockNodeWrapper<T extends BlockNode> {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (BlockNodeWrapper) obj;
+        var that = (SimpleBlockNodeHolder) obj;
         return Objects.equals(this.pos, that.pos) &&
                 Objects.equals(this.node, that.node);
     }

@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.graph.simple;
 
 import com.kneelawk.graphlib.world.StorageChunk;
 import it.unimi.dsi.fastutil.ints.IntIterator;
@@ -15,13 +15,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import org.jetbrains.annotations.NotNull;
 
-public class BlockGraphChunk implements StorageChunk {
+public class SimpleBlockGraphChunk implements StorageChunk {
     final ChunkSectionPos chunkPos;
 
     Short2ObjectMap<LongSet> graphsInPos = new Short2ObjectLinkedOpenHashMap<>();
     LongSet graphsInChunk = new LongLinkedOpenHashSet();
 
-    public BlockGraphChunk(@NotNull NbtCompound nbt, @NotNull ChunkSectionPos chunkPos) {
+    public SimpleBlockGraphChunk(@NotNull NbtCompound nbt, @NotNull ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
 
         NbtList inChunkList = nbt.getList("inChunk", NbtElement.LONG_TYPE);
@@ -45,7 +45,7 @@ public class BlockGraphChunk implements StorageChunk {
         }
     }
 
-    public BlockGraphChunk(@NotNull ChunkSectionPos chunkPos) {
+    public SimpleBlockGraphChunk(@NotNull ChunkSectionPos chunkPos) {
         this.chunkPos = chunkPos;
     }
 

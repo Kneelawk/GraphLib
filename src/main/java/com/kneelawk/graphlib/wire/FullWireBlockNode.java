@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.wire;
 
 import com.kneelawk.graphlib.graph.BlockNode;
-import com.kneelawk.graphlib.graph.BlockNodeWrapper;
+import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -28,7 +28,7 @@ public interface FullWireBlockNode extends BlockNode {
      * otherwise.
      */
     default boolean canConnect(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Direction onSide,
-                               @Nullable Direction wireSide, @NotNull Node<BlockNodeWrapper<?>> other) {
+                               @Nullable Direction wireSide, @NotNull Node<BlockNodeHolder> other) {
         return true;
     }
 }

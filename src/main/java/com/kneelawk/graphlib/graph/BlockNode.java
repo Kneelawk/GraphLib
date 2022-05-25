@@ -49,7 +49,7 @@ public interface BlockNode {
      * Collects nodes in the world that this node can connect to.
      * <p>
      * <b>Contract:</b> This method must only return nodes that
-     * {@link #canConnect(ServerWorld, NodeView, BlockPos, Node)} would have returned <code>true</code> for.
+     * {@link #canConnect(ServerWorld, NodeView, BlockPos, Node, Node)} would have returned <code>true</code> for.
      *
      * @param world    the world of blocks.
      * @param nodeView the world of nodes.
@@ -57,14 +57,15 @@ public interface BlockNode {
      * @return all nodes this node can connect to.
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, NodeView, BlockPos, SidedWireConnectionFilter)
      */
-    @NotNull Collection<Node<BlockNodeWrapper<?>>> findConnections(@NotNull ServerWorld world,
-                                                                   @NotNull NodeView nodeView, @NotNull BlockPos pos);
+    @NotNull Collection<Node<BlockNodeHolder>> findConnections(@NotNull ServerWorld world,
+                                                               @NotNull NodeView nodeView, @NotNull BlockPos pos,
+                                                               @NotNull Node<BlockNodeHolder> self);
 
     /**
      * Determines whether this node can connect to another node.
      * <p>
      * <b>Contract:</b> This method must only return <code>true</code> for nodes that would be returned from
-     * {@link #findConnections(ServerWorld, NodeView, BlockPos)}.
+     * {@link #findConnections(ServerWorld, NodeView, BlockPos, Node)}.
      *
      * @param world    the world of blocks.
      * @param nodeView the world of nodes.
@@ -74,7 +75,8 @@ public interface BlockNode {
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, SidedWireConnectionFilter, Node)
      */
     boolean canConnect(@NotNull ServerWorld world, @NotNull NodeView nodeView, @NotNull BlockPos pos,
-                       @NotNull Node<BlockNodeWrapper<?>> other);
+                       @NotNull Node<BlockNodeHolder> self,
+                       @NotNull Node<BlockNodeHolder> other);
 
     /**
      * Called when the block graph controller has determined that this node's connections have been changed.
@@ -85,7 +87,7 @@ public interface BlockNode {
      * @param world the block world that this node is associated with.
      * @param pos   the block position of this node.
      */
-    void onChanged(@NotNull ServerWorld world, @NotNull BlockPos pos);
+    void onConnectionsChanged(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Node<BlockNodeHolder> self);
 
     /**
      * Block nodes are compared based on their hash-code and equals functions.

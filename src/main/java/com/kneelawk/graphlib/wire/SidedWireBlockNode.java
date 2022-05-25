@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.wire;
 
-import com.kneelawk.graphlib.graph.BlockNodeWrapper;
+import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.SidedBlockNode;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.server.world.ServerWorld;
@@ -25,7 +25,7 @@ public interface SidedWireBlockNode extends SidedBlockNode {
      * @return <code>true</code> if a connection should be allowed to form, <code>false</code> otherwise.
      */
     default boolean canConnect(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Direction inDirection,
-                               @NotNull WireConnectionType connectionType, @NotNull Node<BlockNodeWrapper<?>> other) {
+                               @NotNull WireConnectionType connectionType, @NotNull Node<BlockNodeHolder> other) {
         return true;
     }
 }

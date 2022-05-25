@@ -1,5 +1,6 @@
 package com.kneelawk.graphlib.graph;
 
+import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.util.SidedPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +15,7 @@ public interface SidedBlockNode extends BlockNode {
      * The side of the block this node is positioned at.
      * <p>
      * The value returned here corresponds to what nodes are returned by
-     * {@link BlockGraphController#getNodesAt(SidedPos)}, depending on the side given in the sided block-position. The
+     * {@link SimpleBlockGraphController#getNodesAt(SidedPos)}, depending on the side given in the sided block-position. The
      * side returned here also influences the {@link com.kneelawk.graphlib.wire.WireConnectionDiscoverers} connection
      * logic.
      * <p>

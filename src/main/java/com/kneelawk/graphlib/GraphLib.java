@@ -2,6 +2,7 @@ package com.kneelawk.graphlib;
 
 import com.kneelawk.graphlib.command.GraphLibCommand;
 import com.kneelawk.graphlib.graph.BlockGraphController;
+import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeDecoder;
 import com.kneelawk.graphlib.graph.BlockNodeDiscoverer;
@@ -81,6 +82,10 @@ public final class GraphLib {
     public static Logger log = LoggerFactory.getLogger(Constants.MOD_ID);
 
     private GraphLib() {
+    }
+
+    static @NotNull SimpleBlockGraphController getSimpleController(@NotNull ServerWorld world) {
+        return StorageHelper.getController(world);
     }
 
     @SuppressWarnings("unchecked")
