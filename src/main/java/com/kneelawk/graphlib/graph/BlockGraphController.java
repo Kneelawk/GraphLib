@@ -38,7 +38,7 @@ public interface BlockGraphController extends NodeView {
      * @param pos the block-position to get the IDs of graphs with nodes at.
      * @return a stream of all the IDs of graphs with nodes in the given block-position.
      */
-    @NotNull LongStream getGraphsInPos(@NotNull BlockPos pos);
+    @NotNull LongStream getGraphsAt(@NotNull BlockPos pos);
 
     /**
      * Notifies the controller that a block-position has been changed and may need to have its nodes and connections
@@ -46,7 +46,7 @@ public interface BlockGraphController extends NodeView {
      *
      * @param pos the changed block-position.
      */
-    void onChanged(@NotNull BlockPos pos);
+    void updateNodes(@NotNull BlockPos pos);
 
     /**
      * Notifies the controller that a list of block-positions have been changed and may need to have their nodes and
@@ -54,7 +54,7 @@ public interface BlockGraphController extends NodeView {
      *
      * @param poses the iterable of all the block-positions that might have been changed.
      */
-    void onChanged(@NotNull Iterable<BlockPos> poses);
+    void updateNodes(@NotNull Iterable<BlockPos> poses);
 
     /**
      * Notifies the controller that a list of block-positions have been changed and may need to have their nodes and
@@ -62,7 +62,7 @@ public interface BlockGraphController extends NodeView {
      *
      * @param posStream the stream ob all the block-positions that might have been changed.
      */
-    void onChanged(@NotNull Stream<BlockPos> posStream);
+    void updateNodes(@NotNull Stream<BlockPos> posStream);
 
     /**
      * Updates the connections for all the nodes at the given block-position.

@@ -159,7 +159,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     @Override
     public @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull BlockPos pos) {
         // no need for a .distict() here, because you should never have the same node be part of multiple graphs
-        return getGraphsInPos(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
+        return getGraphsAt(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
 
     /**
@@ -170,7 +170,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      */
     @Override
     public @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos) {
-        return getGraphsInPos(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
+        return getGraphsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
                 .flatMap(g -> g.getNodesAt(pos));
     }
 
@@ -181,7 +181,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      * @return a stream of all the IDs of graphs with nodes in the given block-position.
      */
     @Override
-    public @NotNull LongStream getGraphsInPos(@NotNull BlockPos pos) {
+    public @NotNull LongStream getGraphsAt(@NotNull BlockPos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
         if (chunk != null) {
             LongSet graphsInPos = chunk.graphsInPos.get(ChunkSectionPos.packLocal(pos));
@@ -202,7 +202,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      * @param pos the changed block-position.
      */
     @Override
-    public void onChanged(@NotNull BlockPos pos) {
+    public void updateNodes(@NotNull BlockPos pos) {
         Set<BlockNode> nodes = GraphLib.getNodesInBlock(world, pos);
         onNodesChanged(pos, nodes);
     }
@@ -214,10 +214,10 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      * @param poses the iterable of all the block-positions that might have been changed.
      */
     @Override
-    public void onChanged(@NotNull Iterable<BlockPos> poses) {
+    public void updateNodes(@NotNull Iterable<BlockPos> poses) {
         for (BlockPos pos : poses) {
             // I couldn't figure out how to optimise this much, so I'm just calling onChanged for every block-pos
-            onChanged(pos);
+            updateNodes(pos);
         }
     }
 
@@ -228,8 +228,8 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      * @param posStream the stream ob all the block-positions that might have been changed.
      */
     @Override
-    public void onChanged(@NotNull Stream<BlockPos> posStream) {
-        posStream.forEach(this::onChanged);
+    public void updateNodes(@NotNull Stream<BlockPos> posStream) {
+        posStream.forEach(this::updateNodes);
     }
 
     /**
@@ -416,7 +416,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNode> nodes) {
         Set<BlockNode> newNodes = new LinkedHashSet<>(nodes);
 
-        for (long graphId : getGraphsInPos(pos).toArray()) {
+        for (long graphId : getGraphsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
             if (graph == null) {
                 GraphLib.log.warn("Encountered invalid graph in position when detecting node changes. Id: {}, pos: {}",
