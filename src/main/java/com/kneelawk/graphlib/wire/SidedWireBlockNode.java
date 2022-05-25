@@ -21,11 +21,13 @@ public interface SidedWireBlockNode extends SidedBlockNode {
      * @param pos            the block-position that this node is at.
      * @param inDirection    the direction that the other node is connecting from.
      * @param connectionType the type of connection that would be formed.
+     * @param self           the block node holder associated with this node.
      * @param other          the other block node.
      * @return <code>true</code> if a connection should be allowed to form, <code>false</code> otherwise.
      */
     default boolean canConnect(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Direction inDirection,
-                               @NotNull WireConnectionType connectionType, @NotNull Node<BlockNodeHolder> other) {
+                               @NotNull WireConnectionType connectionType, @NotNull Node<BlockNodeHolder> self,
+                               @NotNull Node<BlockNodeHolder> other) {
         return true;
     }
 }

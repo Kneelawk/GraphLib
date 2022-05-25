@@ -1,6 +1,8 @@
 package com.kneelawk.graphlib.graph;
 
 import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.wire.FullWireBlockNode;
+import com.kneelawk.graphlib.wire.FullWireConnectionFilter;
 import com.kneelawk.graphlib.wire.SidedWireBlockNode;
 import com.kneelawk.graphlib.wire.SidedWireConnectionFilter;
 import net.minecraft.nbt.NbtElement;
@@ -55,10 +57,11 @@ public interface BlockNode {
      * @param nodeView the world of nodes.
      * @param pos      this node's block-position.
      * @return all nodes this node can connect to.
-     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, NodeView, BlockPos, SidedWireConnectionFilter)
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, NodeView, BlockPos, Node, SidedWireConnectionFilter)
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, ServerWorld, NodeView, BlockPos, Node, FullWireConnectionFilter)
      */
-    @NotNull Collection<Node<BlockNodeHolder>> findConnections(@NotNull ServerWorld world,
-                                                               @NotNull NodeView nodeView, @NotNull BlockPos pos,
+    @NotNull Collection<Node<BlockNodeHolder>> findConnections(@NotNull ServerWorld world, @NotNull NodeView nodeView,
+                                                               @NotNull BlockPos pos,
                                                                @NotNull Node<BlockNodeHolder> self);
 
     /**
@@ -72,11 +75,11 @@ public interface BlockNode {
      * @param pos      this node's block-position.
      * @param other    the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
-     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, SidedWireConnectionFilter, Node)
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, Node, Node, SidedWireConnectionFilter)
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, ServerWorld, BlockPos, Node, Node, FullWireConnectionFilter)
      */
     boolean canConnect(@NotNull ServerWorld world, @NotNull NodeView nodeView, @NotNull BlockPos pos,
-                       @NotNull Node<BlockNodeHolder> self,
-                       @NotNull Node<BlockNodeHolder> other);
+                       @NotNull Node<BlockNodeHolder> self, @NotNull Node<BlockNodeHolder> other);
 
     /**
      * Called when the block graph controller has determined that this node's connections have been changed.

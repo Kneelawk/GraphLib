@@ -23,12 +23,14 @@ public interface FullWireBlockNode extends BlockNode {
      * @param onSide   the side of this block node that the other node is trying to connect to.
      * @param wireSide the side of the block that the connecting wire is at, or <code>null</code> if the wire is a full
      *                 block or otherwise non-sided.
+     * @param self     the block node holder associated with this block node.
      * @param other    the block node that could possibly connect to this node.
      * @return <code>true</code> if this node and the other node should be allowed to connect, <code>false</code>
      * otherwise.
      */
     default boolean canConnect(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Direction onSide,
-                               @Nullable Direction wireSide, @NotNull Node<BlockNodeHolder> other) {
+                               @Nullable Direction wireSide, @NotNull Node<BlockNodeHolder> self,
+                               @NotNull Node<BlockNodeHolder> other) {
         return true;
     }
 }

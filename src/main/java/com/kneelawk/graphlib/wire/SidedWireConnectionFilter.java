@@ -19,12 +19,12 @@ public interface SidedWireConnectionFilter {
      * @param pos            the block-position of the <code>self</code> node.
      * @param inDirection    the direction that the other node is connecting from.
      * @param connectionType the type of connection that would be formed.
-     * @param other          the other block node.
+     * @param otherNode      the other block node.
      * @return <code>true</code> if the two block nodes should be allowed to connect, <code>false</code> otherwise.
      */
     boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
                        @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
-                       @NotNull Node<BlockNodeHolder> other);
+                       @NotNull Node<BlockNodeHolder> selfNode, @NotNull Node<BlockNodeHolder> otherNode);
 
     /**
      * Creates a new connection filter that must satisfy both this filter and the other filter.
@@ -33,8 +33,8 @@ public interface SidedWireConnectionFilter {
      * @return a new connection filter that must satisfy both this filter and the other filter.
      */
     default SidedWireConnectionFilter and(@NotNull SidedWireConnectionFilter otherFilter) {
-        return (self, world, pos, inDirection, connectionType, other) ->
-                canConnect(self, world, pos, inDirection, connectionType, other) &&
-                        otherFilter.canConnect(self, world, pos, inDirection, connectionType, other);
+        return (self, world, pos, inDirection, connectionType, selfNode, otherNode) ->
+                canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode) &&
+                        otherFilter.canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode);
     }
 }

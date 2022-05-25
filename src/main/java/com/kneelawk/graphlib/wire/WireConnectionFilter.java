@@ -26,14 +26,14 @@ public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWir
     @Override
     default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
                                @NotNull Direction onSide, @Nullable Direction wireSide,
-                               @NotNull Node<BlockNodeHolder> other) {
-        return accepts(self, other.data().getNode());
+                               @NotNull Node<BlockNodeHolder> selfNode, @NotNull Node<BlockNodeHolder> otherNode) {
+        return accepts(self, otherNode.data().getNode());
     }
 
     @Override
     default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
                                @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
-                               @NotNull Node<BlockNodeHolder> other) {
-        return accepts(self, other.data().getNode());
+                               @NotNull Node<BlockNodeHolder> selfNode, @NotNull Node<BlockNodeHolder> otherNode) {
+        return accepts(self, otherNode.data().getNode());
     }
 }
