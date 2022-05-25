@@ -170,8 +170,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      */
     @Override
     public @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos) {
-        return getGraphsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
-                .flatMap(g -> g.getNodesAt(pos));
+        return getGraphsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
 
     /**
@@ -435,7 +434,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
         for (BlockNode bn : newNodes) {
             if (bn == null) {
-                GraphLib.log.warn("Something tried to add a null BlockNode! Ignoring...",
+                GraphLib.log.warn("Something tried to add a null BlockNode! Ignoring... Pos: {}", pos,
                         new RuntimeException("Stack Trace"));
                 continue;
             }
