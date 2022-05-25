@@ -377,6 +377,12 @@ public class BlockGraphController implements AutoCloseable, NodeView {
     // ---- Node Update Methods ---- //
 
     void scheduleUpdate(@NotNull Node<BlockNodeWrapper<?>> node) {
+        if (node == null) {
+            GraphLib.log.warn("Something tried to schedule an update for a NULL node!",
+                    new RuntimeException("Stack Trace"));
+            return;
+        }
+
         toUpdate.add(node);
     }
 
@@ -412,7 +418,8 @@ public class BlockGraphController implements AutoCloseable, NodeView {
 
         for (BlockNode bn : newNodes) {
             if (bn == null) {
-                GraphLib.log.warn("Something tried to add a null BlockNode! Ignoring...");
+                GraphLib.log.warn("Something tried to add a null BlockNode! Ignoring...",
+                        new RuntimeException("Stack Trace"));
                 continue;
             }
 
