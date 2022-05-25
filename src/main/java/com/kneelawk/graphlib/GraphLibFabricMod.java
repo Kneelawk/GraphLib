@@ -6,11 +6,14 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.loader.api.FabricLoader;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
+        GLLog.setupLogging(FabricLoader.getInstance().getGameDir());
+
         GraphLib.register();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> GraphLib.registerCommands(dispatcher));

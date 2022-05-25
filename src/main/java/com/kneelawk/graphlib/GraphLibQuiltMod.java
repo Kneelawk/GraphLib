@@ -3,6 +3,7 @@ package com.kneelawk.graphlib;
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import org.quiltmc.loader.api.ModContainer;
+import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 import org.quiltmc.qsl.command.api.CommandRegistrationCallback;
 import org.quiltmc.qsl.lifecycle.api.event.ServerWorldLoadEvents;
@@ -12,6 +13,8 @@ import org.quiltmc.qsl.lifecycle.api.event.ServerWorldTickEvents;
 public class GraphLibQuiltMod implements ModInitializer {
     @Override
     public void onInitialize(ModContainer mod) {
+        GLLog.setupLogging(QuiltLoader.getGameDir());
+
         GraphLib.register();
 
         CommandRegistrationCallback.EVENT.register(
