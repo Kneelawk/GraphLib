@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.mixin.impl;
 
 import com.kneelawk.graphlib.Constants;
-import com.kneelawk.graphlib.GraphLib;
+import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.BlockGraphControllerAccess;
 import com.mojang.datafixers.DataFixer;
@@ -37,22 +37,12 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
     private SimpleBlockGraphController controller;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onCreate(
-            ServerWorld serverWorld,
-            LevelStorage.Session session,
-            DataFixer dataFixer,
-            StructureManager structureManager,
-            Executor executor,
-            ThreadExecutor<Runnable> threadExecutor,
-            ChunkProvider chunkProvider,
-            ChunkGenerator chunkGenerator,
-            WorldGenerationProgressListener worldGenerationProgressListener,
-            ChunkStatusChangeListener chunkStatusChangeListener,
-            Supplier<PersistentStateManager> supplier,
-            int i,
-            boolean syncChunkWrites,
-            CallbackInfo ci
-    ) {
+    private void onCreate(ServerWorld serverWorld, LevelStorage.Session session, DataFixer dataFixer,
+                          StructureManager structureManager, Executor executor, ThreadExecutor<Runnable> threadExecutor,
+                          ChunkProvider chunkProvider, ChunkGenerator chunkGenerator,
+                          WorldGenerationProgressListener worldGenerationProgressListener,
+                          ChunkStatusChangeListener chunkStatusChangeListener,
+                          Supplier<PersistentStateManager> supplier, int i, boolean syncChunkWrites, CallbackInfo ci) {
         controller = new SimpleBlockGraphController(serverWorld,
                 session.getWorldDirectory(serverWorld.getRegistryKey()).resolve(Constants.DATA_DIRNAME)
                         .resolve(Constants.MOD_ID).resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
@@ -63,8 +53,7 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
         try {
             controller.saveAll();
         } catch (Exception e) {
-            GraphLib.log.error("Error saving graph controller. World: '{}'/{}", world,
-                    world.getRegistryKey().getValue(), e);
+            GLLog.error("Error saving graph controller. World: '{}'/{}", world, world.getRegistryKey().getValue(), e);
         }
     }
 

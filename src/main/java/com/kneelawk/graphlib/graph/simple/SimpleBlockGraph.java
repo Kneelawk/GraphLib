@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.graph.simple;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import com.kneelawk.graphlib.GraphLib;
+import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.SidedBlockNode;
@@ -82,8 +82,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
     private final long id;
 
     private final Graph<BlockNodeHolder> graph = new Graph<>();
-    private final Multimap<BlockPos, Node<BlockNodeHolder>> nodesInPos =
-            LinkedHashMultimap.create();
+    private final Multimap<BlockPos, Node<BlockNodeHolder>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
 
     public SimpleBlockGraph(@NotNull SimpleBlockGraphController controller, long id) {
@@ -123,13 +122,13 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
 
         for (var link : nodes.stream().flatMap(node -> node.connections().stream()).distinct().toList()) {
             if (!nodeIndexMap.containsKey(link.first())) {
-                GraphLib.log.warn(
+                GLLog.warn(
                         "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
                         id, link.second(), link.first());
                 continue;
             }
             if (!nodeIndexMap.containsKey(link.second())) {
-                GraphLib.log.warn(
+                GLLog.warn(
                         "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
                         id, link.first(), link.second());
                 continue;

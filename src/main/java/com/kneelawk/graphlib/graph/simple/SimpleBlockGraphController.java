@@ -1,6 +1,7 @@
 package com.kneelawk.graphlib.graph.simple;
 
 import com.kneelawk.graphlib.Constants;
+import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.GraphLib;
 import com.kneelawk.graphlib.graph.BlockGraphController;
 import com.kneelawk.graphlib.graph.BlockNode;
@@ -122,7 +123,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     }
 
     public void saveAll() {
-        GraphLib.log.info("Saving block-graph for '{}'/{}", world, world.getRegistryKey().getValue());
+        GLLog.info("Saving block-graph for '{}'/{}", world, world.getRegistryKey().getValue());
 
         saveAllGraphs();
         saveState();
@@ -298,7 +299,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                 SimpleBlockGraph graph = loadedGraphs.get(id);
 
                 if (graph.isEmpty()) {
-                    GraphLib.log.warn(
+                    GLLog.warn(
                             "Encountered empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
                             graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
 
@@ -339,7 +340,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         SimpleBlockGraph graph = getGraph(id);
         if (graph == null) {
             // The graph does not exist.
-            GraphLib.log.warn("Attempted to destroy graph that does not exist. Id: {}", id);
+            GLLog.warn("Attempted to destroy graph that does not exist. Id: {}", id);
             return;
         }
 
@@ -365,8 +366,8 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                 chunk.graphsInPos.remove(local);
             }
         } else {
-            GraphLib.log.warn("Tried to remove graph from non-existent chunk. Id: {}, chunk: {}, block: {}", id,
-                    sectionPos, pos);
+            GLLog.warn("Tried to remove graph from non-existent chunk. Id: {}, chunk: {}, block: {}", id, sectionPos,
+                    pos);
         }
     }
 
@@ -376,7 +377,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         if (chunk != null) {
             chunk.graphsInChunk.remove(id);
         } else {
-            GraphLib.log.warn("Tried to remove graph fom non-existent chunk. Id: {}, chunk: {}", id, sectionPos);
+            GLLog.warn("Tried to remove graph fom non-existent chunk. Id: {}, chunk: {}", id, sectionPos);
         }
     }
 
@@ -394,7 +395,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     void scheduleUpdate(@NotNull Node<BlockNodeHolder> node) {
         //noinspection ConstantConditions
         if (node == null) {
-            GraphLib.log.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",
+            GLLog.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",
                     new RuntimeException("Stack Trace"));
             return;
         }
@@ -418,7 +419,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         for (long graphId : getGraphsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
             if (graph == null) {
-                GraphLib.log.warn("Encountered invalid graph in position when detecting node changes. Id: {}, pos: {}",
+                GLLog.warn("Encountered invalid graph in position when detecting node changes. Id: {}, pos: {}",
                         graphId, pos);
                 continue;
             }
@@ -434,7 +435,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
         for (BlockNode bn : newNodes) {
             if (bn == null) {
-                GraphLib.log.warn("Something tried to add a null BlockNode! Ignoring... Pos: {}", pos,
+                GLLog.warn("Something tried to add a null BlockNode! Ignoring... Pos: {}", pos,
                         new RuntimeException("Stack Trace"));
                 continue;
             }
@@ -450,7 +451,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         SimpleBlockGraph graph = getGraph(nodeGraphId);
 
         if (graph == null) {
-            GraphLib.log.warn("Tried to update node with invalid graph id. Node: {}", node);
+            GLLog.warn("Tried to update node with invalid graph id. Node: {}", node);
             return;
         }
 
@@ -473,7 +474,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             if (otherGraphId != mergedGraphId) {
                 SimpleBlockGraph otherGraph = getGraph(otherGraphId);
                 if (otherGraph == null) {
-                    GraphLib.log.warn("Tried to connect to node with invalid graph id. Node: {}", other);
+                    GLLog.warn("Tried to connect to node with invalid graph id. Node: {}", other);
                     continue;
                 }
 
@@ -591,15 +592,15 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                         long id = Long.parseLong(matcher.group("id"));
                         ids.add(id);
                     } catch (NumberFormatException e) {
-                        GraphLib.log.warn("Encountered NumberFormatException while parsing graph id from filename: {}",
+                        GLLog.warn("Encountered NumberFormatException while parsing graph id from filename: {}",
                                 filename, e);
                     }
                 } else {
-                    GraphLib.log.warn("Encountered non-graph file in graphs dir: {}", child);
+                    GLLog.warn("Encountered non-graph file in graphs dir: {}", child);
                 }
             });
         } catch (IOException e) {
-            GraphLib.log.error("Error listing children of {}", graphsDir, e);
+            GLLog.error("Error listing children of {}", graphsDir, e);
         }
 
         return ids;
@@ -614,7 +615,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         try (OutputStream os = Files.newOutputStream(graphFile)) {
             NbtIo.writeCompressed(root, os);
         } catch (IOException e) {
-            GraphLib.log.error("Unable to save graph {}.", graph.getId(), e);
+            GLLog.error("Unable to save graph {}.", graph.getId(), e);
         }
     }
 
@@ -631,7 +632,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             NbtCompound data = root.getCompound("data");
             SimpleBlockGraph graph = SimpleBlockGraph.fromTag(this, id, data);
             if (graph.isEmpty()) {
-                GraphLib.log.warn(
+                GLLog.warn(
                         "Loaded empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
                         graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
 
@@ -642,13 +643,13 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                 return graph;
             }
         } catch (IOException e) {
-            GraphLib.log.error("Unable to load graph {}. Removing graph...", id, e);
+            GLLog.error("Unable to load graph {}. Removing graph...", id, e);
 
             if (Files.exists(graphFile)) {
                 try {
                     Files.delete(graphFile);
                 } catch (IOException ex) {
-                    GraphLib.log.error("Error deleting broken graph file: {}", graphFile, ex);
+                    GLLog.error("Error deleting broken graph file: {}", graphFile, ex);
                 }
             }
 
@@ -663,7 +664,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         try {
             Files.deleteIfExists(getGraphFile(id));
         } catch (IOException e) {
-            GraphLib.log.error("Error removing graph file. Id: {}", id, e);
+            GLLog.error("Error removing graph file. Id: {}", id, e);
         }
 
         for (long sectionPos : graph.chunks) {
@@ -674,7 +675,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                 // already have been cleared by the time this function is called.
                 chunk.removeGraph(id);
             } else {
-                GraphLib.log.warn("Attempted to destroy graph in chunk that does not exist. Id: {}, chunk: {}", id,
+                GLLog.warn("Attempted to destroy graph in chunk that does not exist. Id: {}, chunk: {}", id,
                         ChunkSectionPos.from(sectionPos));
             }
         }
@@ -691,7 +692,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                 NbtCompound data = root.getCompound("data");
                 prevGraphId = data.getLong("prevGraphId");
             } catch (Exception e) {
-                GraphLib.log.error("Error loading graph controller state file.", e);
+                GLLog.error("Error loading graph controller state file.", e);
             }
         }
     }
@@ -709,14 +710,14 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                 try {
                     Files.createDirectories(stateFile.getParent());
                 } catch (IOException e) {
-                    GraphLib.log.error("Error creating graph controller state save directory.", e);
+                    GLLog.error("Error creating graph controller state save directory.", e);
                 }
             }
 
             try (OutputStream os = Files.newOutputStream(stateFile)) {
                 NbtIo.writeCompressed(root, os);
             } catch (IOException e) {
-                GraphLib.log.error("Error saving graph controller state.", e);
+                GLLog.error("Error saving graph controller state.", e);
                 return;
             }
 

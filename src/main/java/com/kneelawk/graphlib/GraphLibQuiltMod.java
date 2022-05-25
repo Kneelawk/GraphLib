@@ -21,7 +21,7 @@ public class GraphLibQuiltMod implements ModInitializer {
             try {
                 GraphLib.getSimpleController(world).onWorldChunkLoad(chunk.getPos());
             } catch (Exception e) {
-                GraphLib.log.error("Error loading chunk in BlockGraphController. World: '{}'/{}", world,
+                GLLog.error("Error loading chunk in BlockGraphController. World: '{}'/{}", world,
                         world.getRegistryKey().getValue(), e);
             }
         });
@@ -31,7 +31,7 @@ public class GraphLibQuiltMod implements ModInitializer {
                 controller.saveChunk(chunk.getPos());
                 controller.onWorldChunkUnload(chunk.getPos());
             } catch (Exception e) {
-                GraphLib.log.error("Error unloading chunk in BlockGraphController. World: '{}'/{}", world,
+                GLLog.error("Error unloading chunk in BlockGraphController. World: '{}'/{}", world,
                         world.getRegistryKey().getValue(), e);
             }
         });
@@ -39,7 +39,7 @@ public class GraphLibQuiltMod implements ModInitializer {
             try {
                 GraphLib.getSimpleController(world).tick();
             } catch (Exception e) {
-                GraphLib.log.error("Error ticking BlockGraphController. World: '{}'/{}", world,
+                GLLog.error("Error ticking BlockGraphController. World: '{}'/{}", world,
                         world.getRegistryKey().getValue(), e);
             }
         });
@@ -47,7 +47,7 @@ public class GraphLibQuiltMod implements ModInitializer {
             try {
                 GraphLib.getSimpleController(world).close();
             } catch (Exception e) {
-                GraphLib.log.error("Error closing BlockGraphController. World: '{}'/{}", world,
+                GLLog.error("Error closing BlockGraphController. World: '{}'/{}", world,
                         world.getRegistryKey().getValue(), e);
             }
         });

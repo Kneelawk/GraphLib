@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.graph.simple;
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
 
+import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.GraphLib;
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeDecoder;
@@ -53,7 +54,7 @@ public final class SimpleBlockNodeHolder implements BlockNodeHolder {
         BlockNodeDecoder decoder = GraphLib.BLOCK_NODE_DECODER.get(typeId);
 
         if (decoder == null) {
-            GraphLib.log.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);
+            GLLog.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);
             return null;
         }
 
@@ -61,7 +62,7 @@ public final class SimpleBlockNodeHolder implements BlockNodeHolder {
         BlockNode node = decoder.createBlockNodeFromTag(nodeTag);
 
         if (node == null) {
-            GraphLib.log.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
+            GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
             return null;
         }
 
@@ -88,8 +89,7 @@ public final class SimpleBlockNodeHolder implements BlockNodeHolder {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
         var that = (SimpleBlockNodeHolder) obj;
-        return Objects.equals(this.pos, that.pos) &&
-                Objects.equals(this.node, that.node);
+        return Objects.equals(this.pos, that.pos) && Objects.equals(this.node, that.node);
     }
 
     @Override
@@ -99,9 +99,6 @@ public final class SimpleBlockNodeHolder implements BlockNodeHolder {
 
     @Override
     public String toString() {
-        return "BlockNodeWrapper[" +
-                "pos=" + pos + ", " +
-                "graphId=" + graphId + ", " +
-                "node=" + node + ']';
+        return "BlockNodeWrapper[" + "pos=" + pos + ", " + "graphId=" + graphId + ", " + "node=" + node + ']';
     }
 }

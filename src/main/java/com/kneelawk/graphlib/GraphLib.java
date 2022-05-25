@@ -2,10 +2,10 @@ package com.kneelawk.graphlib;
 
 import com.kneelawk.graphlib.command.GraphLibCommand;
 import com.kneelawk.graphlib.graph.BlockGraphController;
-import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeDecoder;
 import com.kneelawk.graphlib.graph.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.serialization.Lifecycle;
@@ -17,8 +17,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -78,8 +76,6 @@ public final class GraphLib {
     }
 
     // ---- Internal Stuff ---- //
-
-    public static Logger log = LoggerFactory.getLogger(Constants.MOD_ID);
 
     private GraphLib() {
     }

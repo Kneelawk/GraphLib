@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.world;
 
-import com.kneelawk.graphlib.GraphLib;
+import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
 import com.kneelawk.graphlib.util.ChunkPillarUnloadTimer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -104,7 +104,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
                     return created;
                 }
             } catch (Exception e) {
-                GraphLib.log.error("Error loading chunk pillar {}. Discarding chunk.", chunkPos, e);
+                GLLog.error("Error loading chunk pillar {}. Discarding chunk.", chunkPos, e);
 
                 R created = createNew.apply(pos);
                 pillar.put(pos.getY(), created);
@@ -135,7 +135,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
                     return null;
                 }
             } catch (Exception e) {
-                GraphLib.log.error("Error loading chunk pillar {}.", chunkPos, e);
+                GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
 
                 return null;
             }
@@ -153,7 +153,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
                     loadChunkPillar(chunkPos, pillar, root);
                 }
             } catch (Exception e) {
-                GraphLib.log.error("Error loading chunk pillar {}.", chunkPos, e);
+                GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
             }
         }
     }
@@ -161,17 +161,14 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
     private void loadChunkPillar(@NotNull ChunkPos chunkPos, @NotNull Int2ObjectMap<R> pillar,
                                  @NotNull NbtCompound root) {
         NbtCompound sectionsTag = root.getCompound("Sections");
-        for (int sectionY = world.getBottomSectionCoord();
-             sectionY < world.getTopSectionCoord(); sectionY++) {
+        for (int sectionY = world.getBottomSectionCoord(); sectionY < world.getTopSectionCoord(); sectionY++) {
             if (sectionsTag.contains(String.valueOf(sectionY), NbtElement.COMPOUND_TYPE)) {
                 NbtCompound sectionTag = sectionsTag.getCompound(String.valueOf(sectionY));
                 try {
-                    R section = loadFromNbt.apply(sectionTag,
-                            ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z));
+                    R section = loadFromNbt.apply(sectionTag, ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z));
                     pillar.put(sectionY, section);
                 } catch (Exception e) {
-                    GraphLib.log.error("Error loading chunk {} section {}. Discarding chunk section.",
-                            chunkPos, sectionY, e);
+                    GLLog.error("Error loading chunk {} section {}. Discarding chunk section.", chunkPos, sectionY, e);
                 }
             }
         }
@@ -209,7 +206,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
                         section.toNbt(nbt);
                         sectionsTag.put(String.valueOf(sectionY), nbt);
                     } catch (Exception e) {
-                        GraphLib.log.error("Error saving chunk {}, section {}", pos, sectionY, e);
+                        GLLog.error("Error saving chunk {}, section {}", pos, sectionY, e);
                     }
                 }
             }
