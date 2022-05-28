@@ -10,22 +10,27 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.FileHandler;
 import java.util.logging.SimpleFormatter;
 
 public final class GLLog {
     private static final String LOGS_DIR = "logs";
-    private static final String LOG_FILE_NAME = "graphlib-%s.log";
+    private static final String GRAPHLIB_DIR = "graphlib";
+    private static final String LOG_FILE_NAME = "%s.log";
+
+    private static final DateTimeFormatter timeStampPattern = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
     private static final Logger log = LoggerFactory.getLogger(Constants.MOD_ID);
     private static final java.util.logging.Logger fileLogger = java.util.logging.Logger.getLogger(Constants.MOD_ID);
 
     static void setupLogging(Path dir) {
         Path logsDir = dir.resolve(LOGS_DIR);
-        Path logFile = logsDir.resolve(LOG_FILE_NAME.formatted(LocalDateTime.now()));
+        Path graphLibDir = logsDir.resolve(GRAPHLIB_DIR);
+        Path logFile = graphLibDir.resolve(LOG_FILE_NAME.formatted(LocalDateTime.now().format(timeStampPattern)));
         try {
-            if (!Files.exists(logsDir)) {
-                Files.createDirectories(logsDir);
+            if (!Files.exists(graphLibDir)) {
+                Files.createDirectories(graphLibDir);
             }
 
             FileHandler fh = new FileHandler(logFile.toString());
