@@ -589,7 +589,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
                 if (matcher.matches()) {
                     try {
-                        long id = Long.parseLong(matcher.group("id"));
+                        long id = Long.parseLong(matcher.group("id"), 16);
                         ids.add(id);
                     } catch (NumberFormatException e) {
                         GLLog.warn("Encountered NumberFormatException while parsing graph id from filename: {}",
