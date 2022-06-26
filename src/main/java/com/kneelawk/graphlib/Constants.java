@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib;
 
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -21,11 +21,11 @@ public final class Constants {
         return new Identifier(MOD_ID, path);
     }
 
-    public static TranslatableText tt(String prefix, String suffix, Object... args) {
-        return new TranslatableText(prefix + "." + MOD_ID + "." + suffix, args);
+    public static Text tt(String prefix, String suffix, Object... args) {
+        return Text.translatable(prefix + "." + MOD_ID + "." + suffix, args);
     }
 
-    public static TranslatableText command(String suffix, Object... args) {
+    public static Text command(String suffix, Object... args) {
         return tt("command", suffix, args);
     }
 }

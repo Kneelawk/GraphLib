@@ -52,13 +52,13 @@ public class GraphLibCommand {
     }
 
     private static MutableText blockPosText(BlockPos pos) {
-        return Texts.bracketed(new TranslatableText("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()))
+        return Texts.bracketed(Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()))
                 .styled(
                         style -> style.withColor(Formatting.GREEN)
                                 .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
                                         "/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ()))
                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                        new TranslatableText("chat.coordinates.tooltip")))
+                                        Text.translatable("chat.coordinates.tooltip")))
                 );
     }
 }

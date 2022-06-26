@@ -8,7 +8,7 @@ import com.mojang.datafixers.DataFixer;
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
-import net.minecraft.structure.StructureManager;
+import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.thread.ThreadExecutor;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.chunk.ChunkProvider;
@@ -38,8 +38,9 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onCreate(ServerWorld serverWorld, LevelStorage.Session session, DataFixer dataFixer,
-                          StructureManager structureManager, Executor executor, ThreadExecutor<Runnable> threadExecutor,
-                          ChunkProvider chunkProvider, ChunkGenerator chunkGenerator,
+                          StructureTemplateManager structureTemplateManager, Executor executor,
+                          ThreadExecutor<Runnable> threadExecutor, ChunkProvider chunkProvider,
+                          ChunkGenerator chunkGenerator,
                           WorldGenerationProgressListener worldGenerationProgressListener,
                           ChunkStatusChangeListener chunkStatusChangeListener,
                           Supplier<PersistentStateManager> supplier, int i, boolean syncChunkWrites, CallbackInfo ci) {

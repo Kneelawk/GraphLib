@@ -2,7 +2,7 @@ package com.kneelawk.graphlib;
 
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
@@ -16,7 +16,7 @@ public class GraphLibFabricMod implements ModInitializer {
 
         GraphLib.register();
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> GraphLib.registerCommands(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> GraphLib.registerCommands(dispatcher));
 
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
             try {

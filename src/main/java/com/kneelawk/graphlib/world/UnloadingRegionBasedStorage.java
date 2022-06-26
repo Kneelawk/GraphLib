@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -87,9 +88,10 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
             // try and load the pillar
             pillar = new Int2ObjectOpenHashMap<>();
             try {
-                NbtCompound root = worker.getNbt(chunkPos);
-                if (root != null) {
-                    loadChunkPillar(chunkPos, pillar, root);
+                // blocking here isn't great, but often we *need* this data in order to continue
+                Optional<NbtCompound> root = worker.readChunkData(chunkPos).join();
+                if (root.isPresent()) {
+                    loadChunkPillar(chunkPos, pillar, root.get());
 
                     R section = pillar.get(pos.getY());
                     if (section == null) {
@@ -124,11 +126,11 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         } else {
             // try and load the pillar
             try {
-                NbtCompound root = worker.getNbt(chunkPos);
-                if (root != null) {
+                Optional<NbtCompound> root = worker.readChunkData(chunkPos).join();
+                if (root.isPresent()) {
                     timer.onChunkUse(chunkPos);
                     pillar = new Int2ObjectOpenHashMap<>();
-                    loadChunkPillar(chunkPos, pillar, root);
+                    loadChunkPillar(chunkPos, pillar, root.get());
 
                     return pillar.get(pos.getY());
                 } else {
@@ -146,11 +148,11 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         if (!loadedChunks.containsKey(chunkPos.toLong())) {
             // try and load the pillar
             try {
-                NbtCompound root = worker.getNbt(chunkPos);
-                if (root != null) {
+                Optional<NbtCompound> root = worker.readChunkData(chunkPos).join();
+                if (root.isPresent()) {
                     timer.onChunkUse(chunkPos);
                     Int2ObjectMap<R> pillar = new Int2ObjectOpenHashMap<>();
-                    loadChunkPillar(chunkPos, pillar, root);
+                    loadChunkPillar(chunkPos, pillar, root.get());
                 }
             } catch (Exception e) {
                 GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
