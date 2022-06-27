@@ -98,7 +98,7 @@ jobs:
             let lines = process.env.CHANGELOG.split('\n');
             let changesStart = lines.findIndex(line => line.startsWith('*'));
             lines.splice(0, changesStart);
-            lines.unshift(`**GraphLib ${versions[0]} has been released for Minecraft ${versions[1]}**`, '', '__Changes:__');
+            lines.unshift(`**GraphLib ${versions[0]} has been released for Minecraft ${versions[1]}!**`, '', '__Changes:__');
             lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", `With the identifier: \`com.kneelawk:graphlib:${mavenVersion}\``);
             return lines.join('\n');
           result-encoding: string
