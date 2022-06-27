@@ -76,3 +76,33 @@ jobs:
           branch: src
           directory: deploy
           repository: Kneelawk/kneelawk.github.io
+      # This is the mess that publishes discord notifications
+      - name: Read Changelog File
+        uses: juliangruber/read-file-action@v1
+        id: changelog
+        with:
+          path: changelogs/changelog-${{ steps.tag_version.outputs.tag }}.md
+      - name: Process Changelog for Announcement
+        uses: actions/github-script@v6
+        id: announcement_text
+        env:
+          CHANGELOG: ${{ steps.changelog.outputs.content }}
+          TAG_VERSION: ${{ steps.tag_version.outputs.tag }}
+        with:
+          script: |
+            let fullVersion = process.env.TAG_VERSION;
+            let versions = fullVersion.split('+');
+            let mavenVersion = fullVersion.substring(1);
+            let lines = process.env.CHANGELOG.split('\n');
+            let changesStart = lines.findIndex(line => line.startsWith('*'));
+            lines.splice(0, changesStart);
+            lines.unshift(`**GraphLib ${versions[0]} has been released for Minecraft ${versions[1]}`, '', '__Changes:__');
+            lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", `With the identifier: \`com.kneelawk:graphlib:${mavenVersion}\``);
+            return lines.join('\n');
+          result-encoding: string
+      - name: Make Release Announcement
+        uses: Ilshidur/action-discord@0.3.2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        with:
+          args: ${{ steps.announcement_text.outputs.result }}
