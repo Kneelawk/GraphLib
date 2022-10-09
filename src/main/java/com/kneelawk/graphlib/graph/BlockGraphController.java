@@ -106,7 +106,7 @@ public interface BlockGraphController extends NodeView {
      * Gets all graph ids in the given chunk.
      * <p>
      * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
-     * * return <code>null</code>.
+     * return <code>null</code>.
      *
      * @param pos the position of the chunk to get the graphs in.
      * @return a stream of all graph ids in the given chunk.
@@ -117,7 +117,7 @@ public interface BlockGraphController extends NodeView {
      * Gets all graph ids in this graph controller.
      * <p>
      * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
-     * * return <code>null</code>.
+     * return <code>null</code>.
      *
      * @return a stream of all graph ids in this graph controller.
      */
