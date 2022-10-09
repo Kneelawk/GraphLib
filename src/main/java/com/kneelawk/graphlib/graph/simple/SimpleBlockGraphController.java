@@ -258,6 +258,8 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
     /**
      * Gets the graph with the given ID.
+     * <p>
+     * Note: this <b>may</b> involve loading the graph from the filesystem.
      *
      * @param id the ID of the graph to get.
      * @return the graph with the given ID.
@@ -280,6 +282,53 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         }
 
         return graph;
+    }
+
+    /**
+     * Gets all graph ids in the given chunk section.
+     * <p>
+     * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
+     * return <code>null</code>.
+     *
+     * @param pos the position of the chunk section to get the graphs in.
+     * @return a stream of all graph ids in the given chunk section.
+     */
+    @Override
+    public @NotNull LongStream getGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(pos);
+        if (chunk != null) {
+            return chunk.graphsInChunk.longStream();
+        } else {
+            return LongStream.empty();
+        }
+    }
+
+    /**
+     * Gets all graph ids in the given chunk.
+     * <p>
+     * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
+     * return <code>null</code>.
+     *
+     * @param pos the position of the chunk to get the graphs in.
+     * @return a stream of all graph ids in the given chunk.
+     */
+    @Override
+    public @NotNull LongStream getGraphsInChunk(@NotNull ChunkPos pos) {
+        return LongStream.range(world.getBottomSectionCoord(), world.getTopSectionCoord())
+                .flatMap(y -> getGraphsInChunkSection(ChunkSectionPos.from(pos, (int) y)));
+    }
+
+    /**
+     * Gets all graph ids in this graph controller.
+     * <p>
+     * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
+     * return <code>null</code>.
+     *
+     * @return a stream of all graph ids in this graph controller.
+     */
+    @Override
+    public @NotNull LongStream getGraphs() {
+        return getExistingGraphs().longStream();
     }
 
     /**

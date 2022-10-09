@@ -3,6 +3,8 @@ package com.kneelawk.graphlib.graph;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.util.SidedPos;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,6 +82,8 @@ public interface BlockGraphController extends NodeView {
 
     /**
      * Gets the graph with the given ID.
+     * <p>
+     * Note: this <b>may</b> involve loading the graph from the filesystem.
      *
      * @param id the ID of the graph to get.
      * @return the graph with the given ID.
@@ -88,10 +92,42 @@ public interface BlockGraphController extends NodeView {
     BlockGraph getGraph(long id);
 
     /**
+     * Gets all graph ids in the given chunk section.
+     * <p>
+     * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
+     * return <code>null</code>.
+     *
+     * @param pos the position of the chunk section to get the graphs in.
+     * @return a stream of all graph ids in the given chunk section.
+     */
+    @NotNull LongStream getGraphsInChunkSection(@NotNull ChunkSectionPos pos);
+
+    /**
+     * Gets all graph ids in the given chunk.
+     * <p>
+     * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
+     * * return <code>null</code>.
+     *
+     * @param pos the position of the chunk to get the graphs in.
+     * @return a stream of all graph ids in the given chunk.
+     */
+    @NotNull LongStream getGraphsInChunk(@NotNull ChunkPos pos);
+
+    /**
+     * Gets all graph ids in this graph controller.
+     * <p>
+     * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
+     * * return <code>null</code>.
+     *
+     * @return a stream of all graph ids in this graph controller.
+     */
+    @NotNull LongStream getGraphs();
+
+    /**
      * Called by the <code>/graphlib removeemptygraphs</code> command.
      * <p>
-     * Removes all empty graphs. Graphs should never be empty, but it could theoretically happen if a mod isn't using
-     * GraphLib correctly.
+     * Removes all empty graphs. Graphs should never be empty, but it could theoretically happen if the server crashes
+     * and some things didn't get saved.
      *
      * @return the number of empty graphs removed.
      */
