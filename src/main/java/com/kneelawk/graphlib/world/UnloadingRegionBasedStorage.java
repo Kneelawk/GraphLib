@@ -134,6 +134,8 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
                     return pillar.get(pos.getY());
                 } else {
+                    timer.onChunkUse(chunkPos);
+                    loadedChunks.put(chunkPos.toLong(), new Int2ObjectOpenHashMap<>());
                     return null;
                 }
             } catch (Exception e) {
@@ -153,6 +155,9 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
                     timer.onChunkUse(chunkPos);
                     Int2ObjectMap<R> pillar = new Int2ObjectOpenHashMap<>();
                     loadChunkPillar(chunkPos, pillar, root.get());
+                } else {
+                    timer.onChunkUse(chunkPos);
+                    loadedChunks.put(chunkPos.toLong(), new Int2ObjectOpenHashMap<>());
                 }
             } catch (Exception e) {
                 GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
@@ -196,7 +201,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
     public void saveChunk(@NotNull ChunkPos pos) {
         Int2ObjectMap<R> sections = loadedChunks.get(pos.toLong());
-        if (sections != null) {
+        if (sections != null && !sections.isEmpty()) {
             NbtCompound root = new NbtCompound();
 
             NbtCompound sectionsTag = new NbtCompound();
@@ -215,6 +220,8 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
             root.put("Sections", sectionsTag);
 
             worker.setResult(pos, root);
+        } else {
+            worker.setResult(pos, null);
         }
     }
 }
