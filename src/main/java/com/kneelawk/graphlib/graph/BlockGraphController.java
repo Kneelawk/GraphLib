@@ -35,7 +35,7 @@ public interface BlockGraphController extends NodeView {
     @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos);
 
     /**
-     * Gets the IDs of all graph with nodes in the given block-position.
+     * Gets the IDs of all graphs with nodes in the given block-position.
      *
      * @param pos the block-position to get the IDs of graphs with nodes at.
      * @return a stream of all the IDs of graphs with nodes in the given block-position.
