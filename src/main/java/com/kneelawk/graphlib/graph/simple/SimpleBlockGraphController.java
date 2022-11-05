@@ -72,7 +72,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
     public SimpleBlockGraphController(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
-                SimpleBlockGraphChunk::new, SimpleBlockGraphChunk::new);
+            SimpleBlockGraphChunk::new, SimpleBlockGraphChunk::new);
         this.world = world;
         graphsDir = path.resolve(Constants.GRAPHS_DIRNAME);
         stateFile = path.resolve(Constants.STATE_FILENAME);
@@ -82,7 +82,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             Files.createDirectories(graphsDir);
         } catch (IOException e) {
             throw new RuntimeException("Unable to create graphs dir: '" + graphsDir + "'. This is a fatal exception.",
-                    e);
+                e);
         }
 
         loadState();
@@ -123,7 +123,8 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     }
 
     public void saveAll() {
-        GLLog.info("Saving block-graph for '{}'/{}", world, world.getRegistryKey().getValue());
+        // This can be useful sometimes but causes log spam in prod
+//        GLLog.info("Saving block-graph for '{}'/{}", world, world.getRegistryKey().getValue());
 
         saveAllGraphs();
         saveState();
@@ -315,7 +316,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     @Override
     public @NotNull LongStream getGraphsInChunk(@NotNull ChunkPos pos) {
         return LongStream.range(world.getBottomSectionCoord(), world.getTopSectionCoord())
-                .flatMap(y -> getGraphsInChunkSection(ChunkSectionPos.from(pos, (int) y)));
+            .flatMap(y -> getGraphsInChunkSection(ChunkSectionPos.from(pos, (int) y)));
     }
 
     /**
@@ -349,8 +350,8 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
                 if (graph.isEmpty()) {
                     GLLog.warn(
-                            "Encountered empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
-                            graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
+                        "Encountered empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
+                        graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
 
                     // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
                     destroyGraphImpl(graph);
@@ -416,7 +417,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             }
         } else {
             GLLog.warn("Tried to remove graph from non-existent chunk. Id: {}, chunk: {}, block: {}", id, sectionPos,
-                    pos);
+                pos);
         }
     }
 
@@ -445,7 +446,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         //noinspection ConstantConditions
         if (node == null) {
             GLLog.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",
-                    new RuntimeException("Stack Trace"));
+                new RuntimeException("Stack Trace"));
             return;
         }
 
@@ -469,7 +470,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             SimpleBlockGraph graph = getGraph(graphId);
             if (graph == null) {
                 GLLog.warn("Encountered invalid graph in position when detecting node changes. Id: {}, pos: {}",
-                        graphId, pos);
+                    graphId, pos);
                 continue;
             }
 
@@ -485,7 +486,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         for (BlockNode bn : newNodes) {
             if (bn == null) {
                 GLLog.warn("Something tried to add a null BlockNode! Ignoring... Pos: {}", pos,
-                        new RuntimeException("Stack Trace"));
+                    new RuntimeException("Stack Trace"));
                 continue;
             }
 
@@ -505,14 +506,14 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         }
 
         var oldConnections = node.connections().stream().map(link -> link.other(node))
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+            .collect(Collectors.toCollection(LinkedHashSet::new));
         var wantedConnections =
-                new LinkedHashSet<>(node.data().getNode().findConnections(world, this, node.data().getPos(), node));
+            new LinkedHashSet<>(node.data().getNode().findConnections(world, this, node.data().getPos(), node));
         wantedConnections.removeIf(
-                other -> !other.data().getNode().canConnect(world, this, other.data().getPos(), other, node));
+            other -> !other.data().getNode().canConnect(world, this, other.data().getPos(), other, node));
         var newConnections = wantedConnections.stream()
-                .filter(other -> ((SimpleBlockNodeHolder) other.data()).graphId != nodeGraphId ||
-                        !oldConnections.contains(other)).toList();
+            .filter(other -> ((SimpleBlockNodeHolder) other.data()).graphId != nodeGraphId ||
+                !oldConnections.contains(other)).toList();
         var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
 
         long mergedGraphId = nodeGraphId;
@@ -642,7 +643,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                         ids.add(id);
                     } catch (NumberFormatException e) {
                         GLLog.warn("Encountered NumberFormatException while parsing graph id from filename: {}",
-                                filename, e);
+                            filename, e);
                     }
                 } else {
                     GLLog.warn("Encountered non-graph file in graphs dir: {}", child);
@@ -682,8 +683,8 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             SimpleBlockGraph graph = SimpleBlockGraph.fromTag(this, id, data);
             if (graph.isEmpty()) {
                 GLLog.warn(
-                        "Loaded empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
-                        graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
+                    "Loaded empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
+                    graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
 
                 // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
                 destroyGraphImpl(graph);
@@ -725,7 +726,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
                 chunk.removeGraph(id);
             } else {
                 GLLog.warn("Attempted to destroy graph in chunk that does not exist. Id: {}, chunk: {}", id,
-                        ChunkSectionPos.from(sectionPos));
+                    ChunkSectionPos.from(sectionPos));
             }
         }
     }
