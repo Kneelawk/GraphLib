@@ -30,9 +30,7 @@ repositories {
 
 dependencies {
     minecraft(libs.minecraft)
-    mappings(loom.layered {
-        addLayer(quiltMappings.mappings("org.quiltmc:quilt-mappings:${libs.versions.quilt.mappings.get()}:v2"))
-    })
+    mappings(variantOf(libs.quilt.mappings) { classifier("intermediary-v2") })
 
     // Using modCompileOnly & modLocalRuntime so that these dependencies don't get brought into any projects that depend
     // on this one.

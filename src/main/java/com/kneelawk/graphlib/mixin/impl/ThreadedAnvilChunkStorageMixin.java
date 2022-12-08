@@ -14,7 +14,7 @@ import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.ChunkStatusChangeListener;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.world.storage.WorldSaveStorage;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -37,16 +37,25 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
     private SimpleBlockGraphController controller;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onCreate(ServerWorld serverWorld, LevelStorage.Session session, DataFixer dataFixer,
-                          StructureTemplateManager structureTemplateManager, Executor executor,
-                          ThreadExecutor<Runnable> threadExecutor, ChunkProvider chunkProvider,
-                          ChunkGenerator chunkGenerator,
-                          WorldGenerationProgressListener worldGenerationProgressListener,
-                          ChunkStatusChangeListener chunkStatusChangeListener,
-                          Supplier<PersistentStateManager> supplier, int i, boolean syncChunkWrites, CallbackInfo ci) {
-        controller = new SimpleBlockGraphController(serverWorld,
-                session.getWorldDirectory(serverWorld.getRegistryKey()).resolve(Constants.DATA_DIRNAME)
-                        .resolve(Constants.MOD_ID).resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
+    private void onCreate(
+        ServerWorld world,
+        WorldSaveStorage.Session session,
+        DataFixer dataFixer,
+        StructureTemplateManager structureTemplateManager,
+        Executor executor,
+        ThreadExecutor<Runnable> threadExecutor,
+        ChunkProvider chunkProvider,
+        ChunkGenerator chunkGenerator,
+        WorldGenerationProgressListener worldGenerationProgressListener,
+        ChunkStatusChangeListener chunkStatusChangeListener,
+        Supplier<PersistentStateManager> supplier,
+        int i,
+        boolean syncChunkWrites,
+        CallbackInfo ci
+    ) {
+        controller = new SimpleBlockGraphController(world,
+            session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME).resolve(Constants.MOD_ID)
+                .resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
     }
 
     @Inject(method = "save(Z)V", at = @At("HEAD"))
