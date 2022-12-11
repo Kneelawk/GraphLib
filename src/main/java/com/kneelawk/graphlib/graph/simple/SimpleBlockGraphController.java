@@ -63,7 +63,9 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
     private final Long2ObjectMap<SimpleBlockGraph> loadedGraphs = new Long2ObjectLinkedOpenHashMap<>();
 
-    private final ObjectSet<Node<BlockNodeHolder>> toUpdate = new ObjectLinkedOpenHashSet<>();
+    private final ObjectSet<BlockPos> nodeUpdates = new ObjectLinkedOpenHashSet<>();
+    private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
+    private final ObjectSet<Node<BlockNodeHolder>> callbackUpdates = new ObjectLinkedOpenHashSet<>();
 
     private boolean stateDirty = false;
     private long prevGraphId = -1L;
@@ -112,7 +114,10 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         chunks.tick();
         timer.tick();
 
-        handleUpdates();
+        handleNodeUpdates();
+        handleConnectionUpdates();
+        handleCallbackUpdates();
+
         unloadGraphs();
     }
 
@@ -139,10 +144,6 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         }
 
         closed = true;
-
-        // Handle any pending updates before we shut down, cause that stuff can't be saved.
-        // Note: This may cause chunk loads. I might need to remove this.
-        handleUpdates();
 
         saveAllGraphs();
         saveState();
@@ -204,8 +205,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      */
     @Override
     public void updateNodes(@NotNull BlockPos pos) {
-        Set<BlockNode> nodes = GraphLib.getNodesInBlock(world, pos);
-        onNodesChanged(pos, nodes);
+        nodeUpdates.add(pos.toImmutable());
     }
 
     /**
@@ -240,9 +240,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      */
     @Override
     public void updateConnections(@NotNull BlockPos pos) {
-        for (var node : getNodesAt(pos).toList()) {
-            updateNodeConnections(node);
-        }
+        connectionUpdates.add(new UpdateBlockPos(pos.toImmutable()));
     }
 
     /**
@@ -252,9 +250,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      */
     @Override
     public void updateConnections(@NotNull SidedPos pos) {
-        for (var node : getNodesAt(pos).toList()) {
-            updateNodeConnections(node);
-        }
+        connectionUpdates.add(new UpdateSidedPos(pos));
     }
 
     /**
@@ -442,7 +438,30 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
     // ---- Node Update Methods ---- //
 
-    void scheduleUpdate(@NotNull Node<BlockNodeHolder> node) {
+    private void handleNodeUpdates() {
+        for (BlockPos pos : nodeUpdates) {
+            Set<BlockNode> nodes = GraphLib.getNodesInBlock(world, pos);
+            onNodesChanged(pos, nodes);
+        }
+        nodeUpdates.clear();
+    }
+
+    private void handleConnectionUpdates() {
+        for (UpdatePos pos : connectionUpdates) {
+            if (pos instanceof UpdateBlockPos blockPos) {
+                for (var node : getNodesAt(blockPos.pos).toList()) {
+                    updateNodeConnections(node);
+                }
+            } else if (pos instanceof UpdateSidedPos sidedPos) {
+                for (var node : getNodesAt(sidedPos.pos).toList()) {
+                    updateNodeConnections(node);
+                }
+            }
+        }
+        connectionUpdates.clear();
+    }
+
+    void scheduleCallbackUpdate(@NotNull Node<BlockNodeHolder> node) {
         //noinspection ConstantConditions
         if (node == null) {
             GLLog.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",
@@ -450,15 +469,15 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             return;
         }
 
-        toUpdate.add(node);
+        callbackUpdates.add(node);
     }
 
-    private void handleUpdates() {
-        for (var node : toUpdate) {
+    private void handleCallbackUpdates() {
+        for (var node : callbackUpdates) {
             BlockNodeHolder data = node.data();
             data.getNode().onConnectionsChanged(world, data.getPos(), node);
         }
-        toUpdate.clear();
+        callbackUpdates.clear();
     }
 
     // ---- Private Methods ---- //
@@ -773,5 +792,14 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
             stateDirty = false;
         }
+    }
+
+    private sealed interface UpdatePos {
+    }
+
+    private record UpdateBlockPos(BlockPos pos) implements UpdatePos {
+    }
+
+    private record UpdateSidedPos(SidedPos pos) implements UpdatePos {
     }
 }

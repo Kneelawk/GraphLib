@@ -229,7 +229,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
         nodesInPos.put(pos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         controller.addGraphInPos(id, pos);
-        controller.scheduleUpdate(graphNode);
+        controller.scheduleCallbackUpdate(graphNode);
         return graphNode;
     }
 
@@ -243,9 +243,9 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
         for (Link<BlockNodeHolder> link : node.connections()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
-            controller.scheduleUpdate(link.other(node));
+            controller.scheduleCallbackUpdate(link.other(node));
         }
-        controller.scheduleUpdate(node);
+        controller.scheduleCallbackUpdate(node);
 
         // actually remove the node
         graph.remove(node);
@@ -285,14 +285,14 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
 
     void link(@NotNull Node<BlockNodeHolder> a, @NotNull Node<BlockNodeHolder> b) {
         graph.link(a, b);
-        controller.scheduleUpdate(a);
-        controller.scheduleUpdate(b);
+        controller.scheduleCallbackUpdate(a);
+        controller.scheduleCallbackUpdate(b);
     }
 
     void unlink(@NotNull Node<BlockNodeHolder> a, @NotNull Node<BlockNodeHolder> b) {
         graph.unlink(a, b);
-        controller.scheduleUpdate(a);
-        controller.scheduleUpdate(b);
+        controller.scheduleCallbackUpdate(a);
+        controller.scheduleCallbackUpdate(b);
     }
 
     void merge(@NotNull SimpleBlockGraph other) {
