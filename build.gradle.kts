@@ -1,6 +1,8 @@
 plugins {
     `maven-publish`
-    alias(libs.plugins.quilt.loom)
+    id("fabric-loom")
+    id("io.github.juuxel.loom-quiltflower")
+    id("org.quiltmc.quilt-mappings-on-loom")
 }
 
 val maven_group: String by project
@@ -26,24 +28,29 @@ base {
 
 repositories {
     mavenCentral()
+    maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
 }
 
 dependencies {
-    minecraft(libs.minecraft)
+    val minecraft_version: String by project
+    minecraft("com.mojang:minecraft:$minecraft_version")
+    val quilt_mappings: String by project
     mappings(loom.layered {
-        addLayer(quiltMappings.mappings("org.quiltmc:quilt-mappings:${libs.versions.quilt.mappings.get()}:v2"))
+        addLayer(quiltMappings.mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:v2"))
     })
 
     // Using modCompileOnly & modLocalRuntime so that these dependencies don't get brought into any projects that depend
     // on this one.
 
     // Quilt Loader
-    modCompileOnly(libs.quilt.loader)
-    modLocalRuntime(libs.quilt.loader)
+    val fabric_loader_version: String by project
+    modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
+    modLocalRuntime("net.fabricmc:fabric-loader:$fabric_loader_version")
 
     // Quilted Fabric Api
-    modCompileOnly(libs.quilted.fabric.api)
-    modLocalRuntime(libs.quilted.fabric.api)
+    val fapi_version: String by project
+    modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
+    modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.
