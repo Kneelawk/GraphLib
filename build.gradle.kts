@@ -25,6 +25,10 @@ base {
     archivesName.set(archives_base_name)
 }
 
+loom {
+    accessWidenerPath.set(file("src/main/resources/graphlib.accesswidener"))
+}
+
 repositories {
     mavenCentral()
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt Releases" }
