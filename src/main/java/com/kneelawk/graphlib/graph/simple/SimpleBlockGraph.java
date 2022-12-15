@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.graph.simple;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.kneelawk.graphlib.GLLog;
+import com.kneelawk.graphlib.GraphLibEvents;
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.SidedBlockNode;
@@ -190,6 +191,16 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
     }
 
     /**
+     * Gets all the chunk sections that this graph currently has nodes in.
+     *
+     * @return a stream of all the chunk sections this graph is in.
+     */
+    @Override
+    public @NotNull Stream<ChunkSectionPos> getChunks() {
+        return chunks.longStream().mapToObj(ChunkSectionPos::from);
+    }
+
+    /**
      * Gets the number of nodes in this graph.
      *
      * @return the number of nodes in this graph.
@@ -366,10 +377,19 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
                 }
 
                 newBlockGraphs.add(bg);
+
+                // Fire update events for the new graphs
+                GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(controller.world, controller, bg);
             }
+
+            // Fire the update events
+            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(controller.world, controller, this);
 
             return newBlockGraphs;
         } else {
+            // Fire the update events
+            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(controller.world, controller, this);
+
             return List.of();
         }
     }

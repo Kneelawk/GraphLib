@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.graph.simple;
 import com.kneelawk.graphlib.Constants;
 import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.GraphLib;
+import com.kneelawk.graphlib.GraphLibEvents;
 import com.kneelawk.graphlib.graph.BlockGraphController;
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
@@ -51,7 +52,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      */
     private static final int MAX_AGE = 20 * 60;
 
-    private final ServerWorld world;
+    final ServerWorld world;
 
     private final UnloadingRegionBasedStorage<SimpleBlockGraphChunk> chunks;
 
@@ -374,6 +375,10 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     @NotNull SimpleBlockGraph createGraph() {
         SimpleBlockGraph graph = new SimpleBlockGraph(this, getNextGraphId());
         loadedGraphs.put(graph.getId(), graph);
+
+        // Fire graph created event
+        GraphLibEvents.GRAPH_CREATED.invoker().graphCreated(world, this, graph);
+
         return graph;
     }
 
@@ -391,6 +396,9 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         }
 
         destroyGraphImpl(graph);
+
+        // Fire the event
+        GraphLibEvents.GRAPH_DESTROYED.invoker().graphDestroyed(world, this, id);
     }
 
     void addGraphInPos(long id, @NotNull BlockPos pos) {
@@ -568,6 +576,8 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         if (!removedConnections.isEmpty()) {
             // Split should never leave graph empty. It also should clean up after itself.
             mergedGraph.split();
+        } else {
+            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
         }
     }
 
