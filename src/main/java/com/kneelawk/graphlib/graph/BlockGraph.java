@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.graph;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.util.SidedPos;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Stream;
@@ -40,6 +41,13 @@ public interface BlockGraph {
      * @return a stream of all the nodes in this graph.
      */
     @NotNull Stream<Node<BlockNodeHolder>> getNodes();
+
+    /**
+     * Gets all the chunk sections that this graph currently has nodes in.
+     *
+     * @return a stream of all the chunk sections this graph is in.
+     */
+    @NotNull Stream<ChunkSectionPos> getChunks();
 
     /**
      * Gets the number of nodes in this graph.
