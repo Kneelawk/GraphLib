@@ -23,16 +23,13 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public final class GraphLibClientNetworking {
     private GraphLibClientNetworking() {
     }
 
-    private static final Int2ObjectMap<Identifier> idMap = new Int2ObjectOpenHashMap<>();
+    private static final Map<Integer, Identifier> idMap = Collections.synchronizedMap(new Int2ObjectLinkedOpenHashMap<>());
 
     public static final BlockNodePacketDecoder DEFAULT_DECODER = buf -> {
         int hashCode = buf.readInt();
@@ -55,21 +52,18 @@ public final class GraphLibClientNetworking {
                 System.out.println("-> Packet: ID_MAP_FULL");
                 int size = buf.readVarInt();
 
-                Int2ObjectMap<Identifier> localIdMap = new Int2ObjectLinkedOpenHashMap<>(size);
                 for (int i = 0; i < size; i++) {
                     Identifier id = buf.readIdentifier();
                     int index = buf.readVarInt();
-                    localIdMap.put(index, id);
+                    idMap.put(index, id);
                 }
-
-                client.execute(() -> idMap.putAll(localIdMap));
             });
         ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.ID_MAP_PUT_ID,
             (client, handler, buf, responseSender) -> {
                 System.out.println("-> Packet: ID_MAP_PUT");
                 Identifier id = buf.readIdentifier();
                 int index = buf.readVarInt();
-                client.execute(() -> idMap.put(index, id));
+                idMap.put(index, id);
             });
 
         ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.GRAPH_UPDATE_ID,
