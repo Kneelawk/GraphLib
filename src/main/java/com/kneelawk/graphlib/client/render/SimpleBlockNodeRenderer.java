@@ -21,8 +21,8 @@ public final class SimpleBlockNodeRenderer implements BlockNodeRenderer<SimpleCl
     public void render(@NotNull SimpleClientBlockNode node, @NotNull Node<ClientBlockNodeHolder> holderNode,
                        @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack,
                        @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint, int graphColor) {
-        DebugRenderer.drawCube(stack, consumers.getBuffer(DebugRenderer.Layers.DEBUG_LINES), (float) endpoint.x,
-            (float) endpoint.y, (float) endpoint.z, 1f / 32f, 1f / 32f, 1f / 32f, graphColor);
+        RenderUtils.drawCube(stack, consumers.getBuffer(DebugRenderer.Layers.DEBUG_LINES), (float) endpoint.x,
+            (float) endpoint.y, (float) endpoint.z, 3f / 64f, 3f / 64f, 3f / 64f, graphColor);
     }
 
     @Override
@@ -30,6 +30,6 @@ public final class SimpleBlockNodeRenderer implements BlockNodeRenderer<SimpleCl
                                           @NotNull Node<ClientBlockNodeHolder> holderNode,
                                           @NotNull ClientBlockGraph graph, int nodesAtPos, int indexAmongNodes,
                                           @NotNull List<Vec3d> otherEndpoints) {
-        return new Vec3d(0.5, 0.5, 0.5);
+        return RenderUtils.distributedEndpoint(nodesAtPos, indexAmongNodes, 1.0 / 8.0, 1.0 / 16.0);
     }
 }

@@ -4,9 +4,11 @@ import com.kneelawk.graphlib.client.GraphLibClient;
 import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.client.graph.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.graph.ClientBlockNode;
+import com.kneelawk.graphlib.graph.SidedClientBlockNode;
 import com.kneelawk.graphlib.graph.struct.Link;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.mixin.api.RenderLayerHelper;
+import com.kneelawk.graphlib.util.SidedPos;
 import com.mojang.blaze3d.framebuffer.Framebuffer;
 import com.mojang.blaze3d.framebuffer.SimpleFramebuffer;
 import com.mojang.blaze3d.glfw.Window;
@@ -27,12 +29,9 @@ import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.*;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.OptionalDouble;
-import java.util.Random;
+import java.util.*;
 
 public final class DebugRenderer {
     private DebugRenderer() {
@@ -42,6 +41,20 @@ public final class DebugRenderer {
     private static final Object2ObjectMap<RenderLayer, BufferBuilder> layerMap = new Object2ObjectLinkedOpenHashMap<>();
     private static final VertexConsumerProvider.Immediate immediate =
         VertexConsumerProvider.immediate(layerMap, new BufferBuilder(256));
+
+    private sealed interface NPos {
+    }
+
+    private record NBlockPos(BlockPos pos) implements NPos {
+    }
+
+    private record NSidedPos(SidedPos pos) implements NPos {
+    }
+
+    private static class NPosData {
+        int nodeCount = 0;
+        List<Vec3d> endpoints = new ArrayList<>();
+    }
 
     static {
         layerMap.put(Layers.DEBUG_LINES, new BufferBuilder(Layers.DEBUG_LINES.getExpectedBufferSize()));
@@ -123,8 +136,43 @@ public final class DebugRenderer {
         stack.push();
         stack.translate(-camPos.x, -camPos.y, -camPos.z);
 
+        renderGraphs(stack);
+
+        stack.pop();
+
+        immediate.draw();
+
+        client.getFramebuffer().beginWrite(false);
+
+        RenderSystem.enableDepthTest();
+        mv.pop();
+        RenderSystem.applyModelViewMatrix();
+
+        RenderSystem.enableBlend();
+        framebuffer.draw(window.getFramebufferWidth(), window.getFramebufferHeight(), false);
+        RenderSystem.disableBlend();
+    }
+
+    private static void renderGraphs(MatrixStack stack) {
+        Map<NPos, NPosData> nodeEndpoints = new HashMap<>();
+
         for (ClientBlockGraph graph : GraphLibClient.DEBUG_GRAPHS.values()) {
-            int graphColor = graphColor(graph.graphId());
+            for (var node : graph.graph()) {
+                ClientBlockNode cbn = node.data().node();
+
+                NPos pos;
+                if (cbn instanceof SidedClientBlockNode scbn) {
+                    pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
+                } else {
+                    pos = new NBlockPos(node.data().pos());
+                }
+
+                nodeEndpoints.computeIfAbsent(pos, nPos -> new NPosData()).nodeCount++;
+            }
+        }
+
+        for (ClientBlockGraph graph : GraphLibClient.DEBUG_GRAPHS.values()) {
+            int graphColor = RenderUtils.graphColor(graph.graphId());
             Object2ObjectMap<Node<ClientBlockNodeHolder>, Vec3d> endpoints =
                 new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
             ObjectSet<Link<ClientBlockNodeHolder>> links = new ObjectLinkedOpenHashSet<>();
@@ -134,9 +182,20 @@ public final class DebugRenderer {
                 BlockNodeRendererHolder<?> renderer = GraphLibClient.BLOCK_NODE_RENDERER.get(cbn.getRenderId());
                 if (renderer == null) continue;
 
-                // FIXME passes dud arguments
-                Vec3d endpoint = renderer.getLineEndpoint(cbn, node, graph, 0, 0, List.of());
+                NPos pos;
+                if (cbn instanceof SidedClientBlockNode scbn) {
+                    pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
+                } else {
+                    pos = new NBlockPos(node.data().pos());
+                }
+
+                // should never be null unless GraphLibClient.DEBUG_GRAPHS was modified by another thread
+                NPosData data = nodeEndpoints.get(pos);
+
+                Vec3d endpoint =
+                    renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(), data.endpoints);
                 endpoints.put(node, endpoint);
+                data.endpoints.add(endpoint);
 
                 BlockPos origin = node.data().pos();
 
@@ -163,106 +222,10 @@ public final class DebugRenderer {
                 BlockPos posA = nodeA.data().pos();
                 BlockPos posB = nodeB.data().pos();
 
-                drawLine(stack, consumer, (float) (posA.getX() + endpointA.x), (float) (posA.getY() + endpointA.y),
+                RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x), (float) (posA.getY() + endpointA.y),
                     (float) (posA.getZ() + endpointA.z), (float) (posB.getX() + endpointB.x),
                     (float) (posB.getY() + endpointB.y), (float) (posB.getZ() + endpointB.z), graphColor);
             }
         }
-
-        stack.pop();
-
-        immediate.draw();
-
-        client.getFramebuffer().beginWrite(false);
-
-        RenderSystem.enableDepthTest();
-        mv.pop();
-        RenderSystem.applyModelViewMatrix();
-
-        RenderSystem.enableBlend();
-        framebuffer.draw(window.getFramebufferWidth(), window.getFramebufferHeight(), false);
-        RenderSystem.disableBlend();
-    }
-
-    public static void drawCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
-                                float width, float height, float depth, int color) {
-        drawCube(stack, consumer, x, y, z, width, 0f, 0f, 0f, height, 0f, 0f, 0f, depth, color);
-    }
-
-    public static void drawCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
-                                float radX0, float radY0, float radZ0, float radX1, float radY1, float radZ1,
-                                float radX2, float radY2, float radZ2, int color) {
-        drawRect(stack, consumer, x - radX2, y - radY2, z - radZ2, radX0, radY0, radZ0, radX1, radY1, radZ1, color);
-        drawRect(stack, consumer, x + radX2, y + radY2, z + radZ2, radX0, radY0, radZ0, radX1, radY1, radZ1, color);
-        drawLine(stack, consumer, x - radX0 - radX1 - radX2, y - radY0 - radY1 - radY2, z - radZ0 - radZ1 - radZ2,
-            x - radX0 - radX1 + radX2, y - radY0 - radY1 + radY2, z - radZ0 - radZ1 + radZ2, color);
-        drawLine(stack, consumer, x - radX0 + radX1 - radX2, y - radY0 + radY1 - radY2, z - radZ0 + radZ1 - radZ2,
-            x - radX0 + radX1 + radX2, y - radY0 + radY1 + radY2, z - radZ0 + radZ1 + radZ2, color);
-        drawLine(stack, consumer, x + radX0 + radX1 - radX2, y + radY0 + radY1 - radY2, z + radZ0 + radZ1 - radZ2,
-            x + radX0 + radX1 + radX2, y + radY0 + radY1 + radY2, z + radZ0 + radZ1 + radZ2, color);
-        drawLine(stack, consumer, x + radX0 - radX1 - radX2, y + radY0 - radY1 - radY2, z + radZ0 - radZ1 - radZ2,
-            x + radX0 - radX1 + radX2, y + radY0 - radY1 + radY2, z + radZ0 - radZ1 + radZ2, color);
-    }
-
-    public static void drawRect(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
-                                float radX0, float radY0, float radZ0, float radX1, float radY1, float radZ1,
-                                int color) {
-        drawLine(stack, consumer, x - radX0 - radX1, y - radY0 - radY1, z - radZ0 - radZ1, x - radX0 + radX1,
-            y - radY0 + radY1, z - radZ0 + radZ1, color);
-        drawLine(stack, consumer, x - radX0 + radX1, y - radY0 + radY1, z - radZ0 + radZ1, x + radX0 + radX1,
-            y + radY0 + radY1, z + radZ0 + radZ1, color);
-        drawLine(stack, consumer, x + radX0 + radX1, y + radY0 + radY1, z + radZ0 + radZ1, x + radX0 - radX1,
-            y + radY0 - radY1, z + radZ0 - radZ1, color);
-        drawLine(stack, consumer, x + radX0 - radX1, y + radY0 - radY1, z + radZ0 - radZ1, x - radX0 - radX1,
-            y - radY0 - radY1, z - radZ0 - radZ1, color);
-    }
-
-    public static void drawLine(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x0, float y0,
-                                float z0, float x1, float y1, float z1, int color) {
-        Matrix4f model = stack.peek().getPosition();
-        Matrix3f normal = stack.peek().getNormal();
-
-        float dx = x1 - x0;
-        float dy = y1 - y0;
-        float dz = z1 - z0;
-        float fact = MathHelper.fastInverseSqrt(dx * dx + dy * dy + dz * dz);
-        dx *= fact;
-        dy *= fact;
-        dz *= fact;
-
-        consumer.vertex(model, x0, y0, z0).color(color).normal(normal, dx, dy, dz).next();
-        consumer.vertex(model, x1, y1, z1).color(color).normal(normal, dx, dy, dz).next();
-    }
-
-    public static void fillCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
-                                float width, float height, float depth, int color) {
-        fillCube(stack, consumer, x, y, z, width, 0f, 0f, 0f, height, 0f, 0f, 0f, depth, color);
-    }
-
-    public static void fillCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
-                                float radX0, float radY0, float radZ0, float radX1, float radY1, float radZ1,
-                                float radX2, float radY2, float radZ2, int color) {
-        fillRect(stack, consumer, x - radX1, y - radY1, z - radZ1, radX0, radY0, radZ0, radX2, radY2, radZ2, color);
-        fillRect(stack, consumer, x + radX1, y + radY1, z + radZ1, radX0, radY0, radZ0, -radX2, -radY2, -radZ2, color);
-        fillRect(stack, consumer, x - radX2, y - radY2, z - radZ2, -radX0, -radY0, -radZ0, radX1, radY1, radZ1, color);
-        fillRect(stack, consumer, x + radX2, y + radY2, z + radZ2, radX0, radY0, radZ0, radX1, radY1, radZ1, color);
-        fillRect(stack, consumer, x - radX0, y - radY0, z - radZ0, radX2, radY2, radZ2, radX1, radY1, radZ1, color);
-        fillRect(stack, consumer, x + radX0, y + radY0, z + radZ0, -radX2, -radY2, -radZ2, radX1, radY1, radZ1, color);
-    }
-
-    public static void fillRect(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
-                                float radX0, float radY0, float radZ0, float radX1, float radY1, float radZ1,
-                                int color) {
-        Matrix4f model = stack.peek().getPosition();
-
-        consumer.vertex(model, x - radX0 + radX1, y - radY0 + radY1, z - radZ0 + radZ1).color(color).next();
-        consumer.vertex(model, x - radX0 - radX1, y - radY0 - radY1, z - radZ0 - radZ1).color(color).next();
-        consumer.vertex(model, x + radX0 - radX1, y + radY0 - radY1, z + radZ0 - radZ1).color(color).next();
-        consumer.vertex(model, x + radX0 + radX1, y + radY0 + radY1, z + radZ0 + radZ1).color(color).next();
-    }
-
-    public static int graphColor(long graphId) {
-        Random rand = new Random(graphId);
-        return rand.nextInt() | 0xFF000000;
     }
 }
