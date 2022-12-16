@@ -2,7 +2,6 @@ plugins {
     `maven-publish`
     id("fabric-loom")
     id("io.github.juuxel.loom-quiltflower")
-    id("org.quiltmc.quilt-mappings-on-loom")
 }
 
 val maven_group: String by project
@@ -32,16 +31,15 @@ loom {
 
 repositories {
     mavenCentral()
-    maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
+    maven("https://maven.quiltmc.org/repository/release") { name = "Quilt Releases" }
+    maven("https://maven.quiltmc.org/repository/snapshot") { name = "Quilt Snapshots" }
 }
 
 dependencies {
     val minecraft_version: String by project
     minecraft("com.mojang:minecraft:$minecraft_version")
     val quilt_mappings: String by project
-    mappings(loom.layered {
-        addLayer(quiltMappings.mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:v2"))
-    })
+    mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:intermediary-v2")
 
     // Using modCompileOnly & modLocalRuntime so that these dependencies don't get brought into any projects that depend
     // on this one.
