@@ -43,6 +43,7 @@ public final class GraphLibCommonNetworking {
     public static final BlockNodePacketEncoder<BlockNode> DEFAULT_ENCODER = (node, holderNode, world, view, buf) -> {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(node.hashCode());
+        buf.writeInt(node.getClass().getName().hashCode());
 
         if (node instanceof SidedBlockNode sided) {
             buf.writeByte(1);

@@ -6,7 +6,7 @@ import com.kneelawk.graphlib.graph.ClientBlockNode;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
-public record SimpleClientBlockNode(int hash) implements ClientBlockNode {
+public record SimpleClientBlockNode(int hash, int classHash) implements ClientBlockNode {
     /**
      * Gets the id of the renderer registered with {@link GraphLibClient#BLOCK_NODE_RENDERER}.
      *

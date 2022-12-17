@@ -22,7 +22,7 @@ public final class SimpleSidedBlockNodeRenderer implements BlockNodeRenderer<Sim
                        @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack,
                        @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint, int graphColor) {
         RenderUtils.drawRect(stack, consumers.getBuffer(DebugRenderer.Layers.DEBUG_LINES), (float) endpoint.x,
-            (float) endpoint.y, (float) endpoint.z, 3f / 64f, 3f / 64f, node.side(), graphColor);
+            (float) endpoint.y, (float) endpoint.z, 3f / 64f, 3f / 64f, node.side(), node.classHash() | 0xFF000000);
     }
 
     @Override

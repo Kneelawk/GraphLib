@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 
-public record SimpleClientSidedBlockNode(int hash, @NotNull Direction side) implements ClientBlockNode, SidedClientBlockNode {
+public record SimpleClientSidedBlockNode(int hash, int classHash, @NotNull Direction side) implements ClientBlockNode, SidedClientBlockNode {
     @Override
     public @NotNull Identifier getRenderId() {
         return Constants.id("simple_sided");
