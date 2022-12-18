@@ -7,6 +7,7 @@ import com.kneelawk.graphlib.client.graph.SimpleClientSidedBlockNode;
 import com.kneelawk.graphlib.client.render.BlockNodeRendererHolder;
 import com.kneelawk.graphlib.client.render.SimpleBlockNodeRenderer;
 import com.kneelawk.graphlib.client.render.SimpleSidedBlockNodeRenderer;
+import com.kneelawk.graphlib.net.BlockNodeInspectionPacketDecoder;
 import com.kneelawk.graphlib.net.BlockNodePacketDecoder;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -35,6 +36,11 @@ public final class GraphLibClient {
     private static final RegistryKey<Registry<BlockNodeRendererHolder<?>>> BLOCK_NODE_RENDERER_KEY =
         RegistryKey.ofRegistry(BLOCK_NODE_RENDERER_ID);
 
+    private static final Identifier BLOCK_NODE_INSPECTION_PACKET_DECODER_ID =
+        Constants.id("block_node_inspection_packet_decoder");
+    private static final RegistryKey<Registry<BlockNodeInspectionPacketDecoder>>
+        BLOCK_NODE_INSPECTION_PACKET_DECODER_KEY = RegistryKey.ofRegistry(BLOCK_NODE_INSPECTION_PACKET_DECODER_ID);
+
     /**
      * Registry for custom block node decoders.
      */
@@ -46,6 +52,12 @@ public final class GraphLibClient {
      */
     public static final Registry<BlockNodeRendererHolder<?>> BLOCK_NODE_RENDERER =
         new SimpleRegistry<>(BLOCK_NODE_RENDERER_KEY, Lifecycle.experimental(), null);
+
+    /**
+     * Registry for custom block node inspection decoders.
+     */
+    public static final Registry<BlockNodeInspectionPacketDecoder> BLOCK_NODE_INSPECTION_PACKET_DECODER =
+        new SimpleRegistry<>(BLOCK_NODE_INSPECTION_PACKET_DECODER_KEY, Lifecycle.experimental(), null);
 
     /**
      * Map of graph id long to graph for all currently debugging graphs.

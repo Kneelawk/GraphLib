@@ -23,6 +23,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
@@ -39,6 +40,9 @@ public final class GraphLibCommonNetworking {
     public static final Identifier GRAPH_UPDATE_BULK_ID = Constants.id("graph_update_bulk");
     public static final Identifier GRAPH_DESTROY_ID = Constants.id("graph_destroy");
     public static final Identifier DEBUGGING_STOP_ID = Constants.id("debugging_stop");
+    public static final Identifier C2S_DEBUG_DETAIL_ID = Constants.id("c2s_debug_detail");
+    public static final Identifier S2C_DEBUG_DETAIL_ID = Constants.id("s2c_debug_detail");
+    public static final Identifier S2C_DEBUG_DETAIL_ERROR_ID = Constants.id("s2c_debug_detail_error");
 
     public static final BlockNodePacketEncoder<BlockNode> DEFAULT_ENCODER = (node, holderNode, world, view, buf) -> {
         // This keeps otherwise identical-looking client-side nodes separate.
@@ -116,21 +120,46 @@ public final class GraphLibCommonNetworking {
 
             sendToDebuggingPlayers(world, GRAPH_DESTROY_ID, buf);
         });
+
+        ServerPlayNetworking.registerGlobalReceiver(C2S_DEBUG_DETAIL_ID,
+            (server, player, handler, inBuf, responseSender) -> {
+                inBuf.retain();
+                Identifier inspectionId = inBuf.readIdentifier();
+                BlockPos pos = inBuf.readBlockPos();
+
+                server.execute(() -> {
+                    BlockNodeInspectionPacketHandler inspectionHandler =
+                        GraphLib.BLOCK_NODE_INSPECTION_PACKET_HANDLER.get(inspectionId);
+                    if (inspectionHandler == null) {
+                        responseSender.sendPacket(S2C_DEBUG_DETAIL_ERROR_ID, PacketByteBufs.empty());
+                    } else {
+                        ServerWorld world = player.getWorld();
+                        BlockGraphController controller = GraphLib.getController(world);
+                        PacketByteBuf outBuf = PacketByteBufs.create();
+                        outBuf.writeIdentifier(inspectionId);
+
+                        inspectionHandler.inspect(world, controller, pos, inBuf, outBuf);
+
+                        inBuf.release();
+                        responseSender.sendPacket(S2C_DEBUG_DETAIL_ID, outBuf);
+                    }
+                });
+            });
     }
 
     private static void sendIdMap(ServerPlayerEntity player) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(idMap.size());
-        for (var entry : idMap.entrySet()) {
+        for (var entry : idMap.object2IntEntrySet()) {
             buf.writeIdentifier(entry.getKey());
-            buf.writeVarInt(entry.getValue());
+            buf.writeVarInt(entry.getIntValue());
         }
         ServerPlayNetworking.send(player, ID_MAP_BULK_ID, buf);
     }
 
     private static int getIdentifierInt(ServerWorld world, Identifier id) {
         if (idMap.containsKey(id)) {
-            return idMap.get(id);
+            return idMap.getInt(id);
         } else {
             int index = idMap.size();
             idMap.put(id, index);

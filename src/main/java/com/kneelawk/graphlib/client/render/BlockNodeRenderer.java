@@ -6,6 +6,7 @@ import com.kneelawk.graphlib.graph.ClientBlockNode;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,12 +28,13 @@ public interface BlockNodeRenderer<N extends ClientBlockNode> {
      * @param consumers  the vertex consumers to render to.
      * @param stack      the matrix stack containing relevant transformations for rendering at the correct position.
      * @param graph      the graph that the node belongs to.
-     * @param endpoint
+     * @param endpoint   the current line-endpoint of the node.
      * @param graphColor the color that this graph has been assigned.
+     * @param hovered
      */
     void render(@NotNull N node, @NotNull Node<ClientBlockNodeHolder> holderNode,
                 @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack, @NotNull ClientBlockGraph graph,
-                @NotNull Vec3d endpoint, int graphColor);
+                @NotNull Vec3d endpoint, int graphColor, boolean hovered);
 
     /**
      * Gets the point where lines connecting to the given node should be shown connecting to.
@@ -52,4 +54,18 @@ public interface BlockNodeRenderer<N extends ClientBlockNode> {
     @NotNull Vec3d getLineEndpoint(@NotNull N node, @NotNull Node<ClientBlockNodeHolder> holderNode,
                                    @NotNull ClientBlockGraph graph, int nodesAtPos, int indexAmongNodes,
                                    @NotNull List<Vec3d> otherEndpoints);
+
+    /**
+     * Gets a node's hitbox for selecting the node.
+     *
+     * @param node       the node to potentially be selected.
+     * @param holderNode the graph node of the current node, for ease of checking connections and block position.
+     * @param graph      the graph that the node belongs to.
+     * @param endpoint   the current line-endpoint of the node.
+     * @return a box used for determining whether the player is trying to select the node.
+     */
+    @NotNull Box getHitbox(@NotNull N node, @NotNull Node<ClientBlockNodeHolder> holderNode,
+                           @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint);
+
+    void renderInspectionData(@NotNull N node, @NotNull Object inspectedData);
 }

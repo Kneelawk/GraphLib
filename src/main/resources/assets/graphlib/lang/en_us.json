@@ -1,5 +1,7 @@
 {
   "command.graphlib.graphlib.updateblocks.starting": "Updating GraphLib block-nodes from %s to %s... This could cause some lag.",
   "command.graphlib.graphlib.updateblocks.success": "Finished updating GraphLib block-nodes from %s to %s.",
-  "command.graphlib.graphlib.removeemptygraphs.success": "Removed %d empty graphs."
+  "command.graphlib.graphlib.removeemptygraphs.success": "Removed %d empty graphs.",
+  "key.graphlib.debug_node_inspect": "Inspect a Debug Node",
+  "category.graphlib.graphlib": "GraphLib"
 }

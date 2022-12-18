@@ -16,13 +16,14 @@ import org.jetbrains.annotations.NotNull;
 public interface BlockNodePacketEncoder<N extends BlockNode> {
     /**
      * Encodes a {@link BlockNode} to a {@link PacketByteBuf}.
-     *
+     * <p>
      * Note the given buffer will have {@link BlockNode}s encoded before and after this one.
-     * @param node the block node to encode.
-     * @param holderNode
-     * @param world
-     * @param view
-     * @param buf
+     *
+     * @param node       the block node to encode.
+     * @param holderNode the graph-node of the current node, for ease of checking connections and graph id.
+     * @param world      the world that this node is associated with.
+     * @param view       the graph collection that this node is in.
+     * @param buf        the packet buffer to write to.
      */
     void toPacket(@NotNull N node, @NotNull Node<BlockNodeHolder> holderNode, @NotNull ServerWorld world,
                   @NotNull NodeView view, @NotNull PacketByteBuf buf);

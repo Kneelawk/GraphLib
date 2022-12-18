@@ -6,6 +6,7 @@ import com.kneelawk.graphlib.graph.ClientBlockNode;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,20 +23,26 @@ public record BlockNodeRendererHolder<N extends ClientBlockNode>(@NotNull Class<
                                                                  @NotNull BlockNodeRenderer<N> nodeRenderer) {
     public void render(@NotNull ClientBlockNode node, @NotNull Node<ClientBlockNodeHolder> holderNode,
                        @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack,
-                       @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint, int graphColor) {
+                       @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint, int graphColor, boolean hovered) {
         if (nodeClass.isInstance(node)) {
-            nodeRenderer.render(nodeClass.cast(node), holderNode, consumers, stack, graph, endpoint, graphColor);
+            nodeRenderer.render(nodeClass.cast(node), holderNode, consumers, stack, graph, endpoint, graphColor, hovered);
         }
     }
 
-    public Vec3d getLineEndpoint(@NotNull ClientBlockNode node, @NotNull Node<ClientBlockNodeHolder> holderNode,
-                                 @NotNull ClientBlockGraph graph, int nodesAtPos, int indexAmongNodes,
-                                 @NotNull List<Vec3d> otherEndpoints) {
+    public @NotNull Vec3d getLineEndpoint(@NotNull ClientBlockNode node, @NotNull Node<ClientBlockNodeHolder> holderNode, @NotNull ClientBlockGraph graph, int nodesAtPos, int indexAmongNodes, @NotNull List<Vec3d> otherEndpoints) {
         if (nodeClass.isInstance(node)) {
             return nodeRenderer.getLineEndpoint(nodeClass.cast(node), holderNode, graph, nodesAtPos, indexAmongNodes,
                 otherEndpoints);
         } else {
             return Vec3d.ZERO;
+        }
+    }
+
+    public @NotNull Box getHitbox(@NotNull ClientBlockNode node, @NotNull Node<ClientBlockNodeHolder> holderNode, @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint) {
+        if (nodeClass.isInstance(node)) {
+            return nodeRenderer.getHitbox(nodeClass.cast(node), holderNode, graph, endpoint);
+        } else {
+            return new Box(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         }
     }
 }

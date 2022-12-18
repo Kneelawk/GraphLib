@@ -6,16 +6,19 @@ import com.kneelawk.graphlib.client.graph.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.client.graph.SimpleClientBlockNode;
 import com.kneelawk.graphlib.client.graph.SimpleClientSidedBlockNode;
 import com.kneelawk.graphlib.graph.ClientBlockNode;
+import com.kneelawk.graphlib.graph.SidedClientBlockNode;
 import com.kneelawk.graphlib.graph.struct.Graph;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.net.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.net.GraphLibCommonNetworking;
+import com.kneelawk.graphlib.util.SidedPos;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -114,6 +117,18 @@ public final class GraphLibClientNetworking {
                 GraphLibClient.DEBUG_GRAPHS.clear();
                 GraphLibClient.GRAPHS_PER_CHUNK.clear();
             }));
+    }
+
+    public static void sendNodeDetailsRequest(Node<ClientBlockNodeHolder> holderNode, Graph<ClientBlockNodeHolder> graph) {
+        ClientBlockNodeHolder holder = holderNode.data();
+        ClientBlockNode node = holder.node();
+        BlockPos pos = holder.pos();
+
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeIdentifier(node.getInspectionId());
+        buf.writeBlockPos(pos);
+
+        node.toInspectionPacket(holderNode, graph, buf);
     }
 
     @Nullable

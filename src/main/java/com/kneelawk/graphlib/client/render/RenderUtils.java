@@ -9,16 +9,24 @@ import org.jetbrains.annotations.NotNull;
 import java.math.RoundingMode;
 import java.util.Random;
 
-public class RenderUtils {
-    private static final Vec3d[][] PLANAR_VECTORS = {
+public final class RenderUtils {
+    private RenderUtils() {
+    }
+
+    private static final Vec3d[][] PERPENDICULAR_VECTORS = {
         {new Vec3d(1.0, 0.0, 0.0), new Vec3d(0.0, 0.0, 1.0)},
         {new Vec3d(1.0, 0.0, 0.0), new Vec3d(0.0, 1.0, 0.0)},
         {new Vec3d(0.0, 0.0, 1.0), new Vec3d(0.0, 1.0, 0.0)}
     };
+    private static final Vec3d[] AXIAL_VECTORS = {
+        new Vec3d(0.0, 1.0, 0.0),
+        new Vec3d(0.0, 0.0, 1.0),
+        new Vec3d(1.0, 0.0, 0.0)
+    };
 
     public static void drawCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
-                                float width, float height, float depth, int color) {
-        drawCube(stack, consumer, x, y, z, width, 0f, 0f, 0f, height, 0f, 0f, 0f, depth, color);
+                                float halfWidth, float halfHeight, float halfDepth, int color) {
+        drawCube(stack, consumer, x, y, z, halfWidth, 0f, 0f, 0f, halfHeight, 0f, 0f, 0f, halfDepth, color);
     }
 
     public static void drawCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
@@ -38,7 +46,7 @@ public class RenderUtils {
 
     public static void drawRect(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
                                 float radX, float radY, Direction normal, int color) {
-        Vec3d[] vecs = PLANAR_VECTORS[normal.ordinal() >> 1];
+        Vec3d[] vecs = PERPENDICULAR_VECTORS[normal.ordinal() >> 1];
         drawRect(stack, consumer, x, y, z, (float) vecs[0].x * radX, (float) vecs[0].y * radX, (float) vecs[0].z * radX,
             (float) vecs[1].x * radY, (float) vecs[1].y * radY, (float) vecs[1].z * radY, color);
     }
@@ -91,7 +99,7 @@ public class RenderUtils {
 
     public static void fillRect(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
                                 float radX, float radY, Direction normal, int color) {
-        Vec3d[] vecs = PLANAR_VECTORS[normal.ordinal() >> 1];
+        Vec3d[] vecs = PERPENDICULAR_VECTORS[normal.ordinal() >> 1];
         fillRect(stack, consumer, x, y, z, (float) vecs[0].x * radX, (float) vecs[0].y * radX, (float) vecs[0].z * radX,
             (float) vecs[1].x * radY, (float) vecs[1].y * radY, (float) vecs[1].z * radY, color);
     }
@@ -113,8 +121,8 @@ public class RenderUtils {
     }
 
     public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, Direction side, double verticalOffset,
-                                     double spacing, double verticalSpacing) {
-        Vec3d[] spacings = PLANAR_VECTORS[side.ordinal() >> 1];
+                                            double spacing, double verticalSpacing) {
+        Vec3d[] spacings = PERPENDICULAR_VECTORS[side.ordinal() >> 1];
         return distributedEndpoint(
             nodesAtPos, indexAmongNodes,
             0.5 + side.getOffsetX() * (0.5 - verticalOffset),
@@ -128,14 +136,17 @@ public class RenderUtils {
         );
     }
 
-    public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double spacing, double verticalSpacing) {
+    public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double spacing,
+                                            double verticalSpacing) {
         return distributedEndpoint(nodesAtPos, indexAmongNodes, 0.5, 0.5, 0.5, spacing, 0.0, 0.0, 0.0, 0.0, spacing,
             0.0, verticalSpacing, 0.0);
     }
 
     public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double centerX, double centerY,
-                                     double centerZ, double spaceX0, double spaceY0, double spaceZ0, double spaceX1,
-                                     double spaceY1, double spaceZ1, double offsetX, double offsetY, double offsetZ) {
+                                            double centerZ, double spaceX0, double spaceY0, double spaceZ0,
+                                            double spaceX1,
+                                            double spaceY1, double spaceZ1, double offsetX, double offsetY,
+                                            double offsetZ) {
         if (nodesAtPos < 2) {
             return new Vec3d(centerX, centerY, centerZ);
         }
@@ -151,5 +162,17 @@ public class RenderUtils {
         return new Vec3d(centerX + posX * spaceX0 + posY * spaceX1 + posZ * offsetX,
             centerY + posX * spaceY0 + posY * spaceY1 + posZ * offsetY,
             centerZ + posX * spaceZ0 + posY * spaceZ1 + posZ * offsetZ);
+    }
+
+    public static Vec3d perpendicularVector0(Direction side) {
+        return PERPENDICULAR_VECTORS[side.ordinal() >> 1][0];
+    }
+
+    public static Vec3d perpendicularVector1(Direction side) {
+        return PERPENDICULAR_VECTORS[side.ordinal() >> 1][1];
+    }
+
+    public static Vec3d axialVector(Direction side) {
+        return AXIAL_VECTORS[side.ordinal() >> 1];
     }
 }

@@ -7,7 +7,9 @@ import com.kneelawk.graphlib.graph.BlockNodeDecoder;
 import com.kneelawk.graphlib.graph.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.net.BlockNodeInspectionPacketHandler;
 import com.kneelawk.graphlib.net.BlockNodePacketEncoderHolder;
+import com.kneelawk.graphlib.net.SimpleBlockNodeInspectionPacketHandler;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.server.command.ServerCommandSource;
@@ -30,12 +32,16 @@ import java.util.stream.Collectors;
  * {@link BlockGraphController}, or registering {@link BlockNodeDecoder}s and {@link BlockNodeDiscoverer}s.
  */
 public final class GraphLib {
-    private static final Identifier BLOCK_NODE_DECODER_IDENTIFIER = Constants.id("block_node_decoder");
+    private static final Identifier BLOCK_NODE_DECODER_ID = Constants.id("block_node_decoder");
     private static final RegistryKey<Registry<BlockNodeDecoder>> BLOCK_NODE_DECODER_KEY =
-        RegistryKey.ofRegistry(BLOCK_NODE_DECODER_IDENTIFIER);
-    private static final Identifier BLOCK_NODE_PACKET_ENDODER_IDENTIFIER = Constants.id("block_node_packet_encoder");
+        RegistryKey.ofRegistry(BLOCK_NODE_DECODER_ID);
+    private static final Identifier BLOCK_NODE_PACKET_ENCODER_ID = Constants.id("block_node_packet_encoder");
     private static final RegistryKey<Registry<BlockNodePacketEncoderHolder<?>>> BLOCK_NODE_PACKET_ENCODER_KEY =
-        RegistryKey.ofRegistry(BLOCK_NODE_PACKET_ENDODER_IDENTIFIER);
+        RegistryKey.ofRegistry(BLOCK_NODE_PACKET_ENCODER_ID);
+    private static final Identifier BLOCK_NODE_INSPECTION_PACKET_HANDLER_ID =
+        Constants.id("block_node_inspection_packet_handler");
+    private static final RegistryKey<Registry<BlockNodeInspectionPacketHandler>>
+        BLOCK_NODE_INSPECTION_PACKET_HANDLER_KEY = RegistryKey.ofRegistry(BLOCK_NODE_INSPECTION_PACKET_HANDLER_ID);
     private static final List<BlockNodeDiscoverer> BLOCK_NODE_DISCOVERERS = new ArrayList<>();
 
     /**
@@ -49,6 +55,12 @@ public final class GraphLib {
      */
     public static final Registry<BlockNodePacketEncoderHolder<?>> BLOCK_NODE_PACKET_ENCODER =
         new SimpleRegistry<>(BLOCK_NODE_PACKET_ENCODER_KEY, Lifecycle.experimental(), null);
+
+    /**
+     * Registry of {@link BlockNodeInspectionPacketHandler}s for handling block node inspection requests.
+     */
+    public static final Registry<BlockNodeInspectionPacketHandler> BLOCK_NODE_INSPECTION_PACKET_HANDLER =
+        new SimpleRegistry<>(BLOCK_NODE_INSPECTION_PACKET_HANDLER_KEY, Lifecycle.experimental(), null);
 
     /**
      * Registers a {@link BlockNodeDiscoverer} for use in detecting the nodes in a given block position.
@@ -96,10 +108,15 @@ public final class GraphLib {
 
     @SuppressWarnings("unchecked")
     static void register() {
-        Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_DECODER_IDENTIFIER,
+        Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_DECODER_ID,
             BLOCK_NODE_DECODER);
-        Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_PACKET_ENDODER_IDENTIFIER,
+        Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_PACKET_ENCODER_ID,
             BLOCK_NODE_PACKET_ENCODER);
+        Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_INSPECTION_PACKET_HANDLER_ID,
+            BLOCK_NODE_INSPECTION_PACKET_HANDLER);
+
+        Registry.register(BLOCK_NODE_INSPECTION_PACKET_HANDLER, Constants.id("simple"),
+            SimpleBlockNodeInspectionPacketHandler.INSTANCE);
     }
 
     static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
