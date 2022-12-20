@@ -17,17 +17,24 @@ in Java with some optimizations. Credit goes to 2xsaiko for designing this syste
 
 [HCTM-Base]: https://github.com/2xsaiko/hctm-base
 
-## Maintenance Commands
+## Commands
 
-All maintenance commands can be accessed via the `\graphlib` command.
+All commands can be accessed via the `\graphlib` command.
 
-### `\graphlib updateblocks <from> <to>`
+### `/graphlib debugrender start` and `/graphlib debugrender stop`
+
+These commands are used for starting and stopping the block graph debug renderer. The debug renderer can help you debug
+your code that uses GraphLib or figure out why your wires aren't connecting after a server crash.
+
+![2022-12-16_14 56 38](https://user-images.githubusercontent.com/2180089/208538473-8ec33250-22a4-4572-bab9-48748817fd94.png)
+
+### `/graphlib updateblocks <from> <to>`
 
 This command updates all block-nodes in a given area. If block-nodes were not saved due to a server crash then it may
 cause some machines or wires to act strange, not transmitting signals correctly. This command will re-connect those
 machines.
 
-### `\graphlib removeemptygraphs`
+### `/graphlib removeemptygraphs`
 
 Sometimes a server crash can cause a block-graph to get saved without any block-nodes in it. These empty graphs can
 clutter up your save file. This command removes these empty graphs.
