@@ -7,6 +7,7 @@ import com.kneelawk.graphlib.graph.BlockNodeDecoder;
 import com.kneelawk.graphlib.graph.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.net.BlockNodePacketEncoderHolder;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.registry.Registries;
@@ -33,6 +34,9 @@ public final class GraphLib {
     private static final Identifier BLOCK_NODE_DECODER_IDENTIFIER = Constants.id("block_node_decoder");
     private static final RegistryKey<Registry<BlockNodeDecoder>> BLOCK_NODE_DECODER_KEY =
         RegistryKey.ofRegistry(BLOCK_NODE_DECODER_IDENTIFIER);
+    private static final Identifier BLOCK_NODE_PACKET_ENDODER_IDENTIFIER = Constants.id("block_node_packet_encoder");
+    private static final RegistryKey<Registry<BlockNodePacketEncoderHolder<?>>> BLOCK_NODE_PACKET_ENCODER_KEY =
+        RegistryKey.ofRegistry(BLOCK_NODE_PACKET_ENDODER_IDENTIFIER);
     private static final List<BlockNodeDiscoverer> BLOCK_NODE_DISCOVERERS = new ArrayList<>();
 
     /**
@@ -40,6 +44,12 @@ public final class GraphLib {
      */
     public static final Registry<BlockNodeDecoder> BLOCK_NODE_DECODER =
         new SimpleRegistry<>(BLOCK_NODE_DECODER_KEY, Lifecycle.experimental());
+
+    /**
+     * Registry of {@link BlockNodePacketEncoderHolder}s for encoding nodes to send to the client for debug rendering.
+     */
+    public static final Registry<BlockNodePacketEncoderHolder<?>> BLOCK_NODE_PACKET_ENCODER =
+        new SimpleRegistry<>(BLOCK_NODE_PACKET_ENCODER_KEY, Lifecycle.experimental());
 
     /**
      * Registers a {@link BlockNodeDiscoverer} for use in detecting the nodes in a given block position.
@@ -89,6 +99,8 @@ public final class GraphLib {
     static void register() {
         Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_DECODER_IDENTIFIER,
             BLOCK_NODE_DECODER);
+        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_PACKET_ENDODER_IDENTIFIER,
+            BLOCK_NODE_PACKET_ENCODER);
     }
 
     static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {

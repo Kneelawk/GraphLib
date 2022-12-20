@@ -5,6 +5,9 @@
   "injectors": {
     "defaultRequire": 1
   },
+  "client": [
+    "RenderLayerAccessor"
+  ],
   "mixins": [
     "StorageIoWorkerAccessor",
     "ThreadedAnvilChunkStorageMixin"

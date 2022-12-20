@@ -1,6 +1,7 @@
 package com.kneelawk.graphlib;
 
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
+import com.kneelawk.graphlib.net.GraphLibCommonNetworking;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
@@ -15,6 +16,8 @@ public class GraphLibFabricMod implements ModInitializer {
         GLLog.setupLogging(FabricLoader.getInstance().getGameDir());
 
         GraphLib.register();
+
+        GraphLibCommonNetworking.init();
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> GraphLib.registerCommands(dispatcher));
 
