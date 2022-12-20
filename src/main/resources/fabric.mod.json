@@ -20,11 +20,17 @@
       {
         "value": "com.kneelawk.graphlib.GraphLibFabricMod"
       }
+    ],
+    "client": [
+      {
+        "value": "com.kneelawk.graphlib.client.GraphLibFabricModClient"
+      }
     ]
   },
   "mixins": [
     "graphlib.mixins.json"
   ],
+  "accessWidener": "graphlib.accesswidener",
   "depends": {
     "fabricloader": ">=0.13.0",
     "fabric": "*",

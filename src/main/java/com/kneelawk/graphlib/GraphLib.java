@@ -7,6 +7,7 @@ import com.kneelawk.graphlib.graph.BlockNodeDecoder;
 import com.kneelawk.graphlib.graph.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.net.BlockNodePacketEncoderHolder;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.serialization.Lifecycle;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,14 +32,23 @@ import java.util.stream.Collectors;
 public final class GraphLib {
     private static final Identifier BLOCK_NODE_DECODER_IDENTIFIER = Constants.id("block_node_decoder");
     private static final RegistryKey<Registry<BlockNodeDecoder>> BLOCK_NODE_DECODER_KEY =
-            RegistryKey.ofRegistry(BLOCK_NODE_DECODER_IDENTIFIER);
+        RegistryKey.ofRegistry(BLOCK_NODE_DECODER_IDENTIFIER);
+    private static final Identifier BLOCK_NODE_PACKET_ENDODER_IDENTIFIER = Constants.id("block_node_packet_encoder");
+    private static final RegistryKey<Registry<BlockNodePacketEncoderHolder<?>>> BLOCK_NODE_PACKET_ENCODER_KEY =
+        RegistryKey.ofRegistry(BLOCK_NODE_PACKET_ENDODER_IDENTIFIER);
     private static final List<BlockNodeDiscoverer> BLOCK_NODE_DISCOVERERS = new ArrayList<>();
 
     /**
      * Registry of {@link BlockNodeDecoder}s for block-node type ids.
      */
     public static final Registry<BlockNodeDecoder> BLOCK_NODE_DECODER =
-            new SimpleRegistry<>(BLOCK_NODE_DECODER_KEY, Lifecycle.experimental(), null);
+        new SimpleRegistry<>(BLOCK_NODE_DECODER_KEY, Lifecycle.experimental(), null);
+
+    /**
+     * Registry of {@link BlockNodePacketEncoderHolder}s for encoding nodes to send to the client for debug rendering.
+     */
+    public static final Registry<BlockNodePacketEncoderHolder<?>> BLOCK_NODE_PACKET_ENCODER =
+        new SimpleRegistry<>(BLOCK_NODE_PACKET_ENCODER_KEY, Lifecycle.experimental(), null);
 
     /**
      * Registers a {@link BlockNodeDiscoverer} for use in detecting the nodes in a given block position.
@@ -62,7 +72,7 @@ public final class GraphLib {
      */
     public static @NotNull Set<BlockNode> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos) {
         return BLOCK_NODE_DISCOVERERS.stream().flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+            .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
@@ -87,7 +97,9 @@ public final class GraphLib {
     @SuppressWarnings("unchecked")
     static void register() {
         Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_DECODER_IDENTIFIER,
-                BLOCK_NODE_DECODER);
+            BLOCK_NODE_DECODER);
+        Registry.register((Registry<Registry<?>>) Registry.REGISTRIES, BLOCK_NODE_PACKET_ENDODER_IDENTIFIER,
+            BLOCK_NODE_PACKET_ENCODER);
     }
 
     static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
