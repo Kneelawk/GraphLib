@@ -14,6 +14,7 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
+  "icon": "assets/graphlib/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [
