@@ -15,6 +15,8 @@ public class GraphLibFabricMod implements ModInitializer {
     public void onInitialize() {
         GLLog.setupLogging(FabricLoader.getInstance().getGameDir());
 
+        GLLog.info("Initializing GraphLib...");
+
         GraphLib.register();
 
         GraphLibCommonNetworking.init();
@@ -55,5 +57,7 @@ public class GraphLibFabricMod implements ModInitializer {
                         world.getRegistryKey().getValue(), e);
             }
         });
+
+        GLLog.info("GraphLib Initialized.");
     }
 }
