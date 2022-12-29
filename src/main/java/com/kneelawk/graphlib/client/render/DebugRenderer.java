@@ -28,7 +28,9 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -127,7 +129,6 @@ public final class DebugRenderer {
         mv.push();
         mv.loadIdentity();
         RenderSystem.applyModelViewMatrix();
-        RenderSystem.disableDepthTest();
 
         framebuffer.beginWrite(false);
 
@@ -144,13 +145,15 @@ public final class DebugRenderer {
 
         client.getFramebuffer().beginWrite(false);
 
-        RenderSystem.enableDepthTest();
         mv.pop();
         RenderSystem.applyModelViewMatrix();
 
+        // Framebuffer.draw() messes with the projection matrix, so we're keeping a backup.
+        Matrix4f projBackup = RenderSystem.getProjectionMatrix();
         RenderSystem.enableBlend();
         framebuffer.draw(window.getFramebufferWidth(), window.getFramebufferHeight(), false);
         RenderSystem.disableBlend();
+        RenderSystem.setProjectionMatrix(projBackup);
     }
 
     private static void renderGraphs(MatrixStack stack) {
@@ -222,7 +225,8 @@ public final class DebugRenderer {
                 BlockPos posA = nodeA.data().pos();
                 BlockPos posB = nodeB.data().pos();
 
-                RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x), (float) (posA.getY() + endpointA.y),
+                RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
+                    (float) (posA.getY() + endpointA.y),
                     (float) (posA.getZ() + endpointA.z), (float) (posB.getX() + endpointB.x),
                     (float) (posB.getY() + endpointB.y), (float) (posB.getZ() + endpointB.z), graphColor);
             }
