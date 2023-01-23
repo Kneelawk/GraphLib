@@ -19,12 +19,12 @@
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.graphlib.GraphLibFabricMod"
+        "value": "com.kneelawk.graphlib.impl.GraphLibFabricMod"
       }
     ],
     "client": [
       {
-        "value": "com.kneelawk.graphlib.client.GraphLibFabricModClient"
+        "value": "com.kneelawk.graphlib.impl.client.GraphLibFabricModClient"
       }
     ]
   },
