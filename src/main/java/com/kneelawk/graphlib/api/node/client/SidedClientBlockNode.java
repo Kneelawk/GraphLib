@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.api.node.client;
 
-import com.kneelawk.graphlib.api.client.BlockNodeRenderer;
+import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.api.graph.struct.Node;
 import net.minecraft.util.math.Direction;

@@ -5,7 +5,7 @@ import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
-import com.kneelawk.graphlib.impl.client.render.BlockNodeRendererHolder;
+import com.kneelawk.graphlib.api.client.render.BlockNodeRendererHolder;
 import com.kneelawk.graphlib.impl.client.render.SimpleBlockNodeRenderer;
 import com.kneelawk.graphlib.impl.client.render.SimpleSidedBlockNodeRenderer;
 import com.kneelawk.graphlib.api.net.BlockNodePacketDecoder;

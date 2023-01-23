@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.api.client;
 
 import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.impl.client.render.BlockNodeRendererHolder;
+import com.kneelawk.graphlib.api.client.render.BlockNodeRendererHolder;
 import com.kneelawk.graphlib.api.net.BlockNodePacketDecoder;
 import com.mojang.serialization.Lifecycle;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;

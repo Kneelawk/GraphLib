@@ -3,7 +3,7 @@ package com.kneelawk.graphlib.impl.client;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;

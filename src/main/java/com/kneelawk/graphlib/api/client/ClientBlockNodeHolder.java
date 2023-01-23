@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.impl.client.graph;
+package com.kneelawk.graphlib.api.client;
 
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import net.minecraft.util.math.BlockPos;

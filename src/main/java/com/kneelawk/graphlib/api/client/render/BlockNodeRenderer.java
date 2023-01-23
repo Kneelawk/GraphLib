@@ -1,8 +1,8 @@
-package com.kneelawk.graphlib.api.client;
+package com.kneelawk.graphlib.api.client.render;
 
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.graph.struct.Node;
 import net.fabricmc.api.EnvType;
