@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.net;
 
-import com.kneelawk.graphlib.graph.BlockNode;
-import com.kneelawk.graphlib.graph.ClientBlockNode;
+import com.kneelawk.graphlib.node.BlockNode;
+import com.kneelawk.graphlib.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.network.PacketByteBuf;

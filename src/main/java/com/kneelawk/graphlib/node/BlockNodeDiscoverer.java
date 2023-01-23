@@ -1,5 +1,6 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.node;
 
+import com.kneelawk.graphlib.node.BlockNode;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;

@@ -1,5 +1,7 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.node;
 
+import com.kneelawk.graphlib.graph.BlockNodeHolder;
+import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.wire.FullWireBlockNode;
 import com.kneelawk.graphlib.wire.FullWireConnectionFilter;
@@ -82,15 +84,21 @@ public interface BlockNode {
                        @NotNull Node<BlockNodeHolder> self, @NotNull Node<BlockNodeHolder> other);
 
     /**
-     * Called when the block graph controller has determined that this node's connections have been changed.
+     * Called when the block graph controller has determined that this specific node's connections have been changed.
      * <p>
      * This usually performs visual updates on the block associated with this node, but this can be used for other
-     * things as well.
+     * things as well. This method is also called on nodes that have been removed from a graph, after the graph has
+     * finished removing them.
+     * <p>
+     * Note: This is not called for every node change in a graph, only when this specific node's connection's have
+     * changed.
      *
      * @param world the block world that this node is associated with.
+     * @param nodeView the world of nodes.
      * @param pos   the block position of this node.
+     * @param self this block node's holder providing information about this node's connections and graph id.
      */
-    void onConnectionsChanged(@NotNull ServerWorld world, @NotNull BlockPos pos, @NotNull Node<BlockNodeHolder> self);
+    void onConnectionsChanged(@NotNull ServerWorld world, @NotNull NodeView nodeView, @NotNull BlockPos pos, @NotNull Node<BlockNodeHolder> self);
 
     /**
      * Block nodes are compared based on their hash-code and equals functions.

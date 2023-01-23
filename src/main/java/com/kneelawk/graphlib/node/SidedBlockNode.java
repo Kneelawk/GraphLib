@@ -1,6 +1,7 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.node;
 
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
+import com.kneelawk.graphlib.node.BlockNode;
 import com.kneelawk.graphlib.util.SidedPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;

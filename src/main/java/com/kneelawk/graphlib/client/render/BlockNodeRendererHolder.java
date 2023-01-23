@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.client.render;
 
 import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.client.graph.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.graph.ClientBlockNode;
+import com.kneelawk.graphlib.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;

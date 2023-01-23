@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.wire;
 
-import com.kneelawk.graphlib.graph.BlockNode;
+import com.kneelawk.graphlib.node.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.server.world.ServerWorld;

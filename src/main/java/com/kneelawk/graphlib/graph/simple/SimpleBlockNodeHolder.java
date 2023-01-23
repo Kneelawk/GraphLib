@@ -5,8 +5,8 @@ package com.kneelawk.graphlib.graph.simple;
 
 import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.GraphLib;
-import com.kneelawk.graphlib.graph.BlockNode;
-import com.kneelawk.graphlib.graph.BlockNodeDecoder;
+import com.kneelawk.graphlib.node.BlockNode;
+import com.kneelawk.graphlib.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;

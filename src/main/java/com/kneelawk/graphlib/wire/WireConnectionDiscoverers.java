@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.wire;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.node.BlockNode;
 import com.kneelawk.graphlib.util.DirectionUtils;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -15,7 +16,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Contains wire connection finder and checker implementations for use in {@link com.kneelawk.graphlib.graph.BlockNode}
+ * Contains wire connection finder and checker implementations for use in {@link BlockNode}
  * implementations.
  */
 public final class WireConnectionDiscoverers {
@@ -26,7 +27,7 @@ public final class WireConnectionDiscoverers {
      * Finds nodes that can connect to this wire node.
      * <p>
      * This is intended for use in
-     * {@link com.kneelawk.graphlib.graph.BlockNode#findConnections(ServerWorld, NodeView, BlockPos, Node)} implementations.
+     * {@link BlockNode#findConnections(ServerWorld, NodeView, BlockPos, Node)} implementations.
      *
      * @param self     this node.
      * @param world    the block world to find connections in.
@@ -35,7 +36,7 @@ public final class WireConnectionDiscoverers {
      * @param selfNode this node's holder.
      * @param filter   a general connection filter, used to filter connections.
      * @return a collection of nodes this node can connect to.
-     * @see com.kneelawk.graphlib.graph.BlockNode#findConnections(ServerWorld, NodeView, BlockPos, Node)
+     * @see BlockNode#findConnections(ServerWorld, NodeView, BlockPos, Node)
      */
     public static @NotNull Collection<Node<BlockNodeHolder>> wireFindConnections(@NotNull SidedWireBlockNode self,
                                                                                  @NotNull ServerWorld world,
@@ -74,7 +75,7 @@ public final class WireConnectionDiscoverers {
      * Checks if this wire node can connect to the given node.
      * <p>
      * This is intended for use in
-     * {@link com.kneelawk.graphlib.graph.BlockNode#canConnect(ServerWorld, NodeView, BlockPos, Node, Node)} implementations.
+     * {@link BlockNode#canConnect(ServerWorld, NodeView, BlockPos, Node, Node)} implementations.
      *
      * @param self      this node.
      * @param world     the block world to check the connection in.

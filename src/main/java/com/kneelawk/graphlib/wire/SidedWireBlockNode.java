@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.wire;
 
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.graph.SidedBlockNode;
+import com.kneelawk.graphlib.node.SidedBlockNode;
 import com.kneelawk.graphlib.graph.struct.Node;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;

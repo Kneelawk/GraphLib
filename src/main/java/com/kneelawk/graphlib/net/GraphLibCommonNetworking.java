@@ -7,6 +7,8 @@ import com.kneelawk.graphlib.GraphLibEvents;
 import com.kneelawk.graphlib.graph.*;
 import com.kneelawk.graphlib.graph.struct.Link;
 import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.node.BlockNode;
+import com.kneelawk.graphlib.node.SidedBlockNode;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;

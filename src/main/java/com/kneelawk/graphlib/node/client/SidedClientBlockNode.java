@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.node.client;
 
 import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.graph.struct.Node;

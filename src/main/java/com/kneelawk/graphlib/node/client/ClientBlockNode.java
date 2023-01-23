@@ -1,5 +1,6 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.node.client;
 
+import com.kneelawk.graphlib.node.BlockNode;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 

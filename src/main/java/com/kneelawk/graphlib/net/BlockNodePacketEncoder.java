@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.net;
 
-import com.kneelawk.graphlib.graph.BlockNode;
+import com.kneelawk.graphlib.node.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;

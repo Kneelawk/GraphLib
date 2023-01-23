@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.client.graph;
 
 import com.kneelawk.graphlib.Constants;
 import com.kneelawk.graphlib.client.GraphLibClient;
-import com.kneelawk.graphlib.graph.ClientBlockNode;
+import com.kneelawk.graphlib.node.client.ClientBlockNode;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 

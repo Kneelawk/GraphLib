@@ -1,5 +1,6 @@
-package com.kneelawk.graphlib.graph;
+package com.kneelawk.graphlib.node;
 
+import com.kneelawk.graphlib.node.BlockNode;
 import net.minecraft.nbt.NbtElement;
 import org.jetbrains.annotations.Nullable;
 

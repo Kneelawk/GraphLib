@@ -1,9 +1,8 @@
 package com.kneelawk.graphlib.client.graph;
 
 import com.kneelawk.graphlib.Constants;
-import com.kneelawk.graphlib.client.GraphLibClient;
-import com.kneelawk.graphlib.graph.ClientBlockNode;
-import com.kneelawk.graphlib.graph.SidedClientBlockNode;
+import com.kneelawk.graphlib.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.node.client.SidedClientBlockNode;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;

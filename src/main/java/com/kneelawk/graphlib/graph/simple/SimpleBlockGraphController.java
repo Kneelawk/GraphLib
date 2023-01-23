@@ -5,7 +5,7 @@ import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.GraphLib;
 import com.kneelawk.graphlib.GraphLibEvents;
 import com.kneelawk.graphlib.graph.BlockGraphController;
-import com.kneelawk.graphlib.graph.BlockNode;
+import com.kneelawk.graphlib.node.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;
@@ -483,7 +483,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
     private void handleCallbackUpdates() {
         for (var node : callbackUpdates) {
             BlockNodeHolder data = node.data();
-            data.getNode().onConnectionsChanged(world, data.getPos(), node);
+            data.getNode().onConnectionsChanged(world, this, data.getPos(), node);
         }
         callbackUpdates.clear();
     }
