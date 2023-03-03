@@ -5,7 +5,7 @@ import com.kneelawk.graphlib.api.v1.client.render.RenderUtils;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;

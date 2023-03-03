@@ -4,7 +4,7 @@ import com.kneelawk.graphlib.api.v1.util.SidedPos;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.render.VertexConsumerProvider;

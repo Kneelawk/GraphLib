@@ -3,7 +3,7 @@ package com.kneelawk.graphlib.api.v1.node;
 import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.api.v1.graph.NodeView;
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.wire.FullWireBlockNode;
 import com.kneelawk.graphlib.api.v1.wire.WireConnectionDiscoverers;
 import com.kneelawk.graphlib.api.v1.wire.FullWireConnectionFilter;

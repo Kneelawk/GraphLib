@@ -3,7 +3,7 @@ package com.kneelawk.graphlib.api.v1.net;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.v1.graph.NodeView;
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import org.jetbrains.annotations.NotNull;

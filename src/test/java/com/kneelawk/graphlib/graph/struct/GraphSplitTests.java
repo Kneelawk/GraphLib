@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.graph.struct;
 
-import com.kneelawk.graphlib.api.v1.graph.struct.Graph;
+import com.kneelawk.graphlib.api.v1.util.graph.Graph;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

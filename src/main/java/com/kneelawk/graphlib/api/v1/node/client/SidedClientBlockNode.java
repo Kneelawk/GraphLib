@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.api.v1.node.client;
 
 import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRenderer;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.NotNull;
 

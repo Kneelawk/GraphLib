@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.api.v1.graph.struct;
+package com.kneelawk.graphlib.api.v1.util.graph;
 
 import org.jetbrains.annotations.NotNull;
 

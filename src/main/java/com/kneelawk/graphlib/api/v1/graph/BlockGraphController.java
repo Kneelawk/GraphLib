@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.api.v1.graph;
 
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.util.SidedPos;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;

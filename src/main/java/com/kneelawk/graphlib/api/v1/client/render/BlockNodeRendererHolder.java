@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.api.v1.client.render;
 
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;

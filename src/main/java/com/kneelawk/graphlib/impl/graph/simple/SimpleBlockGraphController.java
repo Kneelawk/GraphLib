@@ -8,7 +8,7 @@ import com.kneelawk.graphlib.api.v1.graph.BlockGraphController;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.api.v1.graph.NodeView;
-import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.v1.util.SidedPos;
 import com.kneelawk.graphlib.api.v1.world.UnloadingRegionBasedStorage;
