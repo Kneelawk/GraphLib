@@ -1,11 +1,11 @@
 package com.kneelawk.graphlib.impl.client.render;
 
-import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
-import com.kneelawk.graphlib.api.client.render.RenderUtils;
+import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRenderer;
+import com.kneelawk.graphlib.api.v1.client.render.RenderUtils;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
-import com.kneelawk.graphlib.api.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.graph.struct.Node;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;

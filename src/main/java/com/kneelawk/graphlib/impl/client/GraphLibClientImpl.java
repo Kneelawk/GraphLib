@@ -1,14 +1,14 @@
 package com.kneelawk.graphlib.impl.client;
 
-import com.kneelawk.graphlib.api.client.GraphLibClient;
+import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
-import com.kneelawk.graphlib.api.client.render.BlockNodeRendererHolder;
+import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
 import com.kneelawk.graphlib.impl.client.render.SimpleBlockNodeRenderer;
 import com.kneelawk.graphlib.impl.client.render.SimpleSidedBlockNodeRenderer;
-import com.kneelawk.graphlib.api.net.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.v1.net.BlockNodePacketDecoder;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;

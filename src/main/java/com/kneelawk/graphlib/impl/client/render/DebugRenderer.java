@@ -1,16 +1,16 @@
 package com.kneelawk.graphlib.impl.client.render;
 
-import com.kneelawk.graphlib.api.client.GraphLibClient;
-import com.kneelawk.graphlib.api.client.render.BlockNodeRendererHolder;
-import com.kneelawk.graphlib.api.client.render.RenderUtils;
+import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
+import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
+import com.kneelawk.graphlib.api.v1.client.render.RenderUtils;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.node.client.SidedClientBlockNode;
-import com.kneelawk.graphlib.api.graph.struct.Link;
-import com.kneelawk.graphlib.api.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.v1.node.client.SidedClientBlockNode;
+import com.kneelawk.graphlib.api.v1.graph.struct.Link;
+import com.kneelawk.graphlib.api.v1.graph.struct.Node;
 import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
-import com.kneelawk.graphlib.api.util.SidedPos;
+import com.kneelawk.graphlib.api.v1.util.SidedPos;
 import com.mojang.blaze3d.framebuffer.Framebuffer;
 import com.mojang.blaze3d.framebuffer.SimpleFramebuffer;
 import com.mojang.blaze3d.glfw.Window;

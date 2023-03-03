@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import com.kneelawk.graphlib.api.world.StorageChunk;
+import com.kneelawk.graphlib.api.v1.world.StorageChunk;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;

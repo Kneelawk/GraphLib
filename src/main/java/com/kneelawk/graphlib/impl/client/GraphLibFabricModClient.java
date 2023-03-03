@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.impl.client;
 
-import com.kneelawk.graphlib.api.client.GraphLibClient;
+import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.client.render.DebugRenderer;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;

@@ -1,9 +1,9 @@
 package com.kneelawk.graphlib.impl;
 
-import com.kneelawk.graphlib.api.GraphLib;
-import com.kneelawk.graphlib.api.net.BlockNodePacketEncoderHolder;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.v1.GraphLib;
+import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
+import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;

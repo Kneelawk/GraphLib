@@ -1,15 +1,15 @@
 package com.kneelawk.graphlib.impl.client;
 
-import com.kneelawk.graphlib.api.client.GraphLibClient;
+import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
-import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.graph.struct.Graph;
-import com.kneelawk.graphlib.api.graph.struct.Node;
-import com.kneelawk.graphlib.api.net.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.v1.graph.struct.Graph;
+import com.kneelawk.graphlib.api.v1.graph.struct.Node;
+import com.kneelawk.graphlib.api.v1.net.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;

@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.impl.command;
 
 import com.kneelawk.graphlib.impl.Constants;
-import com.kneelawk.graphlib.api.GraphLib;
+import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;

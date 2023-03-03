@@ -1,6 +1,5 @@
 package com.kneelawk.graphlib.impl;
 
-import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphController;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
