@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.api.v1.wire;
 
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -26,8 +26,8 @@ public interface FullWireConnectionFilter {
      * @return <code>true</code> if the two node should be allowed to connect, <code>false</code> otherwise.
      */
     boolean canConnect(@NotNull FullWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
-                       @NotNull Direction onSide, @Nullable Direction wireSide, @NotNull Node<BlockNodeHolder> selfNode,
-                       @NotNull Node<BlockNodeHolder> otherNode);
+                       @NotNull Direction onSide, @Nullable Direction wireSide, @NotNull Node<NodeHolder> selfNode,
+                       @NotNull Node<NodeHolder> otherNode);
 
     /**
      * Creates a new connection filter that must satisfy both this filter and the other filter.

@@ -25,7 +25,7 @@ public interface BlockGraph {
      * @param pos the block-position to get the nodes in.
      * @return a stream of all the nodes in this graph in the given block-position.
      */
-    @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull BlockPos pos);
+    @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull BlockPos pos);
 
     /**
      * Gets all the nodes in this graph in the given sided block-position.
@@ -33,14 +33,14 @@ public interface BlockGraph {
      * @param pos the sided block-position to get the nodes in.
      * @return a stream of all the nodes in this graph in the given sided block-position.
      */
-    @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos);
+    @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos);
 
     /**
      * Gets all the nodes in this graph.
      *
      * @return a stream of all the nodes in this graph.
      */
-    @NotNull Stream<Node<BlockNodeHolder>> getNodes();
+    @NotNull Stream<Node<NodeHolder>> getNodes();
 
     /**
      * Gets all the chunk sections that this graph currently has nodes in.

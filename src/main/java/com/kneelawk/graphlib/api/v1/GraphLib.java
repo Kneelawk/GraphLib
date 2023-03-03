@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.api.v1;
 
-import com.kneelawk.graphlib.api.v1.graph.BlockGraphController;
+import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, obtaining a
- * {@link BlockGraphController}, or registering {@link BlockNodeDecoder}s and {@link BlockNodeDiscoverer}s.
+ * {@link GraphWorld}, or registering {@link BlockNodeDecoder}s and {@link BlockNodeDiscoverer}s.
  */
 public final class GraphLib {
     private GraphLib() {
@@ -65,12 +65,12 @@ public final class GraphLib {
     }
 
     /**
-     * Gets the {@link BlockGraphController} for the given {@link ServerWorld}.
+     * Gets the {@link GraphWorld} for the given {@link ServerWorld}.
      *
      * @param world the world whose BlockGraphController is to be obtained.
      * @return the BlockGraphController of the given world.
      */
-    public static @NotNull BlockGraphController getController(@NotNull ServerWorld world) {
+    public static @NotNull GraphWorld getGraphWorld(@NotNull ServerWorld world) {
         return StorageHelper.getController(world);
     }
 }

@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.api.v1.net;
 
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.v1.graph.NodeView;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
@@ -17,7 +17,7 @@ public interface BlockNodePacketDecoder {
      * Decodes a {@link ClientBlockNode} from a {@link PacketByteBuf}.
      *
      * @param buf a buffer for reading the data written by
-     *            {@link BlockNodePacketEncoder#toPacket(BlockNode, Node, ServerWorld, NodeView, PacketByteBuf)}.
+     *            {@link BlockNodePacketEncoder#toPacket(BlockNode, Node, ServerWorld, GraphView, PacketByteBuf)}.
      *            Note: this buffer will contain other data besides this node's data.
      * @return a {@link ClientBlockNode} containing the data decoded from the {@link PacketByteBuf}.
      */

@@ -3,7 +3,7 @@ package com.kneelawk.graphlib.impl.graph.simple;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
 import com.kneelawk.graphlib.api.v1.util.graph.Graph;
 import com.kneelawk.graphlib.api.v1.util.graph.Link;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
@@ -39,7 +39,7 @@ import java.util.stream.Stream;
  * Holds and manages a set of block nodes.
  */
 public class SimpleBlockGraph implements BlockGraph {
-    static @NotNull SimpleBlockGraph fromTag(@NotNull SimpleBlockGraphController controller, long id,
+    static @NotNull SimpleBlockGraph fromTag(@NotNull SimpleGraphWorld controller, long id,
                                              @NotNull NbtCompound tag) {
         NbtList chunksTag = tag.getList("chunks", NbtElement.LONG_TYPE);
         LongSet chunks = new LongLinkedOpenHashSet();
@@ -53,10 +53,10 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
 
-        List<@Nullable Node<BlockNodeHolder>> nodes = new ArrayList<>();
+        List<@Nullable Node<NodeHolder>> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
-            SimpleBlockNodeHolder node = SimpleBlockNodeHolder.fromTag((NbtCompound) nodeElement, id);
+            SimpleNodeHolder node = SimpleNodeHolder.fromTag((NbtCompound) nodeElement, id);
             if (node != null) {
                 nodes.add(graph.createNode(node.getPos(), node.getNode()));
             } else {
@@ -80,18 +80,18 @@ public class SimpleBlockGraph implements BlockGraph {
         return graph;
     }
 
-    final SimpleBlockGraphController controller;
+    final SimpleGraphWorld controller;
     private final long id;
 
-    private final Graph<BlockNodeHolder> graph = new Graph<>();
-    private final Multimap<BlockPos, Node<BlockNodeHolder>> nodesInPos = LinkedHashMultimap.create();
+    private final Graph<NodeHolder> graph = new Graph<>();
+    private final Multimap<BlockPos, Node<NodeHolder>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
 
-    public SimpleBlockGraph(@NotNull SimpleBlockGraphController controller, long id) {
+    public SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id) {
         this(controller, id, LongSet.of());
     }
 
-    private SimpleBlockGraph(@NotNull SimpleBlockGraphController controller, long id, @NotNull LongSet chunks) {
+    private SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id, @NotNull LongSet chunks) {
         this.controller = controller;
         this.id = id;
         this.chunks.addAll(chunks);
@@ -115,7 +115,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = new NbtList();
 
         for (var node : nodes) {
-            nodesTag.add(((SimpleBlockNodeHolder) node.data()).toTag());
+            nodesTag.add(((SimpleNodeHolder) node.data()).toTag());
         }
 
         tag.put("nodes", nodesTag);
@@ -164,7 +164,7 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a stream of all the nodes in this graph in the given block-position.
      */
     @Override
-    public @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull BlockPos pos) {
+    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull BlockPos pos) {
         return nodesInPos.get(pos).stream();
     }
 
@@ -175,7 +175,7 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a stream of all the nodes in this graph in the given sided block-position.
      */
     @Override
-    public @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos) {
+    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos) {
         return nodesInPos.get(pos.pos()).stream()
                 .filter(node -> node.data().getNode() instanceof SidedBlockNode sidedNode &&
                         sidedNode.getSide() == pos.side());
@@ -187,7 +187,7 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a stream of all the nodes in this graph.
      */
     @Override
-    public @NotNull Stream<Node<BlockNodeHolder>> getNodes() {
+    public @NotNull Stream<Node<NodeHolder>> getNodes() {
         return graph.stream();
     }
 
@@ -226,7 +226,7 @@ public class SimpleBlockGraph implements BlockGraph {
         chunks.clear();
         nodesInPos.clear();
         for (var node : graph) {
-            SimpleBlockNodeHolder data = (SimpleBlockNodeHolder) node.data();
+            SimpleNodeHolder data = (SimpleNodeHolder) node.data();
             data.graphId = id;
             BlockPos pos = data.getPos();
             chunks.add(ChunkSectionPos.from(pos).asLong());
@@ -234,10 +234,10 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull Node<BlockNodeHolder> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
+    @NotNull Node<NodeHolder> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
         BlockPos pos = blockPos.toImmutable();
 
-        Node<BlockNodeHolder> graphNode = graph.add(new SimpleBlockNodeHolder(pos, node, id));
+        Node<NodeHolder> graphNode = graph.add(new SimpleNodeHolder(pos, node, id));
         nodesInPos.put(pos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         controller.addGraphInPos(id, pos);
@@ -245,14 +245,14 @@ public class SimpleBlockGraph implements BlockGraph {
         return graphNode;
     }
 
-    void destroyNode(@NotNull Node<BlockNodeHolder> node) {
+    void destroyNode(@NotNull Node<NodeHolder> node) {
         // see if removing this node means removing a block-pos or a chunk
         BlockPos removedPos = node.data().getPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node);
 
         // schedule updates for each of the node's connected nodes
-        for (Link<BlockNodeHolder> link : node.connections()) {
+        for (Link<NodeHolder> link : node.connections()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
             controller.scheduleCallbackUpdate(link.other(node));
@@ -295,13 +295,13 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    void link(@NotNull Node<BlockNodeHolder> a, @NotNull Node<BlockNodeHolder> b) {
+    void link(@NotNull Node<NodeHolder> a, @NotNull Node<NodeHolder> b) {
         graph.link(a, b);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
     }
 
-    void unlink(@NotNull Node<BlockNodeHolder> a, @NotNull Node<BlockNodeHolder> b) {
+    void unlink(@NotNull Node<NodeHolder> a, @NotNull Node<NodeHolder> b) {
         graph.unlink(a, b);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
@@ -318,7 +318,7 @@ public class SimpleBlockGraph implements BlockGraph {
             controller.addGraphInPos(id, node.data().getPos());
 
             // might as well set the node's graph id here as well
-            ((SimpleBlockNodeHolder) node.data()).graphId = id;
+            ((SimpleNodeHolder) node.data()).graphId = id;
         }
 
         graph.join(other.graph);
@@ -337,7 +337,7 @@ public class SimpleBlockGraph implements BlockGraph {
             Set<BlockPos> removedPoses = new LinkedHashSet<>();
             LongSet removedChunks = new LongLinkedOpenHashSet();
 
-            for (Graph<BlockNodeHolder> graph : newGraphs) {
+            for (Graph<NodeHolder> graph : newGraphs) {
                 for (var node : graph) {
                     BlockPos pos = node.data().getPos();
                     removedPoses.add(pos);
@@ -362,7 +362,7 @@ public class SimpleBlockGraph implements BlockGraph {
             // setup block-graphs for the newly created graphs
             List<SimpleBlockGraph> newBlockGraphs = new ArrayList<>(newGraphs.size());
 
-            for (Graph<BlockNodeHolder> graph : newGraphs) {
+            for (Graph<NodeHolder> graph : newGraphs) {
                 // create the new graph and set its nodes correctly
                 SimpleBlockGraph bg = controller.createGraph();
                 bg.graph.join(graph);

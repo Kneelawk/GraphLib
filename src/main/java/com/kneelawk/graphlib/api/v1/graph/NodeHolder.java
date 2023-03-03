@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * All block nodes are associated with a block-position and are wrapped in a block-node-holder that stores the position
  * information along with information about what graph the block node is a part of.
  */
-public interface BlockNodeHolder {
+public interface NodeHolder {
     /**
      * Gets this block node holder's block position.
      *

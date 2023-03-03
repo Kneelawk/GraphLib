@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 /**
  * Holds and manages all block graphs for a given world.
  */
-public interface BlockGraphController extends NodeView {
+public interface GraphWorld extends GraphView {
 
     /**
      * Gets all nodes in the given block-position.
@@ -23,7 +23,7 @@ public interface BlockGraphController extends NodeView {
      * @return a stream of the nodes in the given block-position.
      */
     @Override
-    @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull BlockPos pos);
+    @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull BlockPos pos);
 
     /**
      * Gets all nodes in the given sided block-position.
@@ -32,7 +32,7 @@ public interface BlockGraphController extends NodeView {
      * @return a stream of the nodes in the given sided block-position.
      */
     @Override
-    @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos);
+    @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos);
 
     /**
      * Gets the IDs of all graphs with nodes in the given block-position.

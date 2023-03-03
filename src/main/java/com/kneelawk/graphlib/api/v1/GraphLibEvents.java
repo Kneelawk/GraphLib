@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.api.v1;
 
 import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.BlockGraphController;
+import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.server.world.ServerWorld;
@@ -57,7 +57,7 @@ public final class GraphLibEvents {
          * @param controller the graph-controller in which the graph was created.
          * @param graph      the graph that was created.
          */
-        void graphCreated(ServerWorld world, BlockGraphController controller, BlockGraph graph);
+        void graphCreated(ServerWorld world, GraphWorld controller, BlockGraph graph);
     }
 
     /**
@@ -71,7 +71,7 @@ public final class GraphLibEvents {
          * @param controller the graph-controller in which the graph was changed.
          * @param graph      the graph that was changed.
          */
-        void graphUpdated(ServerWorld world, BlockGraphController controller, BlockGraph graph);
+        void graphUpdated(ServerWorld world, GraphWorld controller, BlockGraph graph);
     }
 
     /**
@@ -85,6 +85,6 @@ public final class GraphLibEvents {
          * @param controller the graph-controller in which the graph was destroyed.
          * @param id         the id of the graph that was destroyed.
          */
-        void graphDestroyed(ServerWorld world, BlockGraphController controller, long id);
+        void graphDestroyed(ServerWorld world, GraphWorld controller, long id);
     }
 }

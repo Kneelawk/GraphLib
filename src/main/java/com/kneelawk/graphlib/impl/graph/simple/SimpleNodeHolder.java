@@ -7,7 +7,7 @@ import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
@@ -17,13 +17,13 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public final class SimpleBlockNodeHolder implements BlockNodeHolder {
+public final class SimpleNodeHolder implements NodeHolder {
     private final @NotNull BlockPos pos;
     private final @NotNull BlockNode node;
 
     long graphId;
 
-    public SimpleBlockNodeHolder(@NotNull BlockPos pos, @NotNull BlockNode node, long graphId) {
+    public SimpleNodeHolder(@NotNull BlockPos pos, @NotNull BlockNode node, long graphId) {
         this.pos = pos.toImmutable();
         this.node = node;
         this.graphId = graphId;
@@ -47,7 +47,7 @@ public final class SimpleBlockNodeHolder implements BlockNodeHolder {
     }
 
     @Nullable
-    public static SimpleBlockNodeHolder fromTag(@NotNull NbtCompound tag, long graphId) {
+    public static SimpleNodeHolder fromTag(@NotNull NbtCompound tag, long graphId) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
@@ -66,7 +66,7 @@ public final class SimpleBlockNodeHolder implements BlockNodeHolder {
             return null;
         }
 
-        return new SimpleBlockNodeHolder(pos, node, graphId);
+        return new SimpleNodeHolder(pos, node, graphId);
     }
 
     @Override
@@ -88,7 +88,7 @@ public final class SimpleBlockNodeHolder implements BlockNodeHolder {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (SimpleBlockNodeHolder) obj;
+        var that = (SimpleNodeHolder) obj;
         return Objects.equals(this.pos, that.pos) && Objects.equals(this.node, that.node);
     }
 

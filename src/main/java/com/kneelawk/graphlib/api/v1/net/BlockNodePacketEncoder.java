@@ -1,8 +1,8 @@
 package com.kneelawk.graphlib.api.v1.net;
 
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.NodeView;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
@@ -24,6 +24,6 @@ public interface BlockNodePacketEncoder<N extends BlockNode> {
      * @param view
      * @param buf
      */
-    void toPacket(@NotNull N node, @NotNull Node<BlockNodeHolder> holderNode, @NotNull ServerWorld world,
-                  @NotNull NodeView view, @NotNull PacketByteBuf buf);
+    void toPacket(@NotNull N node, @NotNull Node<NodeHolder> holderNode, @NotNull ServerWorld world,
+                  @NotNull GraphView view, @NotNull PacketByteBuf buf);
 }

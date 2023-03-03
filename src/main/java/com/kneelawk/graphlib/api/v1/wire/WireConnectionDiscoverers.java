@@ -1,7 +1,7 @@
 package com.kneelawk.graphlib.api.v1.wire;
 
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.NodeView;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.util.DirectionUtils;
@@ -27,45 +27,45 @@ public final class WireConnectionDiscoverers {
      * Finds nodes that can connect to this wire node.
      * <p>
      * This is intended for use in
-     * {@link BlockNode#findConnections(ServerWorld, NodeView, BlockPos, Node)} implementations.
+     * {@link BlockNode#findConnections(ServerWorld, GraphView, BlockPos, Node)} implementations.
      *
      * @param self     this node.
      * @param world    the block world to find connections in.
-     * @param nodeView the node world to find connections in.
+     * @param graphView the node world to find connections in.
      * @param pos      this node's position.
      * @param selfNode this node's holder.
      * @param filter   a general connection filter, used to filter connections.
      * @return a collection of nodes this node can connect to.
-     * @see BlockNode#findConnections(ServerWorld, NodeView, BlockPos, Node)
+     * @see BlockNode#findConnections(ServerWorld, GraphView, BlockPos, Node)
      */
-    public static @NotNull Collection<Node<BlockNodeHolder>> wireFindConnections(@NotNull SidedWireBlockNode self,
-                                                                                 @NotNull ServerWorld world,
-                                                                                 @NotNull NodeView nodeView,
-                                                                                 @NotNull BlockPos pos,
-                                                                                 @NotNull Node<BlockNodeHolder> selfNode,
-                                                                                 @Nullable SidedWireConnectionFilter filter) {
+    public static @NotNull Collection<Node<NodeHolder>> wireFindConnections(@NotNull SidedWireBlockNode self,
+                                                                            @NotNull ServerWorld world,
+                                                                            @NotNull GraphView graphView,
+                                                                            @NotNull BlockPos pos,
+                                                                            @NotNull Node<NodeHolder> selfNode,
+                                                                            @Nullable SidedWireConnectionFilter filter) {
         Direction side = self.getSide();
-        List<Node<BlockNodeHolder>> collector = new ArrayList<>();
+        List<Node<NodeHolder>> collector = new ArrayList<>();
 
         // add all the internal connections
-        nodeView.getNodesAt(pos).filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter))
+        graphView.getNodesAt(pos).filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter))
                 .forEach(collector::add);
 
         // add all external connections
         for (Direction external : DirectionUtils.perpendiculars(side)) {
-            nodeView.getNodesAt(pos.offset(external))
+            graphView.getNodesAt(pos.offset(external))
                     .filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter)).forEach(collector::add);
         }
 
         // add all corner connections
         BlockPos under = pos.offset(side);
         for (Direction corner : DirectionUtils.perpendiculars(side)) {
-            nodeView.getNodesAt(under.offset(corner))
+            graphView.getNodesAt(under.offset(corner))
                     .filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter)).forEach(collector::add);
         }
 
         // add full-block under connection
-        nodeView.getNodesAt(under).filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter))
+        graphView.getNodesAt(under).filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter))
                 .forEach(collector::add);
 
         return collector;
@@ -75,7 +75,7 @@ public final class WireConnectionDiscoverers {
      * Checks if this wire node can connect to the given node.
      * <p>
      * This is intended for use in
-     * {@link BlockNode#canConnect(ServerWorld, NodeView, BlockPos, Node, Node)} implementations.
+     * {@link BlockNode#canConnect(ServerWorld, GraphView, BlockPos, Node, Node)} implementations.
      *
      * @param self      this node.
      * @param world     the block world to check the connection in.
@@ -86,8 +86,8 @@ public final class WireConnectionDiscoverers {
      * @return <code>true</code> if this node can connect to the given node.
      */
     public static boolean wireCanConnect(@NotNull SidedWireBlockNode self, @NotNull ServerWorld world,
-                                         @NotNull BlockPos pos, @NotNull Node<BlockNodeHolder> selfNode,
-                                         @NotNull Node<BlockNodeHolder> otherNode,
+                                         @NotNull BlockPos pos, @NotNull Node<NodeHolder> selfNode,
+                                         @NotNull Node<NodeHolder> otherNode,
                                          @Nullable SidedWireConnectionFilter filter) {
         Direction side = self.getSide();
         BlockPos otherPos = otherNode.data().getPos();
@@ -146,22 +146,22 @@ public final class WireConnectionDiscoverers {
      *
      * @param self     this node.
      * @param world    the block world to find connections in.
-     * @param nodeView the node world to find connections in.
+     * @param graphView the node world to find connections in.
      * @param pos      the position of this node.
      * @param selfNode this node's holder.
      * @param filter   a general connection filter, used to filter connections.
      * @return a collection of nodes this node can connect to.
      */
-    public static @NotNull Collection<Node<BlockNodeHolder>> fullBlockFindConnections(@NotNull FullWireBlockNode self,
-                                                                                      @NotNull ServerWorld world,
-                                                                                      @NotNull NodeView nodeView,
-                                                                                      @NotNull BlockPos pos,
-                                                                                      @NotNull Node<BlockNodeHolder> selfNode,
-                                                                                      @Nullable FullWireConnectionFilter filter) {
-        List<Node<BlockNodeHolder>> collector = new ArrayList<>();
+    public static @NotNull Collection<Node<NodeHolder>> fullBlockFindConnections(@NotNull FullWireBlockNode self,
+                                                                                 @NotNull ServerWorld world,
+                                                                                 @NotNull GraphView graphView,
+                                                                                 @NotNull BlockPos pos,
+                                                                                 @NotNull Node<NodeHolder> selfNode,
+                                                                                 @Nullable FullWireConnectionFilter filter) {
+        List<Node<NodeHolder>> collector = new ArrayList<>();
 
         for (Direction side : Direction.values()) {
-            nodeView.getNodesAt(pos.offset(side))
+            graphView.getNodesAt(pos.offset(side))
                     .filter(other -> fullBlockCanConnect(self, world, pos, selfNode, other, filter))
                     .forEach(collector::add);
         }
@@ -181,8 +181,8 @@ public final class WireConnectionDiscoverers {
      * @return <code>true</code> if this node can connect to the given node.
      */
     public static boolean fullBlockCanConnect(@NotNull FullWireBlockNode self, @NotNull ServerWorld world,
-                                              @NotNull BlockPos pos, @NotNull Node<BlockNodeHolder> selfNode,
-                                              @NotNull Node<BlockNodeHolder> otherNode,
+                                              @NotNull BlockPos pos, @NotNull Node<NodeHolder> selfNode,
+                                              @NotNull Node<NodeHolder> otherNode,
                                               @Nullable FullWireConnectionFilter filter) {
         BlockPos otherPos = otherNode.data().getPos();
 

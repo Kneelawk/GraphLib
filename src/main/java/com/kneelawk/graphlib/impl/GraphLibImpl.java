@@ -5,7 +5,7 @@ import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
-import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphController;
+import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 import com.mojang.brigadier.CommandDispatcher;
 import net.minecraft.registry.Registries;
@@ -31,7 +31,7 @@ public class GraphLibImpl {
         RegistryKey.ofRegistry(BLOCK_NODE_PACKET_ENDODER_IDENTIFIER);
     public static final List<BlockNodeDiscoverer> BLOCK_NODE_DISCOVERERS = new ArrayList<>();
 
-    static @NotNull SimpleBlockGraphController getSimpleController(@NotNull ServerWorld world) {
+    static @NotNull SimpleGraphWorld getSimpleController(@NotNull ServerWorld world) {
         return StorageHelper.getController(world);
     }
 

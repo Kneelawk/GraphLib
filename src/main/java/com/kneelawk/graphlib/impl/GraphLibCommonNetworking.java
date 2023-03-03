@@ -3,9 +3,9 @@ package com.kneelawk.graphlib.impl;
 import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.GraphLibEvents;
 import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.BlockGraphController;
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.NodeView;
+import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.util.graph.Link;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoder;
@@ -67,7 +67,7 @@ public final class GraphLibCommonNetworking {
 
         ServerWorld world = player.getWorld();
         MinecraftServer server = world.getServer();
-        BlockGraphController controller = GraphLib.getController(world);
+        GraphWorld controller = GraphLib.getGraphWorld(world);
         int viewDistance = server.getPlayerManager().getViewDistance();
 
         ChunkSectionPos playerPos = player.getWatchedSection();
@@ -149,7 +149,7 @@ public final class GraphLibCommonNetworking {
         }
     }
 
-    private static void sendBlockGraph(ServerWorld world, BlockGraphController controller, BlockGraph graph) {
+    private static void sendBlockGraph(ServerWorld world, GraphWorld controller, BlockGraph graph) {
         if (debuggingPlayers.isEmpty()) {
             return;
         }
@@ -171,13 +171,13 @@ public final class GraphLibCommonNetworking {
         }
     }
 
-    private static void encodeBlockGraph(ServerWorld world, BlockGraphController controller, BlockGraph graph,
+    private static void encodeBlockGraph(ServerWorld world, GraphWorld controller, BlockGraph graph,
                                          PacketByteBuf buf) {
         buf.writeLong(graph.getId());
 
         AtomicInteger index = new AtomicInteger();
-        Map<Node<BlockNodeHolder>, Integer> indexMap = new HashMap<>();
-        Set<Link<BlockNodeHolder>> distinct = new LinkedHashSet<>();
+        Map<Node<NodeHolder>, Integer> indexMap = new HashMap<>();
+        Set<Link<NodeHolder>> distinct = new LinkedHashSet<>();
 
         buf.writeVarInt(graph.size());
         graph.getNodes().forEachOrdered(node -> {
@@ -189,7 +189,7 @@ public final class GraphLibCommonNetworking {
         });
 
         buf.writeVarInt(distinct.size());
-        for (Link<BlockNodeHolder> link : distinct) {
+        for (Link<NodeHolder> link : distinct) {
             if (!indexMap.containsKey(link.first())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
@@ -207,7 +207,7 @@ public final class GraphLibCommonNetworking {
         }
     }
 
-    private static void encodeBlockNode(ServerWorld world, NodeView view, Node<BlockNodeHolder> node,
+    private static void encodeBlockNode(ServerWorld world, GraphView view, Node<NodeHolder> node,
                                         PacketByteBuf buf) {
         BlockNodePacketEncoderHolder<?> holder =
             GraphLib.BLOCK_NODE_PACKET_ENCODER.get(node.data().getNode().getTypeId());

@@ -4,10 +4,10 @@ import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.GraphLibEvents;
-import com.kneelawk.graphlib.api.v1.graph.BlockGraphController;
+import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.NodeView;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.v1.util.SidedPos;
@@ -46,7 +46,7 @@ import java.util.stream.Stream;
  * API methods to an interface so that I could have more control over what methods were being called and to open up the
  * possibility of maybe eventually making a cubic-chunks implementation of GraphLib or something.
  */
-public class SimpleBlockGraphController implements AutoCloseable, NodeView, BlockGraphController {
+public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld {
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
@@ -66,14 +66,14 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
     private final ObjectSet<BlockPos> nodeUpdates = new ObjectLinkedOpenHashSet<>();
     private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
-    private final ObjectSet<Node<BlockNodeHolder>> callbackUpdates = new ObjectLinkedOpenHashSet<>();
+    private final ObjectSet<Node<NodeHolder>> callbackUpdates = new ObjectLinkedOpenHashSet<>();
 
     private boolean stateDirty = false;
     private long prevGraphId = -1L;
 
     private boolean closed = false;
 
-    public SimpleBlockGraphController(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
+    public SimpleGraphWorld(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
             SimpleBlockGraphChunk::new, SimpleBlockGraphChunk::new);
         this.world = world;
@@ -161,7 +161,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      * @return a stream of the nodes in the given block-position.
      */
     @Override
-    public @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull BlockPos pos) {
+    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull BlockPos pos) {
         // no need for a .distict() here, because you should never have the same node be part of multiple graphs
         return getGraphsAt(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
@@ -173,7 +173,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
      * @return a stream of the nodes in the given sided block-position.
      */
     @Override
-    public @NotNull Stream<Node<BlockNodeHolder>> getNodesAt(@NotNull SidedPos pos) {
+    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos) {
         return getGraphsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
 
@@ -469,7 +469,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         connectionUpdates.clear();
     }
 
-    void scheduleCallbackUpdate(@NotNull Node<BlockNodeHolder> node) {
+    void scheduleCallbackUpdate(@NotNull Node<NodeHolder> node) {
         //noinspection ConstantConditions
         if (node == null) {
             GLLog.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",
@@ -482,7 +482,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
 
     private void handleCallbackUpdates() {
         for (var node : callbackUpdates) {
-            BlockNodeHolder data = node.data();
+            NodeHolder data = node.data();
             data.getNode().onConnectionsChanged(world, this, data.getPos(), node);
         }
         callbackUpdates.clear();
@@ -518,13 +518,13 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
             }
 
             SimpleBlockGraph newGraph = createGraph();
-            Node<BlockNodeHolder> node = newGraph.createNode(pos, bn);
+            Node<NodeHolder> node = newGraph.createNode(pos, bn);
             updateNodeConnections(node);
         }
     }
 
-    private void updateNodeConnections(@NotNull Node<BlockNodeHolder> node) {
-        long nodeGraphId = ((SimpleBlockNodeHolder) node.data()).graphId;
+    private void updateNodeConnections(@NotNull Node<NodeHolder> node) {
+        long nodeGraphId = ((SimpleNodeHolder) node.data()).graphId;
         SimpleBlockGraph graph = getGraph(nodeGraphId);
 
         if (graph == null) {
@@ -539,7 +539,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         wantedConnections.removeIf(
             other -> !other.data().getNode().canConnect(world, this, other.data().getPos(), other, node));
         var newConnections = wantedConnections.stream()
-            .filter(other -> ((SimpleBlockNodeHolder) other.data()).graphId != nodeGraphId ||
+            .filter(other -> ((SimpleNodeHolder) other.data()).graphId != nodeGraphId ||
                 !oldConnections.contains(other)).toList();
         var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
 
@@ -547,7 +547,7 @@ public class SimpleBlockGraphController implements AutoCloseable, NodeView, Bloc
         SimpleBlockGraph mergedGraph = graph;
 
         for (var other : newConnections) {
-            long otherGraphId = ((SimpleBlockNodeHolder) other.data()).graphId;
+            long otherGraphId = ((SimpleNodeHolder) other.data()).graphId;
             if (otherGraphId != mergedGraphId) {
                 SimpleBlockGraph otherGraph = getGraph(otherGraphId);
                 if (otherGraph == null) {

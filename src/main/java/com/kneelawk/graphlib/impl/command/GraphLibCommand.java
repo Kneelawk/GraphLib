@@ -45,7 +45,7 @@ public class GraphLibCommand {
             true);
 
         ServerWorld world = source.getWorld();
-        GraphLib.getController(world).updateNodes(BlockPos.stream(from, to));
+        GraphLib.getGraphWorld(world).updateNodes(BlockPos.stream(from, to));
 
         source.sendFeedback(Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
             true);
@@ -54,7 +54,7 @@ public class GraphLibCommand {
     }
 
     private static int removeEmptyGraphsCommand(ServerCommandSource source) {
-        int result = GraphLib.getController(source.getWorld()).removeEmptyGraphs();
+        int result = GraphLib.getGraphWorld(source.getWorld()).removeEmptyGraphs();
 
         source.sendFeedback(Constants.command("graphlib.removeemptygraphs.success", result), true);
 

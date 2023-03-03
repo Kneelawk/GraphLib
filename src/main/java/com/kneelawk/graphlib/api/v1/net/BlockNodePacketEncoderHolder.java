@@ -1,8 +1,8 @@
 package com.kneelawk.graphlib.api.v1.net;
 
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.NodeView;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
@@ -17,8 +17,8 @@ import org.jetbrains.annotations.NotNull;
  */
 public record BlockNodePacketEncoderHolder<N extends BlockNode>(@NotNull Class<N> nodeClass,
                                                                 @NotNull BlockNodePacketEncoder<N> nodeEncoder) {
-    public void toPacket(@NotNull BlockNode node, @NotNull Node<BlockNodeHolder> holderNode, @NotNull ServerWorld world,
-                         @NotNull NodeView view, @NotNull PacketByteBuf buf) {
+    public void toPacket(@NotNull BlockNode node, @NotNull Node<NodeHolder> holderNode, @NotNull ServerWorld world,
+                         @NotNull GraphView view, @NotNull PacketByteBuf buf) {
         if (nodeClass.isInstance(node)) {
             nodeEncoder.toPacket(nodeClass.cast(node), holderNode, world, view, buf);
         }

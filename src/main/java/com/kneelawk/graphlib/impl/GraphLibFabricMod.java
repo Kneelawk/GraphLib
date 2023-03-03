@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.impl;
 
-import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphController;
+import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
@@ -32,7 +32,7 @@ public class GraphLibFabricMod implements ModInitializer {
         });
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
             try {
-                SimpleBlockGraphController controller = GraphLibImpl.getSimpleController(world);
+                SimpleGraphWorld controller = GraphLibImpl.getSimpleController(world);
                 controller.saveChunk(chunk.getPos());
                 controller.onWorldChunkUnload(chunk.getPos());
             } catch (Exception e) {
