@@ -68,7 +68,7 @@ public final class GraphLib {
      * Gets the {@link GraphWorld} for the given {@link ServerWorld}.
      *
      * @param world the world whose BlockGraphController is to be obtained.
-     * @return the BlockGraphController of the given world.
+     * @return the GraphWorld of the given world.
      */
     public static @NotNull GraphWorld getGraphWorld(@NotNull ServerWorld world) {
         return StorageHelper.getController(world);
