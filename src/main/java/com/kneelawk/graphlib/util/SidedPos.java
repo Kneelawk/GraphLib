@@ -1,5 +1,6 @@
 package com.kneelawk.graphlib.util;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.Codec;
@@ -38,7 +39,7 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      * @see #toNbt()
      * @see #fromNbt(NbtCompound)
      */
-    public void toNbt(NbtCompound nbt) {
+    public void toNbt(@NotNull NbtCompound nbt) {
         nbt.putIntArray("pos", new int[]{pos.getX(), pos.getY(), pos.getZ()});
         nbt.putByte("side", (byte) side.getId());
     }
@@ -50,7 +51,7 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      * @see #toNbt(NbtCompound)
      * @see #fromNbt(NbtCompound)
      */
-    public NbtCompound toNbt() {
+    public @NotNull NbtCompound toNbt() {
         NbtCompound nbt = new NbtCompound();
         toNbt(nbt);
         return nbt;
@@ -62,7 +63,7 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      * @param buf the buffer to write to.
      * @see #fromPacket(PacketByteBuf)
      */
-    public void toPacket(PacketByteBuf buf) {
+    public void toPacket(@NotNull PacketByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeByte(side.getId());
     }
@@ -75,7 +76,8 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      * @see #toNbt(NbtCompound)
      * @see #toNbt()
      */
-    public static SidedPos fromNbt(NbtCompound nbt) {
+    @Contract("_ -> new")
+    public static @NotNull SidedPos fromNbt(@NotNull NbtCompound nbt) {
         int[] pos = nbt.getIntArray("pos");
         return new SidedPos(new BlockPos(pos[0], pos[1], pos[2]), Direction.byId(nbt.getByte("side")));
     }
@@ -87,7 +89,8 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      * @return a new SidedPos with the data read from the given buffer.
      * @see #toPacket(PacketByteBuf)
      */
-    public static SidedPos fromPacket(PacketByteBuf buf) {
+    @Contract("_ -> new")
+    public static @NotNull SidedPos fromPacket(@NotNull PacketByteBuf buf) {
         return new SidedPos(buf.readBlockPos(), Direction.byId(buf.readByte()));
     }
 
