@@ -1,26 +1,25 @@
 package com.kneelawk.graphlib.impl;
 
-import com.kneelawk.graphlib.api.v1.GraphLib;
-import com.kneelawk.graphlib.api.v1.GraphLibEvents;
-import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.GraphView;
-import com.kneelawk.graphlib.api.v1.util.graph.Link;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoder;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.node.SidedBlockNode;
-import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -31,8 +30,18 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.kneelawk.graphlib.api.v1.GraphLib;
+import com.kneelawk.graphlib.api.v1.GraphLibEvents;
+import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
+import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoder;
+import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
+import com.kneelawk.graphlib.api.v1.node.BlockNode;
+import com.kneelawk.graphlib.api.v1.node.SidedBlockNode;
+import com.kneelawk.graphlib.api.v1.util.graph.Link;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 
 public final class GraphLibCommonNetworking {
     private GraphLibCommonNetworking() {
@@ -76,27 +85,27 @@ public final class GraphLibCommonNetworking {
         int maxX = playerPos.getSectionX() + viewDistance + 1;
         int maxZ = playerPos.getSectionZ() + viewDistance + 1;
 
-        LongSet graphs = new LongLinkedOpenHashSet();
+        LongSet graphIds = new LongLinkedOpenHashSet();
         for (int z = minZ; z <= maxZ; z++) {
             for (int x = minX; x <= maxX; x++) {
                 if (ThreadedAnvilChunkStorage.isWithinDistance(x, z, playerPos.getSectionX(), playerPos.getSectionZ(),
                     viewDistance)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
-                    controller.getGraphsInChunk(pos).forEach(graphs::add);
+                    controller.getGraphsInChunk(pos).forEach(graphIds::add);
                 }
             }
         }
 
+        // collect the actual set of graphs we intend to send
+        List<BlockGraph> graphs =
+            graphIds.longStream().mapToObj(controller::getGraph).filter(Objects::nonNull).toList();
+
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(graphs.size());
 
-        for (long graphId : graphs) {
-            BlockGraph graph = controller.getGraph(graphId);
-
-            if (graph != null) {
-                encodeBlockGraph(world, controller, graph, buf);
-            }
+        for (BlockGraph graph : graphs) {
+            encodeBlockGraph(world, controller, graph, buf);
         }
 
         ServerPlayNetworking.send(player, GRAPH_UPDATE_BULK_ID, buf);
