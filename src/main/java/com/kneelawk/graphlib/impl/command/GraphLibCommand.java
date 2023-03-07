@@ -1,16 +1,22 @@
 package com.kneelawk.graphlib.impl.command;
 
-import com.kneelawk.graphlib.impl.Constants;
-import com.kneelawk.graphlib.api.v1.GraphLib;
-import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.Texts;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
+
+import com.kneelawk.graphlib.api.v1.GraphLib;
+import com.kneelawk.graphlib.impl.Constants;
+import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;

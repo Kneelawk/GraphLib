@@ -1,12 +1,14 @@
 package com.kneelawk.graphlib.api.v1.wire;
 
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 
 /**
  * Allows an external object to filter the connections connecting to a full block wire block node.
@@ -37,7 +39,7 @@ public interface FullWireConnectionFilter {
      */
     default FullWireConnectionFilter and(@NotNull FullWireConnectionFilter otherFilter) {
         return (self, world, pos, onSide, wireSide, selfNode, otherNode) ->
-                canConnect(self, world, pos, onSide, wireSide, selfNode, otherNode) &&
-                        otherFilter.canConnect(self, world, pos, onSide, wireSide, selfNode, otherNode);
+            canConnect(self, world, pos, onSide, wireSide, selfNode, otherNode) &&
+                otherFilter.canConnect(self, world, pos, onSide, wireSide, selfNode, otherNode);
     }
 }

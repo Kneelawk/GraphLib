@@ -1,19 +1,22 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import com.kneelawk.graphlib.api.v1.world.StorageChunk;
+import org.jetbrains.annotations.NotNull;
+
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.ShortIterator;
+
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtLong;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
-import org.jetbrains.annotations.NotNull;
+
+import com.kneelawk.graphlib.api.v1.world.StorageChunk;
 
 public class SimpleBlockGraphChunk implements StorageChunk {
     final ChunkSectionPos chunkPos;
@@ -37,7 +40,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
             NbtList ids = com.getList("ids", NbtElement.LONG_TYPE);
             if (!ids.isEmpty()) {
                 LongSet inPos = graphsInPos.computeIfAbsent(ChunkSectionPos.packLocal(pos),
-                        s -> new LongLinkedOpenHashSet());
+                    s -> new LongLinkedOpenHashSet());
                 for (NbtElement idElement : ids) {
                     inPos.add(((NbtLong) idElement).longValue());
                 }

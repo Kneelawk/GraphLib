@@ -3,19 +3,21 @@ package com.kneelawk.graphlib.impl.graph.simple;
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
 
-import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.api.v1.GraphLib;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import java.util.Objects;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
+import com.kneelawk.graphlib.api.v1.GraphLib;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.node.BlockNode;
+import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.impl.GLLog;
 
 public final class SimpleNodeHolder implements NodeHolder {
     private final @NotNull BlockPos pos;

@@ -1,10 +1,12 @@
 package com.kneelawk.graphlib.api.v1.node;
 
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.math.Direction;
+
+import com.kneelawk.graphlib.api.v1.util.SidedPos;
 import com.kneelawk.graphlib.api.v1.wire.WireConnectionDiscoverers;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
-import com.kneelawk.graphlib.api.v1.util.SidedPos;
-import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Describes a block node that is positioned on the side of a block.

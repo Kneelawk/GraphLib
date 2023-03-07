@@ -1,9 +1,10 @@
 package com.kneelawk.graphlib.impl;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 
 public final class Constants {
     private Constants() {

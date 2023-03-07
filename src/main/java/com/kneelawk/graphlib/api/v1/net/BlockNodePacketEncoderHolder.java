@@ -1,12 +1,14 @@
 package com.kneelawk.graphlib.api.v1.net;
 
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.GraphView;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
-import org.jetbrains.annotations.NotNull;
+
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.node.BlockNode;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
 
 /**
  * Holds a {@link BlockNodePacketEncoder} along with the class of its associated {@link BlockNode}.

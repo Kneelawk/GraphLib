@@ -1,5 +1,19 @@
 package com.kneelawk.graphlib.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.brigadier.CommandDispatcher;
+
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+
 import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
@@ -7,17 +21,6 @@ import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
-import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class GraphLibImpl {
     private GraphLibImpl() {

@@ -1,29 +1,5 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
-import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.util.graph.Graph;
-import com.kneelawk.graphlib.api.v1.util.graph.Link;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
-import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.api.v1.GraphLibEvents;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.node.SidedBlockNode;
-import com.kneelawk.graphlib.api.v1.util.SidedPos;
-import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtLong;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,6 +7,34 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtLong;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
+
+import com.kneelawk.graphlib.api.v1.GraphLibEvents;
+import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.node.BlockNode;
+import com.kneelawk.graphlib.api.v1.node.SidedBlockNode;
+import com.kneelawk.graphlib.api.v1.util.SidedPos;
+import com.kneelawk.graphlib.api.v1.util.graph.Graph;
+import com.kneelawk.graphlib.api.v1.util.graph.Link;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.impl.GLLog;
 
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
@@ -110,7 +114,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         var nodes = graph.stream().toList();
         var nodeIndexMap = IntStream.range(0, nodes.size()).mapToObj(i -> new Pair<>(nodes.get(i), i))
-                .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+            .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
 
         NbtList nodesTag = new NbtList();
 
@@ -125,14 +129,14 @@ public class SimpleBlockGraph implements BlockGraph {
         for (var link : nodes.stream().flatMap(node -> node.connections().stream()).distinct().toList()) {
             if (!nodeIndexMap.containsKey(link.first())) {
                 GLLog.warn(
-                        "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
-                        id, link.second(), link.first());
+                    "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
+                    id, link.second(), link.first());
                 continue;
             }
             if (!nodeIndexMap.containsKey(link.second())) {
                 GLLog.warn(
-                        "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
-                        id, link.first(), link.second());
+                    "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
+                    id, link.first(), link.second());
                 continue;
             }
 
@@ -177,8 +181,8 @@ public class SimpleBlockGraph implements BlockGraph {
     @Override
     public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos) {
         return nodesInPos.get(pos.pos()).stream()
-                .filter(node -> node.data().getNode() instanceof SidedBlockNode sidedNode &&
-                        sidedNode.getSide() == pos.side());
+            .filter(node -> node.data().getNode() instanceof SidedBlockNode sidedNode &&
+                sidedNode.getSide() == pos.side());
     }
 
     /**

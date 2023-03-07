@@ -1,9 +1,12 @@
 package com.kneelawk.graphlib.graph.struct;
 
-import com.kneelawk.graphlib.api.v1.util.graph.Graph;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import com.kneelawk.graphlib.api.v1.util.graph.Graph;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class GraphSplitTests {
     @Test
@@ -23,9 +26,9 @@ public class GraphSplitTests {
         Graph<String> newGraph = newGraphs.get(0);
 
         assertTrue("Either the new graph or the old graph should contain C.",
-                newGraph.contains(c) || graph.contains(c));
+            newGraph.contains(c) || graph.contains(c));
         assertTrue("Either the new graph or the old graph should contain both A and B.",
-                newGraph.contains(a, b) || graph.contains(a, b));
+            newGraph.contains(a, b) || graph.contains(a, b));
 
         assertFalse("The same graph should not contain both A and C.", newGraph.contains(a, c) || graph.contains(a, c));
     }

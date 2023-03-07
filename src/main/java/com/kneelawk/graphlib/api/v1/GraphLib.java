@@ -1,5 +1,18 @@
 package com.kneelawk.graphlib.api.v1;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.serialization.Lifecycle;
+
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.SimpleRegistry;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+
 import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
@@ -7,16 +20,6 @@ import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
-import com.mojang.serialization.Lifecycle;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, obtaining a

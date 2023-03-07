@@ -1,17 +1,20 @@
 package com.kneelawk.graphlib.api.v1.client;
 
-import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketDecoder;
-import com.mojang.serialization.Lifecycle;
+import java.util.Set;
+
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+
+import com.mojang.serialization.Lifecycle;
+
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.util.math.ChunkPos;
 
-import java.util.Set;
+import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
+import com.kneelawk.graphlib.api.v1.net.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
+import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 
 /**
  * Graph Lib Client-Side Public API. This class contains static methods and fields for registering

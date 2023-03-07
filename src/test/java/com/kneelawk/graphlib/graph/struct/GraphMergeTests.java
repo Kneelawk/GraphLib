@@ -1,7 +1,8 @@
 package com.kneelawk.graphlib.graph.struct;
 
-import com.kneelawk.graphlib.api.v1.util.graph.Graph;
 import org.junit.Test;
+
+import com.kneelawk.graphlib.api.v1.util.graph.Graph;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +24,7 @@ public class GraphMergeTests {
         assertEquals("Graph B should have 0 nodes.", 0, graphB.size());
 
         assertTrue("Graph A should contain A, B, and C.",
-                graphA.contains(a) && graphA.contains(b) && graphA.contains(c));
+            graphA.contains(a) && graphA.contains(b) && graphA.contains(c));
         assertTrue("B and C should stay linked.", b.connections().contains(link) && c.connections().contains(link));
     }
 }

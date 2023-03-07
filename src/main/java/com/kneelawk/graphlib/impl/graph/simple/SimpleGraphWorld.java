@@ -1,29 +1,5 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import com.kneelawk.graphlib.impl.Constants;
-import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.api.v1.GraphLib;
-import com.kneelawk.graphlib.api.v1.GraphLibEvents;
-import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.graph.GraphView;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
-import com.kneelawk.graphlib.api.v1.util.ChunkSectionUnloadTimer;
-import com.kneelawk.graphlib.api.v1.util.SidedPos;
-import com.kneelawk.graphlib.api.v1.world.UnloadingRegionBasedStorage;
-import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -38,6 +14,40 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
+
+import com.kneelawk.graphlib.api.v1.GraphLib;
+import com.kneelawk.graphlib.api.v1.GraphLibEvents;
+import com.kneelawk.graphlib.api.v1.graph.GraphView;
+import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
+import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
+import com.kneelawk.graphlib.api.v1.node.BlockNode;
+import com.kneelawk.graphlib.api.v1.util.ChunkSectionUnloadTimer;
+import com.kneelawk.graphlib.api.v1.util.SidedPos;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.api.v1.world.UnloadingRegionBasedStorage;
+import com.kneelawk.graphlib.impl.Constants;
+import com.kneelawk.graphlib.impl.GLLog;
 
 /**
  * Holds and manages all block graphs for a given world.

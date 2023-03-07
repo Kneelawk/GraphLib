@@ -1,8 +1,10 @@
 package com.kneelawk.graphlib.api.v1.graph;
 
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.math.BlockPos;
+
+import com.kneelawk.graphlib.api.v1.node.BlockNode;
 
 /**
  * Positioned holder for a block node.

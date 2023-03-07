@@ -1,9 +1,11 @@
 package com.kneelawk.graphlib.api.v1.node.client;
 
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.Identifier;
+
 import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Implemented by any representation of a {@link BlockNode} on the client.

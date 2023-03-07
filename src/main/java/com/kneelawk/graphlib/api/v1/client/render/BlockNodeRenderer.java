@@ -1,18 +1,21 @@
 package com.kneelawk.graphlib.api.v1.client.render;
 
-import com.kneelawk.graphlib.api.v1.util.SidedPos;
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.v1.util.SidedPos;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 
 /**
  * Handles rendering a {@link ClientBlockNode}.

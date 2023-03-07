@@ -1,19 +1,23 @@
 package com.kneelawk.graphlib.api.v1.client.render;
 
+import java.math.RoundingMode;
+import java.util.Random;
+
 import com.google.common.math.IntMath;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+
 import org.jetbrains.annotations.NotNull;
+
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import java.math.RoundingMode;
-import java.util.Random;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * Assorted utilities for rendering debug block-nodes.

@@ -1,10 +1,11 @@
 package com.kneelawk.graphlib.api.v1.node;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import java.util.Collection;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 
 /**
  * Used to get the {@link BlockNode}s that a block <b>should</b> have.

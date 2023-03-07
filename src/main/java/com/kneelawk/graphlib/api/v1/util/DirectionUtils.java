@@ -1,8 +1,9 @@
 package com.kneelawk.graphlib.api.v1.util;
 
-import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.math.Direction;
 
 public final class DirectionUtils {
     private DirectionUtils() {

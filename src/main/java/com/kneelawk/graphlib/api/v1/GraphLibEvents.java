@@ -1,10 +1,12 @@
 package com.kneelawk.graphlib.api.v1;
 
-import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+
 import net.minecraft.server.world.ServerWorld;
+
+import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
+import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 
 /**
  * This contains the events fired for different graph operations.

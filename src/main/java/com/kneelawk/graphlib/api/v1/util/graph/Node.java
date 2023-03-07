@@ -1,10 +1,10 @@
 package com.kneelawk.graphlib.api.v1.util.graph;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.jetbrains.annotations.NotNull;
 
 // Translated from 2xsaiko's HCTM-Base Graph code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt
@@ -62,6 +62,6 @@ public final class Node<T> {
     @Override
     public String toString() {
         return "Node[" +
-                "node=" + data + ']';
+            "node=" + data + ']';
     }
 }

@@ -1,16 +1,23 @@
 package com.kneelawk.graphlib.impl.client.render;
 
-import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
-import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
-import com.kneelawk.graphlib.api.v1.client.render.RenderUtils;
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.v1.node.client.SidedClientBlockNode;
-import com.kneelawk.graphlib.api.v1.util.graph.Link;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
-import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
-import com.kneelawk.graphlib.api.v1.util.SidedPos;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalDouble;
+
+import org.jetbrains.annotations.Nullable;
+
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+
+import org.joml.Matrix4f;
+
 import com.mojang.blaze3d.framebuffer.Framebuffer;
 import com.mojang.blaze3d.framebuffer.SimpleFramebuffer;
 import com.mojang.blaze3d.glfw.Window;
@@ -19,12 +26,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
@@ -32,10 +34,18 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
-import java.util.*;
+import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
+import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
+import com.kneelawk.graphlib.api.v1.client.render.RenderUtils;
+import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.v1.node.client.SidedClientBlockNode;
+import com.kneelawk.graphlib.api.v1.util.SidedPos;
+import com.kneelawk.graphlib.api.v1.util.graph.Link;
+import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
+import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
 
 public final class DebugRenderer {
     private DebugRenderer() {
