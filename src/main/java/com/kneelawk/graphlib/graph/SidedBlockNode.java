@@ -1,9 +1,11 @@
 package com.kneelawk.graphlib.graph;
 
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.math.Direction;
+
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.util.SidedPos;
-import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Describes a block node that is positioned on the side of a block.

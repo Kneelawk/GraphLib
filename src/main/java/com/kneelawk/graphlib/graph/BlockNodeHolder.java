@@ -1,7 +1,8 @@
 package com.kneelawk.graphlib.graph;
 
-import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.math.BlockPos;
 
 /**
  * Positioned holder for a block node.

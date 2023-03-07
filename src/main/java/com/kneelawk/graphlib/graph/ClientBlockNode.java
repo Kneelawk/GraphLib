@@ -1,7 +1,8 @@
 package com.kneelawk.graphlib.graph;
 
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.Identifier;
 
 /**
  * Implemented by any representation of a {@link BlockNode} on the client.

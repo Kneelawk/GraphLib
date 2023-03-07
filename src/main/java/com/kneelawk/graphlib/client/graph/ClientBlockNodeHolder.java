@@ -1,8 +1,10 @@
 package com.kneelawk.graphlib.client.graph;
 
-import com.kneelawk.graphlib.graph.ClientBlockNode;
-import net.minecraft.util.math.BlockPos;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.math.BlockPos;
+
+import com.kneelawk.graphlib.graph.ClientBlockNode;
 
 /**
  * Holds a {@link ClientBlockNode} along with its {@link BlockPos}.

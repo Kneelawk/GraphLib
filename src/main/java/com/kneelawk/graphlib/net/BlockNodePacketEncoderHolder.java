@@ -1,12 +1,14 @@
 package com.kneelawk.graphlib.net;
 
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.world.ServerWorld;
+
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.world.ServerWorld;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Holds a {@link BlockNodePacketEncoder} along with the class of its associated {@link BlockNode}.

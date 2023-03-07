@@ -1,12 +1,14 @@
 package com.kneelawk.graphlib.wire;
 
-import com.kneelawk.graphlib.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.graph.SidedBlockNode;
-import com.kneelawk.graphlib.graph.struct.Node;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
+
+import com.kneelawk.graphlib.graph.BlockNodeHolder;
+import com.kneelawk.graphlib.graph.SidedBlockNode;
+import com.kneelawk.graphlib.graph.struct.Node;
 
 /**
  * A block node wire that occupies the side of a block.

@@ -1,8 +1,10 @@
 package com.kneelawk.graphlib.mixin.api;
 
-import com.kneelawk.graphlib.mixin.impl.RenderLayerAccessor;
 import com.mojang.blaze3d.vertex.VertexFormat;
+
 import net.minecraft.client.render.RenderLayer;
+
+import com.kneelawk.graphlib.mixin.impl.RenderLayerAccessor;
 
 public final class RenderLayerHelper {
     private RenderLayerHelper() {
@@ -17,6 +19,7 @@ public final class RenderLayerHelper {
         boolean translucent,
         RenderLayer.MultiPhaseParameters phases
     ) {
-        return RenderLayerAccessor.callOf(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, phases);
+        return RenderLayerAccessor.callOf(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent,
+            phases);
     }
 }

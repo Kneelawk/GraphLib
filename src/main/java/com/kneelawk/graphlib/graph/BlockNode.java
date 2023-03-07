@@ -1,18 +1,20 @@
 package com.kneelawk.graphlib.graph;
 
+import java.util.Collection;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.wire.FullWireBlockNode;
 import com.kneelawk.graphlib.wire.FullWireConnectionFilter;
 import com.kneelawk.graphlib.wire.SidedWireBlockNode;
 import com.kneelawk.graphlib.wire.SidedWireConnectionFilter;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Collection;
 
 /**
  * Interface that all block nodes should implement.

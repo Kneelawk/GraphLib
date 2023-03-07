@@ -1,9 +1,11 @@
 package com.kneelawk.graphlib.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import net.minecraft.util.math.ChunkPos;
-import org.jetbrains.annotations.NotNull;
 
 public abstract class ChunkUnloadTimer {
     protected final long maxAge;

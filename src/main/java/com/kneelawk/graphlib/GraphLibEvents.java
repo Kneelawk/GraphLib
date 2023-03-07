@@ -1,10 +1,12 @@
 package com.kneelawk.graphlib;
 
-import com.kneelawk.graphlib.graph.BlockGraph;
-import com.kneelawk.graphlib.graph.BlockGraphController;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
+
 import net.minecraft.server.world.ServerWorld;
+
+import com.kneelawk.graphlib.graph.BlockGraph;
+import com.kneelawk.graphlib.graph.BlockGraphController;
 
 public final class GraphLibEvents {
     private GraphLibEvents() {
@@ -26,11 +28,13 @@ public final class GraphLibEvents {
             }
         });
 
-    public static final Event<GraphDestroyedListener> GRAPH_DESTROYED = EventFactory.createArrayBacked(GraphDestroyedListener.class, (world, controller, id) -> {}, listeners -> (world, controller, id) -> {
-        for (GraphDestroyedListener listener : listeners) {
-            listener.graphDestroyed(world, controller, id);
-        }
-    });
+    public static final Event<GraphDestroyedListener> GRAPH_DESTROYED =
+        EventFactory.createArrayBacked(GraphDestroyedListener.class, (world, controller, id) -> {
+        }, listeners -> (world, controller, id) -> {
+            for (GraphDestroyedListener listener : listeners) {
+                listener.graphDestroyed(world, controller, id);
+            }
+        });
 
     public interface GraphCreatedListener {
         void graphCreated(ServerWorld world, BlockGraphController controller, BlockGraph graph);

@@ -1,10 +1,11 @@
 package com.kneelawk.graphlib.mixin.impl;
 
-import net.minecraft.world.storage.StorageIoWorker;
+import java.nio.file.Path;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-import java.nio.file.Path;
+import net.minecraft.world.storage.StorageIoWorker;
 
 @Mixin(StorageIoWorker.class)
 public interface StorageIoWorkerAccessor {

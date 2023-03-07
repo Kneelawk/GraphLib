@@ -1,7 +1,8 @@
 package com.kneelawk.graphlib.graph;
 
-import net.minecraft.nbt.NbtElement;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.nbt.NbtElement;
 
 /**
  * Used for decoding a {@link BlockNode} from an NBT element.
