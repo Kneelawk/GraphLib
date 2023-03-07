@@ -1,13 +1,14 @@
 package com.kneelawk.graphlib;
 
-import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
-import com.kneelawk.graphlib.net.GraphLibCommonNetworking;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.loader.api.FabricLoader;
+
+import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
+import com.kneelawk.graphlib.net.GraphLibCommonNetworking;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricMod implements ModInitializer {
@@ -21,14 +22,15 @@ public class GraphLibFabricMod implements ModInitializer {
 
         GraphLibCommonNetworking.init();
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> GraphLib.registerCommands(dispatcher));
+        CommandRegistrationCallback.EVENT.register(
+            (dispatcher, registryAccess, environment) -> GraphLib.registerCommands(dispatcher));
 
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
             try {
                 GraphLib.getSimpleController(world).onWorldChunkLoad(chunk.getPos());
             } catch (Exception e) {
                 GLLog.error("Error loading chunk in BlockGraphController. World: '{}'/{}", world,
-                        world.getRegistryKey().getValue(), e);
+                    world.getRegistryKey().getValue(), e);
             }
         });
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
@@ -38,7 +40,7 @@ public class GraphLibFabricMod implements ModInitializer {
                 controller.onWorldChunkUnload(chunk.getPos());
             } catch (Exception e) {
                 GLLog.error("Error unloading chunk in BlockGraphController. World: '{}'/{}", world,
-                        world.getRegistryKey().getValue(), e);
+                    world.getRegistryKey().getValue(), e);
             }
         });
         ServerTickEvents.END_WORLD_TICK.register(world -> {
@@ -46,7 +48,7 @@ public class GraphLibFabricMod implements ModInitializer {
                 GraphLib.getSimpleController(world).tick();
             } catch (Exception e) {
                 GLLog.error("Error ticking BlockGraphController. World: '{}'/{}", world,
-                        world.getRegistryKey().getValue(), e);
+                    world.getRegistryKey().getValue(), e);
             }
         });
         ServerWorldEvents.UNLOAD.register((server, world) -> {
@@ -54,7 +56,7 @@ public class GraphLibFabricMod implements ModInitializer {
                 GraphLib.getSimpleController(world).close();
             } catch (Exception e) {
                 GLLog.error("Error closing BlockGraphController. World: '{}'/{}", world,
-                        world.getRegistryKey().getValue(), e);
+                    world.getRegistryKey().getValue(), e);
             }
         });
 

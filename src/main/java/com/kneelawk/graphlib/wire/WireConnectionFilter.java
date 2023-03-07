@@ -1,13 +1,15 @@
 package com.kneelawk.graphlib.wire;
 
-import com.kneelawk.graphlib.graph.BlockNode;
-import com.kneelawk.graphlib.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.graph.struct.Node;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import com.kneelawk.graphlib.graph.BlockNode;
+import com.kneelawk.graphlib.graph.BlockNodeHolder;
+import com.kneelawk.graphlib.graph.struct.Node;
 
 /**
  * More general wire connection filter, designed only to determine if two types of block nodes should be allowed to

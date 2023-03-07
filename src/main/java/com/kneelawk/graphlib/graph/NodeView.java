@@ -1,15 +1,17 @@
 package com.kneelawk.graphlib.graph;
 
-import com.kneelawk.graphlib.graph.struct.Node;
-import com.kneelawk.graphlib.util.SidedPos;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import java.util.stream.LongStream;
+import java.util.stream.Stream;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.stream.LongStream;
-import java.util.stream.Stream;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
+
+import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.util.SidedPos;
 
 /**
  * Interface that allows access to the nodes at given positions.

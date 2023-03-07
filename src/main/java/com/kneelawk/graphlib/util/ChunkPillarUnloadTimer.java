@@ -1,12 +1,14 @@
 package com.kneelawk.graphlib.util;
 
-import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2LongMap;
-import net.minecraft.util.math.ChunkPos;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.NotNull;
+
+import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+
+import net.minecraft.util.math.ChunkPos;
 
 public class ChunkPillarUnloadTimer extends ChunkUnloadTimer {
     private final Long2LongMap toUnload = new Long2LongLinkedOpenHashMap();
@@ -38,9 +40,9 @@ public class ChunkPillarUnloadTimer extends ChunkUnloadTimer {
 
     public @NotNull List<ChunkPos> chunksToUnload() {
         return toUnload.keySet()
-                .longStream()
-                .filter((longPos) -> toUnload.get(longPos) < tickAge)
-                .mapToObj(ChunkPos::new)
-                .collect(Collectors.toList());
+            .longStream()
+            .filter((longPos) -> toUnload.get(longPos) < tickAge)
+            .mapToObj(ChunkPos::new)
+            .collect(Collectors.toList());
     }
 }

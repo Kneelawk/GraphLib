@@ -1,14 +1,16 @@
 package com.kneelawk.graphlib.client;
 
-import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.client.render.DebugRenderer;
-import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import java.util.Set;
+
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
-import java.util.Set;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+
+import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
+import com.kneelawk.graphlib.client.render.DebugRenderer;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricModClient implements ClientModInitializer {

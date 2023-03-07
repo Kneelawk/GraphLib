@@ -1,13 +1,20 @@
 package com.kneelawk.graphlib.client.render;
 
-import com.google.common.math.IntMath;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.*;
-import org.jetbrains.annotations.NotNull;
-
 import java.math.RoundingMode;
 import java.util.Random;
+
+import com.google.common.math.IntMath;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Matrix3f;
+import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3d;
 
 public class RenderUtils {
     private static final Vec3d[][] PLANAR_VECTORS = {
@@ -113,7 +120,7 @@ public class RenderUtils {
     }
 
     public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, Direction side, double verticalOffset,
-                                     double spacing, double verticalSpacing) {
+                                            double spacing, double verticalSpacing) {
         Vec3d[] spacings = PLANAR_VECTORS[side.ordinal() >> 1];
         return distributedEndpoint(
             nodesAtPos, indexAmongNodes,
@@ -128,14 +135,17 @@ public class RenderUtils {
         );
     }
 
-    public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double spacing, double verticalSpacing) {
+    public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double spacing,
+                                            double verticalSpacing) {
         return distributedEndpoint(nodesAtPos, indexAmongNodes, 0.5, 0.5, 0.5, spacing, 0.0, 0.0, 0.0, 0.0, spacing,
             0.0, verticalSpacing, 0.0);
     }
 
     public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double centerX, double centerY,
-                                     double centerZ, double spaceX0, double spaceY0, double spaceZ0, double spaceX1,
-                                     double spaceY1, double spaceZ1, double offsetX, double offsetY, double offsetZ) {
+                                            double centerZ, double spaceX0, double spaceY0, double spaceZ0,
+                                            double spaceX1,
+                                            double spaceY1, double spaceZ1, double offsetX, double offsetY,
+                                            double offsetZ) {
         if (nodesAtPos < 2) {
             return new Vec3d(centerX, centerY, centerZ);
         }

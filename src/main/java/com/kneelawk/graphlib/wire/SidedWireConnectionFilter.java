@@ -1,11 +1,13 @@
 package com.kneelawk.graphlib.wire;
 
-import com.kneelawk.graphlib.graph.BlockNodeHolder;
-import com.kneelawk.graphlib.graph.struct.Node;
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
+
+import com.kneelawk.graphlib.graph.BlockNodeHolder;
+import com.kneelawk.graphlib.graph.struct.Node;
 
 /**
  * Allows an external object to filter the connections connecting to a sided wire block node.
@@ -34,7 +36,7 @@ public interface SidedWireConnectionFilter {
      */
     default SidedWireConnectionFilter and(@NotNull SidedWireConnectionFilter otherFilter) {
         return (self, world, pos, inDirection, connectionType, selfNode, otherNode) ->
-                canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode) &&
-                        otherFilter.canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode);
+            canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode) &&
+                otherFilter.canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode);
     }
 }

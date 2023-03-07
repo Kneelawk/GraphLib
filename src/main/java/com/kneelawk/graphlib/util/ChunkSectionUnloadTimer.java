@@ -1,15 +1,17 @@
 package com.kneelawk.graphlib.util;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.NotNull;
+
 import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
     private final int bottomSectionCoord;
@@ -57,9 +59,9 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
 
     public List<ChunkSectionPos> chunksToUnload() {
         return toUnload.keySet()
-                .longStream()
-                .filter((longPos) -> toUnload.get(longPos) < tickAge)
-                .mapToObj(ChunkSectionPos::from)
-                .collect(Collectors.toList());
+            .longStream()
+            .filter((longPos) -> toUnload.get(longPos) < tickAge)
+            .mapToObj(ChunkSectionPos::from)
+            .collect(Collectors.toList());
     }
 }

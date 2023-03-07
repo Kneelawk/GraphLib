@@ -1,5 +1,24 @@
 package com.kneelawk.graphlib;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.serialization.Lifecycle;
+
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.util.registry.SimpleRegistry;
+
 import com.kneelawk.graphlib.command.GraphLibCommand;
 import com.kneelawk.graphlib.graph.BlockGraphController;
 import com.kneelawk.graphlib.graph.BlockNode;
@@ -8,22 +27,6 @@ import com.kneelawk.graphlib.graph.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.StorageHelper;
 import com.kneelawk.graphlib.net.BlockNodePacketEncoderHolder;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.serialization.Lifecycle;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import net.minecraft.util.registry.SimpleRegistry;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, obtaining a

@@ -1,18 +1,20 @@
 package com.kneelawk.graphlib.wire;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+
 import com.kneelawk.graphlib.graph.BlockNodeHolder;
 import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.util.DirectionUtils;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Contains wire connection finder and checker implementations for use in {@link com.kneelawk.graphlib.graph.BlockNode}
@@ -48,24 +50,24 @@ public final class WireConnectionDiscoverers {
 
         // add all the internal connections
         nodeView.getNodesAt(pos).filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter))
-                .forEach(collector::add);
+            .forEach(collector::add);
 
         // add all external connections
         for (Direction external : DirectionUtils.perpendiculars(side)) {
             nodeView.getNodesAt(pos.offset(external))
-                    .filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter)).forEach(collector::add);
+                .filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter)).forEach(collector::add);
         }
 
         // add all corner connections
         BlockPos under = pos.offset(side);
         for (Direction corner : DirectionUtils.perpendiculars(side)) {
             nodeView.getNodesAt(under.offset(corner))
-                    .filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter)).forEach(collector::add);
+                .filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter)).forEach(collector::add);
         }
 
         // add full-block under connection
         nodeView.getNodesAt(under).filter(other -> wireCanConnect(self, world, pos, selfNode, other, filter))
-                .forEach(collector::add);
+            .forEach(collector::add);
 
         return collector;
     }
@@ -100,17 +102,17 @@ public final class WireConnectionDiscoverers {
             // check internal connections first
             if (otherPos.equals(pos)) {
                 return !otherSide.getAxis().equals(side.getAxis()) && (filter == null ||
-                        filter.canConnect(self, world, pos, otherSide, WireConnectionType.INTERNAL, selfNode,
-                                otherNode)) &&
-                        self.canConnect(world, pos, otherSide, WireConnectionType.INTERNAL, selfNode, otherNode);
+                    filter.canConnect(self, world, pos, otherSide, WireConnectionType.INTERNAL, selfNode,
+                        otherNode)) &&
+                    self.canConnect(world, pos, otherSide, WireConnectionType.INTERNAL, selfNode, otherNode);
             }
 
             // next check the external connections
             if (posDiffDir != null) {
                 return !posDiffDir.getAxis().equals(side.getAxis()) && otherSide.equals(side) && (filter == null ||
-                        filter.canConnect(self, world, pos, posDiffDir, WireConnectionType.EXTERNAL, selfNode,
-                                otherNode)) &&
-                        self.canConnect(world, pos, posDiffDir, WireConnectionType.EXTERNAL, selfNode, otherNode);
+                    filter.canConnect(self, world, pos, posDiffDir, WireConnectionType.EXTERNAL, selfNode,
+                        otherNode)) &&
+                    self.canConnect(world, pos, posDiffDir, WireConnectionType.EXTERNAL, selfNode, otherNode);
             }
 
             // finally check the corner connections
@@ -120,10 +122,10 @@ public final class WireConnectionDiscoverers {
 
             if (underPosDiffDir != null) {
                 return !underPosDiffDir.getAxis().equals(side.getAxis()) &&
-                        otherSide.equals(underPosDiffDir.getOpposite()) && (filter == null ||
-                        filter.canConnect(self, world, pos, underPosDiffDir, WireConnectionType.CORNER, selfNode,
-                                otherNode)) &&
-                        self.canConnect(world, pos, underPosDiffDir, WireConnectionType.CORNER, selfNode, otherNode);
+                    otherSide.equals(underPosDiffDir.getOpposite()) && (filter == null ||
+                    filter.canConnect(self, world, pos, underPosDiffDir, WireConnectionType.CORNER, selfNode,
+                        otherNode)) &&
+                    self.canConnect(world, pos, underPosDiffDir, WireConnectionType.CORNER, selfNode, otherNode);
             }
 
             return false;
@@ -132,8 +134,8 @@ public final class WireConnectionDiscoverers {
             WireConnectionType type = side.equals(posDiffDir) ? WireConnectionType.UNDER : WireConnectionType.EXTERNAL;
 
             return posDiffDir != null && !posDiffDir.equals(side.getOpposite()) &&
-                    (filter == null || filter.canConnect(self, world, pos, posDiffDir, type, selfNode, otherNode)) &&
-                    self.canConnect(world, pos, posDiffDir, type, selfNode, otherNode);
+                (filter == null || filter.canConnect(self, world, pos, posDiffDir, type, selfNode, otherNode)) &&
+                self.canConnect(world, pos, posDiffDir, type, selfNode, otherNode);
         } else {
             // we only know how to handle connections to SidedWireBlockNodes and FullWireBlockNodes for now
             return false;
@@ -161,8 +163,8 @@ public final class WireConnectionDiscoverers {
 
         for (Direction side : Direction.values()) {
             nodeView.getNodesAt(pos.offset(side))
-                    .filter(other -> fullBlockCanConnect(self, world, pos, selfNode, other, filter))
-                    .forEach(collector::add);
+                .filter(other -> fullBlockCanConnect(self, world, pos, selfNode, other, filter))
+                .forEach(collector::add);
         }
 
         return collector;
@@ -194,12 +196,12 @@ public final class WireConnectionDiscoverers {
 
         if (otherNode.data().getNode() instanceof FullWireBlockNode) {
             return (filter == null || filter.canConnect(self, world, pos, posDiffDir, null, selfNode, otherNode)) &&
-                    self.canConnect(world, pos, posDiffDir, null, selfNode, otherNode);
+                self.canConnect(world, pos, posDiffDir, null, selfNode, otherNode);
         } else if (otherNode.data().getNode() instanceof SidedWireBlockNode otherSidedNode) {
             Direction otherSide = otherSidedNode.getSide();
             return !otherSide.equals(posDiffDir) && (filter == null ||
-                    filter.canConnect(self, world, pos, posDiffDir, otherSide, selfNode, otherNode)) &&
-                    self.canConnect(world, pos, posDiffDir, otherSide, selfNode, otherNode);
+                filter.canConnect(self, world, pos, posDiffDir, otherSide, selfNode, otherNode)) &&
+                self.canConnect(world, pos, posDiffDir, otherSide, selfNode, otherNode);
         } else {
             // we only know how to handle connections to SidedWireBlockNodes and FullWireBlockNodes for now
             return false;

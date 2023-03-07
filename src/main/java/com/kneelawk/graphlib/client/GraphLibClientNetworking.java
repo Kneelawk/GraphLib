@@ -1,5 +1,26 @@
 package com.kneelawk.graphlib.client;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.jetbrains.annotations.Nullable;
+
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Direction;
+
 import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.client.graph.ClientBlockNodeHolder;
@@ -10,26 +31,13 @@ import com.kneelawk.graphlib.graph.struct.Graph;
 import com.kneelawk.graphlib.graph.struct.Node;
 import com.kneelawk.graphlib.net.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.net.GraphLibCommonNetworking;
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.*;
 
 public final class GraphLibClientNetworking {
     private GraphLibClientNetworking() {
     }
 
-    private static final Map<Integer, Identifier> idMap = Collections.synchronizedMap(new Int2ObjectLinkedOpenHashMap<>());
+    private static final Map<Integer, Identifier> idMap =
+        Collections.synchronizedMap(new Int2ObjectLinkedOpenHashMap<>());
 
     public static final BlockNodePacketDecoder DEFAULT_DECODER = buf -> {
         int hashCode = buf.readInt();

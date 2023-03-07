@@ -1,10 +1,12 @@
 package com.kneelawk.graphlib.client.graph;
 
+import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.util.Identifier;
+
 import com.kneelawk.graphlib.Constants;
 import com.kneelawk.graphlib.client.GraphLibClient;
 import com.kneelawk.graphlib.graph.ClientBlockNode;
-import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
 
 public record SimpleClientBlockNode(int hash, int classHash) implements ClientBlockNode {
     /**

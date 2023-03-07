@@ -1,13 +1,15 @@
 package com.kneelawk.graphlib.net;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.world.ServerWorld;
+
 import com.kneelawk.graphlib.graph.BlockNode;
 import com.kneelawk.graphlib.graph.ClientBlockNode;
 import com.kneelawk.graphlib.graph.NodeView;
 import com.kneelawk.graphlib.graph.struct.Node;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.world.ServerWorld;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Used for decoding a {@link ClientBlockNode} from a {@link PacketByteBuf}.

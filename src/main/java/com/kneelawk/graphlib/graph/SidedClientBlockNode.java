@@ -1,11 +1,13 @@
 package com.kneelawk.graphlib.graph;
 
-import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.graph.struct.Node;
-import net.minecraft.util.math.Direction;
+import java.util.List;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
+import net.minecraft.util.math.Direction;
+
+import com.kneelawk.graphlib.client.graph.ClientBlockGraph;
+import com.kneelawk.graphlib.graph.struct.Node;
 
 /**
  * Describes a {@link ClientBlockNode} that is positioned on the side of a block.

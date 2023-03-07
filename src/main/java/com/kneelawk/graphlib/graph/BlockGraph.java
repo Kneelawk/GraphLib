@@ -1,12 +1,14 @@
 package com.kneelawk.graphlib.graph;
 
-import com.kneelawk.graphlib.graph.struct.Node;
-import com.kneelawk.graphlib.util.SidedPos;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import java.util.stream.Stream;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.stream.Stream;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
+
+import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.util.SidedPos;
 
 /**
  * Holds and manages a set of block nodes.
