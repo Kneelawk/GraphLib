@@ -89,9 +89,14 @@ tasks {
     }
 
     javadoc {
-        options {
-            optionFiles(file("javadoc-options.txt"))
-        }
+        exclude("com/kneelawk/graphlib/impl")
+
+        val minecraft_version: String by project
+        val quilt_mappings: String by project
+        (options as? StandardJavadocDocletOptions)?.links = listOf(
+            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
+            "https://javadoc.io/doc/org.jetbrains/annotations/latest/"
+        )
     }
 
     test {
