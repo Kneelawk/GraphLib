@@ -1,5 +1,7 @@
 package com.kneelawk.graphlib.api.v1.client;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -9,6 +11,7 @@ import com.mojang.serialization.Lifecycle;
 
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.SimpleRegistry;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 
 import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
@@ -39,7 +42,7 @@ public final class GraphLibClient {
     /**
      * Map of graph id long to graph for all currently debugging graphs.
      */
-    public static final Long2ObjectMap<ClientBlockGraph> DEBUG_GRAPHS = new Long2ObjectLinkedOpenHashMap<>();
+    public static final Map<Identifier, Long2ObjectMap<ClientBlockGraph>> DEBUG_GRAPHS = new LinkedHashMap<>();
 
     /**
      * Map of {@link ChunkPos#toLong()} to a set of graphs in that chunk for all currently debugging graphs.

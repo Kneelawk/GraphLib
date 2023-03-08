@@ -1,6 +1,7 @@
 package com.kneelawk.graphlib.impl;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -67,16 +71,35 @@ public final class GraphLibCommonNetworking {
         }
     };
 
-    private static final Set<UUID> debuggingPlayers = new LinkedHashSet<>();
+    private static final Multimap<UUID, Identifier> debuggingPlayers = LinkedHashMultimap.create();
     private static final Object2IntMap<Identifier> idMap = new Object2IntLinkedOpenHashMap<>();
 
-    public static void startDebuggingPlayer(ServerPlayerEntity player) {
-        sendIdMap(player);
-        debuggingPlayers.add(player.getUuid());
+    public static void init() {
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> debuggingPlayers.clear());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> debuggingPlayers.clear());
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> debuggingPlayers.removeAll(handler.player.getUuid()));
 
+        GraphLibEvents.GRAPH_CREATED.register(GraphLibCommonNetworking::sendBlockGraph);
+        GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonNetworking::sendBlockGraph);
+        GraphLibEvents.GRAPH_DESTROYED.register((world, graphWorld, id) -> {
+            PacketByteBuf buf = PacketByteBufs.create();
+            buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse()));
+            buf.writeLong(id);
+
+            sendToDebuggingPlayers(world, graphWorld.getUniverse(), GRAPH_DESTROY_ID, buf);
+        });
+    }
+
+    public static void startDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
+        sendIdMap(player);
+        debuggingPlayers.put(player.getUuid(), universe);
         ServerWorld world = player.getWorld();
+
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeVarInt(getIdentifierInt(world, universe));
+
         MinecraftServer server = world.getServer();
-        GraphWorld controller = GraphLib.getGraphWorld(world);
+        GraphWorld graphWorld = GraphLib.getUniverse(universe).getGraphWorld(world);
         int viewDistance = server.getPlayerManager().getViewDistance();
 
         ChunkSectionPos playerPos = player.getWatchedSection();
@@ -92,44 +115,31 @@ public final class GraphLibCommonNetworking {
                     viewDistance)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
-                    controller.getGraphsInChunk(pos).forEach(graphIds::add);
+                    graphWorld.getGraphsInChunk(pos).forEach(graphIds::add);
                 }
             }
         }
 
         // collect the actual set of graphs we intend to send
         List<BlockGraph> graphs =
-            graphIds.longStream().mapToObj(controller::getGraph).filter(Objects::nonNull).toList();
+            graphIds.longStream().mapToObj(graphWorld::getGraph).filter(Objects::nonNull).toList();
 
-        PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(graphs.size());
 
         for (BlockGraph graph : graphs) {
-            encodeBlockGraph(world, controller, graph, buf);
+            encodeBlockGraph(world, graphWorld, graph, buf);
         }
 
         ServerPlayNetworking.send(player, GRAPH_UPDATE_BULK_ID, buf);
     }
 
-    public static void stopDebuggingPlayer(ServerPlayerEntity player) {
-        debuggingPlayers.remove(player.getUuid());
+    public static void stopDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        buf.writeVarInt(getIdentifierInt(player.getWorld(), universe));
 
-        ServerPlayNetworking.send(player, DEBUGGING_STOP_ID, PacketByteBufs.empty());
-    }
+        ServerPlayNetworking.send(player, DEBUGGING_STOP_ID, buf);
 
-    public static void init() {
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> debuggingPlayers.clear());
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> debuggingPlayers.clear());
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> stopDebuggingPlayer(handler.player));
-
-        GraphLibEvents.GRAPH_CREATED.register(GraphLibCommonNetworking::sendBlockGraph);
-        GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonNetworking::sendBlockGraph);
-        GraphLibEvents.GRAPH_DESTROYED.register((world, controller, id) -> {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeLong(id);
-
-            sendToDebuggingPlayers(world, GRAPH_DESTROY_ID, buf);
-        });
+        debuggingPlayers.remove(player.getUuid(), universe);
     }
 
     private static void sendIdMap(ServerPlayerEntity player) {
@@ -158,18 +168,20 @@ public final class GraphLibCommonNetworking {
         }
     }
 
-    private static void sendBlockGraph(ServerWorld world, GraphWorld controller, BlockGraph graph) {
+    private static void sendBlockGraph(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
         if (debuggingPlayers.isEmpty()) {
             return;
         }
 
         PacketByteBuf buf = PacketByteBufs.create();
-        encodeBlockGraph(world, controller, graph, buf);
+        buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse()));
+
+        encodeBlockGraph(world, graphWorld, graph, buf);
 
         Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
         graph.getChunks().forEachOrdered(section -> {
             for (ServerPlayerEntity player : PlayerLookup.tracking(world, section.toChunkPos())) {
-                if (debuggingPlayers.contains(player.getUuid())) {
+                if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse())) {
                     sendTo.add(player);
                 }
             }
@@ -180,7 +192,7 @@ public final class GraphLibCommonNetworking {
         }
     }
 
-    private static void encodeBlockGraph(ServerWorld world, GraphWorld controller, BlockGraph graph,
+    private static void encodeBlockGraph(ServerWorld world, GraphWorld graphWorld, BlockGraph graph,
                                          PacketByteBuf buf) {
         buf.writeLong(graph.getId());
 
@@ -192,7 +204,7 @@ public final class GraphLibCommonNetworking {
         graph.getNodes().forEachOrdered(node -> {
             buf.writeVarInt(getIdentifierInt(world, node.data().getNode().getTypeId()));
             buf.writeBlockPos(node.data().getPos());
-            encodeBlockNode(world, controller, node, buf);
+            encodeBlockNode(world, graphWorld, node, buf);
             indexMap.put(node, index.getAndIncrement());
             distinct.addAll(node.connections());
         });
@@ -230,10 +242,22 @@ public final class GraphLibCommonNetworking {
 
     private static void sendToDebuggingPlayers(ServerWorld world, Identifier packetId, PacketByteBuf buf) {
         PlayerManager manager = world.getServer().getPlayerManager();
-        for (UUID playerId : debuggingPlayers) {
+        for (UUID playerId : debuggingPlayers.keySet()) {
             ServerPlayerEntity player = manager.getPlayer(playerId);
             if (player != null) {
                 ServerPlayNetworking.send(player, packetId, buf);
+            }
+        }
+    }
+
+    private static void sendToDebuggingPlayers(ServerWorld world, Identifier universe, Identifier packetId, PacketByteBuf buf) {
+        PlayerManager manager = world.getServer().getPlayerManager();
+        for (UUID playerId : debuggingPlayers.keySet()) {
+            if (debuggingPlayers.containsEntry(playerId, universe)) {
+                ServerPlayerEntity player = manager.getPlayer(playerId);
+                if (player != null) {
+                    ServerPlayNetworking.send(player, packetId, buf);
+                }
             }
         }
     }

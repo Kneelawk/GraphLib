@@ -27,17 +27,18 @@ import net.minecraft.world.storage.WorldSaveStorage;
 
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
-import com.kneelawk.graphlib.impl.mixin.api.BlockGraphControllerAccess;
+import com.kneelawk.graphlib.impl.mixin.api.GraphWorldStorageAccess;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAccess {
+public class ThreadedAnvilChunkStorageMixin implements GraphWorldStorageAccess {
     @Shadow
     @Final
     ServerWorld world;
 
     @Unique
-    private SimpleGraphWorld controller;
+    private GraphWorldStorage storage;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onCreate(
@@ -56,22 +57,20 @@ public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAcces
         boolean syncChunkWrites,
         CallbackInfo ci
     ) {
-        controller = new SimpleGraphWorld(world,
-            session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME).resolve(Constants.MOD_ID)
-                .resolve(Constants.GRAPHDATA_DIRNAME), syncChunkWrites);
+        storage = new GraphWorldStorage(world, session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME), syncChunkWrites);
     }
 
     @Inject(method = "save(Z)V", at = @At("HEAD"))
     private void onSave(boolean flush, CallbackInfo ci) {
         try {
-            controller.saveAll();
+            storage.saveAll(flush);
         } catch (Exception e) {
-            GLLog.error("Error saving graph controller. World: '{}'/{}", world, world.getRegistryKey().getValue(), e);
+            GLLog.error("Error saving graph world storage. World: '{}'/{}", world, world.getRegistryKey().getValue(), e);
         }
     }
 
     @Override
-    public @NotNull SimpleGraphWorld graphlib_getGraphController() {
-        return controller;
+    public @NotNull GraphWorldStorage graphlib_getGraphWorldStorage() {
+        return storage;
     }
 }

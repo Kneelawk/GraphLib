@@ -11,15 +11,17 @@ import com.mojang.serialization.Lifecycle;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
+import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
-import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, obtaining a
@@ -40,6 +42,15 @@ public final class GraphLib {
      */
     public static final Registry<BlockNodePacketEncoderHolder<?>> BLOCK_NODE_PACKET_ENCODER =
         new SimpleRegistry<>(GraphLibImpl.BLOCK_NODE_PACKET_ENCODER_KEY, Lifecycle.experimental());
+
+    /**
+     * The universe representing the data managed by pre-1.0 versions of GraphLib.
+     *
+     * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder(Identifier)}.
+     */
+    @Deprecated
+    public static final GraphUniverse LEGACY_UNIVERSE =
+        GraphUniverse.builder(Constants.id(Constants.GRAPHDATA_DIRNAME)).build();
 
     /**
      * Registers a {@link BlockNodeDiscoverer} for use in detecting the nodes in a given block position.
@@ -68,12 +79,16 @@ public final class GraphLib {
     }
 
     /**
-     * Gets the {@link GraphWorld} for the given {@link ServerWorld}.
+     * Gets a registered graph universe by its id.
      *
-     * @param world the world whose BlockGraphController is to be obtained.
-     * @return the GraphWorld of the given world.
+     * @param universeId the id of the universe to look up.
+     * @return the universe with the given id.
      */
-    public static @NotNull GraphWorld getGraphWorld(@NotNull ServerWorld world) {
-        return StorageHelper.getController(world);
+    public static @NotNull GraphUniverse getUniverse(Identifier universeId) {
+        if (!GraphLibImpl.UNIVERSES.containsKey(universeId)) {
+            throw new IllegalArgumentException("No universe exists with the name " + universeId);
+        }
+
+        return GraphLibImpl.UNIVERSES.get(universeId);
     }
 }

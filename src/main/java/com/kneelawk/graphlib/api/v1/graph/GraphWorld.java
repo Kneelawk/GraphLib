@@ -124,14 +124,4 @@ public interface GraphWorld extends GraphView {
      * @return a stream of all graph ids in this graph controller.
      */
     @NotNull LongStream getGraphs();
-
-    /**
-     * Called by the <code>/graphlib removeemptygraphs</code> command.
-     * <p>
-     * Removes all empty graphs. Graphs should never be empty, but it could theoretically happen if the server crashes
-     * and some things didn't get saved.
-     *
-     * @return the number of empty graphs removed.
-     */
-    int removeEmptyGraphs();
 }

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -171,76 +172,81 @@ public final class DebugRenderer {
     private static void renderGraphs(MatrixStack stack) {
         Map<NPos, NPosData> nodeEndpoints = new HashMap<>();
 
-        for (ClientBlockGraph graph : GraphLibClient.DEBUG_GRAPHS.values()) {
-            for (var node : graph.graph()) {
-                ClientBlockNode cbn = node.data().node();
+        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClient.DEBUG_GRAPHS.values()) {
+            for (ClientBlockGraph graph : universe.values()) {
+                for (var node : graph.graph()) {
+                    ClientBlockNode cbn = node.data().node();
 
-                NPos pos;
-                if (cbn instanceof SidedClientBlockNode scbn) {
-                    pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
-                } else {
-                    pos = new NBlockPos(node.data().pos());
+                    NPos pos;
+                    if (cbn instanceof SidedClientBlockNode scbn) {
+                        pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
+                    } else {
+                        pos = new NBlockPos(node.data().pos());
+                    }
+
+                    nodeEndpoints.computeIfAbsent(pos, nPos -> new NPosData()).nodeCount++;
                 }
-
-                nodeEndpoints.computeIfAbsent(pos, nPos -> new NPosData()).nodeCount++;
             }
         }
 
-        for (ClientBlockGraph graph : GraphLibClient.DEBUG_GRAPHS.values()) {
-            int graphColor = RenderUtils.graphColor(graph.graphId());
-            Object2ObjectMap<Node<ClientBlockNodeHolder>, Vec3d> endpoints =
-                new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
-            ObjectSet<Link<ClientBlockNodeHolder>> links = new ObjectLinkedOpenHashSet<>();
+        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClient.DEBUG_GRAPHS.values()) {
+            for (ClientBlockGraph graph : universe.values()) {
+                int graphColor = RenderUtils.graphColor(graph.graphId());
+                Object2ObjectMap<Node<ClientBlockNodeHolder>, Vec3d> endpoints =
+                    new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
+                ObjectSet<Link<ClientBlockNodeHolder>> links = new ObjectLinkedOpenHashSet<>();
 
-            for (var node : graph.graph()) {
-                ClientBlockNode cbn = node.data().node();
-                BlockNodeRendererHolder<?> renderer = GraphLibClient.BLOCK_NODE_RENDERER.get(cbn.getRenderId());
-                if (renderer == null) continue;
+                for (var node : graph.graph()) {
+                    ClientBlockNode cbn = node.data().node();
+                    BlockNodeRendererHolder<?> renderer = GraphLibClient.BLOCK_NODE_RENDERER.get(cbn.getRenderId());
+                    if (renderer == null) continue;
 
-                NPos pos;
-                if (cbn instanceof SidedClientBlockNode scbn) {
-                    pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
-                } else {
-                    pos = new NBlockPos(node.data().pos());
+                    NPos pos;
+                    if (cbn instanceof SidedClientBlockNode scbn) {
+                        pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
+                    } else {
+                        pos = new NBlockPos(node.data().pos());
+                    }
+
+                    // should never be null unless GraphLibClient.DEBUG_GRAPHS was modified by another thread
+                    NPosData data = nodeEndpoints.get(pos);
+
+                    Vec3d endpoint =
+                        renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(),
+                            data.endpoints);
+                    endpoints.put(node, endpoint);
+                    data.endpoints.add(endpoint);
+
+                    BlockPos origin = node.data().pos();
+
+                    stack.push();
+                    stack.translate(origin.getX(), origin.getY(), origin.getZ());
+
+                    renderer.render(cbn, node, immediate, stack, graph, endpoint, graphColor);
+
+                    stack.pop();
+
+                    links.addAll(node.connections());
                 }
 
-                // should never be null unless GraphLibClient.DEBUG_GRAPHS was modified by another thread
-                NPosData data = nodeEndpoints.get(pos);
+                VertexConsumer consumer = immediate.getBuffer(Layers.DEBUG_LINES);
 
-                Vec3d endpoint =
-                    renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(), data.endpoints);
-                endpoints.put(node, endpoint);
-                data.endpoints.add(endpoint);
+                for (var link : links) {
+                    var nodeA = link.first();
+                    var nodeB = link.second();
 
-                BlockPos origin = node.data().pos();
+                    if (!endpoints.containsKey(nodeA) || !endpoints.containsKey(nodeB)) continue;
 
-                stack.push();
-                stack.translate(origin.getX(), origin.getY(), origin.getZ());
+                    Vec3d endpointA = endpoints.get(nodeA);
+                    Vec3d endpointB = endpoints.get(nodeB);
+                    BlockPos posA = nodeA.data().pos();
+                    BlockPos posB = nodeB.data().pos();
 
-                renderer.render(cbn, node, immediate, stack, graph, endpoint, graphColor);
-
-                stack.pop();
-
-                links.addAll(node.connections());
-            }
-
-            VertexConsumer consumer = immediate.getBuffer(Layers.DEBUG_LINES);
-
-            for (var link : links) {
-                var nodeA = link.first();
-                var nodeB = link.second();
-
-                if (!endpoints.containsKey(nodeA) || !endpoints.containsKey(nodeB)) continue;
-
-                Vec3d endpointA = endpoints.get(nodeA);
-                Vec3d endpointB = endpoints.get(nodeB);
-                BlockPos posA = nodeA.data().pos();
-                BlockPos posB = nodeB.data().pos();
-
-                RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
-                    (float) (posA.getY() + endpointA.y),
-                    (float) (posA.getZ() + endpointA.z), (float) (posB.getX() + endpointB.x),
-                    (float) (posB.getY() + endpointB.y), (float) (posB.getZ() + endpointB.z), graphColor);
+                    RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
+                        (float) (posA.getY() + endpointA.y),
+                        (float) (posA.getZ() + endpointA.z), (float) (posB.getX() + endpointB.x),
+                        (float) (posB.getY() + endpointB.y), (float) (posB.getZ() + endpointB.z), graphColor);
+                }
             }
         }
     }

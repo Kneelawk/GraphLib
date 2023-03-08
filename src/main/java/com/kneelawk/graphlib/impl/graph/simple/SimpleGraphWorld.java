@@ -32,6 +32,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -48,6 +49,7 @@ import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.api.v1.world.UnloadingRegionBasedStorage;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
 
 /**
  * Holds and manages all block graphs for a given world.
@@ -56,11 +58,13 @@ import com.kneelawk.graphlib.impl.GLLog;
  * API methods to an interface so that I could have more control over what methods were being called and to open up the
  * possibility of maybe eventually making a cubic-chunks implementation of GraphLib or something.
  */
-public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld {
+public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, GraphWorldImpl {
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
     private static final int MAX_AGE = 20 * 60;
+
+    private final SimpleGraphUniverse universe;
 
     final ServerWorld world;
 
@@ -83,7 +87,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld {
 
     private boolean closed = false;
 
-    public SimpleGraphWorld(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
+    public SimpleGraphWorld(SimpleGraphUniverse universe, @NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
+        this.universe = universe;
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
             SimpleBlockGraphChunk::new, SimpleBlockGraphChunk::new);
         this.world = world;
@@ -103,6 +108,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld {
 
     // ---- Lifecycle Methods ---- //
 
+    @Override
     public void onWorldChunkLoad(@NotNull ChunkPos pos) {
         if (closed) {
             // Ignore chunk loads if we're closed.
@@ -116,11 +122,13 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld {
         loadGraphs(pos);
     }
 
+    @Override
     public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         chunks.onWorldChunkUnload(pos);
         timer.onWorldChunkUnload(pos);
     }
 
+    @Override
     public void tick() {
         chunks.tick();
         timer.tick();
@@ -132,13 +140,15 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld {
         unloadGraphs();
     }
 
+    @Override
     public void saveChunk(@NotNull ChunkPos pos) {
         saveState();
         saveGraphs(pos);
         chunks.saveChunk(pos);
     }
 
-    public void saveAll() {
+    @Override
+    public void saveAll(boolean flush) {
         // This can be useful sometimes but causes log spam in prod
 //        GLLog.info("Saving block-graph for '{}'/{}", world, world.getRegistryKey().getValue());
 
@@ -163,6 +173,16 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld {
     }
 
     // ---- Public Interface Methods ---- //
+
+    /**
+     * Gets the universe this graph-view belongs to.
+     *
+     * @return the universe this belongs to.
+     */
+    @Override
+    public @NotNull Identifier getUniverse() {
+        return universe.getId();
+    }
 
     /**
      * Gets all nodes in the given block-position.
