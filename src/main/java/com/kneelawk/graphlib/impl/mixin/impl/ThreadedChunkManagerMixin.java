@@ -16,7 +16,7 @@ import com.mojang.datafixers.DataFixer;
 
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ThreadedChunkManager;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.thread.ThreadExecutor;
 import net.minecraft.world.PersistentStateManager;
@@ -28,11 +28,10 @@ import net.minecraft.world.storage.WorldSaveStorage;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
-import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
 import com.kneelawk.graphlib.impl.mixin.api.GraphWorldStorageAccess;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
-public class ThreadedAnvilChunkStorageMixin implements GraphWorldStorageAccess {
+@Mixin(ThreadedChunkManager.class)
+public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
     @Shadow
     @Final
     ServerWorld world;
@@ -57,7 +56,8 @@ public class ThreadedAnvilChunkStorageMixin implements GraphWorldStorageAccess {
         boolean syncChunkWrites,
         CallbackInfo ci
     ) {
-        storage = new GraphWorldStorage(world, session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME), syncChunkWrites);
+        storage = new GraphWorldStorage(world,
+            session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME), syncChunkWrites);
     }
 
     @Inject(method = "save(Z)V", at = @At("HEAD"))
@@ -65,7 +65,8 @@ public class ThreadedAnvilChunkStorageMixin implements GraphWorldStorageAccess {
         try {
             storage.saveAll(flush);
         } catch (Exception e) {
-            GLLog.error("Error saving graph world storage. World: '{}'/{}", world, world.getRegistryKey().getValue(), e);
+            GLLog.error("Error saving graph world storage. World: '{}'/{}", world, world.getRegistryKey().getValue(),
+                e);
         }
     }
 

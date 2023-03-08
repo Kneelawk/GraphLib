@@ -1,7 +1,6 @@
 package com.kneelawk.graphlib.impl;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ThreadedChunkManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -77,7 +76,8 @@ public final class GraphLibCommonNetworking {
     public static void init() {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> debuggingPlayers.clear());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> debuggingPlayers.clear());
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> debuggingPlayers.removeAll(handler.player.getUuid()));
+        ServerPlayConnectionEvents.DISCONNECT.register(
+            (handler, server) -> debuggingPlayers.removeAll(handler.player.getUuid()));
 
         GraphLibEvents.GRAPH_CREATED.register(GraphLibCommonNetworking::sendBlockGraph);
         GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonNetworking::sendBlockGraph);
@@ -111,7 +111,7 @@ public final class GraphLibCommonNetworking {
         LongSet graphIds = new LongLinkedOpenHashSet();
         for (int z = minZ; z <= maxZ; z++) {
             for (int x = minX; x <= maxX; x++) {
-                if (ThreadedAnvilChunkStorage.isWithinDistance(x, z, playerPos.getSectionX(), playerPos.getSectionZ(),
+                if (ThreadedChunkManager.isWithinDistance(x, z, playerPos.getSectionX(), playerPos.getSectionZ(),
                     viewDistance)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
@@ -250,7 +250,8 @@ public final class GraphLibCommonNetworking {
         }
     }
 
-    private static void sendToDebuggingPlayers(ServerWorld world, Identifier universe, Identifier packetId, PacketByteBuf buf) {
+    private static void sendToDebuggingPlayers(ServerWorld world, Identifier universe, Identifier packetId,
+                                               PacketByteBuf buf) {
         PlayerManager manager = world.getServer().getPlayerManager();
         for (UUID playerId : debuggingPlayers.keySet()) {
             if (debuggingPlayers.containsEntry(playerId, universe)) {

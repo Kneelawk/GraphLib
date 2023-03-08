@@ -18,6 +18,6 @@ public class StorageHelper {
     }
 
     public static @NotNull GraphWorldStorage getStorage(@NotNull ServerWorld world) {
-        return ((GraphWorldStorageAccess) world.getChunkManager().threadedAnvilChunkStorage).graphlib_getGraphWorldStorage();
+        return ((GraphWorldStorageAccess) world.getChunkManager().delegate).graphlib_getGraphWorldStorage();
     }
 }
