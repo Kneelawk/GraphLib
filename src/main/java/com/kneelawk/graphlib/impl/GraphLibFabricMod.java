@@ -23,7 +23,7 @@ public class GraphLibFabricMod implements ModInitializer {
         GraphLibCommonNetworking.init();
 
         CommandRegistrationCallback.EVENT.register(
-            (dispatcher, registryAccess, environment) -> GraphLibImpl.registerCommands(dispatcher));
+            (dispatcher, context, environment) -> GraphLibImpl.registerCommands(dispatcher, context));
 
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
             try {

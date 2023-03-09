@@ -19,7 +19,7 @@ public class GraphWorldStorage implements AutoCloseable {
     public GraphWorldStorage(ServerWorld world, Path dataDir, boolean syncChunkWrites) {
         this.serverWorld = world;
 
-        for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSES.values()) {
+        for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSE) {
             Identifier universeId = universe.getId();
             Path path = dataDir.resolve(universeId.getNamespace()).resolve(universeId.getPath());
 

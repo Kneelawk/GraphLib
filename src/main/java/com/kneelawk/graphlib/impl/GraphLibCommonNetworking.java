@@ -36,6 +36,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.GraphLibEvents;
 import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
+import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
@@ -90,16 +91,16 @@ public final class GraphLibCommonNetworking {
         });
     }
 
-    public static void startDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
+    public static void startDebuggingPlayer(ServerPlayerEntity player, GraphUniverse universe) {
         sendIdMap(player);
-        debuggingPlayers.put(player.getUuid(), universe);
+        debuggingPlayers.put(player.getUuid(), universe.getId());
         ServerWorld world = player.getWorld();
 
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt(world, universe));
+        buf.writeVarInt(getIdentifierInt(world, universe.getId()));
 
         MinecraftServer server = world.getServer();
-        GraphWorld graphWorld = GraphLib.getUniverse(universe).getGraphWorld(world);
+        GraphWorld graphWorld = universe.getGraphWorld(world);
         int viewDistance = server.getPlayerManager().getViewDistance();
 
         ChunkSectionPos playerPos = player.getWatchedSection();

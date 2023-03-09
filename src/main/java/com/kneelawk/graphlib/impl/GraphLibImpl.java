@@ -2,15 +2,15 @@ package com.kneelawk.graphlib.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.serialization.Lifecycle;
 
+import net.minecraft.command.CommandBuildContext;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 
@@ -25,6 +25,8 @@ public final class GraphLibImpl {
     private GraphLibImpl() {
     }
 
+    private static final Identifier UNIVERSE_IDENTIFIER = Constants.id("universe");
+    public static final RegistryKey<Registry<GraphUniverseImpl>> UNIVERSE_KEY = RegistryKey.ofRegistry(UNIVERSE_IDENTIFIER);
     private static final Identifier BLOCK_NODE_DECODER_IDENTIFIER = Constants.id("block_node_decoder");
     public static final RegistryKey<Registry<BlockNodeDecoder>> BLOCK_NODE_DECODER_KEY =
         RegistryKey.ofRegistry(BLOCK_NODE_DECODER_IDENTIFIER);
@@ -33,25 +35,22 @@ public final class GraphLibImpl {
         RegistryKey.ofRegistry(BLOCK_NODE_PACKET_ENDODER_IDENTIFIER);
     public static final List<BlockNodeDiscoverer> BLOCK_NODE_DISCOVERERS = new ArrayList<>();
 
-    public static final Map<Identifier, GraphUniverseImpl> UNIVERSES = new Object2ObjectLinkedOpenHashMap<>();
+    public static final Registry<GraphUniverseImpl> UNIVERSE = new SimpleRegistry<>(UNIVERSE_KEY, Lifecycle.experimental(), false);
 
     @SuppressWarnings("unchecked")
     static void register() {
+        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, UNIVERSE_IDENTIFIER, UNIVERSE);
         Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_DECODER_IDENTIFIER,
             GraphLib.BLOCK_NODE_DECODER);
         Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_PACKET_ENDODER_IDENTIFIER,
             GraphLib.BLOCK_NODE_PACKET_ENCODER);
     }
 
-    static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
-        GraphLibCommand.register(dispatcher);
+    static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandBuildContext context) {
+        GraphLibCommand.register(dispatcher, context);
     }
 
     public static void register(GraphUniverseImpl universe) {
-        if (UNIVERSES.containsKey(universe.getId())) {
-            throw new IllegalArgumentException("Attempted to register a universe with a name that is already used. Name: " + universe.getId());
-        }
-
-        UNIVERSES.put(universe.getId(), universe);
+        Registry.register(UNIVERSE, universe.getId(), universe);
     }
 }

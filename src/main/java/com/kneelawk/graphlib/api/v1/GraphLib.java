@@ -22,6 +22,7 @@ import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, obtaining a
@@ -85,10 +86,11 @@ public final class GraphLib {
      * @return the universe with the given id.
      */
     public static @NotNull GraphUniverse getUniverse(Identifier universeId) {
-        if (!GraphLibImpl.UNIVERSES.containsKey(universeId)) {
+        GraphUniverseImpl graphUniverse = GraphLibImpl.UNIVERSE.get(universeId);
+        if (graphUniverse == null) {
             throw new IllegalArgumentException("No universe exists with the name " + universeId);
         }
 
-        return GraphLibImpl.UNIVERSES.get(universeId);
+        return graphUniverse;
     }
 }
