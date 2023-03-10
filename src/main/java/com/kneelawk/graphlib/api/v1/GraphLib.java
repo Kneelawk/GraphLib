@@ -47,11 +47,11 @@ public final class GraphLib {
     /**
      * The universe representing the data managed by pre-1.0 versions of GraphLib.
      *
-     * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder(Identifier)}.
+     * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder()}.
      */
     @Deprecated
     public static final GraphUniverse LEGACY_UNIVERSE =
-        GraphUniverse.builder(Constants.id(Constants.GRAPHDATA_DIRNAME)).build();
+        GraphUniverse.builder().build(Constants.id(Constants.GRAPHDATA_DIRNAME));
 
     /**
      * Registers a {@link BlockNodeDiscoverer} for use in detecting the nodes in a given block position.

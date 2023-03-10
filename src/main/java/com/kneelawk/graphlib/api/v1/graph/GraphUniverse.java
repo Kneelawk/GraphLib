@@ -30,12 +30,11 @@ public interface GraphUniverse {
     /**
      * Creates a new GraphUniverse builder.
      *
-     * @param universeId the unique id of the GraphUniverse to be built.
      * @return a new builder for building a GraphUniverse.
      */
-    @Contract(value = "_ -> new", pure = true)
-    static @NotNull Builder builder(@NotNull Identifier universeId) {
-        return new SimpleGraphUniverseBuilder(universeId);
+    @Contract(value = "-> new", pure = true)
+    static @NotNull Builder builder() {
+        return new SimpleGraphUniverseBuilder();
     }
 
     /**
@@ -43,20 +42,14 @@ public interface GraphUniverse {
      */
     interface Builder {
         /**
-         * Gets the unique id of the universe this is building.
-         *
-         * @return this builder's universe's unique id.
-         */
-        @NotNull Identifier getId();
-
-        /**
          * Builds and registers the {@link GraphUniverse} described by this builder.
          * <p>
          * Right before each GraphUniverse is built, GraphLib invokes the {@code graphlib:universe_build} entrypoint for all
          * mods, to allow for cross-mod compatibility.
          *
+         * @param universeId the unique id of the GraphUniverse to be built.
          * @return the newly created {@link GraphUniverse}.
          */
-        @NotNull GraphUniverse build();
+        @NotNull GraphUniverse build(@NotNull Identifier universeId);
     }
 }

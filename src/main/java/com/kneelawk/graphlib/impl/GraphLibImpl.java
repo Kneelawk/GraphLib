@@ -64,9 +64,9 @@ public final class GraphLibImpl {
         Registry.register(UNIVERSE, universe.getId(), universe);
     }
 
-    public static void preBuild(GraphUniverse.Builder builder) {
+    public static void preBuild(Identifier universeId, GraphUniverse.Builder builder) {
         for (EntrypointContainer<PreBuildUniverse> container : PRE_BUILD_LISTENERS) {
-            container.getEntrypoint().preBuild(builder);
+            container.getEntrypoint().preBuild(universeId, builder);
         }
     }
 }

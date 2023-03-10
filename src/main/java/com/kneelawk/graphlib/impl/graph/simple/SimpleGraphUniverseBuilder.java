@@ -8,22 +8,11 @@ import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 
 public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
-    final Identifier universeId;
-
-    public SimpleGraphUniverseBuilder(Identifier universeId) {
-        this.universeId = universeId;
-    }
-
     @Override
-    public @NotNull Identifier getId() {
-        return universeId;
-    }
+    public @NotNull GraphUniverse build(@NotNull Identifier universeId) {
+        GraphLibImpl.preBuild(universeId, this);
 
-    @Override
-    public @NotNull GraphUniverse build() {
-        GraphLibImpl.preBuild(this);
-
-        SimpleGraphUniverse universe = new SimpleGraphUniverse(this);
+        SimpleGraphUniverse universe = new SimpleGraphUniverse(universeId, this);
         GraphLibImpl.register(universe);
         return universe;
     }

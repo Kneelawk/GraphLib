@@ -15,8 +15,8 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Identifier id;
 
-    public SimpleGraphUniverse(SimpleGraphUniverseBuilder builder) {
-        this.id = builder.universeId;
+    public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
+        this.id = universeId;
     }
 
     @Override
