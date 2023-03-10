@@ -45,13 +45,20 @@ public final class GraphLib {
         new SimpleRegistry<>(GraphLibImpl.BLOCK_NODE_PACKET_ENCODER_KEY, Lifecycle.experimental());
 
     /**
+     * The unique id of the universe representing the data managed by pre-1.0 versions of GraphLib.
+     *
+     * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder()}.
+     */
+    @Deprecated
+    public static final Identifier LEGACY_UNIVERSE_ID = Constants.id(Constants.GRAPHDATA_DIRNAME);
+
+    /**
      * The universe representing the data managed by pre-1.0 versions of GraphLib.
      *
      * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder()}.
      */
     @Deprecated
-    public static final GraphUniverse LEGACY_UNIVERSE =
-        GraphUniverse.builder().build(Constants.id(Constants.GRAPHDATA_DIRNAME));
+    public static final GraphUniverse LEGACY_UNIVERSE = GraphUniverse.builder().buildAndRegister(LEGACY_UNIVERSE_ID);
 
     /**
      * Registers a {@link BlockNodeDiscoverer} for use in detecting the nodes in a given block position.

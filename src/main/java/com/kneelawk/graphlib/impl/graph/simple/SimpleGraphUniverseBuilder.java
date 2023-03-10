@@ -9,7 +9,7 @@ import com.kneelawk.graphlib.impl.GraphLibImpl;
 
 public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     @Override
-    public @NotNull GraphUniverse build(@NotNull Identifier universeId) {
+    public @NotNull GraphUniverse buildAndRegister(@NotNull Identifier universeId) {
         GraphLibImpl.preBuild(universeId, this);
 
         SimpleGraphUniverse universe = new SimpleGraphUniverse(universeId, this);

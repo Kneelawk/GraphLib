@@ -44,12 +44,13 @@ public interface GraphUniverse {
         /**
          * Builds and registers the {@link GraphUniverse} described by this builder.
          * <p>
-         * Right before each GraphUniverse is built, GraphLib invokes the {@code graphlib:universe_build} entrypoint for all
-         * mods, to allow for cross-mod compatibility.
+         * Right before each GraphUniverse is built, GraphLib invokes all the {@link UniverseModifierRegistry.Modify}
+         * registered for the given universe id as well as each registered {@link UniverseModifierRegistry.ModifyAll}.
+         * This allows mods to register decoders and detectors for other mods' universes.
          *
          * @param universeId the unique id of the GraphUniverse to be built.
          * @return the newly created {@link GraphUniverse}.
          */
-        @NotNull GraphUniverse build(@NotNull Identifier universeId);
+        @NotNull GraphUniverse buildAndRegister(@NotNull Identifier universeId);
     }
 }
