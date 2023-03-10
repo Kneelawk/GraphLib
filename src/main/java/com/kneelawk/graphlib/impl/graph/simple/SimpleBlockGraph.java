@@ -25,7 +25,7 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import com.kneelawk.graphlib.api.v1.GraphLibEvents;
+import com.kneelawk.graphlib.api.v1.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
 import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;

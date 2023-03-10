@@ -34,7 +34,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.v1.GraphLib;
-import com.kneelawk.graphlib.api.v1.GraphLibEvents;
+import com.kneelawk.graphlib.api.v1.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
 import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.v1.graph.GraphView;

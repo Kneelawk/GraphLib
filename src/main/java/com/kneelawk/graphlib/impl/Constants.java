@@ -16,6 +16,7 @@ public final class Constants {
     public static final String REGION_DIRNAME = "region";
     public static final String GRAPHS_DIRNAME = "graphs";
     public static final String STATE_FILENAME = "state.dat";
+    public static final String UNIVERSE_PRE_BUILD = MOD_ID + ":universe_build";
 
     @Contract("_ -> new")
     public static @NotNull Identifier id(String path) {

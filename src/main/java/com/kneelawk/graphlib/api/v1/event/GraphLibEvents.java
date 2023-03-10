@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.api.v1;
+package com.kneelawk.graphlib.api.v1.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;

@@ -15,7 +15,14 @@ public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     }
 
     @Override
+    public @NotNull Identifier getId() {
+        return universeId;
+    }
+
+    @Override
     public @NotNull GraphUniverse build() {
+        GraphLibImpl.preBuild(this);
+
         SimpleGraphUniverse universe = new SimpleGraphUniverse(this);
         GraphLibImpl.register(universe);
         return universe;
