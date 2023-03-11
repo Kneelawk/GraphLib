@@ -85,7 +85,7 @@ public final class GraphLibClientNetworking {
                     return;
                 }
 
-                ClientBlockGraph debugGraph = decodeBlockGraph(buf);
+                ClientBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
                 if (debugGraph == null) return;
 
                 client.execute(() -> addBlockGraph(universeId, debugGraph));
@@ -93,8 +93,8 @@ public final class GraphLibClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.GRAPH_UPDATE_BULK_ID,
             (client, handler, buf, responseSender) -> {
                 int universeInt = buf.readVarInt();
-                Identifier universe = idMap.get(universeInt);
-                if (universe == null) {
+                Identifier universeId = idMap.get(universeInt);
+                if (universeId == null) {
                     GLLog.error("Received unknown universe id: {}", universeInt);
                     return;
                 }
@@ -103,14 +103,14 @@ public final class GraphLibClientNetworking {
                 List<ClientBlockGraph> graphs = new ArrayList<>(graphCount);
 
                 for (int i = 0; i < graphCount; i++) {
-                    ClientBlockGraph debugGraph = decodeBlockGraph(buf);
+                    ClientBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
                     if (debugGraph == null) return;
                     graphs.add(debugGraph);
                 }
 
                 client.execute(() -> {
                     for (ClientBlockGraph debugGraph : graphs) {
-                        addBlockGraph(universe, debugGraph);
+                        addBlockGraph(universeId, debugGraph);
                     }
                 });
             });
@@ -126,7 +126,7 @@ public final class GraphLibClientNetworking {
                 long graphId = buf.readLong();
 
                 client.execute(() -> {
-                    Long2ObjectMap<ClientBlockGraph> universe = GraphLibClient.DEBUG_GRAPHS.get(universeId);
+                    Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.get(universeId);
                     if (universe == null) {
                         GLLog.warn("Received GRAPH_DESTROY for un-tracked universe: {}", universeId);
                         return;
@@ -135,7 +135,7 @@ public final class GraphLibClientNetworking {
                     ClientBlockGraph graph = universe.remove(graphId);
 
                     if (universe.isEmpty()) {
-                        GraphLibClient.DEBUG_GRAPHS.remove(universeId);
+                        GraphLibClientImpl.DEBUG_GRAPHS.remove(universeId);
                     }
 
                     if (graph != null) {
@@ -152,10 +152,10 @@ public final class GraphLibClientNetworking {
                     return;
                 }
 
-                Long2ObjectMap<ClientBlockGraph> universe = GraphLibClient.DEBUG_GRAPHS.remove(universeId);
+                Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.remove(universeId);
 
-                if (GraphLibClient.DEBUG_GRAPHS.isEmpty()) {
-                    GraphLibClient.GRAPHS_PER_CHUNK.clear();
+                if (GraphLibClientImpl.DEBUG_GRAPHS.isEmpty()) {
+                    GraphLibClientImpl.GRAPHS_PER_CHUNK.clear();
                 } else {
                     if (universe == null) {
                         GLLog.warn("Received DEBUGGING_STOP for un-tracked universe: {}", universeId);
@@ -170,7 +170,7 @@ public final class GraphLibClientNetworking {
     }
 
     @Nullable
-    private static ClientBlockGraph decodeBlockGraph(PacketByteBuf buf) {
+    private static ClientBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
         Graph<ClientBlockNodeHolder> graph = new Graph<>();
         List<Node<ClientBlockNodeHolder>> nodeList = new ArrayList<>();
         LongSet chunks = new LongLinkedOpenHashSet();
@@ -213,14 +213,14 @@ public final class GraphLibClientNetworking {
             graph.link(nodeA, nodeB);
         }
 
-        return new ClientBlockGraph(graphId, graph, chunks);
+        return new ClientBlockGraph(universeId, graphId, graph, chunks);
     }
 
     private static void addBlockGraph(Identifier universeId, ClientBlockGraph debugGraph) {
-        Long2ObjectMap<ClientBlockGraph> universe = GraphLibClient.DEBUG_GRAPHS.get(universeId);
+        Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.get(universeId);
         if (universe == null) {
             universe = new Long2ObjectLinkedOpenHashMap<>();
-            GraphLibClient.DEBUG_GRAPHS.put(universeId, universe);
+            GraphLibClientImpl.DEBUG_GRAPHS.put(universeId, universe);
         }
 
         ClientBlockGraph oldGraph = universe.put(debugGraph.graphId(), debugGraph);
@@ -230,11 +230,11 @@ public final class GraphLibClientNetworking {
         }
 
         for (long chunk : debugGraph.chunks()) {
-            Set<ClientBlockGraph> chunkSet = GraphLibClient.GRAPHS_PER_CHUNK.get(chunk);
+            Set<ClientBlockGraph> chunkSet = GraphLibClientImpl.GRAPHS_PER_CHUNK.get(chunk);
             if (chunkSet == null) {
                 chunkSet = new LinkedHashSet<>();
                 chunkSet.add(debugGraph);
-                GraphLibClient.GRAPHS_PER_CHUNK.put(chunk, chunkSet);
+                GraphLibClientImpl.GRAPHS_PER_CHUNK.put(chunk, chunkSet);
             } else {
                 chunkSet.add(debugGraph);
             }

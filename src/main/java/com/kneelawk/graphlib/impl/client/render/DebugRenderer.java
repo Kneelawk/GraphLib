@@ -45,6 +45,7 @@ import com.kneelawk.graphlib.api.v1.node.client.SidedClientBlockNode;
 import com.kneelawk.graphlib.api.v1.util.SidedPos;
 import com.kneelawk.graphlib.api.v1.util.graph.Link;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
 
@@ -118,7 +119,7 @@ public final class DebugRenderer {
     }
 
     private static void render(WorldRenderContext context) {
-        if (GraphLibClient.DEBUG_GRAPHS.isEmpty()) {
+        if (GraphLibClientImpl.DEBUG_GRAPHS.isEmpty()) {
             return;
         }
 
@@ -172,7 +173,7 @@ public final class DebugRenderer {
     private static void renderGraphs(MatrixStack stack) {
         Map<NPos, NPosData> nodeEndpoints = new HashMap<>();
 
-        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClient.DEBUG_GRAPHS.values()) {
+        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
             for (ClientBlockGraph graph : universe.values()) {
                 for (var node : graph.graph()) {
                     ClientBlockNode cbn = node.data().node();
@@ -189,7 +190,7 @@ public final class DebugRenderer {
             }
         }
 
-        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClient.DEBUG_GRAPHS.values()) {
+        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
             for (ClientBlockGraph graph : universe.values()) {
                 int graphColor = RenderUtils.graphColor(graph.graphId());
                 Object2ObjectMap<Node<ClientBlockNodeHolder>, Vec3d> endpoints =
