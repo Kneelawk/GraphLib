@@ -14,7 +14,6 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.UniverseModifierRegistryImpl;
@@ -26,9 +25,6 @@ public final class GraphLibImpl {
     private static final Identifier UNIVERSE_IDENTIFIER = Constants.id("universe");
     public static final RegistryKey<Registry<GraphUniverseImpl>> UNIVERSE_KEY =
         RegistryKey.ofRegistry(UNIVERSE_IDENTIFIER);
-    private static final Identifier BLOCK_NODE_DECODER_IDENTIFIER = Constants.id("block_node_decoder");
-    public static final RegistryKey<Registry<BlockNodeDecoder>> BLOCK_NODE_DECODER_KEY =
-        RegistryKey.ofRegistry(BLOCK_NODE_DECODER_IDENTIFIER);
     private static final Identifier BLOCK_NODE_PACKET_ENDODER_IDENTIFIER = Constants.id("block_node_packet_encoder");
     public static final RegistryKey<Registry<BlockNodePacketEncoderHolder<?>>> BLOCK_NODE_PACKET_ENCODER_KEY =
         RegistryKey.ofRegistry(BLOCK_NODE_PACKET_ENDODER_IDENTIFIER);
@@ -41,8 +37,6 @@ public final class GraphLibImpl {
     @SuppressWarnings("unchecked")
     static void register() {
         Registry.register((Registry<Registry<?>>) Registries.REGISTRY, UNIVERSE_IDENTIFIER, UNIVERSE);
-        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_DECODER_IDENTIFIER,
-            GraphLib.BLOCK_NODE_DECODER);
         Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_PACKET_ENDODER_IDENTIFIER,
             GraphLib.BLOCK_NODE_PACKET_ENCODER);
     }

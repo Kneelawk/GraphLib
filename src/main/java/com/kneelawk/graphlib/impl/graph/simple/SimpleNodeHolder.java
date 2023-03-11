@@ -13,11 +13,11 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
 public final class SimpleNodeHolder implements NodeHolder {
     private final @NotNull BlockPos pos;
@@ -49,11 +49,12 @@ public final class SimpleNodeHolder implements NodeHolder {
     }
 
     @Nullable
-    public static SimpleNodeHolder fromTag(@NotNull NbtCompound tag, long graphId) {
+    public static SimpleNodeHolder fromTag(@NotNull GraphUniverseImpl universe, @NotNull NbtCompound tag,
+                                           long graphId) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
-        BlockNodeDecoder decoder = GraphLib.BLOCK_NODE_DECODER.get(typeId);
+        BlockNodeDecoder decoder = universe.getDecoder(typeId);
 
         if (decoder == null) {
             GLLog.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);

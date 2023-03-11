@@ -1,13 +1,18 @@
 package com.kneelawk.graphlib.api.v1.graph;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import it.unimi.dsi.fastutil.Pair;
+
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.v1.node.BlockNode;
+import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
@@ -63,7 +68,7 @@ public interface GraphUniverse {
          * @return this builder for call chaining.
          */
         @Contract("_ -> this")
-        @NotNull Builder discoverer(BlockNodeDiscoverer discoverer);
+        @NotNull Builder discoverer(@NotNull BlockNodeDiscoverer discoverer);
 
         /**
          * Adds {@link BlockNodeDiscoverer}s to this graph universe.
@@ -72,7 +77,7 @@ public interface GraphUniverse {
          * @return this builder for call chaining.
          */
         @Contract("_ -> this")
-        @NotNull Builder discoverers(BlockNodeDiscoverer... discoverers);
+        @NotNull Builder discoverers(@NotNull BlockNodeDiscoverer... discoverers);
 
         /**
          * Adds {@link BlockNodeDiscoverer}s to this graph universe.
@@ -81,7 +86,7 @@ public interface GraphUniverse {
          * @return this builder for call chaining.
          */
         @Contract("_ -> this")
-        @NotNull Builder discoverers(Iterable<BlockNodeDiscoverer> discoverers);
+        @NotNull Builder discoverers(@NotNull Iterable<BlockNodeDiscoverer> discoverers);
 
         /**
          * Adds {@link BlockNodeDiscoverer}s to this graph universe.
@@ -90,6 +95,43 @@ public interface GraphUniverse {
          * @return this builder for call chaining.
          */
         @Contract("_ -> this")
-        @NotNull Builder discoverers(Collection<BlockNodeDiscoverer> discoverers);
+        @NotNull Builder discoverers(@NotNull Collection<BlockNodeDiscoverer> discoverers);
+
+        /**
+         * Registers a {@link BlockNodeDecoder} for the given block node type id.
+         * <p>
+         * The identifier under which the decoder is registered corresponds to the one returned by the associated block
+         * node's {@link BlockNode#getTypeId()}.
+         *
+         * @param typeId  the type id of the block node the decoder is being registered for.
+         * @param decoder the block node decoder responsible for decoding the associated type of block node.
+         * @return this builder for call chaining.
+         */
+        @Contract("_, _ -> this")
+        @NotNull Builder decoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
+
+        /**
+         * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+         * <p>
+         * The identifier under which a decoder is registered corresponds to the one returned by the associated block
+         * node's {@link BlockNode#getTypeId()}.
+         *
+         * @param decoders the set of block node decoders to be registered.
+         * @return this builder for call chaining.
+         */
+        @Contract("_ -> this")
+        @NotNull Builder decoders(@NotNull Pair<Identifier, BlockNodeDecoder>... decoders);
+
+        /**
+         * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+         * <p>
+         * The identifier under which a decoder is registered corresponds to the one returned by the associated block
+         * node's {@link BlockNode#getTypeId()}.
+         *
+         * @param decoders the set of block node decoders to be registered.
+         * @return this builder for call chaining.
+         */
+        @Contract("_ -> this")
+        @NotNull Builder decoders(@NotNull Map<Identifier, BlockNodeDecoder> decoders);
     }
 }

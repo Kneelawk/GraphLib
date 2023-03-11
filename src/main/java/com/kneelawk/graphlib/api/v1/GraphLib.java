@@ -1,42 +1,26 @@
 package com.kneelawk.graphlib.api.v1;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.Lifecycle;
 
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
 /**
- * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, obtaining a
- * {@link GraphWorld}, or registering {@link BlockNodeDecoder}s and {@link BlockNodeDiscoverer}s.
+ * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, like obtaining a
+ * previously-registered {@link GraphUniverse}.
  */
 public final class GraphLib {
     private GraphLib() {
     }
-
-    /**
-     * Registry of {@link BlockNodeDecoder}s for block-node type ids.
-     */
-    public static final Registry<BlockNodeDecoder> BLOCK_NODE_DECODER =
-        new SimpleRegistry<>(GraphLibImpl.BLOCK_NODE_DECODER_KEY, Lifecycle.experimental());
 
     /**
      * Registry of {@link BlockNodePacketEncoderHolder}s for encoding nodes to send to the client for debug rendering.

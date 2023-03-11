@@ -60,7 +60,7 @@ public class SimpleBlockGraph implements BlockGraph {
         List<@Nullable Node<NodeHolder>> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
-            SimpleNodeHolder node = SimpleNodeHolder.fromTag((NbtCompound) nodeElement, id);
+            SimpleNodeHolder node = SimpleNodeHolder.fromTag(controller.universe, (NbtCompound) nodeElement, id);
             if (node != null) {
                 nodes.add(graph.createNode(node.getPos(), node.getNode()));
             } else {

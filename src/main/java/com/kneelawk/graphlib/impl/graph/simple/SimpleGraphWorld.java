@@ -64,7 +64,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     private static final int MAX_AGE = 20 * 60;
 
-    private final SimpleGraphUniverse universe;
+    final SimpleGraphUniverse universe;
 
     final ServerWorld world;
 
