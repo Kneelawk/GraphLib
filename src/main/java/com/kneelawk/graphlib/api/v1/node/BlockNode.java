@@ -6,11 +6,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.v1.GraphLib;
+import com.kneelawk.graphlib.api.v1.client.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
+import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
@@ -38,7 +41,7 @@ public interface BlockNode {
      * Gets this block node's type ID, associated with its decoder.
      * <p>
      * A block node's {@link BlockNodeDecoder} must always be registered with
-     * {@link GraphLib#BLOCK_NODE_DECODER} under the same ID as returned here.
+     * {@link GraphUniverse.Builder#decoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
      *
      * @return the id of this block node.
      */
@@ -127,4 +130,34 @@ public interface BlockNode {
      */
     @Override
     boolean equals(@Nullable Object o);
+
+    /**
+     * Encodes this block node to a {@link PacketByteBuf} to be sent to the client for client-side graph debug
+     * rendering.
+     * <p>
+     * The default implementations of this method are compatible with the default client-side block node decoders.
+     * This method does <b>not</b> need to be implemented in order for client-side graph debug rendering to work.
+     * This method should only be overridden to provide custom data to the client.
+     * <p>
+     * If custom data is being sent to the client, use
+     * {@link GraphLibClient#registerDecoder(Identifier, Identifier, BlockNodePacketDecoder)}
+     * to register a decoder for the custom data.
+     *
+     * @param world     the block world that this node is associated with.
+     * @param graphView the world of nodes.
+     * @param pos       the block position of this node.
+     * @param self      this block node's holder, providing information about this node's connections and graph id.
+     * @param buf       the buffer to encode this node to.
+     */
+    default void toPacket(@NotNull ServerWorld world, @NotNull GraphView graphView, @NotNull BlockPos pos,
+                          @NotNull Node<NodeHolder> self, @NotNull PacketByteBuf buf) {
+        // This keeps otherwise identical-looking client-side nodes separate.
+        buf.writeInt(hashCode());
+
+        // Class name hash for use in default node coloring
+        buf.writeInt(getClass().getName().hashCode());
+
+        // A 0 byte to distinguish ourselves from SidedBlockNode, because both implementations use the same decoder
+        buf.writeByte(0);
+    }
 }

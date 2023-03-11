@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
+import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRenderer;
 import com.kneelawk.graphlib.api.v1.node.BlockNode;
 
 /**
@@ -16,7 +17,8 @@ import com.kneelawk.graphlib.api.v1.node.BlockNode;
  */
 public interface ClientBlockNode {
     /**
-     * Gets the id of the renderer registered with {@link GraphLibClient#BLOCK_NODE_RENDERER}.
+     * Gets the id of the renderer registered with
+     * {@link GraphLibClient#registerRenderer(Identifier, Identifier, Class, BlockNodeRenderer)}.
      *
      * @return the id of the renderer to use to render this block node.
      */

@@ -2,14 +2,9 @@ package com.kneelawk.graphlib.api.v1;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.mojang.serialization.Lifecycle;
-
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -21,12 +16,6 @@ import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 public final class GraphLib {
     private GraphLib() {
     }
-
-    /**
-     * Registry of {@link BlockNodePacketEncoderHolder}s for encoding nodes to send to the client for debug rendering.
-     */
-    public static final Registry<BlockNodePacketEncoderHolder<?>> BLOCK_NODE_PACKET_ENCODER =
-        new SimpleRegistry<>(GraphLibImpl.BLOCK_NODE_PACKET_ENCODER_KEY, Lifecycle.experimental());
 
     /**
      * The unique id of the universe representing the data managed by pre-1.0 versions of GraphLib.

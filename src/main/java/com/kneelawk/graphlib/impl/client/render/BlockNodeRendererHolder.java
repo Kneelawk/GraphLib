@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.api.v1.client.render;
+package com.kneelawk.graphlib.impl.client.render;
 
 import java.util.List;
 
@@ -9,6 +9,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
 import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRenderer;
 import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;

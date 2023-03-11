@@ -7,6 +7,9 @@ import com.google.common.math.IntMath;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -22,6 +25,7 @@ import net.minecraft.util.math.Vec3d;
 /**
  * Assorted utilities for rendering debug block-nodes.
  */
+@Environment(EnvType.CLIENT)
 public class RenderUtils {
     private static final Vec3d[][] PLANAR_VECTORS = {
         {new Vec3d(1.0, 0.0, 0.0), new Vec3d(0.0, 0.0, 1.0)},

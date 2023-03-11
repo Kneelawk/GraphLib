@@ -25,7 +25,7 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.v1.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.v1.util.graph.Graph;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
@@ -188,7 +188,7 @@ public final class GraphLibClientNetworking {
 
             BlockPos pos = buf.readBlockPos();
 
-            BlockNodePacketDecoder decoder = GraphLibClient.BLOCK_NODE_PACKET_DECODER.get(nodeTypeId);
+            BlockNodePacketDecoder decoder = GraphLibClientImpl.getDecoder(universeId, nodeTypeId);
             if (decoder == null) {
                 decoder = DEFAULT_DECODER;
             }

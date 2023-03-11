@@ -33,17 +33,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import com.kneelawk.graphlib.api.v1.GraphLib;
 import com.kneelawk.graphlib.api.v1.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
 import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
 import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoder;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketEncoderHolder;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.v1.util.graph.Link;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
 
@@ -57,19 +51,6 @@ public final class GraphLibCommonNetworking {
     public static final Identifier GRAPH_UPDATE_BULK_ID = Constants.id("graph_update_bulk");
     public static final Identifier GRAPH_DESTROY_ID = Constants.id("graph_destroy");
     public static final Identifier DEBUGGING_STOP_ID = Constants.id("debugging_stop");
-
-    public static final BlockNodePacketEncoder<BlockNode> DEFAULT_ENCODER = (node, holderNode, world, view, buf) -> {
-        // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(node.hashCode());
-        buf.writeInt(node.getClass().getName().hashCode());
-
-        if (node instanceof SidedBlockNode sided) {
-            buf.writeByte(1);
-            buf.writeByte(sided.getSide().getId());
-        } else {
-            buf.writeByte(0);
-        }
-    };
 
     private static final Multimap<UUID, Identifier> debuggingPlayers = LinkedHashMultimap.create();
     private static final Object2IntMap<Identifier> idMap = new Object2IntLinkedOpenHashMap<>();
@@ -205,7 +186,7 @@ public final class GraphLibCommonNetworking {
         graph.getNodes().forEachOrdered(node -> {
             buf.writeVarInt(getIdentifierInt(world, node.data().getNode().getTypeId()));
             buf.writeBlockPos(node.data().getPos());
-            encodeBlockNode(world, graphWorld, node, buf);
+            node.data().getNode().toPacket(world, graphWorld, node.data().getPos(), node, buf);
             indexMap.put(node, index.getAndIncrement());
             distinct.addAll(node.connections());
         });
@@ -226,18 +207,6 @@ public final class GraphLibCommonNetworking {
             }
             buf.writeVarInt(indexMap.get(link.first()));
             buf.writeVarInt(indexMap.get(link.second()));
-        }
-    }
-
-    private static void encodeBlockNode(ServerWorld world, GraphView view, Node<NodeHolder> node,
-                                        PacketByteBuf buf) {
-        BlockNodePacketEncoderHolder<?> holder =
-            GraphLib.BLOCK_NODE_PACKET_ENCODER.get(node.data().getNode().getTypeId());
-
-        if (holder != null) {
-            holder.toPacket(node.data().getNode(), node, world, view, buf);
-        } else {
-            DEFAULT_ENCODER.toPacket(node.data().getNode(), node, world, view, buf);
         }
     }
 

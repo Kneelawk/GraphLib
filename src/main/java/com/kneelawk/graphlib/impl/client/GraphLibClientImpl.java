@@ -1,21 +1,24 @@
 package com.kneelawk.graphlib.impl.client;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetbrains.annotations.Nullable;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 
+import com.kneelawk.graphlib.api.v1.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
-import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
-import com.kneelawk.graphlib.api.v1.net.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.impl.client.render.BlockNodeRendererHolder;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;
@@ -23,17 +26,16 @@ import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
 import com.kneelawk.graphlib.impl.client.render.SimpleBlockNodeRenderer;
 import com.kneelawk.graphlib.impl.client.render.SimpleSidedBlockNodeRenderer;
 
+@Environment(EnvType.CLIENT)
 public class GraphLibClientImpl {
     private GraphLibClientImpl() {
     }
 
-    private static final Identifier BLOCK_NODE_PACKET_DECODER_ID = Constants.id("block_node_packet_decoder");
-    public static final RegistryKey<Registry<BlockNodePacketDecoder>> BLOCK_NODE_PACKET_DECODER_KEY =
-        RegistryKey.ofRegistry(BLOCK_NODE_PACKET_DECODER_ID);
+    public static final Map<Identifier, Map<Identifier, BlockNodePacketDecoder>> DECODERS = new HashMap<>();
 
-    private static final Identifier BLOCK_NODE_RENDERER_ID = Constants.id("block_node_renderer");
-    public static final RegistryKey<Registry<BlockNodeRendererHolder<?>>> BLOCK_NODE_RENDERER_KEY =
-        RegistryKey.ofRegistry(BLOCK_NODE_RENDERER_ID);
+    public static final Map<Identifier, Map<Identifier, BlockNodeRendererHolder<?>>> RENDERERS = new HashMap<>();
+
+    public static final Map<Identifier, BlockNodeRendererHolder<?>> ALL_UNIVERSE_RENDERERS = new HashMap<>();
 
     /**
      * Map of graph id long to graph for all currently debugging graphs.
@@ -45,17 +47,25 @@ public class GraphLibClientImpl {
      */
     public static final Long2ObjectMap<Set<ClientBlockGraph>> GRAPHS_PER_CHUNK = new Long2ObjectLinkedOpenHashMap<>();
 
-    @SuppressWarnings("unchecked")
-    static void register() {
-        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_PACKET_DECODER_ID,
-            GraphLibClient.BLOCK_NODE_PACKET_DECODER);
-        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, BLOCK_NODE_RENDERER_ID,
-            GraphLibClient.BLOCK_NODE_RENDERER);
+    public static @Nullable BlockNodePacketDecoder getDecoder(Identifier universeId, Identifier typeId) {
+        Map<Identifier, BlockNodePacketDecoder> universeDecoders = DECODERS.get(universeId);
+        if (universeDecoders == null) return null;
+        return universeDecoders.get(typeId);
+    }
 
-        Registry.register(GraphLibClient.BLOCK_NODE_RENDERER, Constants.id("simple"),
-            new BlockNodeRendererHolder<>(SimpleClientBlockNode.class, SimpleBlockNodeRenderer.INSTANCE));
-        Registry.register(GraphLibClient.BLOCK_NODE_RENDERER, Constants.id("simple_sided"),
-            new BlockNodeRendererHolder<>(SimpleClientSidedBlockNode.class, SimpleSidedBlockNodeRenderer.INSTANCE));
+    public static @Nullable BlockNodeRendererHolder<?> getRenderer(Identifier universeId, Identifier renderId) {
+        Map<Identifier, BlockNodeRendererHolder<?>> universeRenderers = RENDERERS.get(universeId);
+        if (universeRenderers == null) return ALL_UNIVERSE_RENDERERS.get(renderId);
+        BlockNodeRendererHolder<?> holder = universeRenderers.get(renderId);
+        if (holder == null) return ALL_UNIVERSE_RENDERERS.get(renderId);
+        return holder;
+    }
+
+    static void register() {
+        GraphLibClient.registerRendererForAllUniverses(Constants.id("simple"), SimpleClientBlockNode.class,
+            SimpleBlockNodeRenderer.INSTANCE);
+        GraphLibClient.registerRendererForAllUniverses(Constants.id("simple_sided"), SimpleClientSidedBlockNode.class,
+            SimpleSidedBlockNodeRenderer.INSTANCE);
     }
 
     static void removeGraphChunks(ClientBlockGraph graph) {

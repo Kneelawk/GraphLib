@@ -37,8 +37,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
-import com.kneelawk.graphlib.api.v1.client.render.BlockNodeRendererHolder;
 import com.kneelawk.graphlib.api.v1.client.render.RenderUtils;
 import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.v1.node.client.SidedClientBlockNode;
@@ -199,7 +197,7 @@ public final class DebugRenderer {
 
                 for (var node : graph.graph()) {
                     ClientBlockNode cbn = node.data().node();
-                    BlockNodeRendererHolder<?> renderer = GraphLibClient.BLOCK_NODE_RENDERER.get(cbn.getRenderId());
+                    BlockNodeRendererHolder<?> renderer = GraphLibClientImpl.getRenderer(graph.universeId(), cbn.getRenderId());
                     if (renderer == null) continue;
 
                     NPos pos;
