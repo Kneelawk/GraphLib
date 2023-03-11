@@ -61,33 +61,7 @@ public final class GraphLib {
     public static final GraphUniverse LEGACY_UNIVERSE = GraphUniverse.builder().buildAndRegister(LEGACY_UNIVERSE_ID);
 
     /**
-     * Registers a {@link BlockNodeDiscoverer} for use in detecting the nodes in a given block position.
-     * <p>
-     * Nodes that are discovered here are usually created by the block or block-entity present at the given location.
-     * These nodes are then compared, using their <code>hashCode()</code> and <code>equals()</code> functions, to the
-     * nodes already in the controller's graphs at the given location and used to make adjustments if necessary.
-     *
-     * @param discoverer the discoverer used for detecting the nodes in a given block position.
-     */
-    public static void registerDiscoverer(@NotNull BlockNodeDiscoverer discoverer) {
-        GraphLibImpl.BLOCK_NODE_DISCOVERERS.add(discoverer);
-    }
-
-    /**
-     * Gets a set of all the {@link BlockNode}s a block <b>should</b> have.
-     *
-     * @param world the world to check in.
-     * @param pos   the position to check at.
-     * @return a set of all the {@link BlockNode}s that should be at that position.
-     */
-    public static @NotNull Set<BlockNode> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos) {
-        return GraphLibImpl.BLOCK_NODE_DISCOVERERS.stream()
-            .flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-    }
-
-    /**
-     * Gets a registered graph universe by its id.
+     * Gets a registered {@link GraphUniverse} by its id.
      *
      * @param universeId the id of the universe to look up.
      * @return the universe with the given id.

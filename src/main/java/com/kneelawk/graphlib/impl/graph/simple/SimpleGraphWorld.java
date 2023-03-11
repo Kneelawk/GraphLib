@@ -478,7 +478,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private void handleNodeUpdates() {
         for (BlockPos pos : nodeUpdates) {
-            Set<BlockNode> nodes = GraphLib.getNodesInBlock(world, pos);
+            Set<BlockNode> nodes = universe.discoverNodesInBlock(world, pos);
             onNodesChanged(pos, nodes);
         }
         nodeUpdates.clear();

@@ -1,11 +1,14 @@
 package com.kneelawk.graphlib.api.v1.graph;
 
+import java.util.Collection;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
 /**
@@ -52,5 +55,41 @@ public interface GraphUniverse {
          * @return the newly created {@link GraphUniverse}.
          */
         @NotNull GraphUniverse buildAndRegister(@NotNull Identifier universeId);
+
+        /**
+         * Adds a {@link BlockNodeDiscoverer} to this graph universe.
+         *
+         * @param discoverer the {@link BlockNodeDiscoverer} to be added.
+         * @return this builder for call chaining.
+         */
+        @Contract("_ -> this")
+        @NotNull Builder discoverer(BlockNodeDiscoverer discoverer);
+
+        /**
+         * Adds {@link BlockNodeDiscoverer}s to this graph universe.
+         *
+         * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
+         * @return this builder for call chaining.
+         */
+        @Contract("_ -> this")
+        @NotNull Builder discoverers(BlockNodeDiscoverer... discoverers);
+
+        /**
+         * Adds {@link BlockNodeDiscoverer}s to this graph universe.
+         *
+         * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
+         * @return this builder for call chaining.
+         */
+        @Contract("_ -> this")
+        @NotNull Builder discoverers(Iterable<BlockNodeDiscoverer> discoverers);
+
+        /**
+         * Adds {@link BlockNodeDiscoverer}s to this graph universe.
+         *
+         * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
+         * @return this builder for call chaining.
+         */
+        @Contract("_ -> this")
+        @NotNull Builder discoverers(Collection<BlockNodeDiscoverer> discoverers);
     }
 }
