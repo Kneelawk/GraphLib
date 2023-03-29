@@ -16,7 +16,7 @@ import com.mojang.datafixers.DataFixer;
 
 import net.minecraft.server.WorldGenerationProgressListener;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ThreadedChunkManager;
 import net.minecraft.structure.StructureTemplateManager;
 import net.minecraft.util.thread.ThreadExecutor;
 import net.minecraft.world.PersistentStateManager;
@@ -30,8 +30,8 @@ import com.kneelawk.graphlib.GLLog;
 import com.kneelawk.graphlib.graph.simple.SimpleBlockGraphController;
 import com.kneelawk.graphlib.mixin.api.BlockGraphControllerAccess;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
-public class ThreadedAnvilChunkStorageMixin implements BlockGraphControllerAccess {
+@Mixin(ThreadedChunkManager.class)
+public class ThreadedChunkManagerMixin implements BlockGraphControllerAccess {
     @Shadow
     @Final
     ServerWorld world;

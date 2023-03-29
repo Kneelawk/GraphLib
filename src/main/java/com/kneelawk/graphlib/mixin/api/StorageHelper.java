@@ -17,6 +17,6 @@ public class StorageHelper {
     }
 
     public static @NotNull SimpleBlockGraphController getController(@NotNull ServerWorld world) {
-        return ((BlockGraphControllerAccess) world.getChunkManager().threadedAnvilChunkStorage).graphlib_getGraphController();
+        return ((BlockGraphControllerAccess) world.getChunkManager().delegate).graphlib_getGraphController();
     }
 }

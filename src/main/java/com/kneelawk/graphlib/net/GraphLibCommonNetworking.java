@@ -25,7 +25,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
+import net.minecraft.server.world.ThreadedChunkManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -88,7 +88,7 @@ public final class GraphLibCommonNetworking {
         LongSet graphIds = new LongLinkedOpenHashSet();
         for (int z = minZ; z <= maxZ; z++) {
             for (int x = minX; x <= maxX; x++) {
-                if (ThreadedAnvilChunkStorage.isWithinDistance(x, z, playerPos.getSectionX(), playerPos.getSectionZ(),
+                if (ThreadedChunkManager.isWithinDistance(x, z, playerPos.getSectionX(), playerPos.getSectionZ(),
                     viewDistance)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
