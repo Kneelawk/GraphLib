@@ -155,7 +155,7 @@ public class RenderUtils {
         float dx = x1 - x0;
         float dy = y1 - y0;
         float dz = z1 - z0;
-        float fact = MathHelper.fastInverseSqrt(dx * dx + dy * dy + dz * dz);
+        float fact = MathHelper.inverseSqrt(dx * dx + dy * dy + dz * dz);
         dx *= fact;
         dy *= fact;
         dz *= fact;
