@@ -17,6 +17,8 @@ import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.v1.graph.GraphView;
 import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
 import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.api.v1.wire.CenterWireBlockNode;
+import com.kneelawk.graphlib.api.v1.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.v1.wire.FullWireBlockNode;
 import com.kneelawk.graphlib.api.v1.wire.FullWireConnectionFilter;
 import com.kneelawk.graphlib.api.v1.wire.SidedWireBlockNode;
@@ -68,6 +70,7 @@ public interface BlockNode {
      * @return all nodes this node can connect to.
      * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, GraphView, BlockPos, Node, SidedWireConnectionFilter)
      * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, ServerWorld, GraphView, BlockPos, Node, FullWireConnectionFilter)
+     * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, ServerWorld, GraphView, BlockPos, Node, CenterWireConnectionFilter)
      */
     @NotNull Collection<Node<NodeHolder>> findConnections(@NotNull ServerWorld world, @NotNull GraphView graphView,
                                                           @NotNull BlockPos pos,
@@ -86,6 +89,7 @@ public interface BlockNode {
      * @return whether this node can connect to the other node.
      * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, Node, Node, SidedWireConnectionFilter)
      * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, ServerWorld, BlockPos, Node, Node, FullWireConnectionFilter)
+     * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, ServerWorld, BlockPos, Node, Node, CenterWireConnectionFilter)
      */
     boolean canConnect(@NotNull ServerWorld world, @NotNull GraphView graphView, @NotNull BlockPos pos,
                        @NotNull Node<NodeHolder> self, @NotNull Node<NodeHolder> other);

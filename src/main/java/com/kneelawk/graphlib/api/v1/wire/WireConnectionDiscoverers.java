@@ -93,11 +93,12 @@ public final class WireConnectionDiscoverers {
                                          @Nullable SidedWireConnectionFilter filter) {
         Direction side = self.getSide();
         BlockPos otherPos = otherNode.data().getPos();
+        BlockNode other = otherNode.data().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
         Direction posDiffDir = Direction.fromVector(posDiff);
 
-        if (otherNode.data().getNode() instanceof SidedWireBlockNode otherSidedNode) {
+        if (other instanceof SidedWireBlockNode otherSidedNode) {
             Direction otherSide = otherSidedNode.getSide();
 
             // check internal connections first
@@ -130,15 +131,21 @@ public final class WireConnectionDiscoverers {
             }
 
             return false;
-        } else if (otherNode.data().getNode() instanceof FullWireBlockNode) {
+        } else if (other instanceof FullWireBlockNode) {
             // implementing external connections here might be useful, but I don't see a use for them right now
             WireConnectionType type = side.equals(posDiffDir) ? WireConnectionType.UNDER : WireConnectionType.EXTERNAL;
 
             return posDiffDir != null && !posDiffDir.equals(side.getOpposite()) &&
                 (filter == null || filter.canConnect(self, world, pos, posDiffDir, type, selfNode, otherNode)) &&
                 self.canConnect(world, pos, posDiffDir, type, selfNode, otherNode);
+        } else if (other instanceof CenterWireBlockNode) {
+            // center-wire connections are only valid if we're both in the same block
+            return posDiffDir == null && (filter == null ||
+                filter.canConnect(self, world, pos, side.getOpposite(), WireConnectionType.ABOVE, selfNode,
+                    otherNode)) &&
+                self.canConnect(world, pos, side.getOpposite(), WireConnectionType.ABOVE, selfNode, otherNode);
         } else {
-            // we only know how to handle connections to SidedWireBlockNodes and FullWireBlockNodes for now
+            // we only know how to handle connections to SidedWireBlockNodes, CenterWireBlockNodes, and FullWireBlockNodes for now
             return false;
         }
     }
@@ -187,6 +194,7 @@ public final class WireConnectionDiscoverers {
                                               @NotNull Node<NodeHolder> otherNode,
                                               @Nullable FullWireConnectionFilter filter) {
         BlockPos otherPos = otherNode.data().getPos();
+        BlockNode other = otherNode.data().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
         Direction posDiffDir = Direction.fromVector(posDiff);
@@ -195,16 +203,82 @@ public final class WireConnectionDiscoverers {
             return false;
         }
 
-        if (otherNode.data().getNode() instanceof FullWireBlockNode) {
+        if (other instanceof FullWireBlockNode || other instanceof CenterWireBlockNode) {
             return (filter == null || filter.canConnect(self, world, pos, posDiffDir, null, selfNode, otherNode)) &&
                 self.canConnect(world, pos, posDiffDir, null, selfNode, otherNode);
-        } else if (otherNode.data().getNode() instanceof SidedWireBlockNode otherSidedNode) {
+        } else if (other instanceof SidedWireBlockNode otherSidedNode) {
             Direction otherSide = otherSidedNode.getSide();
             return !otherSide.equals(posDiffDir) && (filter == null ||
                 filter.canConnect(self, world, pos, posDiffDir, otherSide, selfNode, otherNode)) &&
                 self.canConnect(world, pos, posDiffDir, otherSide, selfNode, otherNode);
         } else {
-            // we only know how to handle connections to SidedWireBlockNodes and FullWireBlockNodes for now
+            // we only know how to handle connections to SidedWireBlockNodes, CenterWireBlockNodes, and FullWireBlockNodes for now
+            return false;
+        }
+    }
+
+    /**
+     * Finds nodes that can connect to this center-wire node.
+     *
+     * @param self      this node.
+     * @param world     the block world to find connections in.
+     * @param graphView the node world to find connections in.
+     * @param pos       the position of this node.
+     * @param selfNode  this node's holder.
+     * @param filter    a general connection filter, used to filter connections.
+     * @return a collection of nodes this node can connect to.
+     */
+    public static @NotNull Collection<Node<NodeHolder>> centerWireFindConnections(
+        @NotNull CenterWireBlockNode self, @NotNull ServerWorld world, @NotNull GraphView graphView,
+        @NotNull BlockPos pos, @NotNull Node<NodeHolder> selfNode, @Nullable CenterWireConnectionFilter filter) {
+        List<Node<NodeHolder>> collector = new ArrayList<>();
+
+        // add internal connections
+        graphView.getNodesAt(pos).filter(other -> centerWireCanConnect(self, world, pos, selfNode, other, filter))
+            .forEach(collector::add);
+
+        // add external connections
+        for (Direction external : Direction.values()) {
+            graphView.getNodesAt(pos.offset(external))
+                .filter(other -> centerWireCanConnect(self, world, pos, selfNode, other, filter))
+                .forEach(collector::add);
+        }
+
+        return collector;
+    }
+
+    /**
+     * Checks if this center-wire node can connect to the given node.
+     *
+     * @param self      this node.
+     * @param world     the block world to check the connection in.
+     * @param pos       this node's position.
+     * @param selfNode  this node's holder.
+     * @param otherNode the node that this node could potentially connect to.
+     * @param filter    a general connection filter, used to filter connections.
+     * @return <code>true</code> if this node can connect to the given node.
+     */
+    public static boolean centerWireCanConnect(@NotNull CenterWireBlockNode self, @NotNull ServerWorld world,
+                                               @NotNull BlockPos pos, @NotNull Node<NodeHolder> selfNode,
+                                               @NotNull Node<NodeHolder> otherNode,
+                                               @Nullable CenterWireConnectionFilter filter) {
+        BlockPos otherPos = otherNode.data().getPos();
+        BlockNode other = otherNode.data().getNode();
+
+        BlockPos posDiff = otherPos.subtract(pos);
+        Direction posDiffDir = Direction.fromVector(posDiff);
+
+        if (other instanceof CenterWireBlockNode || other instanceof FullWireBlockNode) {
+            return posDiffDir != null &&
+                (filter == null || filter.canConnect(self, world, pos, posDiffDir, selfNode, otherNode)) &&
+                self.canConnect(world, pos, posDiffDir, selfNode, otherNode);
+        } else if (other instanceof SidedWireBlockNode otherSided) {
+            Direction otherSide = otherSided.getSide();
+            return posDiffDir == null &&
+                (filter == null || filter.canConnect(self, world, pos, otherSide, selfNode, otherNode)) &&
+                self.canConnect(world, pos, otherSide, selfNode, otherNode);
+        } else {
+            // we only know how to handle connections to SidedWireBlockNodes, CenterWireBlockNodes, and FullWireBlockNodes for now
             return false;
         }
     }
