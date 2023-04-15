@@ -25,7 +25,8 @@ public enum WireConnectionType {
     UNDER,
 
     /**
-     * Not currently used. Could be used for jacketed cable connections eventually.
+     * Connection to something above this wire but in the same block, like a center-wire (e.g. standing cables, lamps,
+     * powerline-connectors, etc.).
      */
     ABOVE
 }
