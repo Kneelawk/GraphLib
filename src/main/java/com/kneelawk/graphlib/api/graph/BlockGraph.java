@@ -7,6 +7,8 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
+import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Node;
 
@@ -27,7 +29,7 @@ public interface BlockGraph {
      * @param pos the block-position to get the nodes in.
      * @return a stream of all the nodes in this graph in the given block-position.
      */
-    @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull BlockPos pos);
+    @NotNull Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos);
 
     /**
      * Gets all the nodes in this graph in the given sided block-position.
@@ -35,14 +37,14 @@ public interface BlockGraph {
      * @param pos the sided block-position to get the nodes in.
      * @return a stream of all the nodes in this graph in the given sided block-position.
      */
-    @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos);
+    @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
 
     /**
      * Gets all the nodes in this graph.
      *
      * @return a stream of all the nodes in this graph.
      */
-    @NotNull Stream<Node<NodeHolder>> getNodes();
+    @NotNull Stream<NodeHolder<BlockNode>> getNodes();
 
     /**
      * Gets all nodes in this graph with the given type.
@@ -50,7 +52,7 @@ public interface BlockGraph {
      * @param type the type that all returned nodes must be.
      * @return a stream of all the nodes in this graph with the given type.
      */
-    @NotNull Stream<Node<NodeHolder>> getNodesOfType(@NotNull Class<?> type);
+    @NotNull <T extends BlockNode> Stream<NodeHolder<T>> getNodesOfType(@NotNull Class<T> type);
 
     /**
      * Gets all the chunk sections that this graph currently has nodes in.

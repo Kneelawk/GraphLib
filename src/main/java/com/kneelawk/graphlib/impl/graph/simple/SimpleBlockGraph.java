@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -59,12 +60,12 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
 
-        List<@Nullable Node<NodeHolder>> nodes = new ArrayList<>();
+        List<@Nullable Node<SimpleNodeWrapper>> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
-            SimpleNodeHolder node = SimpleNodeHolder.fromTag(controller.universe, (NbtCompound) nodeElement, id);
+            SimpleNodeWrapper node = SimpleNodeWrapper.fromTag(controller.universe, (NbtCompound) nodeElement, id);
             if (node != null) {
-                nodes.add(graph.createNode(node.getPos(), node.getNode()));
+                nodes.add(graph.createNode(node.getPos(), node.getNode()).node);
             } else {
                 // keep the gap so other nodes' links don't get messed up
                 nodes.add(null);
@@ -89,10 +90,10 @@ public class SimpleBlockGraph implements BlockGraph {
     final SimpleGraphWorld controller;
     private final long id;
 
-    private final Graph<NodeHolder> graph = new Graph<>();
-    private final Multimap<BlockPos, Node<NodeHolder>> nodesInPos = LinkedHashMultimap.create();
+    private final Graph<SimpleNodeWrapper> graph = new Graph<>();
+    private final Multimap<BlockPos, SimpleNodeHolder<BlockNode>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
-    private final Map<Class<?>, List<Node<NodeHolder>>> nodeTypeCache = new HashMap<>();
+    private final Map<Class<?>, List<?>> nodeTypeCache = new HashMap<>();
 
     public SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id) {
         this(controller, id, LongSet.of());
@@ -122,7 +123,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = new NbtList();
 
         for (var node : nodes) {
-            nodesTag.add(((SimpleNodeHolder) node.data()).toTag());
+            nodesTag.add(((SimpleNodeWrapper) node.data()).toTag());
         }
 
         tag.put("nodes", nodesTag);
@@ -171,8 +172,8 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a stream of all the nodes in this graph in the given block-position.
      */
     @Override
-    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull BlockPos pos) {
-        return nodesInPos.get(pos).stream();
+    public @NotNull Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos) {
+        return nodesInPos.get(pos).stream().map(Function.identity());
     }
 
     /**
@@ -182,10 +183,10 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a stream of all the nodes in this graph in the given sided block-position.
      */
     @Override
-    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos) {
+    public @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos) {
         return nodesInPos.get(pos.pos()).stream()
-            .filter(node -> node.data().getNode() instanceof SidedBlockNode sidedNode &&
-                sidedNode.getSide() == pos.side());
+            .filter(node -> node.getNode() instanceof SidedBlockNode sidedNode &&
+                sidedNode.getSide() == pos.side()).map(node -> node.cast(SidedBlockNode.class));
     }
 
     /**
@@ -194,8 +195,8 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a stream of all the nodes in this graph.
      */
     @Override
-    public @NotNull Stream<Node<NodeHolder>> getNodes() {
-        return graph.stream();
+    public @NotNull Stream<NodeHolder<BlockNode>> getNodes() {
+        return graph.stream().map(SimpleNodeHolder::new);
     }
 
     /**
@@ -205,9 +206,11 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a stream of all the nodes in this graph with the given type.
      */
     @Override
-    public @NotNull Stream<Node<NodeHolder>> getNodesOfType(@NotNull Class<?> type) {
-        List<Node<NodeHolder>> nodesOfType =
-            nodeTypeCache.computeIfAbsent(type, cls -> graph.stream().filter(type::isInstance).toList());
+    @SuppressWarnings("unchecked")
+    public <T extends BlockNode> @NotNull Stream<NodeHolder<T>> getNodesOfType(@NotNull Class<T> type) {
+        List<NodeHolder<T>> nodesOfType = (List<NodeHolder<T>>) nodeTypeCache.computeIfAbsent(type,
+            cls -> graph.stream().filter(node -> type.isInstance(node.data().getNode()))
+                .<NodeHolder<T>>map(SimpleNodeHolder::new).toList());
         return nodesOfType.stream();
     }
 
@@ -247,18 +250,18 @@ public class SimpleBlockGraph implements BlockGraph {
         nodesInPos.clear();
         nodeTypeCache.clear();
         for (var node : graph) {
-            SimpleNodeHolder data = (SimpleNodeHolder) node.data();
+            SimpleNodeWrapper data = node.data();
             data.graphId = id;
             BlockPos pos = data.getPos();
             chunks.add(ChunkSectionPos.from(pos).asLong());
-            nodesInPos.put(pos, node);
+            nodesInPos.put(pos, new SimpleNodeHolder<>(node));
         }
     }
 
-    @NotNull Node<NodeHolder> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
+    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
         BlockPos pos = blockPos.toImmutable();
 
-        Node<NodeHolder> graphNode = graph.add(new SimpleNodeHolder(pos, node, id));
+        SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(graph.add(new SimpleNodeWrapper(pos, node, id)));
         nodesInPos.put(pos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();
@@ -267,23 +270,24 @@ public class SimpleBlockGraph implements BlockGraph {
         return graphNode;
     }
 
-    void destroyNode(@NotNull Node<NodeHolder> node) {
+    void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
         // see if removing this node means removing a block-pos or a chunk
-        BlockPos removedPos = node.data().getPos();
+        SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
+        BlockPos removedPos = node.getPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node);
         nodeTypeCache.clear();
 
         // schedule updates for each of the node's connected nodes
-        for (Link<NodeHolder> link : node.connections()) {
+        for (Link<SimpleNodeWrapper> link : node.node.connections()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
-            controller.scheduleCallbackUpdate(link.other(node));
+            controller.scheduleCallbackUpdate(new SimpleNodeHolder<>(link.other(node.node)));
         }
         controller.scheduleCallbackUpdate(node);
 
         // actually remove the node
-        graph.remove(node);
+        graph.remove(node.node);
 
         // check to see if the pos or chunk are used by any of our other nodes
         for (var ourNode : graph) {
@@ -318,14 +322,14 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    void link(@NotNull Node<NodeHolder> a, @NotNull Node<NodeHolder> b) {
-        graph.link(a, b);
+    void link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
+        graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
     }
 
-    void unlink(@NotNull Node<NodeHolder> a, @NotNull Node<NodeHolder> b) {
-        graph.unlink(a, b);
+    void unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
+        graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
     }
@@ -341,7 +345,7 @@ public class SimpleBlockGraph implements BlockGraph {
             controller.addGraphInPos(id, node.data().getPos());
 
             // might as well set the node's graph id here as well
-            ((SimpleNodeHolder) node.data()).graphId = id;
+            node.data().graphId = id;
         }
 
         graph.join(other.graph);
@@ -361,14 +365,14 @@ public class SimpleBlockGraph implements BlockGraph {
             Set<BlockPos> removedPoses = new LinkedHashSet<>();
             LongSet removedChunks = new LongLinkedOpenHashSet();
 
-            for (Graph<NodeHolder> graph : newGraphs) {
+            for (Graph<SimpleNodeWrapper> graph : newGraphs) {
                 for (var node : graph) {
                     BlockPos pos = node.data().getPos();
                     removedPoses.add(pos);
                     removedChunks.add(ChunkSectionPos.from(pos).asLong());
 
                     // the node is in a new graph, so it obviously isn't in our graph anymore
-                    nodesInPos.remove(pos, node);
+                    nodesInPos.remove(pos, new SimpleNodeHolder<>(node));
                 }
             }
 
@@ -387,7 +391,7 @@ public class SimpleBlockGraph implements BlockGraph {
             // setup block-graphs for the newly created graphs
             List<SimpleBlockGraph> newBlockGraphs = new ArrayList<>(newGraphs.size());
 
-            for (Graph<NodeHolder> graph : newGraphs) {
+            for (Graph<SimpleNodeWrapper> graph : newGraphs) {
                 // create the new graph and set its nodes correctly
                 SimpleBlockGraph bg = controller.createGraph();
                 bg.graph.join(graph);

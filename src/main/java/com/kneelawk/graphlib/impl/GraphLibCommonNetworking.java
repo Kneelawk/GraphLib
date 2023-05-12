@@ -37,9 +37,9 @@ import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.util.graph.Link;
-import com.kneelawk.graphlib.api.util.graph.Node;
+import com.kneelawk.graphlib.api.node.BlockNode;
 
 public final class GraphLibCommonNetworking {
     private GraphLibCommonNetworking() {
@@ -179,35 +179,39 @@ public final class GraphLibCommonNetworking {
         buf.writeLong(graph.getId());
 
         AtomicInteger index = new AtomicInteger();
-        Map<Node<NodeHolder>, Integer> indexMap = new HashMap<>();
-        Set<Link<NodeHolder>> distinct = new LinkedHashSet<>();
+        Map<NodeHolder<BlockNode>, Integer> indexMap = new HashMap<>();
+        Set<NodeConnection> distinct = new LinkedHashSet<>();
 
         buf.writeVarInt(graph.size());
         graph.getNodes().forEachOrdered(node -> {
-            buf.writeVarInt(getIdentifierInt(world, node.data().getNode().getTypeId()));
-            buf.writeBlockPos(node.data().getPos());
-            node.data().getNode().toPacket(world, graphWorld, node.data().getPos(), node, buf);
+            buf.writeVarInt(getIdentifierInt(world, node.getNode().getTypeId()));
+            buf.writeBlockPos(node.getPos());
+            node.getNode().toPacket(node, world, graphWorld, buf);
             indexMap.put(node, index.getAndIncrement());
-            distinct.addAll(node.connections());
+            distinct.addAll(node.getConnections());
         });
 
-        buf.writeVarInt(distinct.size());
-        for (Link<NodeHolder> link : distinct) {
-            if (!indexMap.containsKey(link.first())) {
+        PacketByteBuf linkBuf = PacketByteBufs.create();
+        int written = 0;
+        for (NodeConnection link : distinct) {
+            if (!indexMap.containsKey(link.getFirst())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
-                    graph.getId(), link.second(), link.first());
+                    graph.getId(), link.getSecond(), link.getFirst());
                 continue;
             }
-            if (!indexMap.containsKey(link.second())) {
+            if (!indexMap.containsKey(link.getFirst())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
-                    graph.getId(), link.first(), link.second());
+                    graph.getId(), link.getFirst(), link.getSecond());
                 continue;
             }
-            buf.writeVarInt(indexMap.get(link.first()));
-            buf.writeVarInt(indexMap.get(link.second()));
+            linkBuf.writeVarInt(indexMap.get(link.getFirst()));
+            linkBuf.writeVarInt(indexMap.get(link.getSecond()));
+            written++;
         }
+        buf.writeVarInt(written);
+        buf.writeBytes(linkBuf);
     }
 
     private static void sendToDebuggingPlayers(ServerWorld world, Identifier packetId, PacketByteBuf buf) {

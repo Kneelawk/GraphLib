@@ -4,12 +4,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.util.graph.Node;
 
 /**
  * More general wire connection filter, designed only to determine if two types of block nodes should be allowed to
@@ -26,16 +24,16 @@ public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWir
     boolean accepts(@NotNull BlockNode self, @NotNull BlockNode other);
 
     @Override
-    default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
+    default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode, @NotNull ServerWorld world,
                                @NotNull Direction onSide, @Nullable Direction wireSide,
-                               @NotNull Node<NodeHolder> selfNode, @NotNull Node<NodeHolder> otherNode) {
-        return accepts(self, otherNode.data().getNode());
+                               @NotNull NodeHolder<BlockNode> otherNode) {
+        return accepts(self, otherNode.getNode());
     }
 
     @Override
-    default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
+    default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode, @NotNull ServerWorld world,
                                @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
-                               @NotNull Node<NodeHolder> selfNode, @NotNull Node<NodeHolder> otherNode) {
-        return accepts(self, otherNode.data().getNode());
+                               @NotNull NodeHolder<BlockNode> otherNode) {
+        return accepts(self, otherNode.getNode());
     }
 }

@@ -9,14 +9,12 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
@@ -62,37 +60,38 @@ public interface BlockNode {
      * Collects nodes in the world that this node can connect to.
      * <p>
      * <b>Contract:</b> This method must only return nodes that
-     * {@link #canConnect(ServerWorld, GraphView, BlockPos, Node, Node)} would have returned <code>true</code> for.
+     * {@link #canConnect(NodeHolder, ServerWorld, GraphView, NodeHolder)} would have returned
+     * <code>true</code> for.
      *
+     * @param self      this node's holder.
      * @param world     the world of blocks.
      * @param graphView the world of nodes.
-     * @param pos       this node's block-position.
      * @return all nodes this node can connect to.
-     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, GraphView, BlockPos, Node, SidedWireConnectionFilter)
-     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, ServerWorld, GraphView, BlockPos, Node, FullWireConnectionFilter)
-     * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, ServerWorld, GraphView, BlockPos, Node, CenterWireConnectionFilter)
+     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeHolder, ServerWorld, GraphView, SidedWireConnectionFilter)
+     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeHolder, ServerWorld, GraphView, FullWireConnectionFilter)
+     * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeHolder, ServerWorld, GraphView, CenterWireConnectionFilter)
      */
-    @NotNull Collection<Node<NodeHolder>> findConnections(@NotNull ServerWorld world, @NotNull GraphView graphView,
-                                                          @NotNull BlockPos pos,
-                                                          @NotNull Node<NodeHolder> self);
+    @NotNull Collection<NodeHolder<BlockNode>> findConnections(@NotNull NodeHolder<BlockNode> self,
+                                                               @NotNull ServerWorld world,
+                                                               @NotNull GraphView graphView);
 
     /**
      * Determines whether this node can connect to another node.
      * <p>
      * <b>Contract:</b> This method must only return <code>true</code> for nodes that would be returned from
-     * {@link #findConnections(ServerWorld, GraphView, BlockPos, Node)}.
+     * {@link #findConnections(NodeHolder, ServerWorld, GraphView)}.
      *
+     * @param self      this node's holder.
      * @param world     the world of blocks.
      * @param graphView the world of nodes.
-     * @param pos       this node's block-position.
      * @param other     the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
-     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, Node, Node, SidedWireConnectionFilter)
-     * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, ServerWorld, BlockPos, Node, Node, FullWireConnectionFilter)
-     * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, ServerWorld, BlockPos, Node, Node, CenterWireConnectionFilter)
+     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeHolder, ServerWorld, NodeHolder, SidedWireConnectionFilter)
+     * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeHolder, ServerWorld, NodeHolder, FullWireConnectionFilter)
+     * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeHolder, ServerWorld, NodeHolder, CenterWireConnectionFilter)
      */
-    boolean canConnect(@NotNull ServerWorld world, @NotNull GraphView graphView, @NotNull BlockPos pos,
-                       @NotNull Node<NodeHolder> self, @NotNull Node<NodeHolder> other);
+    boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world,
+                       @NotNull GraphView graphView, @NotNull NodeHolder<BlockNode> other);
 
     /**
      * Called when the block graph controller has determined that this specific node's connections have been changed.
@@ -104,13 +103,12 @@ public interface BlockNode {
      * Note: This is not called for every node change in a graph, only when this specific node's connection's have
      * changed.
      *
+     * @param self      this block node's holder providing information about this node's connections and graph id.
      * @param world     the block world that this node is associated with.
      * @param graphView the world of nodes.
-     * @param pos       the block position of this node.
-     * @param self      this block node's holder providing information about this node's connections and graph id.
      */
-    void onConnectionsChanged(@NotNull ServerWorld world, @NotNull GraphView graphView, @NotNull BlockPos pos,
-                              @NotNull Node<NodeHolder> self);
+    void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world,
+                              @NotNull GraphView graphView);
 
     /**
      * Block nodes are compared based on their hash-code and equals functions.
@@ -147,14 +145,13 @@ public interface BlockNode {
      * {@link GraphLibClient#registerDecoder(Identifier, Identifier, BlockNodePacketDecoder)}
      * to register a decoder for the custom data.
      *
+     * @param self      this block node's holder, providing information about this node's connections and graph id.
      * @param world     the block world that this node is associated with.
      * @param graphView the world of nodes.
-     * @param pos       the block position of this node.
-     * @param self      this block node's holder, providing information about this node's connections and graph id.
      * @param buf       the buffer to encode this node to.
      */
-    default void toPacket(@NotNull ServerWorld world, @NotNull GraphView graphView, @NotNull BlockPos pos,
-                          @NotNull Node<NodeHolder> self, @NotNull PacketByteBuf buf) {
+    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world,
+                          @NotNull GraphView graphView, @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(hashCode());
 

@@ -1,107 +1,78 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
-// Translated from 2xsaiko's HCTM-Base WireNetworkState code:
-// https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
-
+import java.util.Collection;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
+import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.PositionedNode;
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
+import com.kneelawk.graphlib.api.util.graph.Node;
+import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
-public final class SimpleNodeHolder implements NodeHolder {
-    private final @NotNull BlockPos pos;
-    private final @NotNull BlockNode node;
+public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
+    final Node<SimpleNodeWrapper> node;
 
-    long graphId;
-
-    public SimpleNodeHolder(@NotNull BlockPos pos, @NotNull BlockNode node, long graphId) {
-        this.pos = pos.toImmutable();
+    /**
+     * @param node treat this as if it were parameterized on <code>&lt;T&gt;</code>.
+     */
+    public SimpleNodeHolder(Node<SimpleNodeWrapper> node) {
         this.node = node;
-        this.graphId = graphId;
-    }
-
-    public @NotNull NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
-
-        tag.putInt("x", pos.getX());
-        tag.putInt("y", pos.getY());
-        tag.putInt("z", pos.getZ());
-
-        NbtElement nodeTag = node.toTag();
-        if (nodeTag != null) {
-            tag.put("node", nodeTag);
-        }
-
-        tag.putString("type", node.getTypeId().toString());
-
-        return tag;
-    }
-
-    @Nullable
-    public static SimpleNodeHolder fromTag(@NotNull GraphUniverseImpl universe, @NotNull NbtCompound tag,
-                                           long graphId) {
-        BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
-
-        Identifier typeId = new Identifier(tag.getString("type"));
-        BlockNodeDecoder decoder = universe.getDecoder(typeId);
-
-        if (decoder == null) {
-            GLLog.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);
-            return null;
-        }
-
-        NbtElement nodeTag = tag.get("node");
-        BlockNode node = decoder.createBlockNodeFromTag(nodeTag);
-
-        if (node == null) {
-            GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
-            return null;
-        }
-
-        return new SimpleNodeHolder(pos, node, graphId);
     }
 
     @Override
     public @NotNull BlockPos getPos() {
-        return pos;
+        return node.data().getPos();
     }
 
     @Override
-    public @NotNull BlockNode getNode() {
-        return node;
+    @SuppressWarnings("unchecked")
+    public @NotNull T getNode() {
+        return (T) node.data().getNode();
     }
 
     @Override
     public long getGraphId() {
-        return graphId;
+        return node.data().getGraphId();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (SimpleNodeHolder) obj;
-        return Objects.equals(this.pos, that.pos) && Objects.equals(this.node, that.node);
+    public @NotNull Collection<NodeConnection> getConnections() {
+        return new ReadOnlyMappingCollection<>(node.connections(), SimpleNodeConnection::new);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public @NotNull PositionedNode<T> toPositionedNode() {
+        return new PositionedNode<>(node.data().getPos(), (T) node.data().getNode(), node.data().getGraphId());
+    }
+
+    @Override
+    public boolean canCast(Class<?> newType) {
+        return newType.isInstance(node.data().getNode());
+    }
+
+    @Override
+    public <R extends BlockNode> NodeHolder<R> cast(Class<R> newType) throws ClassCastException {
+        if (!canCast(newType))
+            throw new ClassCastException(node.data().getNode().getClass() + " cannot be cast to " + newType);
+        return new SimpleNodeHolder<>(node);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SimpleNodeHolder<?> that = (SimpleNodeHolder<?>) o;
+        return Objects.equals(node, that.node);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pos, node);
-    }
-
-    @Override
-    public String toString() {
-        return "BlockNodeWrapper[" + "pos=" + pos + ", " + "graphId=" + graphId + ", " + "node=" + node + ']';
+        return Objects.hash(node);
     }
 }
