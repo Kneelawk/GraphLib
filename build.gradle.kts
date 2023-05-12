@@ -94,7 +94,7 @@ tasks {
         val minecraft_version: String by project
         val quilt_mappings: String by project
         (options as? StandardJavadocDocletOptions)?.links = listOf(
-            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
+//            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
             "https://javadoc.io/doc/org.jetbrains/annotations/latest/"
         )
     }
