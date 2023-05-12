@@ -11,6 +11,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.graph.struct.Node;
+import com.kneelawk.graphlib.wire.CenterWireBlockNode;
+import com.kneelawk.graphlib.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.wire.FullWireBlockNode;
 import com.kneelawk.graphlib.wire.FullWireConnectionFilter;
 import com.kneelawk.graphlib.wire.SidedWireBlockNode;
@@ -61,6 +63,7 @@ public interface BlockNode {
      * @return all nodes this node can connect to.
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, ServerWorld, NodeView, BlockPos, Node, SidedWireConnectionFilter)
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, ServerWorld, NodeView, BlockPos, Node, FullWireConnectionFilter)
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, ServerWorld, NodeView, BlockPos, Node, CenterWireConnectionFilter)
      */
     @NotNull Collection<Node<BlockNodeHolder>> findConnections(@NotNull ServerWorld world, @NotNull NodeView nodeView,
                                                                @NotNull BlockPos pos,
@@ -79,6 +82,7 @@ public interface BlockNode {
      * @return whether this node can connect to the other node.
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, ServerWorld, BlockPos, Node, Node, SidedWireConnectionFilter)
      * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, ServerWorld, BlockPos, Node, Node, FullWireConnectionFilter)
+     * @see com.kneelawk.graphlib.wire.WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, ServerWorld, BlockPos, Node, Node, CenterWireConnectionFilter)
      */
     boolean canConnect(@NotNull ServerWorld world, @NotNull NodeView nodeView, @NotNull BlockPos pos,
                        @NotNull Node<BlockNodeHolder> self, @NotNull Node<BlockNodeHolder> other);
