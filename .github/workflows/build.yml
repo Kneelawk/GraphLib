@@ -1,31 +1,32 @@
 name: build
 
-on:
-  - pull_request
-  - push
+on: [ pull_request, push ]
 
 jobs:
   build:
     strategy:
       matrix:
-        java:
-          - 17
-          - 18
-        os:
-          - ubuntu-latest
-    #          - windows-latest
+        java: [
+          17,    # Current Java LTS & minimum supported by Minecraft
+          18,
+          19
+        ]
+        os: [ ubuntu-20.04, windows-2022 ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
       - name: Gradle Cache
         uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
-          restore-keys: ${{ runner.os }}-gradle-
+            .gradle/loom-cache
+            build/
+          key: ${{ runner.os }}-jdk${{ matrix.java }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle.properties', '**/gradle-wrapper.properties', '.github/workflows/build.yml') }}
       - name: Setup JDK ${{ matrix.java }}
         uses: actions/setup-java@v1
         with:
@@ -34,7 +35,7 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: chmod +x ./gradlew
       - name: Build
-        run: ./gradlew build
+        run: ./gradlew build --no-daemon
       - name: Capture Build Artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '17' }}
         uses: actions/upload-artifact@v2
