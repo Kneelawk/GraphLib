@@ -1,8 +1,10 @@
 package com.kneelawk.graphlib.graph.simple;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -89,6 +91,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
     private final Graph<BlockNodeHolder> graph = new Graph<>();
     private final Multimap<BlockPos, Node<BlockNodeHolder>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
+    private final Map<Class<?>, List<Node<BlockNodeHolder>>> nodeTypeCache = new HashMap<>();
 
     public SimpleBlockGraph(@NotNull SimpleBlockGraphController controller, long id) {
         this(controller, id, LongSet.of());
@@ -195,6 +198,19 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
     }
 
     /**
+     * Gets all nodes in this graph with the given type.
+     *
+     * @param type the type that all returned nodes must be.
+     * @return a stream of all the nodes in this graph with the given type.
+     */
+    @Override
+    public @NotNull Stream<Node<BlockNodeHolder>> getNodesOfType(@NotNull Class<?> type) {
+        List<Node<BlockNodeHolder>> nodesOfType =
+            nodeTypeCache.computeIfAbsent(type, cls -> graph.stream().filter(type::isInstance).toList());
+        return nodesOfType.stream();
+    }
+
+    /**
      * Gets all the chunk sections that this graph currently has nodes in.
      *
      * @return a stream of all the chunk sections this graph is in.
@@ -228,6 +244,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
         // Ok, we did end up needing this "rebuildRefs" after all, but only under specific circumstances
         chunks.clear();
         nodesInPos.clear();
+        nodeTypeCache.clear();
         for (var node : graph) {
             SimpleBlockNodeHolder data = (SimpleBlockNodeHolder) node.data();
             data.graphId = id;
@@ -243,6 +260,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
         Node<BlockNodeHolder> graphNode = graph.add(new SimpleBlockNodeHolder(pos, node, id));
         nodesInPos.put(pos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
+        nodeTypeCache.clear();
         controller.addGraphInPos(id, pos);
         controller.scheduleCallbackUpdate(graphNode);
         return graphNode;
@@ -253,6 +271,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
         BlockPos removedPos = node.data().getPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node);
+        nodeTypeCache.clear();
 
         // schedule updates for each of the node's connected nodes
         for (Link<BlockNodeHolder> link : node.connections()) {
@@ -327,6 +346,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
         graph.join(other.graph);
         nodesInPos.putAll(other.nodesInPos);
         chunks.addAll(other.chunks);
+        nodeTypeCache.clear();
 
         // finally we destroy the old graph, removing it from all the graphs-in-pos and graphs-in-chunk trackers
         controller.destroyGraph(other.id);
@@ -361,6 +381,7 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
             // do this stuff instead of rebuilding-refs later
             controller.removeGraphInPoses(id, removedPoses, removedChunks);
             chunks.removeAll(removedChunks);
+            nodeTypeCache.clear();
 
             // setup block-graphs for the newly created graphs
             List<SimpleBlockGraph> newBlockGraphs = new ArrayList<>(newGraphs.size());

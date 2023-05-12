@@ -45,6 +45,14 @@ public interface BlockGraph {
     @NotNull Stream<Node<BlockNodeHolder>> getNodes();
 
     /**
+     * Gets all nodes in this graph with the given type.
+     *
+     * @param type the type that all returned nodes must be.
+     * @return a stream of all the nodes in this graph with the given type.
+     */
+    @NotNull Stream<Node<BlockNodeHolder>> getNodesOfType(@NotNull Class<?> type);
+
+    /**
      * Gets all the chunk sections that this graph currently has nodes in.
      *
      * @return a stream of all the chunk sections this graph is in.
