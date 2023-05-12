@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.command.CommandBuildContext;
 import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.registry.Holder;
 import net.minecraft.server.command.ServerCommandSource;
@@ -16,7 +15,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.impl.Constants;

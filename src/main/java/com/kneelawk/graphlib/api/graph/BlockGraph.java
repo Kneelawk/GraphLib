@@ -10,7 +10,6 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
-import com.kneelawk.graphlib.api.util.graph.Node;
 
 /**
  * Holds and manages a set of block nodes.
