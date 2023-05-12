@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.ChunkPos;
 
-import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.GraphWorld;
 
 public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
 

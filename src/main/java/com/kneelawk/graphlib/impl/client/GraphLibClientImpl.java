@@ -16,8 +16,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 
-import com.kneelawk.graphlib.api.v1.client.BlockNodePacketDecoder;
-import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
+import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.impl.client.render.BlockNodeRendererHolder;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;

@@ -33,13 +33,13 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import com.kneelawk.graphlib.api.v1.event.GraphLibEvents;
-import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.v1.graph.GraphWorld;
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.util.graph.Link;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.api.event.GraphLibEvents;
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.util.graph.Link;
+import com.kneelawk.graphlib.api.util.graph.Node;
 
 public final class GraphLibCommonNetworking {
     private GraphLibCommonNetworking() {

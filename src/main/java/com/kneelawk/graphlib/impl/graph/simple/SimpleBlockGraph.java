@@ -27,15 +27,15 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import com.kneelawk.graphlib.api.v1.event.GraphLibEvents;
-import com.kneelawk.graphlib.api.v1.graph.BlockGraph;
-import com.kneelawk.graphlib.api.v1.graph.NodeHolder;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.node.SidedBlockNode;
-import com.kneelawk.graphlib.api.v1.util.SidedPos;
-import com.kneelawk.graphlib.api.v1.util.graph.Graph;
-import com.kneelawk.graphlib.api.v1.util.graph.Link;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.api.event.GraphLibEvents;
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.SidedPos;
+import com.kneelawk.graphlib.api.util.graph.Graph;
+import com.kneelawk.graphlib.api.util.graph.Link;
+import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
 
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:

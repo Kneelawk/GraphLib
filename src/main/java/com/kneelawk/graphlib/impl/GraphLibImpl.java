@@ -11,7 +11,7 @@ import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.UniverseModifierRegistryImpl;

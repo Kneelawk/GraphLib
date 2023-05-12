@@ -23,12 +23,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 
-import com.kneelawk.graphlib.api.v1.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.v1.client.GraphLibClient;
-import com.kneelawk.graphlib.api.v1.client.BlockNodePacketDecoder;
-import com.kneelawk.graphlib.api.v1.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.v1.util.graph.Graph;
-import com.kneelawk.graphlib.api.v1.util.graph.Node;
+import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.util.graph.Graph;
+import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;

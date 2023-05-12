@@ -16,10 +16,10 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.v1.node.BlockNode;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;

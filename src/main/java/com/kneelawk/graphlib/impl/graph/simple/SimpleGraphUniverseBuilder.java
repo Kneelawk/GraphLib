@@ -13,9 +13,9 @@ import it.unimi.dsi.fastutil.Pair;
 
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.v1.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 
 public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {

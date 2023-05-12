@@ -11,9 +11,9 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.v1.event.UniverseModifyInitializer;
-import com.kneelawk.graphlib.api.v1.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.v1.graph.UniverseModifierRegistry;
+import com.kneelawk.graphlib.api.event.UniverseModifyInitializer;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.UniverseModifierRegistry;
 import com.kneelawk.graphlib.impl.Constants;
 
 public class UniverseModifierRegistryImpl implements UniverseModifierRegistry {

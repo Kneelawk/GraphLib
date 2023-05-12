@@ -16,7 +16,7 @@ import net.minecraft.nbt.NbtLong;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import com.kneelawk.graphlib.api.v1.world.StorageChunk;
+import com.kneelawk.graphlib.api.world.StorageChunk;
 
 public class SimpleBlockGraphChunk implements StorageChunk {
     final ChunkSectionPos chunkPos;
