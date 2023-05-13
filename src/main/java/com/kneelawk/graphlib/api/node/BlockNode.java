@@ -41,7 +41,7 @@ public interface BlockNode {
      * Gets this block node's type ID, associated with its decoder.
      * <p>
      * A block node's {@link BlockNodeDecoder} must always be registered with
-     * {@link GraphUniverse.Builder#decoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
+     * {@link GraphUniverse#addDecoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
      *
      * @return the id of this block node.
      */
