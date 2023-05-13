@@ -13,7 +13,8 @@ import com.kneelawk.graphlib.api.node.BlockNode;
  * More general wire connection filter, designed only to determine if two types of block nodes should be allowed to
  * connect.
  */
-public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWireConnectionFilter {
+public interface WireConnectionFilter
+    extends FullWireConnectionFilter, SidedWireConnectionFilter, CenterWireConnectionFilter {
     /**
      * Checks whether this filter allows these two block nodes to connect.
      *
@@ -24,15 +25,22 @@ public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWir
     boolean accepts(@NotNull BlockNode self, @NotNull BlockNode other);
 
     @Override
-    default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode, @NotNull ServerWorld world,
-                               @NotNull Direction onSide, @Nullable Direction wireSide,
+    default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
+                               @NotNull ServerWorld world, @NotNull Direction onSide, @Nullable Direction wireSide,
                                @NotNull NodeHolder<BlockNode> otherNode) {
         return accepts(self, otherNode.getNode());
     }
 
     @Override
-    default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode, @NotNull ServerWorld world,
-                               @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
+    default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
+                               @NotNull ServerWorld world, @NotNull Direction inDirection,
+                               @NotNull WireConnectionType connectionType, @NotNull NodeHolder<BlockNode> otherNode) {
+        return accepts(self, otherNode.getNode());
+    }
+
+    @Override
+    default boolean canConnect(@NotNull CenterWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
+                               @NotNull ServerWorld world, @NotNull Direction onSide,
                                @NotNull NodeHolder<BlockNode> otherNode) {
         return accepts(self, otherNode.getNode());
     }
