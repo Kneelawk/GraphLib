@@ -205,8 +205,8 @@ public class SimpleBlockGraph implements com.kneelawk.graphlib.graph.BlockGraph 
      */
     @Override
     public @NotNull Stream<Node<BlockNodeHolder>> getNodesOfType(@NotNull Class<?> type) {
-        List<Node<BlockNodeHolder>> nodesOfType =
-            nodeTypeCache.computeIfAbsent(type, cls -> graph.stream().filter(type::isInstance).toList());
+        List<Node<BlockNodeHolder>> nodesOfType = nodeTypeCache.computeIfAbsent(type,
+            cls -> graph.stream().filter(node -> type.isInstance(node.data().getNode())).toList());
         return nodesOfType.stream();
     }
 
