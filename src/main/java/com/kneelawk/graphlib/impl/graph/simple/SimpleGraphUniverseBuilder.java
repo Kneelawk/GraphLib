@@ -23,57 +23,8 @@ public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     Map<Identifier, BlockNodeDecoder> decoders = new LinkedHashMap<>();
 
     @Override
-    public @NotNull GraphUniverse buildAndRegister(@NotNull Identifier universeId) {
+    public @NotNull GraphUniverse build(@NotNull Identifier universeId) {
         GraphLibImpl.preBuild(universeId, this);
-
-        SimpleGraphUniverse universe = new SimpleGraphUniverse(universeId, this);
-        GraphLibImpl.register(universe);
-        return universe;
-    }
-
-    @Override
-    public GraphUniverse.@NotNull Builder discoverer(@NotNull BlockNodeDiscoverer discoverer) {
-        discoverers.add(discoverer);
-        return this;
-    }
-
-    @Override
-    public GraphUniverse.@NotNull Builder discoverers(@NotNull BlockNodeDiscoverer... discoverers) {
-        this.discoverers.addAll(Arrays.asList(discoverers));
-        return this;
-    }
-
-    @Override
-    public GraphUniverse.@NotNull Builder discoverers(@NotNull Iterable<BlockNodeDiscoverer> discoverers) {
-        for (BlockNodeDiscoverer discoverer : discoverers) {
-            this.discoverers.add(discoverer);
-        }
-        return this;
-    }
-
-    @Override
-    public GraphUniverse.@NotNull Builder discoverers(@NotNull Collection<BlockNodeDiscoverer> discoverers) {
-        this.discoverers.addAll(discoverers);
-        return this;
-    }
-
-    @Override
-    public GraphUniverse.@NotNull Builder decoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder) {
-        decoders.put(typeId, decoder);
-        return this;
-    }
-
-    @Override
-    public GraphUniverse.@NotNull Builder decoders(@NotNull Pair<Identifier, BlockNodeDecoder>... decoders) {
-        for (Pair<Identifier, BlockNodeDecoder> pair : decoders) {
-            this.decoders.put(pair.key(), pair.value());
-        }
-        return this;
-    }
-
-    @Override
-    public GraphUniverse.@NotNull Builder decoders(@NotNull Map<Identifier, BlockNodeDecoder> decoders) {
-        this.decoders.putAll(decoders);
-        return this;
+        return new SimpleGraphUniverse(universeId, this);
     }
 }

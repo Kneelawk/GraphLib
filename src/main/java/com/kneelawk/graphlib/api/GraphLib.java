@@ -31,7 +31,7 @@ public final class GraphLib {
      * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder()}.
      */
     @Deprecated
-    public static final GraphUniverse LEGACY_UNIVERSE = GraphUniverse.builder().buildAndRegister(LEGACY_UNIVERSE_ID);
+    public static final GraphUniverse LEGACY_UNIVERSE = GraphUniverse.builder().build(LEGACY_UNIVERSE_ID);
 
     /**
      * Gets a registered {@link GraphUniverse} by its id.

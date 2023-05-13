@@ -36,6 +36,73 @@ public interface GraphUniverse {
     @NotNull Identifier getId();
 
     /**
+     * Adds a {@link BlockNodeDiscoverer} to this graph universe.
+     *
+     * @param discoverer the {@link BlockNodeDiscoverer} to be added.
+     */
+    void addDiscoverer(@NotNull BlockNodeDiscoverer discoverer);
+
+    /**
+     * Adds {@link BlockNodeDiscoverer}s to this graph universe.
+     *
+     * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
+     */
+    void addDiscoverers(@NotNull BlockNodeDiscoverer... discoverers);
+
+    /**
+     * Adds {@link BlockNodeDiscoverer}s to this graph universe.
+     *
+     * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
+     */
+    void addDiscoverers(@NotNull Iterable<BlockNodeDiscoverer> discoverers);
+
+    /**
+     * Adds {@link BlockNodeDiscoverer}s to this graph universe.
+     *
+     * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
+     */
+    void addDiscoverers(@NotNull Collection<BlockNodeDiscoverer> discoverers);
+
+    /**
+     * Registers a {@link BlockNodeDecoder} for the given block node type id.
+     * <p>
+     * The identifier under which the decoder is registered corresponds to the one returned by the associated block
+     * node's {@link BlockNode#getTypeId()}.
+     *
+     * @param typeId  the type id of the block node the decoder is being registered for.
+     * @param decoder the block node decoder responsible for decoding the associated type of block node.
+     */
+    void addDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
+
+    /**
+     * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated block
+     * node's {@link BlockNode#getTypeId()}.
+     *
+     * @param decoders the set of block node decoders to be registered.
+     */
+    void addDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder>... decoders);
+
+    /**
+     * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated block
+     * node's {@link BlockNode#getTypeId()}.
+     *
+     * @param decoders the set of block node decoders to be registered.
+     */
+    void addDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
+
+    /**
+     * Registers this graph universe so that it can be found by its id.
+     * <p>
+     * If a graph universe is not registered, it will not be accessible from commands and its debug renderer will not
+     * work.
+     */
+    void register();
+
+    /**
      * Creates a new GraphUniverse builder.
      *
      * @return a new builder for building a GraphUniverse.
@@ -50,88 +117,11 @@ public interface GraphUniverse {
      */
     interface Builder {
         /**
-         * Builds and registers the {@link GraphUniverse} described by this builder.
-         * <p>
-         * Right before each GraphUniverse is built, GraphLib invokes all the {@link UniverseModifierRegistry.Modify}
-         * registered for the given universe id as well as each registered {@link UniverseModifierRegistry.ModifyAll}.
-         * This allows mods to register decoders and detectors for other mods' universes.
+         * Builds the {@link GraphUniverse} described by this builder.
          *
          * @param universeId the unique id of the GraphUniverse to be built.
          * @return the newly created {@link GraphUniverse}.
          */
-        @NotNull GraphUniverse buildAndRegister(@NotNull Identifier universeId);
-
-        /**
-         * Adds a {@link BlockNodeDiscoverer} to this graph universe.
-         *
-         * @param discoverer the {@link BlockNodeDiscoverer} to be added.
-         * @return this builder for call chaining.
-         */
-        @Contract("_ -> this")
-        @NotNull Builder discoverer(@NotNull BlockNodeDiscoverer discoverer);
-
-        /**
-         * Adds {@link BlockNodeDiscoverer}s to this graph universe.
-         *
-         * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
-         * @return this builder for call chaining.
-         */
-        @Contract("_ -> this")
-        @NotNull Builder discoverers(@NotNull BlockNodeDiscoverer... discoverers);
-
-        /**
-         * Adds {@link BlockNodeDiscoverer}s to this graph universe.
-         *
-         * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
-         * @return this builder for call chaining.
-         */
-        @Contract("_ -> this")
-        @NotNull Builder discoverers(@NotNull Iterable<BlockNodeDiscoverer> discoverers);
-
-        /**
-         * Adds {@link BlockNodeDiscoverer}s to this graph universe.
-         *
-         * @param discoverers the {@link BlockNodeDiscoverer}s to be added.
-         * @return this builder for call chaining.
-         */
-        @Contract("_ -> this")
-        @NotNull Builder discoverers(@NotNull Collection<BlockNodeDiscoverer> discoverers);
-
-        /**
-         * Registers a {@link BlockNodeDecoder} for the given block node type id.
-         * <p>
-         * The identifier under which the decoder is registered corresponds to the one returned by the associated block
-         * node's {@link BlockNode#getTypeId()}.
-         *
-         * @param typeId  the type id of the block node the decoder is being registered for.
-         * @param decoder the block node decoder responsible for decoding the associated type of block node.
-         * @return this builder for call chaining.
-         */
-        @Contract("_, _ -> this")
-        @NotNull Builder decoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
-
-        /**
-         * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
-         * <p>
-         * The identifier under which a decoder is registered corresponds to the one returned by the associated block
-         * node's {@link BlockNode#getTypeId()}.
-         *
-         * @param decoders the set of block node decoders to be registered.
-         * @return this builder for call chaining.
-         */
-        @Contract("_ -> this")
-        @NotNull Builder decoders(@NotNull Pair<Identifier, BlockNodeDecoder>... decoders);
-
-        /**
-         * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
-         * <p>
-         * The identifier under which a decoder is registered corresponds to the one returned by the associated block
-         * node's {@link BlockNode#getTypeId()}.
-         *
-         * @param decoders the set of block node decoders to be registered.
-         * @return this builder for call chaining.
-         */
-        @Contract("_ -> this")
-        @NotNull Builder decoders(@NotNull Map<Identifier, BlockNodeDecoder> decoders);
+        @NotNull GraphUniverse build(@NotNull Identifier universeId);
     }
 }
