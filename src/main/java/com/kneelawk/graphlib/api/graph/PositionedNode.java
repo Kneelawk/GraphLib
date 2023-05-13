@@ -21,8 +21,9 @@ public record PositionedNode<T extends BlockNode>(@NotNull BlockPos pos, @NotNul
     /**
      * Creates a PositionedNode.
      *
-     * @param pos  the block position of the node.
-     * @param node the node itself.
+     * @param pos     the block position of the node.
+     * @param node    the node itself.
+     * @param graphId the id of the graph that this node belonged to when {@link NodeHolder#toPositionedNode()} was called.
      */
     @ApiStatus.Internal
     public PositionedNode(@NotNull BlockPos pos, @NotNull T node, long graphId) {
