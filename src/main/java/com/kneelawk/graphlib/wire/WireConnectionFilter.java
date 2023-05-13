@@ -15,7 +15,7 @@ import com.kneelawk.graphlib.graph.struct.Node;
  * More general wire connection filter, designed only to determine if two types of block nodes should be allowed to
  * connect.
  */
-public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWireConnectionFilter {
+public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWireConnectionFilter, CenterWireConnectionFilter {
     /**
      * Checks whether this filter allows these two block nodes to connect.
      *
@@ -36,6 +36,13 @@ public interface WireConnectionFilter extends FullWireConnectionFilter, SidedWir
     default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
                                @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
                                @NotNull Node<BlockNodeHolder> selfNode, @NotNull Node<BlockNodeHolder> otherNode) {
+        return accepts(self, otherNode.data().getNode());
+    }
+
+    @Override
+    default boolean canConnect(@NotNull CenterWireBlockNode self, @NotNull ServerWorld world, @NotNull BlockPos pos,
+                       @NotNull Direction onSide, @NotNull Node<BlockNodeHolder> selfNode,
+                       @NotNull Node<BlockNodeHolder> otherNode) {
         return accepts(self, otherNode.data().getNode());
     }
 }
