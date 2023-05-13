@@ -5,6 +5,9 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.Direction;
 
+/**
+ * Simple {@link Direction} utilities.
+ */
 public final class DirectionUtils {
     private DirectionUtils() {
     }
@@ -28,6 +31,12 @@ public final class DirectionUtils {
         }
     }
 
+    /**
+     * Gets all the directions perpendicular to the given direction.
+     *
+     * @param side the direction to find directions perpendicular to.
+     * @return an array of directions perpendicular to the given direction.
+     */
     @Contract(pure = true)
     public static @NotNull Direction[] perpendiculars(@NotNull Direction side) {
         return PERPENDICULARS[side.getId()];

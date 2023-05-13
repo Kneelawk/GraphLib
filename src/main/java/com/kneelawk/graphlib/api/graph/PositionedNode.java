@@ -12,9 +12,10 @@ import com.kneelawk.graphlib.api.node.BlockNode;
  * <p>
  * This can be useful if a set of nodes needs to be sent to another thread for processing.
  *
- * @param pos  the block position of the node.
- * @param node the node itself.
- * @param <T>  the specific type of the node.
+ * @param pos     the block position of the node.
+ * @param node    the node itself.
+ * @param graphId the id of the graph that this node belonged to when {@link NodeHolder#toPositionedNode()} was called.
+ * @param <T>     the specific type of the node.
  */
 public record PositionedNode<T extends BlockNode>(@NotNull BlockPos pos, @NotNull T node, long graphId) {
     /**

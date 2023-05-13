@@ -26,7 +26,10 @@ import net.minecraft.util.math.Vec3d;
  * Assorted utilities for rendering debug block-nodes.
  */
 @Environment(EnvType.CLIENT)
-public class RenderUtils {
+public final class RenderUtils {
+    private RenderUtils() {
+    }
+
     private static final Vec3d[][] PLANAR_VECTORS = {
         {new Vec3d(1.0, 0.0, 0.0), new Vec3d(0.0, 0.0, 1.0)},
         {new Vec3d(1.0, 0.0, 0.0), new Vec3d(0.0, 1.0, 0.0)},

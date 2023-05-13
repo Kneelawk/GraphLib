@@ -49,6 +49,7 @@ public interface BlockGraph {
      * Gets all nodes in this graph with the given type.
      *
      * @param type the type that all returned nodes must be.
+     * @param <T>  the type of the nodes we're searching for.
      * @return a stream of all the nodes in this graph with the given type.
      */
     @NotNull <T extends BlockNode> Stream<NodeHolder<T>> getNodesOfType(@NotNull Class<T> type);

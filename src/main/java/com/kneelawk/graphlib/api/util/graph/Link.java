@@ -15,10 +15,22 @@ import org.jetbrains.annotations.NotNull;
  * @param <T>    the type of data contained in each node.
  */
 public record Link<T>(@NotNull Node<T> first, @NotNull Node<T> second) {
+    /**
+     * Checks to see if the given node is either of the two nodes in this link.
+     *
+     * @param node the node to check.
+     * @return <code>true</code> if the given node is either of the nodes in this link.
+     */
     public boolean contains(@NotNull Node<T> node) {
         return Objects.equals(first, node) || Objects.equals(second, node);
     }
 
+    /**
+     * Gets the node opposite the given node.
+     *
+     * @param node the node to get the other end of the link from.
+     * @return the node at the other end of the link from the given node.
+     */
     public @NotNull Node<T> other(@NotNull Node<T> node) {
         if (Objects.equals(first, node)) {
             return second;

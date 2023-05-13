@@ -18,30 +18,68 @@ public final class Node<T> {
     private final T data;
     private final Set<Link<T>> connections;
 
+    /**
+     * Constructs a new node containing the given data.
+     *
+     * @param data the data for this node to contain.
+     */
     public Node(T data) {
         this.data = data;
         this.connections = new LinkedHashSet<>();
     }
 
+    /**
+     * Gets this node's data.
+     *
+     * @return this node's data.
+     */
     public T data() {
         return data;
     }
 
+    /**
+     * Gets this node's connections.
+     *
+     * @return this node's connections.
+     */
     public @NotNull Set<Link<T>> connections() {
         return connections;
     }
 
+    /**
+     * Called when another node is added to the graph.
+     *
+     * @param other the other node added to the graph.
+     */
     public void onAdded(@NotNull Node<T> other) {
     }
 
+    /**
+     * Called when another node is removed from the graph so that this node can remove it from its connections.
+     *
+     * @param other the other node removed from the graph.
+     */
     public void onRemoved(@NotNull Node<T> other) {
         connections.removeIf(link -> link.contains(other));
     }
 
+    /**
+     * Adds the given link as a connection this node has.
+     *
+     * @param link the link between this node and another node.
+     */
     public void onLink(@NotNull Link<T> link) {
         connections.add(link);
     }
 
+    /**
+     * Removes the given link as a connection this node has.
+     * <p>
+     * Note: links are technically directional and must be removed twice, once in each direction, to make sure the link
+     * has actually been removed.
+     *
+     * @param link the link to remove.
+     */
     public void onUnlink(@NotNull Link<T> link) {
         connections.remove(link);
     }

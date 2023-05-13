@@ -34,7 +34,7 @@ public interface BlockNodeRenderer<N extends ClientBlockNode> {
      * @param consumers  the vertex consumers to render to.
      * @param stack      the matrix stack containing relevant transformations for rendering at the correct position.
      * @param graph      the graph that the node belongs to.
-     * @param endpoint
+     * @param endpoint   the position returned by {@link #getLineEndpoint(ClientBlockNode, Node, ClientBlockGraph, int, int, List)}.
      * @param graphColor the color that this graph has been assigned.
      */
     void render(@NotNull N node, @NotNull Node<ClientBlockNodeHolder> holderNode,

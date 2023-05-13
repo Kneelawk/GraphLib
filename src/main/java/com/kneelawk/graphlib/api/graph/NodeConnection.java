@@ -11,11 +11,15 @@ import com.kneelawk.graphlib.api.node.BlockNode;
  */
 public interface NodeConnection {
     /**
+     * Gets the first node in this connection.
+     *
      * @return the first node in this connection.
      */
     @NotNull NodeHolder<BlockNode> getFirst();
 
     /**
+     * Gets the second node in this connection.
+     *
      * @return the second node in this connection.
      */
     @NotNull NodeHolder<BlockNode> getSecond();

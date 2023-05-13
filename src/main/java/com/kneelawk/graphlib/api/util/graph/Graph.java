@@ -24,6 +24,18 @@ import org.jetbrains.annotations.NotNull;
 public final class Graph<T> implements Iterable<Node<T>> {
     private final Set<Node<T>> nodes = new LinkedHashSet<>();
 
+    /**
+     * Constructs an empty graph.
+     */
+    public Graph() {
+    }
+
+    /**
+     * Adds a node to this graph containing the given data.
+     *
+     * @param data the data for the new node to contain.
+     * @return the new node.
+     */
     public @NotNull Node<T> add(T data) {
         Node<T> node = new Node<>(data);
         nodes.forEach(n -> n.onAdded(node));
@@ -31,6 +43,13 @@ public final class Graph<T> implements Iterable<Node<T>> {
         return node;
     }
 
+    /**
+     * Removes a node from this graph.
+     * <p>
+     * Note: this does not perform graph splitting. That must be done separately.
+     *
+     * @param node the node to remove.
+     */
     public void remove(@NotNull Node<T> node) {
         if (nodes.contains(node)) {
             nodes.remove(node);
@@ -38,6 +57,13 @@ public final class Graph<T> implements Iterable<Node<T>> {
         }
     }
 
+    /**
+     * Splits all disconnected sets of nodes off into their own graphs.
+     * <p>
+     * Note: this graph will always retain the largest body of nodes, returning the smaller bodies in the list.
+     *
+     * @return the new graphs made from the disconnected nodes.
+     */
     public @NotNull List<Graph<T>> split() {
         List<Graph<T>> result = new ArrayList<>();
         int largestGraphSize = 0;
@@ -101,11 +127,23 @@ public final class Graph<T> implements Iterable<Node<T>> {
         into.nodes.addAll(nodes);
     }
 
+    /**
+     * Joins this graph with another graph, moving all its nodes into this graph.
+     *
+     * @param other the other graph to join with.
+     */
     public void join(@NotNull Graph<T> other) {
         this.nodes.addAll(other.nodes);
         other.nodes.clear();
     }
 
+    /**
+     * Links two nodes.
+     *
+     * @param a the first node to link.
+     * @param b the second node to link.
+     * @return the link between the two nodes.
+     */
     public @NotNull Link<T> link(@NotNull Node<T> a, @NotNull Node<T> b) {
         Link<T> link = new Link<>(a, b);
         a.onLink(link);
@@ -113,6 +151,14 @@ public final class Graph<T> implements Iterable<Node<T>> {
         return link;
     }
 
+    /**
+     * Unlinks two nodes.
+     * <p>
+     * Note: this tries unlinking in both directions, so node order is not an issue.
+     *
+     * @param a the first node to unlink.
+     * @param b the second node to unlink.
+     */
     public void unlink(@NotNull Node<T> a, @NotNull Node<T> b) {
         Link<T> link1 = new Link<>(a, b);
         Link<T> link2 = new Link<>(b, a);
@@ -122,10 +168,22 @@ public final class Graph<T> implements Iterable<Node<T>> {
         b.onUnlink(link2);
     }
 
+    /**
+     * Checks to see if this graph contains the given node.
+     *
+     * @param node the node to check.
+     * @return whether this graph contains the given node.
+     */
     public boolean contains(@NotNull Node<T> node) {
         return nodes.contains(node);
     }
 
+    /**
+     * Checks to see if this graph contains all the given nodes.
+     *
+     * @param nodes the nodes to check to see if this graph contains.
+     * @return whether this graph contains all the given nodes.
+     */
     @SafeVarargs
     public final boolean contains(@NotNull Node<T>... nodes) {
         for (Node<T> node : nodes) {
@@ -152,14 +210,29 @@ public final class Graph<T> implements Iterable<Node<T>> {
         return nodes.spliterator();
     }
 
+    /**
+     * Returns a stream of all the nodes in this graph.
+     *
+     * @return a stream of all the nodes in this graph.
+     */
     public @NotNull Stream<Node<T>> stream() {
         return nodes.stream();
     }
 
+    /**
+     * Returns <code>true</code> if this graph is empty.
+     *
+     * @return <code>true</code> if this graph is empty.
+     */
     public boolean isEmpty() {
         return nodes.isEmpty();
     }
 
+    /**
+     * Returns the number of nodes in this graph.
+     *
+     * @return the number of nodes in this graph.
+     */
     public int size() {
         return nodes.size();
     }
