@@ -42,9 +42,9 @@ import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.SidedPos;
-import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.api.world.UnloadingRegionBasedStorage;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
@@ -79,7 +79,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private final ObjectSet<BlockPos> nodeUpdates = new ObjectLinkedOpenHashSet<>();
     private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
-    private final ObjectSet<Node<NodeHolder>> callbackUpdates = new ObjectLinkedOpenHashSet<>();
+    private final ObjectSet<NodeHolder<BlockNode>> callbackUpdates = new ObjectLinkedOpenHashSet<>();
 
     private boolean stateDirty = false;
     private long prevGraphId = -1L;
@@ -190,7 +190,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return a stream of the nodes in the given block-position.
      */
     @Override
-    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull BlockPos pos) {
+    public @NotNull Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos) {
         // no need for a .distict() here, because you should never have the same node be part of multiple graphs
         return getGraphsAt(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
@@ -202,7 +202,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return a stream of the nodes in the given sided block-position.
      */
     @Override
-    public @NotNull Stream<Node<NodeHolder>> getNodesAt(@NotNull SidedPos pos) {
+    public @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos) {
         return getGraphsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
 
@@ -491,14 +491,14 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                 }
             } else if (pos instanceof UpdateSidedPos sidedPos) {
                 for (var node : getNodesAt(sidedPos.pos).toList()) {
-                    updateNodeConnections(node);
+                    updateNodeConnections(node.cast(BlockNode.class));
                 }
             }
         }
         connectionUpdates.clear();
     }
 
-    void scheduleCallbackUpdate(@NotNull Node<NodeHolder> node) {
+    void scheduleCallbackUpdate(@NotNull NodeHolder<BlockNode> node) {
         //noinspection ConstantConditions
         if (node == null) {
             GLLog.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",
@@ -511,8 +511,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private void handleCallbackUpdates() {
         for (var node : callbackUpdates) {
-            NodeHolder data = node.data();
-            data.getNode().onConnectionsChanged(world, this, data.getPos(), node);
+            node.getNode().onConnectionsChanged(node, world, this);
         }
         callbackUpdates.clear();
     }
@@ -531,7 +530,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
 
             for (var node : graph.getNodesAt(pos).toList()) {
-                BlockNode bn = node.data().getNode();
+                BlockNode bn = node.getNode();
                 if (!nodes.contains(bn)) {
                     graph.destroyNode(node);
                 }
@@ -547,13 +546,13 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
 
             SimpleBlockGraph newGraph = createGraph();
-            Node<NodeHolder> node = newGraph.createNode(pos, bn);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn);
             updateNodeConnections(node);
         }
     }
 
-    private void updateNodeConnections(@NotNull Node<NodeHolder> node) {
-        long nodeGraphId = ((SimpleNodeHolder) node.data()).graphId;
+    private void updateNodeConnections(@NotNull NodeHolder<BlockNode> node) {
+        long nodeGraphId = node.getGraphId();
         SimpleBlockGraph graph = getGraph(nodeGraphId);
 
         if (graph == null) {
@@ -561,14 +560,14 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             return;
         }
 
-        var oldConnections = node.connections().stream().map(link -> link.other(node))
+        var oldConnections = node.getConnections().stream().map(link -> link.other(node))
             .collect(Collectors.toCollection(LinkedHashSet::new));
         var wantedConnections =
-            new LinkedHashSet<>(node.data().getNode().findConnections(world, this, node.data().getPos(), node));
+            new LinkedHashSet<>(node.getNode().findConnections(node, world, this));
         wantedConnections.removeIf(
-            other -> !other.data().getNode().canConnect(world, this, other.data().getPos(), other, node));
+            other -> !other.getNode().canConnect(other, world, this, node));
         var newConnections = wantedConnections.stream()
-            .filter(other -> ((SimpleNodeHolder) other.data()).graphId != nodeGraphId ||
+            .filter(other -> other.getGraphId() != nodeGraphId ||
                 !oldConnections.contains(other)).toList();
         var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
 
@@ -576,7 +575,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         SimpleBlockGraph mergedGraph = graph;
 
         for (var other : newConnections) {
-            long otherGraphId = ((SimpleNodeHolder) other.data()).graphId;
+            long otherGraphId = other.getGraphId();
             if (otherGraphId != mergedGraphId) {
                 SimpleBlockGraph otherGraph = getGraph(otherGraphId);
                 if (otherGraph == null) {

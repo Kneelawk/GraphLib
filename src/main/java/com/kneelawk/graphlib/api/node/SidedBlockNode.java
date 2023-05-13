@@ -4,13 +4,11 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.SidedPos;
-import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
 
@@ -45,15 +43,14 @@ public interface SidedBlockNode extends BlockNode {
      * This method does <b>not</b> need to be implemented in order for client-side graph debug rendering to work.
      * This method should only be overridden to provide custom data to the client.
      *
+     * @param self      this block node's holder, providing information about this node's connections and graph id.
      * @param world     the block world that this node is associated with.
      * @param graphView the world of nodes.
-     * @param pos       the block position of this node.
-     * @param self      this block node's holder, providing information about this node's connections and graph id.
      * @param buf       the buffer to encode this node to.
      */
     @Override
-    default void toPacket(@NotNull ServerWorld world, @NotNull GraphView graphView, @NotNull BlockPos pos,
-                          @NotNull Node<NodeHolder> self, @NotNull PacketByteBuf buf) {
+    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world,
+                          @NotNull GraphView graphView, @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(hashCode());
 
