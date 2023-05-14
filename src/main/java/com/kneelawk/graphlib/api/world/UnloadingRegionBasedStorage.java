@@ -64,7 +64,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
      *                        {@link java.nio.file.StandardOpenOption#DSYNC}.
      * @param loadFromNbt     the function for loading a chunk section from NBT.
      * @param createNew       the function for creating a new, empty chunk section.
-     * @param saveMode
+     * @param saveMode        how often storage chunks should be saved.
      */
     public UnloadingRegionBasedStorage(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites,
                                        @NotNull TrackingChunkDecoder<@NotNull R> loadFromNbt,
