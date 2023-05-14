@@ -3,8 +3,6 @@ package com.kneelawk.graphlib.api.world;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +11,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -30,22 +31,27 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
  *
  * @param <R> the type of chunk data to store.
  */
-public class UnloadingRegionBasedStorage<R extends StorageChunk> implements AutoCloseable {
+public class UnloadingRegionBasedStorage<R extends StorageChunk> implements RegionBasedStorage<R> {
+
     /**
      * The max chunk age is 1 minute.
      */
     private static final int MAX_CHUNK_AGE = 20 * 60;
+    private static final int INCREMENTAL_SAVE_FACTOR = 10;
 
     private final ServerWorld world;
 
-    private final BiFunction<NbtCompound, ChunkSectionPos, R> loadFromNbt;
-    private final Function<ChunkSectionPos, R> createNew;
+    private final TrackingChunkDecoder<R> loadFromNbt;
+    private final TrackingChunkFactory<R> createNew;
+
+    private final SaveMode saveMode;
 
     private final StorageIoWorker worker;
 
     private final ChunkPillarUnloadTimer timer = new ChunkPillarUnloadTimer(MAX_CHUNK_AGE);
 
     private final Long2ObjectMap<Int2ObjectMap<R>> loadedChunks = new Long2ObjectOpenHashMap<>();
+    private final LongSet unsavedPillars = new LongOpenHashSet();
 
     private boolean closed = false;
 
@@ -54,16 +60,20 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
      *
      * @param world           the server world this storage is associated with.
      * @param path            the path to where region files should be saved.
-     * @param syncChunkWrites whether chunk writes should be written synchronously, corresponding to {@link java.nio.file.StandardOpenOption#DSYNC}.
+     * @param syncChunkWrites whether chunk writes should be written synchronously, corresponding to
+     *                        {@link java.nio.file.StandardOpenOption#DSYNC}.
      * @param loadFromNbt     the function for loading a chunk section from NBT.
      * @param createNew       the function for creating a new, empty chunk section.
+     * @param saveMode
      */
     public UnloadingRegionBasedStorage(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites,
-                                       @NotNull BiFunction<@NotNull NbtCompound, @NotNull ChunkSectionPos, @NotNull R> loadFromNbt,
-                                       @NotNull Function<@NotNull ChunkSectionPos, @NotNull R> createNew) {
+                                       @NotNull TrackingChunkDecoder<@NotNull R> loadFromNbt,
+                                       @NotNull TrackingChunkFactory<@NotNull R> createNew,
+                                       @NotNull SaveMode saveMode) {
         this.world = world;
         this.loadFromNbt = loadFromNbt;
         this.createNew = createNew;
+        this.saveMode = saveMode;
         worker = StorageHelper.newWorker(path, syncChunkWrites, path.getFileName().toString());
     }
 
@@ -80,12 +90,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         worker.close();
     }
 
-    /**
-     * Indicates to this that a world chunk is being loaded and that the corresponding chunk pillar should be loaded
-     * here as well.
-     *
-     * @param pos the position of the world chunk that is being loaded.
-     */
+    @Override
     public void onWorldChunkLoad(@NotNull ChunkPos pos) {
         if (closed) {
             // ignore chunk loads if we're closed
@@ -96,29 +101,20 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         loadChunkPillar(pos);
     }
 
-    /**
-     * Indicates to this that a world chunk is being unloaded and that the corresponding chunk pillar should be
-     * scheduled for unloading here as well.
-     *
-     * @param pos the position of the world chunk that is being unloaded.
-     */
+    @Override
     public void onWorldChunkUnload(@NotNull ChunkPos pos) {
         timer.onWorldChunkUnload(pos);
     }
 
-    /**
-     * Gets a chunk section at the given location or creates one if none existed there already.
-     *
-     * @param pos the position of the chunk section.
-     * @return the retrieved or created chunk section.
-     */
+    @Override
     public @NotNull R getOrCreate(@NotNull ChunkSectionPos pos) {
         ChunkPos chunkPos = pos.toChunkPos();
         timer.onChunkUse(chunkPos);
         long longPos = chunkPos.toLong();
         Int2ObjectMap<R> pillar = loadedChunks.get(longPos);
         if (pillar != null) {
-            return pillar.computeIfAbsent(pos.getY(), (y) -> createNew.apply(pos));
+            return pillar.computeIfAbsent(pos.getY(),
+                (y) -> createNew(pos, chunkPos));
         } else {
             // try and load the pillar
             pillar = new Int2ObjectOpenHashMap<>();
@@ -130,12 +126,12 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
 
                     R section = pillar.get(pos.getY());
                     if (section == null) {
-                        section = createNew.apply(pos);
+                        section = createNew(pos, chunkPos);
                         pillar.put(pos.getY(), section);
                     }
                     return section;
                 } else {
-                    R created = createNew.apply(pos);
+                    R created = createNew(pos, chunkPos);
                     pillar.put(pos.getY(), created);
                     loadedChunks.put(longPos, pillar);
                     return created;
@@ -143,7 +139,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
             } catch (Exception e) {
                 GLLog.error("Error loading chunk pillar {}. Discarding chunk.", chunkPos, e);
 
-                R created = createNew.apply(pos);
+                R created = createNew(pos, chunkPos);
                 pillar.put(pos.getY(), created);
                 loadedChunks.put(longPos, pillar);
                 return created;
@@ -151,14 +147,13 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         }
     }
 
-    /**
-     * Gets a chunk section at the given location or <code>null</code> one does not exist there.
-     *
-     * @param pos the position of the chunk section.
-     * @return the retrieved chunk section, or <code>null</code> if none could be retrieved.
-     */
-    @Nullable
-    public R getIfExists(@NotNull ChunkSectionPos pos) {
+    private @NotNull R createNew(@NotNull ChunkSectionPos pos, ChunkPos chunkPos) {
+        markDirty(chunkPos);
+        return createNew.createNew(pos, () -> markDirty(chunkPos));
+    }
+
+    @Override
+    public @Nullable R getIfExists(@NotNull ChunkSectionPos pos) {
         ChunkPos chunkPos = pos.toChunkPos();
         Int2ObjectMap<R> pillar = loadedChunks.get(chunkPos.toLong());
         if (pillar != null) {
@@ -213,7 +208,8 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
             if (sectionsTag.contains(String.valueOf(sectionY), NbtElement.COMPOUND_TYPE)) {
                 NbtCompound sectionTag = sectionsTag.getCompound(String.valueOf(sectionY));
                 try {
-                    R section = loadFromNbt.apply(sectionTag, ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z));
+                    R section = loadFromNbt.decode(sectionTag, ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z),
+                        () -> markDirty(chunkPos));
                     pillar.put(sectionY, section);
                 } catch (Exception e) {
                     GLLog.error("Error loading chunk {} section {}. Discarding chunk section.", chunkPos, sectionY, e);
@@ -224,33 +220,49 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Auto
         loadedChunks.put(chunkPos.toLong(), pillar);
     }
 
-    /**
-     * Ticks this storage, unloading and saving any chunks that need it.
-     */
+    private void markDirty(ChunkPos pos) {
+        unsavedPillars.add(pos.toLong());
+    }
+
+    @Override
     public void tick() {
         timer.tick();
 
         for (ChunkPos pos : timer.chunksToUnload()) {
-            saveChunk(pos);
+            if (unsavedPillars.contains(pos.toLong())) {
+                saveChunk(pos);
+            }
+            unsavedPillars.remove(pos.toLong());
             loadedChunks.remove(pos.toLong());
             timer.onChunkUnload(pos);
         }
+
+        if (!unsavedPillars.isEmpty() && (saveMode == SaveMode.INCREMENTAL || saveMode == SaveMode.IMMEDIATE)) {
+            int saveCount;
+            if (saveMode == SaveMode.IMMEDIATE) {
+                saveCount = unsavedPillars.size();
+            } else {
+                saveCount = (unsavedPillars.size() + INCREMENTAL_SAVE_FACTOR - 1) / INCREMENTAL_SAVE_FACTOR;
+            }
+
+            LongIterator iter = unsavedPillars.longIterator();
+            while (iter.hasNext() && saveCount > 0) {
+                ChunkPos pos = new ChunkPos(iter.nextLong());
+                saveChunk(pos);
+                iter.remove();
+                saveCount--;
+            }
+        }
     }
 
-    /**
-     * Forcefully saves all chunks, but leaves them loaded.
-     */
+    @Override
     public void saveAll() {
         for (long key : loadedChunks.keySet()) {
             saveChunk(new ChunkPos(key));
         }
     }
 
-    /**
-     * Forcefully saves a specific chunk, but leaves it loaded.
-     *
-     * @param pos the position of the chunk to save.
-     */
+    @Override
     public void saveChunk(@NotNull ChunkPos pos) {
         Int2ObjectMap<R> sections = loadedChunks.get(pos.toLong());
         if (sections != null && !sections.isEmpty()) {

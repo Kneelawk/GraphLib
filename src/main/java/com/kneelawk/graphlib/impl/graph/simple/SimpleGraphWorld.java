@@ -22,6 +22,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterable;
+import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -45,6 +46,7 @@ import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.SidedPos;
+import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.api.world.UnloadingRegionBasedStorage;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
@@ -62,6 +64,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
     private static final int MAX_AGE = 20 * 60;
+    private static final int INCREMENTAL_SAVE_FACTOR = 10;
 
     final SimpleGraphUniverse universe;
 
@@ -75,7 +78,10 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private final Path stateFile;
 
+    private final SaveMode saveMode;
+
     private final Long2ObjectMap<SimpleBlockGraph> loadedGraphs = new Long2ObjectLinkedOpenHashMap<>();
+    private final LongSet unsavedGraphs = new LongOpenHashSet();
 
     private final ObjectSet<BlockPos> nodeUpdates = new ObjectLinkedOpenHashSet<>();
     private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
@@ -86,11 +92,13 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private boolean closed = false;
 
-    public SimpleGraphWorld(SimpleGraphUniverse universe, @NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
+    public SimpleGraphWorld(SimpleGraphUniverse universe, @NotNull ServerWorld world, @NotNull Path path,
+                            boolean syncChunkWrites) {
         this.universe = universe;
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
-            SimpleBlockGraphChunk::new, SimpleBlockGraphChunk::new);
+            SimpleBlockGraphChunk::new, SimpleBlockGraphChunk::new, universe.saveMode);
         this.world = world;
+        this.saveMode = universe.saveMode;
         graphsDir = path.resolve(Constants.GRAPHS_DIRNAME);
         stateFile = path.resolve(Constants.STATE_FILENAME);
         timer = new ChunkSectionUnloadTimer(world.getBottomSectionCoord(), world.getTopSectionCoord(), MAX_AGE);
@@ -137,6 +145,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         handleCallbackUpdates();
 
         unloadGraphs();
+        saveUnsvedGraphs();
     }
 
     @Override
@@ -397,6 +406,15 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     // ---- Internal Methods ---- //
 
     /**
+     * Marks a graph as dirty and in need of saving.
+     *
+     * @param graphId the id of the graph to mark.
+     */
+    void markDirty(long graphId) {
+        unsavedGraphs.add(graphId);
+    }
+
+    /**
      * Creates a new graph and stores it, assigning it an ID.
      *
      * @return the newly-created graph.
@@ -446,6 +464,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             LongSet graphsInPos = chunk.graphsInPos.get(local);
             graphsInPos.remove(id);
             if (graphsInPos.isEmpty()) {
+                chunk.markDirty.run();
                 chunk.graphsInPos.remove(local);
             }
         } else {
@@ -458,6 +477,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
+            chunk.markDirty.run();
             chunk.graphsInChunk.remove(id);
         } else {
             GLLog.warn("Tried to remove graph fom non-existent chunk. Id: {}, chunk: {}", id, sectionPos);
@@ -630,6 +650,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             for (long graphChunk : loadedGraph.chunks) {
                 if (chunkSectionPillar.contains(graphChunk)) {
                     writeGraph(loadedGraph);
+                    unsavedGraphs.remove(loadedGraph.getId());
                     break;
                 }
             }
@@ -657,7 +678,31 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                 // unload the graphs
                 SimpleBlockGraph graph = loadedGraphs.remove(id);
                 writeGraph(graph);
+                unsavedGraphs.remove(id);
             }
+        }
+    }
+
+    private void saveUnsvedGraphs() {
+        if (unsavedGraphs.isEmpty() || !(saveMode == SaveMode.INCREMENTAL || saveMode == SaveMode.IMMEDIATE)) return;
+
+        int saveCount;
+        if (saveMode == SaveMode.IMMEDIATE) {
+            saveCount = unsavedGraphs.size();
+        } else {
+            saveCount = (unsavedGraphs.size() + INCREMENTAL_SAVE_FACTOR - 1) / INCREMENTAL_SAVE_FACTOR;
+        }
+
+        LongIterator iter = unsavedGraphs.longIterator();
+        while (iter.hasNext() && saveCount > 0) {
+            SimpleBlockGraph graph = loadedGraphs.get(iter.nextLong());
+
+            if (graph != null) {
+                writeGraph(graph);
+                saveCount--;
+            }
+
+            iter.remove();
         }
     }
 
@@ -665,6 +710,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         for (SimpleBlockGraph graph : loadedGraphs.values()) {
             writeGraph(graph);
         }
+        unsavedGraphs.clear();
     }
 
     private long getNextGraphId() {
@@ -768,6 +814,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         long id = graph.getId();
 
         loadedGraphs.remove(id);
+        unsavedGraphs.remove(id);
         try {
             Files.deleteIfExists(getGraphFile(id));
         } catch (IOException e) {

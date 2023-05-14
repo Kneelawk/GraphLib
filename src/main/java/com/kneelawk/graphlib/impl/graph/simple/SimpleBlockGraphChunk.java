@@ -20,12 +20,14 @@ import com.kneelawk.graphlib.api.world.StorageChunk;
 
 public class SimpleBlockGraphChunk implements StorageChunk {
     final ChunkSectionPos chunkPos;
+    final Runnable markDirty;
 
     Short2ObjectMap<LongSet> graphsInPos = new Short2ObjectLinkedOpenHashMap<>();
     LongSet graphsInChunk = new LongLinkedOpenHashSet();
 
-    public SimpleBlockGraphChunk(@NotNull NbtCompound nbt, @NotNull ChunkSectionPos chunkPos) {
-        this.chunkPos = chunkPos;
+    public SimpleBlockGraphChunk(@NotNull NbtCompound nbt, @NotNull ChunkSectionPos chunkPos,
+                                 @NotNull Runnable markDirty) {
+        this(chunkPos, markDirty);
 
         NbtList inChunkList = nbt.getList("inChunk", NbtElement.LONG_TYPE);
         for (NbtElement element : inChunkList) {
@@ -48,8 +50,9 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         }
     }
 
-    public SimpleBlockGraphChunk(@NotNull ChunkSectionPos chunkPos) {
+    public SimpleBlockGraphChunk(@NotNull ChunkSectionPos chunkPos, @NotNull Runnable markDirty) {
         this.chunkPos = chunkPos;
+        this.markDirty = markDirty;
     }
 
     @Override
@@ -79,11 +82,13 @@ public class SimpleBlockGraphChunk implements StorageChunk {
     }
 
     public void addGraphInPos(long id, @NotNull BlockPos pos) {
+        markDirty.run();
         graphsInChunk.add(id);
         graphsInPos.computeIfAbsent(ChunkSectionPos.packLocal(pos), s -> new LongLinkedOpenHashSet()).add(id);
     }
 
     public void removeGraph(long id) {
+        markDirty.run();
         graphsInChunk.remove(id);
 
         // Worst possible case here is 4096 iterations.

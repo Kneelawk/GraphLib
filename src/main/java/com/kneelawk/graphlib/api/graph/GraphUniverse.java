@@ -14,6 +14,7 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
 /**
@@ -34,6 +35,13 @@ public interface GraphUniverse {
      * @return this universe's unique id.
      */
     @NotNull Identifier getId();
+
+    /**
+     * Gets the save-mode this universe was built with.
+     *
+     * @return the save-mode this universe was built with.
+     */
+    @NotNull SaveMode getSaveMode();
 
     /**
      * Adds a {@link BlockNodeDiscoverer} to this graph universe.
@@ -123,5 +131,15 @@ public interface GraphUniverse {
          * @return the newly created {@link GraphUniverse}.
          */
         @NotNull GraphUniverse build(@NotNull Identifier universeId);
+
+        /**
+         * Determines how often graphs and chunks should be saved.
+         * <p>
+         * By default, this is {@link SaveMode#UNLOAD}.
+         *
+         * @param saveMode the save mode for this universe.
+         * @return this builder for call chaining.
+         */
+        @NotNull Builder saveMode(@NotNull SaveMode saveMode);
     }
 }

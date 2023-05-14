@@ -97,6 +97,10 @@ public class SimpleBlockGraph implements BlockGraph {
 
     public SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id) {
         this(controller, id, LongSet.of());
+
+        // When newly-creating a graph, mark it dirty, so it'll get saved.
+        // If this is a throw-away graph, it should get absorbed and deleted before the next tick.
+        this.controller.markDirty(id);
     }
 
     private SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id, @NotNull LongSet chunks) {
@@ -249,6 +253,7 @@ public class SimpleBlockGraph implements BlockGraph {
         chunks.clear();
         nodesInPos.clear();
         nodeTypeCache.clear();
+        controller.markDirty(id);
         for (var node : graph) {
             SimpleNodeWrapper data = node.data();
             data.graphId = id;
@@ -267,6 +272,7 @@ public class SimpleBlockGraph implements BlockGraph {
         nodeTypeCache.clear();
         controller.addGraphInPos(id, pos);
         controller.scheduleCallbackUpdate(graphNode);
+        controller.markDirty(id);
         return graphNode;
     }
 
@@ -277,6 +283,7 @@ public class SimpleBlockGraph implements BlockGraph {
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node);
         nodeTypeCache.clear();
+        controller.markDirty(id);
 
         // schedule updates for each of the node's connected nodes
         for (Link<SimpleNodeWrapper> link : node.node.connections()) {
@@ -326,12 +333,14 @@ public class SimpleBlockGraph implements BlockGraph {
         graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
+        controller.markDirty(id);
     }
 
     void unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
         graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
+        controller.markDirty(id);
     }
 
     void merge(@NotNull SimpleBlockGraph other) {
@@ -352,6 +361,7 @@ public class SimpleBlockGraph implements BlockGraph {
         nodesInPos.putAll(other.nodesInPos);
         chunks.addAll(other.chunks);
         nodeTypeCache.clear();
+        controller.markDirty(id);
 
         // finally we destroy the old graph, removing it from all the graphs-in-pos and graphs-in-chunk trackers
         controller.destroyGraph(other.id);
@@ -387,6 +397,7 @@ public class SimpleBlockGraph implements BlockGraph {
             controller.removeGraphInPoses(id, removedPoses, removedChunks);
             chunks.removeAll(removedChunks);
             nodeTypeCache.clear();
+            controller.markDirty(id);
 
             // setup block-graphs for the newly created graphs
             List<SimpleBlockGraph> newBlockGraphs = new ArrayList<>(newGraphs.size());

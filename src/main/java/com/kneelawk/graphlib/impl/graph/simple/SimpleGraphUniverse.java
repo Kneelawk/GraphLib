@@ -24,6 +24,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
@@ -31,13 +32,13 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Identifier id;
-    private final List<BlockNodeDiscoverer> discoverers;
-    private final Map<Identifier, BlockNodeDecoder> decoders;
+    private final List<BlockNodeDiscoverer> discoverers = new ArrayList<>();
+    private final Map<Identifier, BlockNodeDecoder> decoders = new LinkedHashMap<>();
+    final SaveMode saveMode;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
         this.id = universeId;
-        this.discoverers = new ArrayList<>(builder.discoverers);
-        this.decoders = new LinkedHashMap<>(builder.decoders);
+        saveMode = builder.saveMode;
     }
 
     @Override
@@ -48,6 +49,11 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     @Override
     public @NotNull Identifier getId() {
         return id;
+    }
+
+    @Override
+    public @NotNull SaveMode getSaveMode() {
+        return saveMode;
     }
 
     @Override
