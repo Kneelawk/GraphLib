@@ -7,8 +7,9 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 /**
- * Describes
- * @param <R>
+ * Describes something that can store chunk-sections worth of data.
+ *
+ * @param <R> the type of chunk-section data to be stored.
  */
 public interface RegionBasedStorage<R extends StorageChunk> extends AutoCloseable {
     /**
