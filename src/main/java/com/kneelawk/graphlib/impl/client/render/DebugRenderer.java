@@ -165,7 +165,7 @@ public final class DebugRenderer {
         RenderSystem.enableBlend();
         framebuffer.draw(window.getFramebufferWidth(), window.getFramebufferHeight(), false);
         RenderSystem.disableBlend();
-        RenderSystem.setProjectionMatrix(projBackup);
+        RenderSystem.setProjectionMatrix(projBackup, RenderSystem.getVertexSorting());
     }
 
     private static void renderGraphs(MatrixStack stack) {

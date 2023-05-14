@@ -93,7 +93,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = otherNode.getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromVector(posDiff);
+        Direction posDiffDir = Direction.method_50026(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (other instanceof SidedWireBlockNode otherSidedNode) {
             Direction otherSide = otherSidedNode.getSide();
@@ -115,7 +115,8 @@ public final class WireConnectionDiscoverers {
             // finally check the corner connections
             BlockPos under = pos.offset(side);
             BlockPos underPosDiff = otherPos.subtract(under);
-            Direction underPosDiffDir = Direction.fromVector(underPosDiff);
+            Direction underPosDiffDir =
+                Direction.method_50026(underPosDiff.getX(), underPosDiff.getY(), underPosDiff.getZ());
 
             if (underPosDiffDir != null) {
                 return !underPosDiffDir.getAxis().equals(side.getAxis()) &&
@@ -187,7 +188,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = otherNode.getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromVector(posDiff);
+        Direction posDiffDir = Direction.method_50026(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (posDiffDir == null) {
             return false;
@@ -217,11 +218,12 @@ public final class WireConnectionDiscoverers {
      * @param filter    a general connection filter, used to filter connections.
      * @return a collection of nodes this node can connect to.
      */
-    public static @NotNull Collection<NodeHolder<BlockNode>> centerWireFindConnections(@NotNull CenterWireBlockNode self,
-                                                                                  @NotNull NodeHolder<BlockNode> selfNode,
-                                                                                  @NotNull ServerWorld world,
-                                                                                  @NotNull GraphView graphView,
-                                                                                  @Nullable CenterWireConnectionFilter filter) {
+    public static @NotNull Collection<NodeHolder<BlockNode>> centerWireFindConnections(
+        @NotNull CenterWireBlockNode self,
+        @NotNull NodeHolder<BlockNode> selfNode,
+        @NotNull ServerWorld world,
+        @NotNull GraphView graphView,
+        @Nullable CenterWireConnectionFilter filter) {
         BlockPos pos = selfNode.getPos();
         List<NodeHolder<BlockNode>> collector = new ArrayList<>();
 
@@ -249,7 +251,8 @@ public final class WireConnectionDiscoverers {
      * @param filter    a general connection filter, used to filter connections.
      * @return <code>true</code> if this node can connect to the given node.
      */
-    public static boolean centerWireCanConnect(@NotNull CenterWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
+    public static boolean centerWireCanConnect(@NotNull CenterWireBlockNode self,
+                                               @NotNull NodeHolder<BlockNode> selfNode,
                                                @NotNull ServerWorld world,
                                                @NotNull NodeHolder<BlockNode> otherNode,
                                                @Nullable CenterWireConnectionFilter filter) {
@@ -258,7 +261,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = otherNode.getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromVector(posDiff);
+        Direction posDiffDir = Direction.method_50026(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (other instanceof CenterWireBlockNode || other instanceof FullWireBlockNode) {
             return posDiffDir != null &&

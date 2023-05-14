@@ -75,7 +75,7 @@ public final class GraphLibCommonNetworking {
     public static void startDebuggingPlayer(ServerPlayerEntity player, GraphUniverse universe) {
         sendIdMap(player);
         debuggingPlayers.put(player.getUuid(), universe.getId());
-        ServerWorld world = player.getWorld();
+        ServerWorld world = (ServerWorld) player.getWorld();
 
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(getIdentifierInt(world, universe.getId()));
@@ -117,7 +117,7 @@ public final class GraphLibCommonNetworking {
 
     public static void stopDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt(player.getWorld(), universe));
+        buf.writeVarInt(getIdentifierInt((ServerWorld) player.getWorld(), universe));
 
         ServerPlayNetworking.send(player, DEBUGGING_STOP_ID, buf);
 
