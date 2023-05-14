@@ -27,7 +27,7 @@ public final class GraphLibImpl {
         RegistryKey.ofRegistry(UNIVERSE_IDENTIFIER);
 
     public static final Registry<GraphUniverseImpl> UNIVERSE =
-        new SimpleRegistry<>(UNIVERSE_KEY, Lifecycle.experimental(), false);
+        new SimpleRegistry<>(UNIVERSE_KEY, Lifecycle.stable(), false);
 
     @SuppressWarnings("unchecked")
     static void register() {
