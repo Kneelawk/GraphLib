@@ -6,13 +6,14 @@ import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.NodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.util.graph.Link;
 
 public class SimpleNodeConnection implements NodeConnection {
-    private final Link<SimpleNodeWrapper> link;
+    private final Link<NodeKey, SimpleNodeWrapper> link;
 
-    public SimpleNodeConnection(Link<SimpleNodeWrapper> link) {
+    public SimpleNodeConnection(Link<NodeKey, SimpleNodeWrapper> link) {
         this.link = link;
     }
 

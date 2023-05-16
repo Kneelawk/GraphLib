@@ -4,6 +4,8 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
+import com.kneelawk.graphlib.api.node.UniqueData;
+
 /**
  * Holds all comparable information about a block-node.
  * <p>
@@ -12,14 +14,14 @@ import net.minecraft.util.math.BlockPos;
  * @param pos        the block position of the node.
  * @param uniqueData any extra data a node wishes to use to make itself unique.
  */
-public record NodeKey(@NotNull BlockPos pos, @NotNull Object uniqueData) {
+public record NodeKey(@NotNull BlockPos pos, @NotNull UniqueData uniqueData) {
     /**
      * Creates a NodeKey.
      *
      * @param pos        the block-position of the node. Note, this is made immutable.
      * @param uniqueData the unique data associated with this node.
      */
-    public NodeKey(@NotNull BlockPos pos, Object uniqueData) {
+    public NodeKey(@NotNull BlockPos pos, UniqueData uniqueData) {
         this.pos = pos.toImmutable();
         this.uniqueData = uniqueData;
     }

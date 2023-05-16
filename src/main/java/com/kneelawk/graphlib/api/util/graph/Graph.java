@@ -6,17 +6,18 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.google.errorprone.annotations.CompatibleWith;
+
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectSortedMap;
 
 // Translated from 2xsaiko's HCTM-Base Graph code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt
@@ -57,11 +58,21 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      *
      * @param key the key of the node to remove.
      */
-    public void remove(@NotNull K key) {
+    public void remove(@NotNull @CompatibleWith("K") Object key) {
         if (nodes.containsKey(key)) {
             nodes.remove(key);
             nodes.values().forEach(n -> n.nodeRemoved(key));
         }
+    }
+
+    /**
+     * Gets the node in this graph with the given key.
+     *
+     * @param key the key of the node to get.
+     * @return the node with the given key.
+     */
+    public @Nullable Node<K, V> get(@NotNull @CompatibleWith("K") Object key) {
+        return nodes.get(key);
     }
 
     /**
@@ -107,7 +118,8 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
         return result;
     }
 
-    private void descend(@NotNull Map<K, Node<K, V>> connected, @NotNull Map<K, Node<K, V>> toBeChecked, @NotNull K key) {
+    private void descend(@NotNull Map<K, Node<K, V>> connected, @NotNull Map<K, Node<K, V>> toBeChecked,
+                         @NotNull K key) {
         Node<K, V> firstNode = toBeChecked.get(key);
         Deque<Node<K, V>> stack = new ArrayDeque<>();
         stack.push(firstNode);
@@ -181,7 +193,7 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      * @param nodeKey the key to check.
      * @return whether this graph contains the given node.
      */
-    public boolean containsKey(@NotNull K nodeKey) {
+    public boolean containsKey(@NotNull @CompatibleWith("K") Object nodeKey) {
         return nodes.containsKey(nodeKey);
     }
 
@@ -191,11 +203,9 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      * @param keys the keys to check to see if this graph contains.
      * @return whether this graph contains all the given nodes.
      */
-    @SafeVarargs
-    public final boolean containsKeys(@NotNull K... keys) {
-        for (K node : keys) {
-            if (!containsKey(node))
-                return false;
+    public boolean containsKeys(@NotNull @CompatibleWith("K") Object... keys) {
+        for (Object node : keys) {
+            if (!containsKey(node)) return false;
         }
         return true;
     }

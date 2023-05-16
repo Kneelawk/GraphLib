@@ -46,6 +46,7 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -227,7 +228,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     @Override
     public @Nullable NodeHolder<BlockNode> getNode(NodeKey key) {
-        return getGraphsAt(key.pos()).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> Stream.ofNullable(g.getNode(key))).findFirst().orElse(null);
+        // FIXME: I need to cache which graphs have what keys so I can look up graphs by key
+        return getGraphsAt(key.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
+            .flatMap(g -> Stream.ofNullable(g.getNode(key))).findFirst().orElse(null);
     }
 
     /**
@@ -512,7 +515,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private void handleNodeUpdates() {
         for (BlockPos pos : nodeUpdates) {
-            Set<BlockNode> nodes = universe.discoverNodesInBlock(world, pos);
+            Set<BlockNodeDiscoverer.Discovery> nodes = universe.discoverNodesInBlock(world, pos);
             onNodesChanged(pos, nodes);
         }
         nodeUpdates.clear();
@@ -553,9 +556,10 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     // ---- Private Methods ---- //
 
-    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNode> nodes) {
-        Set<BlockNode> newNodes = new LinkedHashSet<>(nodes);
+    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNodeDiscoverer.Discovery> nodes) {
+        Set<BlockNodeDiscoverer.Discovery> newNodes = new LinkedHashSet<>(nodes);
 
+        // FIXME: clean this up to use node-key lookups
         for (long graphId : getGraphsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
             if (graph == null) {

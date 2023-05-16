@@ -11,8 +11,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
 
 public interface GraphUniverseImpl extends GraphUniverse {
     @Override
@@ -20,7 +20,7 @@ public interface GraphUniverseImpl extends GraphUniverse {
 
     GraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites);
 
-    @NotNull Set<BlockNode> discoverNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
+    @NotNull Set<BlockNodeDiscoverer.Discovery> discoverNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
 
     @Nullable BlockNodeDecoder getDecoder(@NotNull Identifier typeId);
 }

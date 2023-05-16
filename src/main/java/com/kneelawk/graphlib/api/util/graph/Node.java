@@ -3,6 +3,8 @@ package com.kneelawk.graphlib.api.util.graph;
 import java.util.Collection;
 import java.util.Objects;
 
+import com.google.errorprone.annotations.CompatibleWith;
+
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -74,7 +76,7 @@ public final class Node<K, V> {
      *
      * @param otherKey the key of the other node removed from the graph.
      */
-    void nodeRemoved(@NotNull K otherKey) {
+    void nodeRemoved(@NotNull @CompatibleWith("K") Object otherKey) {
         connections.remove(otherKey);
     }
 

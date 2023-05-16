@@ -9,35 +9,36 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.NodeKey;
 import com.kneelawk.graphlib.api.graph.PositionedNode;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
-    final Node<SimpleNodeWrapper> node;
+    final Node<NodeKey, SimpleNodeWrapper> node;
 
     /**
      * @param node treat this as if it were parameterized on <code>&lt;T&gt;</code>.
      */
-    public SimpleNodeHolder(Node<SimpleNodeWrapper> node) {
+    public SimpleNodeHolder(Node<NodeKey, SimpleNodeWrapper> node) {
         this.node = node;
     }
 
     @Override
     public @NotNull BlockPos getPos() {
-        return node.key().getPos();
+        return node.value().getPos();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public @NotNull T getNode() {
-        return (T) node.key().getNode();
+        return (T) node.value().getNode();
     }
 
     @Override
     public long getGraphId() {
-        return node.key().getGraphId();
+        return node.value().getGraphId();
     }
 
     @Override
@@ -48,18 +49,18 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     @Override
     @SuppressWarnings("unchecked")
     public @NotNull PositionedNode<T> toPositionedNode() {
-        return new PositionedNode<>(node.key().getPos(), (T) node.key().getNode(), node.key().getGraphId());
+        return new PositionedNode<>(node.value().getPos(), (T) node.value().getNode(), node.value().getGraphId());
     }
 
     @Override
     public boolean canCast(Class<?> newType) {
-        return newType.isInstance(node.key().getNode());
+        return newType.isInstance(node.value().getNode());
     }
 
     @Override
     public <R extends BlockNode> NodeHolder<R> cast(Class<R> newType) throws ClassCastException {
         if (!canCast(newType))
-            throw new ClassCastException(node.key().getNode().getClass() + " cannot be cast to " + newType);
+            throw new ClassCastException(node.value().getNode().getClass() + " cannot be cast to " + newType);
         return new SimpleNodeHolder<>(node);
     }
 
