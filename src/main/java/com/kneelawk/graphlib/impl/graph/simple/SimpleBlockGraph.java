@@ -31,6 +31,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.NodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -60,9 +61,10 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
 
-        List<@Nullable Node<SimpleNodeWrapper>> nodes = new ArrayList<>();
+        List<@Nullable Node<NodeKey, BlockNode>> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
+            // FIXME: figure out what to do with these
             SimpleNodeWrapper node = SimpleNodeWrapper.fromTag(controller.universe, (NbtCompound) nodeElement, id);
             if (node != null) {
                 nodes.add(graph.createNode(node.getPos(), node.getNode()).node);
@@ -90,7 +92,7 @@ public class SimpleBlockGraph implements BlockGraph {
     final SimpleGraphWorld controller;
     private final long id;
 
-    private final Graph<SimpleNodeWrapper> graph = new Graph<>();
+    private final Graph<NodeKey, BlockNode> graph = new Graph<>();
     private final Multimap<BlockPos, SimpleNodeHolder<BlockNode>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
     private final Map<Class<?>, List<?>> nodeTypeCache = new HashMap<>();
@@ -191,6 +193,17 @@ public class SimpleBlockGraph implements BlockGraph {
         return nodesInPos.get(pos.pos()).stream()
             .filter(node -> node.getNode() instanceof SidedBlockNode sidedNode &&
                 sidedNode.getSide() == pos.side()).map(node -> node.cast(SidedBlockNode.class));
+    }
+
+    /**
+     * Gets the node with the given key, if it exists.
+     *
+     * @param key the key to look for the node by.
+     * @return a node holder holding the node with the given key.
+     */
+    @Override
+    public @Nullable NodeHolder<BlockNode> getNode(NodeKey key) {
+        return ;
     }
 
     /**
@@ -413,7 +426,7 @@ public class SimpleBlockGraph implements BlockGraph {
                 // add the new graph to the graphs-in-chunks and graphs-in-poses trackers
                 for (var node : bg.graph) {
                     // I considered trying to group block-poses by chunk to avoid duplicate look-ups, but it didn't look
-                    // like it was worth the extra computation.
+                    // like it was worth the uniqueData computation.
                     controller.addGraphInPos(bg.id, node.data().getPos());
                 }
 

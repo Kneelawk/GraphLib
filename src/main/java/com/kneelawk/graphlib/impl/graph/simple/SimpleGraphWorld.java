@@ -27,6 +27,8 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -42,6 +44,7 @@ import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.NodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
@@ -85,7 +88,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private final ObjectSet<BlockPos> nodeUpdates = new ObjectLinkedOpenHashSet<>();
     private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
-    private final ObjectSet<NodeHolder<BlockNode>> callbackUpdates = new ObjectLinkedOpenHashSet<>();
+    private final Object2ObjectMap<NodeKey, NodeHolder<BlockNode>> callbackUpdates =
+        new Object2ObjectLinkedOpenHashMap<>();
 
     private boolean stateDirty = false;
     private long prevGraphId = -1L;
@@ -213,6 +217,17 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     @Override
     public @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos) {
         return getGraphsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
+    }
+
+    /**
+     * Gets the node with the given key, if it exists.
+     *
+     * @param key the key to look for the node by.
+     * @return a node holder holding the node with the given key.
+     */
+    @Override
+    public @Nullable NodeHolder<BlockNode> getNode(NodeKey key) {
+        return getGraphsAt(key.pos()).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> Stream.ofNullable(g.getNode(key))).findFirst().orElse(null);
     }
 
     /**
@@ -526,12 +541,12 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             return;
         }
 
-        callbackUpdates.add(node);
+        callbackUpdates.put(node.toNodeKey(), node);
     }
 
     private void handleCallbackUpdates() {
-        for (var node : callbackUpdates) {
-            node.getNode().onConnectionsChanged(node, world, this);
+        for (var entry : callbackUpdates.entrySet()) {
+            entry.getValue().getNode().onConnectionsChanged(entry.getValue(), world, this);
         }
         callbackUpdates.clear();
     }

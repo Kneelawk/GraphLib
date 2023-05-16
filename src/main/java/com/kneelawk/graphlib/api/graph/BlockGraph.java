@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.api.graph;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -37,6 +38,14 @@ public interface BlockGraph {
      * @return a stream of all the nodes in this graph in the given sided block-position.
      */
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
+
+    /**
+     * Gets the node with the given key, if it exists.
+     *
+     * @param key the key to look for the node by.
+     * @return a node holder holding the node with the given key.
+     */
+    @Nullable NodeHolder<BlockNode> getNode(NodeKey key);
 
     /**
      * Gets all the nodes in this graph.

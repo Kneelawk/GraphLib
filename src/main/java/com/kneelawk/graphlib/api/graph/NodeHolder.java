@@ -53,6 +53,16 @@ public interface NodeHolder<T extends BlockNode> {
     @NotNull PositionedNode<T> toPositionedNode();
 
     /**
+     * Gets an immutable, unique, comparable view of this node holder's position and data that can be used to look up
+     * this node-holder.
+     *
+     * @return this holder's key.
+     */
+    default @NotNull NodeKey toNodeKey() {
+        return new NodeKey(getPos(), getNode().getUniqueData());
+    }
+
+    /**
      * Checks whether the contained node can be cast to the new type.
      * <p>
      * Tool to get around Java's broken type-variance system.

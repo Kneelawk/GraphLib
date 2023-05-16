@@ -26,18 +26,18 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
 
     @Override
     public @NotNull BlockPos getPos() {
-        return node.data().getPos();
+        return node.key().getPos();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public @NotNull T getNode() {
-        return (T) node.data().getNode();
+        return (T) node.key().getNode();
     }
 
     @Override
     public long getGraphId() {
-        return node.data().getGraphId();
+        return node.key().getGraphId();
     }
 
     @Override
@@ -48,18 +48,18 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     @Override
     @SuppressWarnings("unchecked")
     public @NotNull PositionedNode<T> toPositionedNode() {
-        return new PositionedNode<>(node.data().getPos(), (T) node.data().getNode(), node.data().getGraphId());
+        return new PositionedNode<>(node.key().getPos(), (T) node.key().getNode(), node.key().getGraphId());
     }
 
     @Override
     public boolean canCast(Class<?> newType) {
-        return newType.isInstance(node.data().getNode());
+        return newType.isInstance(node.key().getNode());
     }
 
     @Override
     public <R extends BlockNode> NodeHolder<R> cast(Class<R> newType) throws ClassCastException {
         if (!canCast(newType))
-            throw new ClassCastException(node.data().getNode().getClass() + " cannot be cast to " + newType);
+            throw new ClassCastException(node.key().getNode().getClass() + " cannot be cast to " + newType);
         return new SimpleNodeHolder<>(node);
     }
 

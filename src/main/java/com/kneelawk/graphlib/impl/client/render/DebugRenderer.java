@@ -238,8 +238,8 @@ public final class DebugRenderer {
 
                     Vec3d endpointA = endpoints.get(nodeA);
                     Vec3d endpointB = endpoints.get(nodeB);
-                    BlockPos posA = nodeA.data().pos();
-                    BlockPos posB = nodeB.data().pos();
+                    BlockPos posA = nodeA.key().pos();
+                    BlockPos posB = nodeB.key().pos();
 
                     RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
                         (float) (posA.getY() + endpointA.y),

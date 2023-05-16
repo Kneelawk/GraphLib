@@ -111,27 +111,16 @@ public interface BlockNode {
                               @NotNull GraphView graphView);
 
     /**
-     * Block nodes are compared based on their hash-code and equals functions.
+     * Gets the data unique to this block-node.
      * <p>
-     * Block nodes must always implement consistent hash-code and equals functions, as this allows the block graph
-     * controller to be able to correctly evaluate if nodes need to be removed or added at a given position.
-     *
-     * @return the hash-code of this block node's data.
-     */
-    @Override
-    int hashCode();
-
-    /**
-     * Block nodes are compared based on their hash-code and equals functions.
+     * The returned objects must implement consistent hash-code and equals functions, as this allows the graph-world to
+     * correctly evaluate if nodes need to be removed or added at a given position.
      * <p>
-     * Block nodes must always implement consistent hash-code and equals functions, as this allows the block graph
-     * controller to be able to correctly evaluate if nodes need to be removed or added at a given position.
+     * Often you will just want to return your {@link #getTypeId()} here.
      *
-     * @param o the other node to compare this node to.
-     * @return <code>true</code> if these two nodes hold the same data, <code>false</code> otherwise.
+     * @return this block-node's unique data.
      */
-    @Override
-    boolean equals(@Nullable Object o);
+    @NotNull Object getUniqueData();
 
     /**
      * Encodes this block node to a {@link PacketByteBuf} to be sent to the client for client-side graph debug

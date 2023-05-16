@@ -34,6 +34,8 @@ public interface GraphView {
      */
     @NotNull Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos);
 
+
+
     /**
      * Gets the nodes in the given sided block-position.
      *
@@ -41,6 +43,14 @@ public interface GraphView {
      * @return a stream of all the nodes in the given sided block-position.
      */
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
+
+    /**
+     * Gets the node with the given key, if it exists.
+     *
+     * @param key the key to look for the node by.
+     * @return a node holder holding the node with the given key.
+     */
+    @Nullable NodeHolder<BlockNode> getNode(NodeKey key);
 
     /**
      * Gets the IDs of all graphs with nodes in the given block-position.

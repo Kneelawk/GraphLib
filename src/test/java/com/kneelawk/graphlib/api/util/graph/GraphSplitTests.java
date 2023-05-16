@@ -7,28 +7,30 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class GraphSplitTests {
+    private static final Object PRESENT = new Object();
+
     @Test
     public void simpleSplitTest() {
-        Graph<String> graph = new Graph<>();
+        Graph<String, Object> graph = new Graph<>();
 
-        var a = graph.add("A");
-        var b = graph.add("B");
+        var a = graph.add("A", PRESENT);
+        var b = graph.add("B", PRESENT);
         graph.link(a, b);
 
-        var c = graph.add("C");
+        graph.add("C", PRESENT);
 
         var newGraphs = graph.split();
 
         assertEquals("There should be one new graph.", 1, newGraphs.size());
 
-        Graph<String> newGraph = newGraphs.get(0);
+        Graph<String, Object> newGraph = newGraphs.get(0);
 
         assertTrue("Either the new graph or the old graph should contain C.",
-            newGraph.contains(c) || graph.contains(c));
+            newGraph.containsKey("C") || graph.containsKey("C"));
         assertTrue("Either the new graph or the old graph should contain both A and B.",
-            newGraph.contains(a, b) || graph.contains(a, b));
+            newGraph.containsKeys("A", "B") || graph.containsKeys("A", "B"));
 
-        assertFalse("The same graph should not contain both A and C.", newGraph.contains(a, c) || graph.contains(a, c));
+        assertFalse("The same graph should not contain both A and C.", newGraph.containsKeys("A", "C") || graph.containsKeys("A", "C"));
     }
 
     @Test
