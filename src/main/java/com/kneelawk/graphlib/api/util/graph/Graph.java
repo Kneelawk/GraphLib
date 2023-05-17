@@ -58,7 +58,7 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      *
      * @param key the key of the node to remove.
      */
-    public void remove(@NotNull @CompatibleWith("K") Object key) {
+    public void remove(@NotNull K key) {
         if (nodes.containsKey(key)) {
             nodes.remove(key);
             nodes.values().forEach(n -> n.nodeRemoved(key));
@@ -71,7 +71,7 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      * @param key the key of the node to get.
      * @return the node with the given key.
      */
-    public @Nullable Node<K, V> get(@NotNull @CompatibleWith("K") Object key) {
+    public @Nullable Node<K, V> get(@NotNull K key) {
         return nodes.get(key);
     }
 
@@ -121,20 +121,20 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
     private void descend(@NotNull Map<K, Node<K, V>> connected, @NotNull Map<K, Node<K, V>> toBeChecked,
                          @NotNull K key) {
         Node<K, V> firstNode = toBeChecked.get(key);
-        Deque<Node<K, V>> stack = new ArrayDeque<>();
-        stack.push(firstNode);
+        Deque<K> stack = new ArrayDeque<>();
+        stack.push(key);
 
         connected.put(key, firstNode);
         toBeChecked.remove(key);
 
         while (!stack.isEmpty()) {
-            Node<K, V> cur = stack.pop();
+            K cur = stack.pop();
 
-            for (Link<K, V> link : cur.connections()) {
+            for (Link<K, V> link : connected.get(cur).connections().values()) {
                 Node<K, V> a = link.other(cur);
 
                 if (toBeChecked.containsKey(a.key())) {
-                    stack.push(a);
+                    stack.push(a.key());
                     connected.put(a.key(), a);
                     toBeChecked.remove(a.key());
                 }
@@ -162,11 +162,17 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
     /**
      * Links two nodes.
      *
-     * @param a the first node to link.
-     * @param b the second node to link.
+     * @param aKey the key of the first node to link.
+     * @param bKey the key of the second node to link.
      * @return the link between the two nodes.
      */
-    public @NotNull Link<K, V> link(@NotNull Node<K, V> a, @NotNull Node<K, V> b) {
+    public @Nullable Link<K, V> link(@NotNull K aKey, @NotNull K bKey) {
+        Node<K, V> a = nodes.get(aKey);
+        if (a == null) return null;
+
+        Node<K, V> b = nodes.get(bKey);
+        if (b == null) return null;
+
         Link<K, V> link = new Link<>(a, b);
         a.addLink(link);
         b.addLink(link);
@@ -178,13 +184,21 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      * <p>
      * Note: links are stored by opposite-node, so node order is not an issue.
      *
-     * @param a the first node to unlink.
-     * @param b the second node to unlink.
+     * @param aKey the key of the first node to unlink.
+     * @param bKey the key of the second node to unlink.
      */
-    public void unlink(@NotNull Node<K, V> a, @NotNull Node<K, V> b) {
-        Link<K, V> link1 = new Link<>(a, b);
-        a.removeLink(link1);
-        b.removeLink(link1);
+    public @Nullable Link<K, V> unlink(@NotNull K aKey, @NotNull K bKey) {
+        Node<K, V> a = nodes.get(aKey);
+        if (a == null) return null;
+
+        Node<K, V> b = nodes.get(bKey);
+        if (b == null) return null;
+
+        Link<K, V> aLink = a.removeLink(bKey);
+        Link<K, V> bLink = b.removeLink(aKey);
+
+        assert aLink == bLink;
+        return aLink;
     }
 
     /**

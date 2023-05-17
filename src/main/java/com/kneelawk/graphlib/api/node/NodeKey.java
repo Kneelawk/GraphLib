@@ -1,10 +1,8 @@
-package com.kneelawk.graphlib.api.graph;
+package com.kneelawk.graphlib.api.node;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
-
-import com.kneelawk.graphlib.api.node.UniqueData;
 
 /**
  * Holds all comparable information about a block-node.

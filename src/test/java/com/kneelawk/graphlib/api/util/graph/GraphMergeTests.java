@@ -16,7 +16,7 @@ public class GraphMergeTests {
         graphA.add("A", PRESENT);
         var b = graphB.add("B", PRESENT);
         var c = graphB.add("C", PRESENT);
-        var link = graphB.link(b, c);
+        graphB.link("B", "C");
 
         graphA.join(graphB);
 
@@ -25,6 +25,6 @@ public class GraphMergeTests {
 
         assertTrue("Graph A should contain A, B, and C.",
             graphA.containsKey("A") && graphA.containsKey("B") && graphA.containsKey("C"));
-        assertTrue("B and C should stay linked.", b.connections().contains(link) && c.connections().contains(link));
+        assertTrue("B and C should stay linked.", b.connections().containsKey("C") && c.connections().containsKey("B"));
     }
 }

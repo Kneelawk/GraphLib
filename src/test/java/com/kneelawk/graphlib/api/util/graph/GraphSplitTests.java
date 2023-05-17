@@ -13,9 +13,9 @@ public class GraphSplitTests {
     public void simpleSplitTest() {
         Graph<String, Object> graph = new Graph<>();
 
-        var a = graph.add("A", PRESENT);
-        var b = graph.add("B", PRESENT);
-        graph.link(a, b);
+        graph.add("A", PRESENT);
+        graph.add("B", PRESENT);
+        graph.link("A", "B");
 
         graph.add("C", PRESENT);
 
@@ -39,11 +39,11 @@ public class GraphSplitTests {
 
         Graph<String, Object> graph = new Graph<>();
 
-        var a = graph.add("A", PRESENT);
-        var b = graph.add("B", PRESENT);
-        graph.link(a, b);
+        graph.add("A", PRESENT);
+        graph.add("B", PRESENT);
+        graph.link("A", "B");
 
-        var c = graph.add("C", PRESENT);
+        graph.add("C", PRESENT);
 
         var newGraphs = graph.split();
 
@@ -59,15 +59,15 @@ public class GraphSplitTests {
     public void splitSizePreferenceTest2() {
         Graph<String, Object> graph = new Graph<>();
 
-        var a = graph.add("A", PRESENT);
-        var b = graph.add("B", PRESENT);
-        graph.link(a, b);
+        graph.add("A", PRESENT);
+        graph.add("B", PRESENT);
+        graph.link("A", "B");
 
-        var c = graph.add("C", PRESENT);
-        var d = graph.add("D", PRESENT);
-        var e = graph.add("E", PRESENT);
-        graph.link(c, d);
-        graph.link(d, e);
+        graph.add("C", PRESENT);
+        graph.add("D", PRESENT);
+        graph.add("E", PRESENT);
+        graph.link("C", "D");
+        graph.link("D", "E");
 
         var newGraphs = graph.split();
 

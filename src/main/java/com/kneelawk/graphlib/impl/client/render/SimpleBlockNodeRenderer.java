@@ -11,7 +11,7 @@ import net.minecraft.util.math.Vec3d;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
 import com.kneelawk.graphlib.api.client.render.RenderUtils;
-import com.kneelawk.graphlib.api.graph.ClientNodeKey;
+import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;

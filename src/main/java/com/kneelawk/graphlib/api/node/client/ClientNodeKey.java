@@ -1,10 +1,10 @@
-package com.kneelawk.graphlib.api.graph;
+package com.kneelawk.graphlib.api.node.client;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.node.client.ClientUniqueData;
+import com.kneelawk.graphlib.api.node.NodeKey;
 
 /**
  * Client version of {@link NodeKey}.

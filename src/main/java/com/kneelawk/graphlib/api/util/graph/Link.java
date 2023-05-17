@@ -2,6 +2,8 @@ package com.kneelawk.graphlib.api.util.graph;
 
 import java.util.Objects;
 
+import com.google.errorprone.annotations.CompatibleWith;
+
 import org.jetbrains.annotations.NotNull;
 
 // Translated from 2xsaiko's HCTM-Base Graph code:
@@ -17,26 +19,34 @@ import org.jetbrains.annotations.NotNull;
  */
 public record Link<K, V>(@NotNull Node<K, V> first, @NotNull Node<K, V> second) {
     /**
-     * Checks to see if the given node is either of the two nodes in this link.
+     * Checks to see if the given node key is for either of the two nodes in this link.
      *
-     * @param node the node to check.
-     * @return <code>true</code> if the given node is either of the nodes in this link.
+     * @param key the key to check.
+     * @return <code>true</code> if the given node key is for either of the nodes in this link.
      */
-    public boolean contains(@NotNull Node<K, V> node) {
-        return Objects.equals(first, node) || Objects.equals(second, node);
+    public boolean contains(@NotNull K key) {
+        return Objects.equals(first.key(), key) || Objects.equals(second.key(), key);
     }
 
     /**
-     * Gets the node opposite the given node.
+     * Gets the node opposite the node with the given key.
      *
-     * @param node the node to get the other end of the link from.
-     * @return the node at the other end of the link from the given node.
+     * @param key the key of the node to get the other end of the link from.
+     * @return the node at the other end of the link from the node with the given key.
      */
-    public @NotNull Node<K, V> other(@NotNull Node<K, V> node) {
-        if (Objects.equals(first, node)) {
+    public @NotNull Node<K, V> other(@NotNull K key) {
+        if (Objects.equals(first.key(), key)) {
             return second;
         } else {
             return first;
         }
+    }
+
+    /**
+     * Removes this link from both of its nodes.
+     */
+    public void unlink() {
+        first.removeLink(second.key());
+        second.removeLink(first.key());
     }
 }

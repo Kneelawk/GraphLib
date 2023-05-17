@@ -12,7 +12,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.graph.ClientNodeKey;
+import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Node;

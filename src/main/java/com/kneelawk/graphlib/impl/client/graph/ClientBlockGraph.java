@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.graph.ClientNodeKey;
+import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 
 public record ClientBlockGraph(@NotNull Identifier universeId, long graphId,

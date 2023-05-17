@@ -31,7 +31,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.NodeKey;
+import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.node.UniqueData;
@@ -345,14 +345,14 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     void link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
-        graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
+        graph.link(a.toNodeKey(), b.toNodeKey());
         world.scheduleCallbackUpdate(a);
         world.scheduleCallbackUpdate(b);
         world.markDirty(id);
     }
 
     void unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
-        graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
+        graph.unlink(a.toNodeKey(), b.toNodeKey());
         world.scheduleCallbackUpdate(a);
         world.scheduleCallbackUpdate(b);
         world.markDirty(id);

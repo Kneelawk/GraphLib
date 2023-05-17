@@ -1,11 +1,13 @@
 package com.kneelawk.graphlib.api.util.graph;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 import com.google.errorprone.annotations.CompatibleWith;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -59,8 +61,8 @@ public final class Node<K, V> {
      *
      * @return this node's connections.
      */
-    public @NotNull Collection<Link<K, V>> connections() {
-        return connections.values();
+    public @NotNull Map<K, Link<K, V>> connections() {
+        return connections;
     }
 
     /**
@@ -86,7 +88,7 @@ public final class Node<K, V> {
      * @param link the link between this node and another node.
      */
     void addLink(@NotNull Link<K, V> link) {
-        connections.put(link.other(this).key, link);
+        connections.put(link.other(key).key, link);
     }
 
     /**
@@ -95,10 +97,11 @@ public final class Node<K, V> {
      * Note: links are technically directional and must be removed twice, once in each direction, to make sure the link
      * has actually been removed.
      *
-     * @param link the link to remove.
+     * @param oppositeKey the key of the opposite node in the link to remove.
+     * @return the link that was removed.
      */
-    void removeLink(@NotNull Link<K, V> link) {
-        connections.remove(link.other(this).key);
+    @Nullable Link<K, V> removeLink(@NotNull K oppositeKey) {
+        return connections.remove(oppositeKey);
     }
 
     @Override

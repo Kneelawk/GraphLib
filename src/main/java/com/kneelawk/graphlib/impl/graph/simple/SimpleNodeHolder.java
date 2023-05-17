@@ -1,6 +1,6 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import java.util.Collection;
+import java.util.Map;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
@@ -9,11 +9,11 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.NodeKey;
 import com.kneelawk.graphlib.api.graph.PositionedNode;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
-import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
+import com.kneelawk.graphlib.impl.util.ReadOnlyMappingMap;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     final Node<NodeKey, SimpleNodeWrapper> node;
@@ -42,8 +42,14 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull Collection<NodeConnection> getConnections() {
-        return new ReadOnlyMappingCollection<>(node.connections(), SimpleNodeConnection::new);
+    public @NotNull Map<NodeKey, NodeConnection> getConnections() {
+        return new ReadOnlyMappingMap<>(node.connections(), SimpleNodeConnection::new, conn -> {
+            if (conn instanceof SimpleNodeConnection simple) {
+                return simple.getLink();
+            } else {
+                return null;
+            }
+        });
     }
 
     @Override
