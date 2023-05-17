@@ -64,7 +64,7 @@ public class SimpleBlockGraph implements BlockGraph {
         List<@Nullable Node<NodeKey, SimpleNodeWrapper>> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
-            SimplePositionedNode node = SimplePositionedNode.fromTag(world.universe, (NbtCompound) nodeElement, id);
+            SimplePositionedNode node = SimplePositionedNode.fromTag(world.universe, (NbtCompound) nodeElement);
             if (node != null) {
                 nodes.add(graph.createNode(node.pos(), node.node()).node);
             } else {

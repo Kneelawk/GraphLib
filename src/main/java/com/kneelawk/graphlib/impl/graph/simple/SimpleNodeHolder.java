@@ -27,7 +27,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
 
     @Override
     public @NotNull BlockPos getPos() {
-        return node.value().getPos();
+        return node.key().pos();
     }
 
     @Override
@@ -49,7 +49,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     @Override
     @SuppressWarnings("unchecked")
     public @NotNull PositionedNode<T> toPositionedNode() {
-        return new PositionedNode<>(node.value().getPos(), (T) node.value().getNode(), node.value().getGraphId());
+        return new PositionedNode<>(node.key().pos(), (T) node.value().getNode(), node.value().getGraphId());
     }
 
     @Override

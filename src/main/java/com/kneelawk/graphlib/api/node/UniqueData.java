@@ -30,4 +30,19 @@ public interface UniqueData {
      * @return this as an NBT element.
      */
     @Nullable NbtElement toTag();
+
+    /**
+     * All unique-data must implement consistent {@link Object#hashCode()} and {@link Object#equals(Object)} methods.
+     *
+     * @return this unique-data's hash-code.
+     */
+    int hashCode();
+
+    /**
+     * All unique-data must implement consistent {@link Object#hashCode()} and {@link Object#equals(Object)} methods.
+     *
+     * @param other the other object this is being compared to.
+     * @return whether this object and the other object are equals.
+     */
+    boolean equals(Object other);
 }

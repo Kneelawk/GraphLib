@@ -40,8 +40,7 @@ public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode nod
     }
 
     @Nullable
-    public static SimplePositionedNode fromTag(@NotNull GraphUniverseImpl universe, @NotNull NbtCompound tag,
-                                               long graphId) {
+    public static SimplePositionedNode fromTag(@NotNull GraphUniverseImpl universe, @NotNull NbtCompound tag) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
@@ -60,6 +59,6 @@ public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode nod
             return null;
         }
 
-        return new SimplePositionedNode(pos, node, graphId);
+        return new SimplePositionedNode(pos, node);
     }
 }

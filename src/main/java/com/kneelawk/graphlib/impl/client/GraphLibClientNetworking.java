@@ -25,6 +25,8 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.graph.ClientNodeKey;
+import com.kneelawk.graphlib.api.graph.NodeKey;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Node;
@@ -170,8 +172,8 @@ public final class GraphLibClientNetworking {
 
     @Nullable
     private static ClientBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
-        Graph<ClientBlockNodeHolder> graph = new Graph<>();
-        List<Node<ClientBlockNodeHolder>> nodeList = new ArrayList<>();
+        Graph<ClientNodeKey, ClientBlockNodeHolder> graph = new Graph<>();
+        List<Node<ClientNodeKey, ClientBlockNodeHolder>> nodeList = new ArrayList<>();
         LongSet chunks = new LongLinkedOpenHashSet();
 
         long graphId = buf.readLong();
@@ -198,7 +200,8 @@ public final class GraphLibClientNetworking {
                 return null;
             }
 
-            Node<ClientBlockNodeHolder> node = graph.add(new ClientBlockNodeHolder(pos, data, graphId));
+            Node<ClientNodeKey, ClientBlockNodeHolder> node =
+                graph.add(new ClientNodeKey(pos, data.getUniqueData()), new ClientBlockNodeHolder(data, graphId));
             nodeList.add(node);
 
             chunks.add(ChunkPos.toLong(pos));
@@ -206,8 +209,8 @@ public final class GraphLibClientNetworking {
 
         int linkCount = buf.readVarInt();
         for (int i = 0; i < linkCount; i++) {
-            Node<ClientBlockNodeHolder> nodeA = nodeList.get(buf.readVarInt());
-            Node<ClientBlockNodeHolder> nodeB = nodeList.get(buf.readVarInt());
+            Node<ClientNodeKey, ClientBlockNodeHolder> nodeA = nodeList.get(buf.readVarInt());
+            Node<ClientNodeKey, ClientBlockNodeHolder> nodeB = nodeList.get(buf.readVarInt());
 
             graph.link(nodeA, nodeB);
         }

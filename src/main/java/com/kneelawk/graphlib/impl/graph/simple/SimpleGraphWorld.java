@@ -5,10 +5,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -515,8 +518,12 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private void handleNodeUpdates() {
         for (BlockPos pos : nodeUpdates) {
-            Set<BlockNodeDiscoverer.Discovery> nodes = universe.discoverNodesInBlock(world, pos);
-            onNodesChanged(pos, nodes);
+            try {
+                Map<NodeKey, Supplier<BlockNode>> nodes = universe.discoverNodesInBlock(world, pos);
+                onNodesChanged(pos, nodes);
+            } catch (Exception e) {
+                GLLog.error("Error discovering block nodes at {}", pos, e);
+            }
         }
         nodeUpdates.clear();
     }
@@ -556,8 +563,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     // ---- Private Methods ---- //
 
-    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNodeDiscoverer.Discovery> nodes) {
-        Set<BlockNodeDiscoverer.Discovery> newNodes = new LinkedHashSet<>(nodes);
+    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Map<NodeKey, Supplier<BlockNode>> nodes) {
+        Map<NodeKey, Supplier<BlockNode>> newNodes = new Object2ObjectLinkedOpenHashMap<>(nodes);
 
         // FIXME: clean this up to use node-key lookups
         for (long graphId : getGraphsAt(pos).toArray()) {
@@ -569,23 +576,17 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
 
             for (var node : graph.getNodesAt(pos).toList()) {
-                BlockNode bn = node.getNode();
-                if (!nodes.contains(bn)) {
+                NodeKey key = node.toNodeKey();
+                if (!nodes.containsKey(key)) {
                     graph.destroyNode(node);
                 }
-                newNodes.remove(bn);
+                newNodes.remove(key);
             }
         }
 
-        for (BlockNode bn : newNodes) {
-            if (bn == null) {
-                GLLog.warn("Something tried to add a null BlockNode! Ignoring... Pos: {}", pos,
-                    new RuntimeException("Stack Trace"));
-                continue;
-            }
-
+        for (Supplier<BlockNode> bn : newNodes.values()) {
             SimpleBlockGraph newGraph = createGraph();
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn.get());
             updateNodeConnections(node);
         }
     }

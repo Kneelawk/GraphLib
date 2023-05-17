@@ -38,6 +38,7 @@ import net.minecraft.util.math.Vec3d;
 
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.client.render.RenderUtils;
+import com.kneelawk.graphlib.api.graph.ClientNodeKey;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.node.client.SidedClientBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -174,13 +175,13 @@ public final class DebugRenderer {
         for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
             for (ClientBlockGraph graph : universe.values()) {
                 for (var node : graph.graph()) {
-                    ClientBlockNode cbn = node.data().node();
+                    ClientBlockNode cbn = node.value().node();
 
                     NPos pos;
                     if (cbn instanceof SidedClientBlockNode scbn) {
-                        pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
+                        pos = new NSidedPos(new SidedPos(node.key().pos(), scbn.getSide()));
                     } else {
-                        pos = new NBlockPos(node.data().pos());
+                        pos = new NBlockPos(node.key().pos());
                     }
 
                     nodeEndpoints.computeIfAbsent(pos, nPos -> new NPosData()).nodeCount++;
@@ -191,20 +192,21 @@ public final class DebugRenderer {
         for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
             for (ClientBlockGraph graph : universe.values()) {
                 int graphColor = RenderUtils.graphColor(graph.graphId());
-                Object2ObjectMap<Node<ClientBlockNodeHolder>, Vec3d> endpoints =
+                Object2ObjectMap<Node<ClientNodeKey, ClientBlockNodeHolder>, Vec3d> endpoints =
                     new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
-                ObjectSet<Link<ClientBlockNodeHolder>> links = new ObjectLinkedOpenHashSet<>();
+                ObjectSet<Link<ClientNodeKey, ClientBlockNodeHolder>> links = new ObjectLinkedOpenHashSet<>();
 
                 for (var node : graph.graph()) {
-                    ClientBlockNode cbn = node.data().node();
-                    BlockNodeRendererHolder<?> renderer = GraphLibClientImpl.getRenderer(graph.universeId(), cbn.getRenderId());
+                    ClientBlockNode cbn = node.value().node();
+                    BlockNodeRendererHolder<?> renderer =
+                        GraphLibClientImpl.getRenderer(graph.universeId(), cbn.getRenderId());
                     if (renderer == null) continue;
 
                     NPos pos;
                     if (cbn instanceof SidedClientBlockNode scbn) {
-                        pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
+                        pos = new NSidedPos(new SidedPos(node.key().pos(), scbn.getSide()));
                     } else {
-                        pos = new NBlockPos(node.data().pos());
+                        pos = new NBlockPos(node.key().pos());
                     }
 
                     // should never be null unless GraphLibClient.DEBUG_GRAPHS was modified by another thread
@@ -216,7 +218,7 @@ public final class DebugRenderer {
                     endpoints.put(node, endpoint);
                     data.endpoints.add(endpoint);
 
-                    BlockPos origin = node.data().pos();
+                    BlockPos origin = node.key().pos();
 
                     stack.push();
                     stack.translate(origin.getX(), origin.getY(), origin.getZ());

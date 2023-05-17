@@ -37,35 +37,35 @@ public class GraphSplitTests {
     public void splitSizePreferenceTest() {
         // This test and the next one check to make sure the graph always keeps the largest bunch of nodes
 
-        Graph<String> graph = new Graph<>();
+        Graph<String, Object> graph = new Graph<>();
 
-        var a = graph.add("A");
-        var b = graph.add("B");
+        var a = graph.add("A", PRESENT);
+        var b = graph.add("B", PRESENT);
         graph.link(a, b);
 
-        var c = graph.add("C");
+        var c = graph.add("C", PRESENT);
 
         var newGraphs = graph.split();
 
         assertEquals("There should be one new graph.", 1, newGraphs.size());
 
-        Graph<String> newGraph = newGraphs.get(0);
+        Graph<String, Object> newGraph = newGraphs.get(0);
 
-        assertTrue("The new graph should contain C.", newGraph.contains(c));
-        assertTrue("The old graph should contain both A and B.", graph.contains(a, b));
+        assertTrue("The new graph should contain C.", newGraph.containsKey("C"));
+        assertTrue("The old graph should contain both A and B.", graph.containsKeys("A", "B"));
     }
 
     @Test
     public void splitSizePreferenceTest2() {
-        Graph<String> graph = new Graph<>();
+        Graph<String, Object> graph = new Graph<>();
 
-        var a = graph.add("A");
-        var b = graph.add("B");
+        var a = graph.add("A", PRESENT);
+        var b = graph.add("B", PRESENT);
         graph.link(a, b);
 
-        var c = graph.add("C");
-        var d = graph.add("D");
-        var e = graph.add("E");
+        var c = graph.add("C", PRESENT);
+        var d = graph.add("D", PRESENT);
+        var e = graph.add("E", PRESENT);
         graph.link(c, d);
         graph.link(d, e);
 
@@ -73,9 +73,9 @@ public class GraphSplitTests {
 
         assertEquals("There should be one new graph.", 1, newGraphs.size());
 
-        Graph<String> newGraph = newGraphs.get(0);
+        Graph<String, Object> newGraph = newGraphs.get(0);
 
-        assertTrue("The old graph should contain C, D, and E.", graph.contains(c, d, e));
-        assertTrue("The new graph should contain both A and B.", newGraph.contains(a, b));
+        assertTrue("The old graph should contain C, D, and E.", graph.containsKeys("C", "D", "E"));
+        assertTrue("The new graph should contain both A and B.", newGraph.containsKeys("A", "B"));
     }
 }
