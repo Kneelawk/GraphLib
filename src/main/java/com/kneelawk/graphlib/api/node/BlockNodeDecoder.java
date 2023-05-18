@@ -17,4 +17,17 @@ public interface BlockNodeDecoder {
      * @return the decoded block node.
      */
     @Nullable BlockNode createBlockNodeFromTag(@Nullable NbtElement tag);
+
+    /**
+     * Decodes a {@link UniqueData} from an NBT element.
+     * <p>
+     * The NBT element given here should be exactly the same as the one returned by {@link UniqueData#toTag()}.
+     * <p>
+     * This method is not used in block node decoding, but is instead used where unique data needs to be cached apart
+     * from the data's associated block node.
+     *
+     * @param tag the NBT element used to decode the unique data.
+     * @return the decoded unique data.
+     */
+    @Nullable UniqueData createUniqueDataFromTag(@Nullable NbtElement tag);
 }

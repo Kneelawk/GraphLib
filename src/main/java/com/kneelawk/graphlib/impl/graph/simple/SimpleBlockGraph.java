@@ -293,13 +293,14 @@ public class SimpleBlockGraph implements BlockGraph {
 
     @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
         BlockPos pos = blockPos.toImmutable();
+        NodeKey key = new NodeKey(pos, node.getUniqueData());
 
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(
-            graph.add(new NodeKey(pos, node.getUniqueData()), new SimpleNodeWrapper(node, id)));
+            graph.add(key, new SimpleNodeWrapper(node, id)));
         nodesInPos.put(pos, graphNode.getNode().getUniqueData(), graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();
-        world.addGraphInPos(id, pos);
+        world.putGraphWithKey(id, key);
         world.scheduleCallbackUpdate(graphNode);
         world.markDirty(id);
         return graphNode;
@@ -308,6 +309,7 @@ public class SimpleBlockGraph implements BlockGraph {
     void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
         // see if removing this node means removing a block-pos or a chunk
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
+        NodeKey removedKey = node.toNodeKey();
         BlockPos removedPos = node.getPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node.getNode().getUniqueData());
@@ -339,6 +341,7 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         // do the house-cleaning
+        world.removeGraphWithKey(id, removedKey);
         if (removedPos != null) {
             world.removeGraphInPos(id, removedPos);
         }
@@ -380,7 +383,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         // add our graph to all the positions and chunks the other graph is in
         for (var node : other.graph) {
-            world.addGraphInPos(id, node.key().pos());
+            world.putGraphWithKey(id, node.key());
 
             // might as well set the node's graph id here as well
             node.value().graphId = id;
@@ -400,12 +403,14 @@ public class SimpleBlockGraph implements BlockGraph {
         var newGraphs = graph.split();
 
         if (!newGraphs.isEmpty()) {
-            // collect the block-poses and chunks we are no longer a part of
+            // collect the keys, block-poses, and chunks we are no longer a part of
+            Set<NodeKey> removedKeys = new LinkedHashSet<>();
             Set<BlockPos> removedPoses = new LinkedHashSet<>();
             LongSet removedChunks = new LongLinkedOpenHashSet();
 
             for (Graph<NodeKey, SimpleNodeWrapper> graph : newGraphs) {
                 for (var node : graph) {
+                    removedKeys.add(node.key());
                     BlockPos pos = node.key().pos();
                     removedPoses.add(pos);
                     removedChunks.add(ChunkSectionPos.from(pos).asLong());
@@ -423,7 +428,7 @@ public class SimpleBlockGraph implements BlockGraph {
             }
 
             // do this stuff instead of rebuilding-refs later
-            world.removeGraphInPoses(id, removedPoses, removedChunks);
+            world.removeGraphInPoses(id, removedKeys, removedPoses, removedChunks);
             chunks.removeAll(removedChunks);
             nodeTypeCache.clear();
             world.markDirty(id);
@@ -443,7 +448,7 @@ public class SimpleBlockGraph implements BlockGraph {
                 for (var node : bg.graph) {
                     // I considered trying to group block-poses by chunk to avoid duplicate look-ups, but it didn't look
                     // like it was worth the uniqueData computation.
-                    world.addGraphInPos(bg.id, node.key().pos());
+                    world.putGraphWithKey(bg.id, node.key());
                 }
 
                 newBlockGraphs.add(bg);
