@@ -490,7 +490,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         ChunkSectionPos sectionPos = ChunkSectionPos.from(key.pos());
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
-            chunk.removeGraphWithKey(id, key);
+            chunk.removeGraphWithKey(key);
         } else {
             GLLog.warn("Tried to remove key fom non-existent chunk. Id: {}, chunk: {}, key: {}", id, sectionPos, key);
         }

@@ -1,9 +1,5 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,12 +7,9 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.ShortIterator;
@@ -44,8 +37,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
 
     private final Short2ObjectMap<LongSet> graphsInPos = new Short2ObjectLinkedOpenHashMap<>();
     private final LongSet graphsInChunk = new LongLinkedOpenHashSet();
-    private @Nullable Object2LongMap<NodeKey> graphKeys = null;
-    private final Short2ObjectMap<ObjectSet<NodeKey>> keysInPos = new Short2ObjectLinkedOpenHashMap<>();
+    private @Nullable Short2ObjectMap<Object2LongMap<UniqueData>> graphKeys = null;
 
     public SimpleBlockGraphChunk(@NotNull NbtCompound nbt, @NotNull ChunkSectionPos chunkPos,
                                  @NotNull Runnable markDirty, SimpleGraphUniverse universe) {
@@ -84,14 +76,13 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                     }
 
                     NbtElement dataTag = keyCom.get("data");
-                    UniqueData node = decoder.createUniqueDataFromTag(dataTag);
+                    UniqueData data = decoder.createUniqueDataFromTag(dataTag);
 
                     if (graphKeys == null) {
-                        graphKeys = new Object2LongLinkedOpenHashMap<>();
+                        graphKeys = new Short2ObjectLinkedOpenHashMap<>();
                     }
-                    NodeKey key = new NodeKey(keyPos, node);
-                    graphKeys.put(key, graphId);
-                    keysInPos.computeIfAbsent(shortPos, pos1 -> new ObjectLinkedOpenHashSet<>()).add(key);
+                    graphKeys.computeIfAbsent(shortPos, pos1 -> new Object2LongLinkedOpenHashMap<>())
+                        .put(data, graphId);
                 }
             }
 
@@ -110,7 +101,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
     public SimpleBlockGraphChunk(@NotNull ChunkSectionPos chunkPos, @NotNull Runnable markDirty) {
         this.chunkPos = chunkPos;
         this.markDirty = markDirty;
-        graphKeys = new Object2LongLinkedOpenHashMap<>();
+        graphKeys = new Short2ObjectLinkedOpenHashMap<>();
     }
 
     @Override
@@ -126,12 +117,14 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         while (keyIterator.hasNext()) {
             short shortPos = keyIterator.nextShort();
             NbtCompound inPos = new NbtCompound();
-            inPos.putByte("x", (byte) ChunkSectionPos.unpackLocalX(shortPos));
-            inPos.putByte("y", (byte) ChunkSectionPos.unpackLocalY(shortPos));
-            inPos.putByte("z", (byte) ChunkSectionPos.unpackLocalZ(shortPos));
+            BlockPos localPos =
+                new BlockPos(ChunkSectionPos.unpackLocalX(shortPos), ChunkSectionPos.unpackLocalY(shortPos),
+                    ChunkSectionPos.unpackLocalZ(shortPos));
+            inPos.putByte("x", (byte) localPos.getX());
+            inPos.putByte("y", (byte) localPos.getY());
+            inPos.putByte("z", (byte) localPos.getZ());
 
-            Set<NodeKey> keySet = keysInPos.get(shortPos);
-            if (graphKeys == null || keySet == null) {
+            if (graphKeys == null || !graphKeys.containsKey(shortPos)) {
                 // We never built our graph-key map
                 NbtList ids = new NbtList();
                 for (long id : graphsInPos.get(shortPos)) {
@@ -139,25 +132,20 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                 }
                 inPos.put("ids", ids);
             } else {
+                Object2LongMap<UniqueData> keyMap = graphKeys.get(shortPos);
                 NbtList keys = new NbtList();
-                for (NodeKey key : keysInPos.get(shortPos)) {
+                for (Object2LongMap.Entry<UniqueData> entry : keyMap.object2LongEntrySet()) {
                     NbtCompound keyCom = new NbtCompound();
 
-                    if (!graphKeys.containsKey(key)) {
-                        GLLog.warn("Chunk keys-in-pos & chunk-keys are out of sync! Key {} has no id! Ignoring...",
-                            key);
-                        continue;
-                    }
-
-                    long id = graphKeys.getLong(key);
+                    long id = entry.getLongValue();
                     keyCom.putLong("id", id);
 
-                    NbtElement data = key.uniqueData().toTag();
+                    NbtElement data = entry.getKey().toTag();
                     if (data != null) {
                         keyCom.put("data", data);
                     }
 
-                    keyCom.putString("type", key.uniqueData().getTypeId().toString());
+                    keyCom.putString("type", entry.getKey().getTypeId().toString());
 
                     keys.add(keyCom);
                 }
@@ -173,9 +161,8 @@ public class SimpleBlockGraphChunk implements StorageChunk {
 
         short posShort = ChunkSectionPos.packLocal(key.pos());
 
-        Object2LongMap<NodeKey> graphKeys = getGraphKeys(graphGetter);
-        graphKeys.put(key, id);
-        keysInPos.computeIfAbsent(posShort, pos -> new ObjectLinkedOpenHashSet<>()).add(key);
+        Short2ObjectMap<Object2LongMap<UniqueData>> graphKeys = getGraphKeys(graphGetter);
+        graphKeys.computeIfAbsent(posShort, pos -> new Object2LongLinkedOpenHashMap<>()).put(key.uniqueData(), id);
 
         graphsInChunk.add(id);
         graphsInPos.computeIfAbsent(posShort, s -> new LongLinkedOpenHashSet()).add(id);
@@ -196,28 +183,27 @@ public class SimpleBlockGraphChunk implements StorageChunk {
             }
 
             // also remove keys associated with said graph
-            Set<NodeKey> keys = keysInPos.get(posShort);
-            if (removed && graphKeys != null && keys != null) {
-                for (NodeKey key : keys) {
-                    if (graphKeys.getLong(key) == id) {
-                        graphKeys.removeLong(key);
-                        keys.remove(key);
-                    }
-                }
+            if (removed && graphKeys != null) {
+                Object2LongMap<UniqueData> keys = graphKeys.get(posShort);
+                if (keys != null) {
+                    keys.values().removeIf(l -> l == id);
 
-                if (keys.isEmpty()) {
-                    keysInPos.remove(posShort);
+                    if (keys.isEmpty()) {
+                        graphKeys.remove(posShort);
+                    }
                 }
             }
         }
     }
 
     public @Nullable BlockGraph getGraphForKey(NodeKey key, Long2ObjectFunction<BlockGraph> graphGetter) {
-        Object2LongMap<NodeKey> keys = getGraphKeys(graphGetter);
+        Short2ObjectMap<Object2LongMap<UniqueData>> keys = getGraphKeys(graphGetter);
 
-        if (!keys.containsKey(key)) return null;
+        Object2LongMap<UniqueData> uKeys = keys.get(ChunkSectionPos.packLocal(key.pos()));
+        if (uKeys == null) return null;
+        if (!uKeys.containsKey(key.uniqueData())) return null;
 
-        return graphGetter.get(keys.getLong(key));
+        return graphGetter.get(uKeys.getLong(key));
     }
 
     public LongSet getGraphsAt(BlockPos pos) {
@@ -228,16 +214,17 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         return graphsInChunk;
     }
 
-    public void removeGraphWithKey(long id, @NotNull NodeKey key) {
+    public void removeGraphWithKey(@NotNull NodeKey key) {
         markDirty.run();
         short posShort = ChunkSectionPos.packLocal(key.pos());
-        Set<NodeKey> keys = keysInPos.get(posShort);
-        if (graphKeys != null && keys != null) {
-            graphKeys.removeLong(key);
-            keys.remove(key);
+        if (graphKeys != null) {
+            Object2LongMap<UniqueData> keys = graphKeys.get(posShort);
+            if (keys != null) {
+                keys.removeLong(key.uniqueData());
 
-            if (keys.isEmpty()) {
-                keysInPos.remove(posShort);
+                if (keys.isEmpty()) {
+                    graphKeys.remove(posShort);
+                }
             }
         }
     }
@@ -257,9 +244,10 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         graphsInChunk.remove(id);
     }
 
-    private @NotNull Object2LongMap<NodeKey> getGraphKeys(Long2ObjectFunction<BlockGraph> graphGetter) {
+    private @NotNull Short2ObjectMap<Object2LongMap<UniqueData>> getGraphKeys(
+        Long2ObjectFunction<BlockGraph> graphGetter) {
         if (graphKeys == null) {
-            graphKeys = new Object2LongLinkedOpenHashMap<>();
+            graphKeys = new Short2ObjectLinkedOpenHashMap<>();
 
             rebuildGraphKeys(graphGetter);
         }
@@ -273,7 +261,6 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         markDirty.run();
 
         graphKeys.clear();
-        keysInPos.clear();
         for (LongIterator iter = graphsInChunk.iterator(); iter.hasNext(); ) {
             long graphId = iter.nextLong();
 
@@ -285,9 +272,13 @@ public class SimpleBlockGraphChunk implements StorageChunk {
 
             for (NodeHolder<BlockNode> holder : graph.getNodes().toList()) {
                 NodeKey key = holder.toNodeKey();
-                graphKeys.put(key, graphId);
-                keysInPos.computeIfAbsent(ChunkSectionPos.packLocal(holder.getPos()),
-                    pos -> new ObjectLinkedOpenHashSet<>()).add(key);
+                BlockPos pos = key.pos();
+                if (chunkPos.getMinX() <= pos.getX() && pos.getX() <= chunkPos.getMaxX() &&
+                    chunkPos.getMinY() <= pos.getY() && pos.getY() <= chunkPos.getMaxY() &&
+                    chunkPos.getMinZ() <= pos.getZ() && pos.getZ() <= chunkPos.getMaxZ()) {
+                    graphKeys.computeIfAbsent(ChunkSectionPos.packLocal(pos),
+                        pos1 -> new Object2LongLinkedOpenHashMap<>()).put(key.uniqueData(), graphId);
+                }
             }
         }
     }
