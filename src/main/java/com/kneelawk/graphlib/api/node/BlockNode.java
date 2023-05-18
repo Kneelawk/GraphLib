@@ -46,9 +46,7 @@ public interface BlockNode {
      *
      * @return the id of this block node.
      */
-    default @NotNull Identifier getTypeId() {
-        return getUniqueData().getTypeId();
-    }
+    @NotNull Identifier getTypeId();
 
     /**
      * Gets the data unique to this block-node.

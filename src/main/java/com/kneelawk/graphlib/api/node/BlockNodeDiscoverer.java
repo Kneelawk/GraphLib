@@ -1,8 +1,6 @@
 package com.kneelawk.graphlib.api.node;
 
 import java.util.Collection;
-import java.util.Objects;
-import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,26 +23,5 @@ public interface BlockNodeDiscoverer {
      * @param pos   the position to check at.
      * @return all the {@link BlockNode}s that should be here.
      */
-    @NotNull Collection<Discovery> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
-
-    /**
-     * Represents a discovered block node.
-     *
-     * @param uniqueData  the node's unique data that, when combined with the block-pos, represents the node's key.
-     * @param nodeCreator a creator for if a new node needs to be created as the given location.
-     */
-    record Discovery(UniqueData uniqueData, Supplier<BlockNode> nodeCreator) {
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Discovery discovery = (Discovery) o;
-            return Objects.equals(uniqueData, discovery.uniqueData);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(uniqueData);
-        }
-    }
+    @NotNull Collection<BlockNodeDiscovery> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
 }
