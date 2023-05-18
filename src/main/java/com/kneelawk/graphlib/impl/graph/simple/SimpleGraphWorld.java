@@ -5,14 +5,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
@@ -30,6 +29,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -44,9 +44,10 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -563,7 +564,6 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     private void onNodesChanged(@NotNull BlockPos pos, @NotNull Map<NodeKey, Supplier<BlockNode>> nodes) {
         Map<NodeKey, Supplier<BlockNode>> newNodes = new Object2ObjectLinkedOpenHashMap<>(nodes);
 
-        // FIXME: clean this up to use node-key lookups
         for (long graphId : getGraphsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
             if (graph == null) {
@@ -597,18 +597,40 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             return;
         }
 
-        // FIXME: this is completely broken
+        // Gather old connections
+        Map<NodeKey, NodeLink> nodeConnections = node.getConnections();
+        Map<NodeKey, NodeHolder<BlockNode>> oldConnections =
+            new Object2ObjectLinkedOpenHashMap<>(nodeConnections.size());
+        NodeKey nodeKey = node.toNodeKey();
+        for (Map.Entry<NodeKey, NodeLink> entry : nodeConnections.entrySet()) {
+            oldConnections.put(entry.getKey(), entry.getValue().other(nodeKey));
+        }
 
-        var oldConnections = node.getConnections().values().stream().map(link -> link.other(node.toNodeKey()).toNodeKey())
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-        var wantedConnections =
-            new LinkedHashSet<>(node.getNode().findConnections(node, world, this));
-        wantedConnections.removeIf(
-            other -> !other.getNode().canConnect(other, world, this, node));
-        var newConnections = wantedConnections.stream()
-            .filter(other -> other.getGraphId() != nodeGraphId ||
-                !oldConnections.contains(other)).toList();
-        var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
+        // Gather wanted connections
+        Collection<NodeHolder<BlockNode>> foundConnections = node.getNode().findConnections(node, world, this);
+        Map<NodeKey, NodeHolder<BlockNode>> wantedConnections =
+            new Object2ObjectLinkedOpenHashMap<>(foundConnections.size());
+        for (NodeHolder<BlockNode> other : foundConnections) {
+            if (other.getNode().canConnect(other, world, this, node)) {
+                wantedConnections.put(other.toNodeKey(), other);
+            }
+        }
+
+        // Gather new connections
+        List<NodeHolder<BlockNode>> newConnections = new ObjectArrayList<>();
+        for (Map.Entry<NodeKey, NodeHolder<BlockNode>> entry : wantedConnections.entrySet()) {
+            if (entry.getValue().getGraphId() != nodeGraphId || !oldConnections.containsKey(entry.getKey())) {
+                newConnections.add(entry.getValue());
+            }
+        }
+
+        // Gather removed connections
+        List<NodeHolder<BlockNode>> removedConnections = new ObjectArrayList<>();
+        for (Map.Entry<NodeKey, NodeHolder<BlockNode>> entry : oldConnections.entrySet()) {
+            if (!wantedConnections.containsKey(entry.getKey())) {
+                removedConnections.add(entry.getValue());
+            }
+        }
 
         long mergedGraphId = nodeGraphId;
         SimpleBlockGraph mergedGraph = graph;

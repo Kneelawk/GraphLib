@@ -1,6 +1,5 @@
 package com.kneelawk.graphlib.api.graph;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
@@ -43,9 +42,9 @@ public interface NodeHolder<T extends BlockNode> {
     /**
      * Gets all the connections this node has with other nodes.
      *
-     * @return a collection of all the {@link NodeConnection}s this node has with other nodes.
+     * @return a collection of all the {@link NodeLink}s this node has with other nodes.
      */
-    @NotNull Map<NodeKey, NodeConnection> getConnections();
+    @NotNull Map<NodeKey, NodeLink> getConnections();
 
     /**
      * Gets an immutable view of this node holder's position and node.

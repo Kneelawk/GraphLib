@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.collect.HashBasedTable;
@@ -19,20 +17,25 @@ import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtLong;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.LinkKey;
+import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.node.UniqueData;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -61,12 +64,12 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
 
-        List<@Nullable Node<NodeKey, SimpleNodeWrapper>> nodes = new ArrayList<>();
+        List<@Nullable NodeKey> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
             SimplePositionedNode node = SimplePositionedNode.fromTag(world.universe, (NbtCompound) nodeElement);
             if (node != null) {
-                nodes.add(graph.createNode(node.pos(), node.node()).node);
+                nodes.add(graph.createNode(node.pos(), node.node()).toNodeKey());
             } else {
                 // keep the gap so other nodes' links don't get messed up
                 nodes.add(null);
@@ -121,13 +124,17 @@ public class SimpleBlockGraph implements BlockGraph {
 
         tag.put("chunks", chunksTag);
 
-        var nodes = graph.stream().toList();
-        var nodeIndexMap = IntStream.range(0, nodes.size()).mapToObj(i -> new Pair<>(nodes.get(i), i))
-            .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+        List<Node<NodeKey, SimpleNodeWrapper>> nodes = new ObjectArrayList<>(graph.values());
+        int nodeCount = nodes.size();
+
+        Object2IntMap<NodeKey> nodeIndexMap = new Object2IntOpenHashMap<>();
+        for (int i = 0; i < nodeCount; i++) {
+            nodeIndexMap.put(nodes.get(i).key(), i);
+        }
 
         NbtList nodesTag = new NbtList();
 
-        for (var node : nodes) {
+        for (Node<NodeKey, SimpleNodeWrapper> node : nodes) {
             SimplePositionedNode positioned = new SimplePositionedNode(node.key().pos(), node.value().node);
             nodesTag.add(positioned.toTag());
         }
@@ -136,7 +143,14 @@ public class SimpleBlockGraph implements BlockGraph {
 
         NbtList linksTag = new NbtList();
 
-        for (var link : nodes.stream().flatMap(node -> node.connections().stream()).distinct().toList()) {
+        Set<LinkKey> connections = new ObjectLinkedOpenHashSet<>();
+        for (Node<NodeKey, SimpleNodeWrapper> node : nodes) {
+            for (Link<NodeKey, SimpleNodeWrapper> link : node.connections().values()) {
+                connections.add(LinkKey.from(link));
+            }
+        }
+
+        for (LinkKey link : connections) {
             if (!nodeIndexMap.containsKey(link.first())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
@@ -151,8 +165,8 @@ public class SimpleBlockGraph implements BlockGraph {
             }
 
             NbtCompound linkTag = new NbtCompound();
-            linkTag.putInt("first", nodeIndexMap.get(link.first()));
-            linkTag.putInt("second", nodeIndexMap.get(link.second()));
+            linkTag.putInt("first", nodeIndexMap.getInt(link.first()));
+            linkTag.putInt("second", nodeIndexMap.getInt(link.second()));
             linksTag.add(linkTag);
         }
 
@@ -301,10 +315,10 @@ public class SimpleBlockGraph implements BlockGraph {
         world.markDirty(id);
 
         // schedule updates for each of the node's connected nodes
-        for (Link<NodeKey, SimpleNodeWrapper> link : node.node.connections()) {
+        for (NodeLink link : node.getConnections().values()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
-            world.scheduleCallbackUpdate(new SimpleNodeHolder<>(link.other(node.node)));
+            world.scheduleCallbackUpdate(link.other(node.toNodeKey()));
         }
         world.scheduleCallbackUpdate(node);
 

@@ -1,6 +1,5 @@
 package com.kneelawk.graphlib.api.util.graph;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
@@ -16,7 +15,11 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
  * Node in a general purpose graph data structure.
  * <p>
  * Translated from
- * <a href="https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt">2xsaiko's HCTM-Base Graph code</a>.
+ * <a href="https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt">2xsaiko's HCTM-Base Graph code</a>
+ * with some modifications.
+ * <p>
+ * Note that nodes' {@link #equals(Object)} and {@link #hashCode()} functions only consider the node's key and value,
+ * not its connections.
  *
  * @param <K> this node's key (comparable).
  * @param <V> this node's value (non-comparable).
@@ -109,12 +112,12 @@ public final class Node<K, V> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Node<?, ?> node = (Node<?, ?>) o;
-        return Objects.equals(key, node.key);
+        return Objects.equals(key, node.key) && Objects.equals(value, node.value);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(key);
+        return Objects.hash(key, value);
     }
 
     @Override

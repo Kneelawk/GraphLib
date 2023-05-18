@@ -172,7 +172,7 @@ public final class GraphLibClientNetworking {
     @Nullable
     private static ClientBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
         Graph<ClientNodeKey, ClientBlockNodeHolder> graph = new Graph<>();
-        List<Node<ClientNodeKey, ClientBlockNodeHolder>> nodeList = new ArrayList<>();
+        List<ClientNodeKey> nodeList = new ArrayList<>();
         LongSet chunks = new LongLinkedOpenHashSet();
 
         long graphId = buf.readLong();
@@ -199,17 +199,17 @@ public final class GraphLibClientNetworking {
                 return null;
             }
 
-            Node<ClientNodeKey, ClientBlockNodeHolder> node =
-                graph.add(new ClientNodeKey(pos, data.getUniqueData()), new ClientBlockNodeHolder(data, graphId));
-            nodeList.add(node);
+            ClientNodeKey key = new ClientNodeKey(pos, data.getUniqueData());
+            graph.add(key, new ClientBlockNodeHolder(data, graphId));
+            nodeList.add(key);
 
             chunks.add(ChunkPos.toLong(pos));
         }
 
         int linkCount = buf.readVarInt();
         for (int i = 0; i < linkCount; i++) {
-            Node<ClientNodeKey, ClientBlockNodeHolder> nodeA = nodeList.get(buf.readVarInt());
-            Node<ClientNodeKey, ClientBlockNodeHolder> nodeB = nodeList.get(buf.readVarInt());
+            ClientNodeKey nodeA = nodeList.get(buf.readVarInt());
+            ClientNodeKey nodeB = nodeList.get(buf.readVarInt());
 
             graph.link(nodeA, nodeB);
         }

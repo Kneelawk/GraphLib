@@ -2,6 +2,7 @@ package com.kneelawk.graphlib.api.util.graph;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
@@ -186,6 +187,7 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      *
      * @param aKey the key of the first node to unlink.
      * @param bKey the key of the second node to unlink.
+     * @return the link that was just removed.
      */
     public @Nullable Link<K, V> unlink(@NotNull K aKey, @NotNull K bKey) {
         Node<K, V> a = nodes.get(aKey);
@@ -248,6 +250,15 @@ public final class Graph<K, V> implements Iterable<Node<K, V>> {
      */
     public @NotNull Stream<Node<K, V>> stream() {
         return nodes.values().stream();
+    }
+
+    /**
+     * Returns a collection of all the nodes in this graph.
+     *
+     * @return a collection of all the nodes in this graph.
+     */
+    public @NotNull Collection<Node<K, V>> values() {
+        return nodes.values();
     }
 
     /**

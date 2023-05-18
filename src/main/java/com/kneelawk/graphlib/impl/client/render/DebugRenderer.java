@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
+import java.util.Set;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +16,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import org.joml.Matrix4f;
 
@@ -38,12 +38,12 @@ import net.minecraft.util.math.Vec3d;
 
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.client.render.RenderUtils;
-import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.node.client.ClientLinkKey;
+import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
 import com.kneelawk.graphlib.api.node.client.SidedClientBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Link;
-import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
@@ -192,9 +192,9 @@ public final class DebugRenderer {
         for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
             for (ClientBlockGraph graph : universe.values()) {
                 int graphColor = RenderUtils.graphColor(graph.graphId());
-                Object2ObjectMap<Node<ClientNodeKey, ClientBlockNodeHolder>, Vec3d> endpoints =
+                Object2ObjectMap<ClientNodeKey, Vec3d> endpoints =
                     new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
-                ObjectSet<Link<ClientNodeKey, ClientBlockNodeHolder>> links = new ObjectLinkedOpenHashSet<>();
+                Set<ClientLinkKey> links = new ObjectLinkedOpenHashSet<>();
 
                 for (var node : graph.graph()) {
                     ClientBlockNode cbn = node.value().node();
@@ -212,10 +212,9 @@ public final class DebugRenderer {
                     // should never be null unless GraphLibClient.DEBUG_GRAPHS was modified by another thread
                     NPosData data = nodeEndpoints.get(pos);
 
-                    Vec3d endpoint =
-                        renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(),
-                            data.endpoints);
-                    endpoints.put(node, endpoint);
+                    Vec3d endpoint = renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(),
+                        data.endpoints);
+                    endpoints.put(node.key(), endpoint);
                     data.endpoints.add(endpoint);
 
                     BlockPos origin = node.key().pos();
@@ -227,7 +226,9 @@ public final class DebugRenderer {
 
                     stack.pop();
 
-                    links.addAll(node.connections());
+                    for (Link<ClientNodeKey, ClientBlockNodeHolder> link : node.connections().values()) {
+                        links.add(ClientLinkKey.from(link));
+                    }
                 }
 
                 VertexConsumer consumer = immediate.getBuffer(Layers.DEBUG_LINES);
@@ -240,8 +241,8 @@ public final class DebugRenderer {
 
                     Vec3d endpointA = endpoints.get(nodeA);
                     Vec3d endpointB = endpoints.get(nodeB);
-                    BlockPos posA = nodeA.key().pos();
-                    BlockPos posB = nodeB.key().pos();
+                    BlockPos posA = nodeA.pos();
+                    BlockPos posB = nodeB.pos();
 
                     RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
                         (float) (posA.getY() + endpointA.y),
