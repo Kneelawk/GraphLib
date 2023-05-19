@@ -145,7 +145,7 @@ public interface BlockNode {
     default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world, @NotNull GraphView graphView,
                           @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(hashCode());
+        buf.writeInt(getUniqueData().hashCode());
 
         // Class name hash for use in default node coloring
         buf.writeInt(getClass().getName().hashCode());
