@@ -56,6 +56,9 @@ dependencies {
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.
     testImplementation("junit:junit:4.13.2")
+
+    // Error Prone Annotations
+    compileOnly("com.google.errorprone:error_prone_annotations:2.19.1")
 }
 
 tasks {
@@ -97,7 +100,8 @@ tasks {
         val jetbrains_annotations_version: String by project
         (options as? StandardJavadocDocletOptions)?.links = listOf(
 //            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
-            "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/"
+            "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/",
+            "https://errorprone.info/api/latest/"
         )
 
         options.optionFiles(file("javadoc-options.txt"))

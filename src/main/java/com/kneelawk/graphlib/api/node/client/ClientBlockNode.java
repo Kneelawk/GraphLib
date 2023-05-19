@@ -23,4 +23,11 @@ public interface ClientBlockNode {
      * @return the id of the renderer to use to render this block node.
      */
     @NotNull Identifier getRenderId();
+
+    /**
+     * Gets the unique data of this block-node.
+     *
+     * @return the unique data of this block-node.
+     */
+    @NotNull ClientUniqueData getUniqueData();
 }

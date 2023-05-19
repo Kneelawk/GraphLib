@@ -5,22 +5,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.Pair;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
@@ -106,10 +106,13 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull Set<BlockNode> discoverNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos) {
+    public @NotNull Map<NodeKey, Supplier<BlockNode>> discoverNodesInBlock(@NotNull ServerWorld world,
+                                                                           @NotNull BlockPos pos) {
         return discoverers.stream()
             .flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
-            .collect(Collectors.toCollection(LinkedHashSet::new));
+            .collect(Object2ObjectLinkedOpenHashMap::new,
+                (map, discovery) -> map.put(new NodeKey(pos, discovery.uniqueData()), discovery.nodeCreator()),
+                Map::putAll);
     }
 
     @Override

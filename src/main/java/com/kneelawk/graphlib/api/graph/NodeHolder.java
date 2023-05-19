@@ -1,12 +1,13 @@
 package com.kneelawk.graphlib.api.graph;
 
-import java.util.Collection;
+import java.util.Map;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.NodeKey;
 
 /**
  * Positioned holder for a block node.
@@ -41,9 +42,9 @@ public interface NodeHolder<T extends BlockNode> {
     /**
      * Gets all the connections this node has with other nodes.
      *
-     * @return a collection of all the {@link NodeConnection}s this node has with other nodes.
+     * @return a collection of all the {@link NodeLink}s this node has with other nodes.
      */
-    @NotNull Collection<NodeConnection> getConnections();
+    @NotNull Map<NodeKey, NodeLink> getConnections();
 
     /**
      * Gets an immutable view of this node holder's position and node.
@@ -51,6 +52,16 @@ public interface NodeHolder<T extends BlockNode> {
      * @return a positioned node containing this holder's position and node.
      */
     @NotNull PositionedNode<T> toPositionedNode();
+
+    /**
+     * Gets an immutable, unique, comparable view of this node holder's position and data that can be used to look up
+     * this node-holder.
+     *
+     * @return this holder's key.
+     */
+    default @NotNull NodeKey toNodeKey() {
+        return new NodeKey(getPos(), getNode().getUniqueData());
+    }
 
     /**
      * Checks whether the contained node can be cast to the new type.

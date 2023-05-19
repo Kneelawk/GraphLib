@@ -23,5 +23,5 @@ public interface BlockNodeDiscoverer {
      * @param pos   the position to check at.
      * @return all the {@link BlockNode}s that should be here.
      */
-    @NotNull Collection<BlockNode> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
+    @NotNull Collection<BlockNodeDiscovery> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
 }

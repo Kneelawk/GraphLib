@@ -25,6 +25,7 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
+import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Node;
@@ -170,8 +171,8 @@ public final class GraphLibClientNetworking {
 
     @Nullable
     private static ClientBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
-        Graph<ClientBlockNodeHolder> graph = new Graph<>();
-        List<Node<ClientBlockNodeHolder>> nodeList = new ArrayList<>();
+        Graph<ClientNodeKey, ClientBlockNodeHolder> graph = new Graph<>();
+        List<ClientNodeKey> nodeList = new ArrayList<>();
         LongSet chunks = new LongLinkedOpenHashSet();
 
         long graphId = buf.readLong();
@@ -198,16 +199,17 @@ public final class GraphLibClientNetworking {
                 return null;
             }
 
-            Node<ClientBlockNodeHolder> node = graph.add(new ClientBlockNodeHolder(pos, data, graphId));
-            nodeList.add(node);
+            ClientNodeKey key = new ClientNodeKey(pos, data.getUniqueData());
+            graph.add(key, new ClientBlockNodeHolder(data, graphId));
+            nodeList.add(key);
 
             chunks.add(ChunkPos.toLong(pos));
         }
 
         int linkCount = buf.readVarInt();
         for (int i = 0; i < linkCount; i++) {
-            Node<ClientBlockNodeHolder> nodeA = nodeList.get(buf.readVarInt());
-            Node<ClientBlockNodeHolder> nodeB = nodeList.get(buf.readVarInt());
+            ClientNodeKey nodeA = nodeList.get(buf.readVarInt());
+            ClientNodeKey nodeB = nodeList.get(buf.readVarInt());
 
             graph.link(nodeA, nodeB);
         }

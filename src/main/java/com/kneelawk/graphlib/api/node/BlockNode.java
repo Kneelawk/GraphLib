@@ -15,6 +15,7 @@ import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.util.SimpleSidedUniqueData;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
@@ -46,6 +47,20 @@ public interface BlockNode {
      * @return the id of this block node.
      */
     @NotNull Identifier getTypeId();
+
+    /**
+     * Gets the data unique to this block-node.
+     * <p>
+     * The returned objects must implement consistent hash-code and equals functions, as this allows the graph-world to
+     * correctly evaluate if nodes need to be removed or added at a given position.
+     * <p>
+     * Often one of the pre-defined implementations will do.
+     *
+     * @return this block-node's unique data.
+     * @see com.kneelawk.graphlib.api.util.SimpleUniqueData
+     * @see SimpleSidedUniqueData
+     */
+    @NotNull UniqueData getUniqueData();
 
     /**
      * Encodes this block node's data to an NBT element.
@@ -90,8 +105,8 @@ public interface BlockNode {
      * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeHolder, ServerWorld, NodeHolder, FullWireConnectionFilter)
      * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeHolder, ServerWorld, NodeHolder, CenterWireConnectionFilter)
      */
-    boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world,
-                       @NotNull GraphView graphView, @NotNull NodeHolder<BlockNode> other);
+    boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world, @NotNull GraphView graphView,
+                       @NotNull NodeHolder<BlockNode> other);
 
     /**
      * Called when the block graph controller has determined that this specific node's connections have been changed.
@@ -111,29 +126,6 @@ public interface BlockNode {
                               @NotNull GraphView graphView);
 
     /**
-     * Block nodes are compared based on their hash-code and equals functions.
-     * <p>
-     * Block nodes must always implement consistent hash-code and equals functions, as this allows the block graph
-     * controller to be able to correctly evaluate if nodes need to be removed or added at a given position.
-     *
-     * @return the hash-code of this block node's data.
-     */
-    @Override
-    int hashCode();
-
-    /**
-     * Block nodes are compared based on their hash-code and equals functions.
-     * <p>
-     * Block nodes must always implement consistent hash-code and equals functions, as this allows the block graph
-     * controller to be able to correctly evaluate if nodes need to be removed or added at a given position.
-     *
-     * @param o the other node to compare this node to.
-     * @return <code>true</code> if these two nodes hold the same data, <code>false</code> otherwise.
-     */
-    @Override
-    boolean equals(@Nullable Object o);
-
-    /**
      * Encodes this block node to a {@link PacketByteBuf} to be sent to the client for client-side graph debug
      * rendering.
      * <p>
@@ -150,10 +142,10 @@ public interface BlockNode {
      * @param graphView the world of nodes.
      * @param buf       the buffer to encode this node to.
      */
-    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world,
-                          @NotNull GraphView graphView, @NotNull PacketByteBuf buf) {
+    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world, @NotNull GraphView graphView,
+                          @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(hashCode());
+        buf.writeInt(getUniqueData().hashCode());
 
         // Class name hash for use in default node coloring
         buf.writeInt(getClass().getName().hashCode());
