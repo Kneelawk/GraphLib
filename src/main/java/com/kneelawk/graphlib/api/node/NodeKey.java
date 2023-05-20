@@ -15,10 +15,9 @@ public interface NodeKey {
     /**
      * Gets the type id associated with this unique-data.
      * <p>
-     * This should be the same as is registered with {@link GraphUniverse#addNodeDecoder(Identifier, BlockNodeDecoder)}.
+     * This should be the same as is registered with {@link GraphUniverse#addNodeKeyDecoder(Identifier, NodeKeyDecoder)}.
      *
      * @return this unique-data's type id.
-     * @see BlockNode#getTypeId()
      */
     @NotNull Identifier getTypeId();
 
@@ -28,6 +27,7 @@ public interface NodeKey {
      * This can return <code>null</code> if the unique-data's type is all that needs to be stored.
      *
      * @return this as an NBT element.
+     * @see NodeKeyDecoder#createKeyFromTag(NbtElement)
      */
     @Nullable NbtElement toTag();
 

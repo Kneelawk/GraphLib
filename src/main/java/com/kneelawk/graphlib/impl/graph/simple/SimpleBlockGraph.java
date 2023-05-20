@@ -34,7 +34,7 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.LinkKey;
+import com.kneelawk.graphlib.api.node.PosLinkKey;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
@@ -143,14 +143,14 @@ public class SimpleBlockGraph implements BlockGraph {
 
         NbtList linksTag = new NbtList();
 
-        Set<LinkKey> connections = new ObjectLinkedOpenHashSet<>();
+        Set<PosLinkKey> connections = new ObjectLinkedOpenHashSet<>();
         for (Node<PosNodeKey, SimpleNodeWrapper> node : nodes) {
             for (Link<PosNodeKey, SimpleNodeWrapper> link : node.connections().values()) {
-                connections.add(LinkKey.from(link));
+                connections.add(PosLinkKey.from(link));
             }
         }
 
-        for (LinkKey link : connections) {
+        for (PosLinkKey link : connections) {
             if (!nodeIndexMap.containsKey(link.first())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",

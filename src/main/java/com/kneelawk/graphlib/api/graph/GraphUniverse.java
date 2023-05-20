@@ -14,6 +14,8 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
@@ -103,6 +105,37 @@ public interface GraphUniverse {
      * @param decoders the set of block node decoders to be registered.
      */
     void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
+
+    /**
+     * Registers a {@link NodeKeyDecoder} for the given node key id.
+     * <p>
+     * The identifier under which the decoder is registered corresponds to the one returned by the associated node key's
+     * {@link NodeKey#getTypeId()}.
+     *
+     * @param typeId  the type id of the node key the decoder is being registered for.
+     * @param decoder the node key decoder responsible for decoding the associated type of node key.
+     */
+    void addNodeKeyDecoder(@NotNull Identifier typeId, NodeKeyDecoder decoder);
+
+    /**
+     * Registers a set of {@link NodeKeyDecoder} with associated block node type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated node key's
+     * {@link NodeKey#getTypeId()}.
+     *
+     * @param decoders the set of node key decoders to be registered.
+     */
+    void addNodeKeyDecoders(@NotNull Pair<Identifier, ? extends NodeKeyDecoder>... decoders);
+
+    /**
+     * Registers a set of {@link NodeKeyDecoder} with associated block node type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated node key's
+     * {@link NodeKey#getTypeId()}.
+     *
+     * @param decoders the set of node key decoders to be registered.
+     */
+    void addNodeKeyDecoders(@NotNull Map<Identifier, ? extends NodeKeyDecoder> decoders);
 
     /**
      * Registers this graph universe so that it can be found by its id.

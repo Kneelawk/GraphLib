@@ -20,10 +20,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -33,7 +34,8 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Identifier id;
     private final List<BlockNodeDiscoverer> discoverers = new ArrayList<>();
-    private final Map<Identifier, BlockNodeDecoder> decoders = new LinkedHashMap<>();
+    private final Map<Identifier, BlockNodeDecoder> nodeDecoders = new LinkedHashMap<>();
+    private final Map<Identifier, NodeKeyDecoder> nodeKeyDecoders = new LinkedHashMap<>();
     final SaveMode saveMode;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
@@ -80,19 +82,36 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
 
     @Override
     public void addNodeDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder) {
-        decoders.put(typeId, decoder);
+        nodeDecoders.put(typeId, decoder);
     }
 
     @Override
     public void addNodeDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder> @NotNull ... decoders) {
         for (Pair<Identifier, ? extends BlockNodeDecoder> pair : decoders) {
-            this.decoders.put(pair.key(), pair.value());
+            this.nodeDecoders.put(pair.key(), pair.value());
         }
     }
 
     @Override
     public void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders) {
-        this.decoders.putAll(decoders);
+        this.nodeDecoders.putAll(decoders);
+    }
+
+    @Override
+    public void addNodeKeyDecoder(@NotNull Identifier typeId, NodeKeyDecoder decoder) {
+        this.nodeKeyDecoders.put(typeId, decoder);
+    }
+
+    @Override
+    public void addNodeKeyDecoders(@NotNull Pair<Identifier, ? extends NodeKeyDecoder>... decoders) {
+        for (Pair<Identifier, ? extends NodeKeyDecoder> decoder : decoders) {
+            this.nodeKeyDecoders.put(decoder.key(), decoder.value());
+        }
+    }
+
+    @Override
+    public void addNodeKeyDecoders(@NotNull Map<Identifier, ? extends NodeKeyDecoder> decoders) {
+        this.nodeKeyDecoders.putAll(decoders);
     }
 
     @Override
@@ -116,7 +135,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @Nullable BlockNodeDecoder getDecoder(@NotNull Identifier typeId) {
-        return decoders.get(typeId);
+    public @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId) {
+        return nodeDecoders.get(typeId);
     }
 }

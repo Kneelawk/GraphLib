@@ -44,7 +44,7 @@ public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode nod
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
-        BlockNodeDecoder decoder = universe.getDecoder(typeId);
+        BlockNodeDecoder decoder = universe.getNodeDecoder(typeId);
 
         if (decoder == null) {
             GLLog.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);

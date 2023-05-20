@@ -12,6 +12,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
@@ -24,5 +25,7 @@ public interface GraphUniverseImpl extends GraphUniverse {
 
     @NotNull Map<PosNodeKey, Supplier<BlockNode>> discoverNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
 
-    @Nullable BlockNodeDecoder getDecoder(@NotNull Identifier typeId);
+    @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId);
+
+    @Nullable NodeKeyDecoder getNodeKeyDecoder(@NotNull Identifier typeId);
 }

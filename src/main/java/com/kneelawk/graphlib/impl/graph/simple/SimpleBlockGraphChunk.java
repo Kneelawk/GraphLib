@@ -26,6 +26,7 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.world.StorageChunk;
@@ -68,10 +69,10 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                     BlockPos keyPos = pos.add(chunkPos.getMinX(), chunkPos.getMinY(), chunkPos.getMinZ());
 
                     Identifier typeId = new Identifier(keyCom.getString("type"));
-                    BlockNodeDecoder decoder = universe.getDecoder(typeId);
+                    NodeKeyDecoder decoder = universe.getNodeKeyDecoder(typeId);
 
                     if (decoder == null) {
-                        GLLog.warn("Chunk tried to load unknown UniqueData type: {} @ {}", typeId, keyPos);
+                        GLLog.error("Chunk tried to load unknown NodeKey type: {} @ {}.", typeId, keyPos);
                         continue;
                     }
 

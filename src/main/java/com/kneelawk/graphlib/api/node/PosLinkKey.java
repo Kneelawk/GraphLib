@@ -14,7 +14,7 @@ import com.kneelawk.graphlib.api.util.graph.Link;
  * @param first  the key of the first node in this link.
  * @param second the key of the second node in this link.
  */
-public record LinkKey(@NotNull PosNodeKey first, @NotNull PosNodeKey second) {
+public record PosLinkKey(@NotNull PosNodeKey first, @NotNull PosNodeKey second) {
     /**
      * Checks to see if this link contains the given key.
      *
@@ -44,12 +44,12 @@ public record LinkKey(@NotNull PosNodeKey first, @NotNull PosNodeKey second) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        LinkKey linkKey = (LinkKey) o;
+        PosLinkKey posLinkKey = (PosLinkKey) o;
 
-        if (first.equals(linkKey.first)) {
-            return second.equals(linkKey.second);
-        } else if (second.equals(linkKey.first)) {
-            return first.equals(linkKey.second);
+        if (first.equals(posLinkKey.first)) {
+            return second.equals(posLinkKey.second);
+        } else if (second.equals(posLinkKey.first)) {
+            return first.equals(posLinkKey.second);
         }
 
         return false;
@@ -68,8 +68,8 @@ public record LinkKey(@NotNull PosNodeKey first, @NotNull PosNodeKey second) {
      * @param link the link to get the link-key of.
      * @return a new link-key describing the given link.
      */
-    public static LinkKey from(Link<PosNodeKey, ?> link) {
-        return new LinkKey(link.first().key(), link.second().key());
+    public static PosLinkKey from(Link<PosNodeKey, ?> link) {
+        return new PosLinkKey(link.first().key(), link.second().key());
     }
 
     /**
@@ -78,7 +78,7 @@ public record LinkKey(@NotNull PosNodeKey first, @NotNull PosNodeKey second) {
      * @param conn the connection to get the link-key of.
      * @return a new link-key describing the given connection.
      */
-    public static LinkKey from(NodeLink conn) {
-        return new LinkKey(conn.getFirst().toNodeKey(), conn.getSecond().toNodeKey());
+    public static PosLinkKey from(NodeLink conn) {
+        return new PosLinkKey(conn.getFirst().toNodeKey(), conn.getSecond().toNodeKey());
     }
 }
