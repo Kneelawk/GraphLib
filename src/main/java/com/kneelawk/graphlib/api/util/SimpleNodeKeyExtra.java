@@ -7,14 +7,14 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.UniqueData;
+import com.kneelawk.graphlib.api.node.NodeKeyExtra;
 
 /**
- * Generic {@link BlockNode} unique data for use when implementing {@link BlockNode#getUniqueData()}.
+ * Generic {@link BlockNode} unique data for use when implementing {@link BlockNode#getKeyExtra()}.
  *
  * @param typeId the type id of the block node this is associated with.
  */
-public record SimpleUniqueData(Identifier typeId) implements UniqueData {
+public record SimpleNodeKeyExtra(Identifier typeId) implements NodeKeyExtra {
     @Override
     public @NotNull Identifier getTypeId() {
         return typeId;

@@ -11,7 +11,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 /**
  * Describes the unique-data associated with a {@link BlockNode} that is used as its key.
  */
-public interface UniqueData {
+public interface NodeKeyExtra {
     /**
      * Gets the type id associated with this unique-data.
      * <p>

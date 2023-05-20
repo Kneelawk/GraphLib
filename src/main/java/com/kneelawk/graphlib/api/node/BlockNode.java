@@ -15,7 +15,8 @@ import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.util.SimpleSidedUniqueData;
+import com.kneelawk.graphlib.api.util.SimpleNodeKeyExtra;
+import com.kneelawk.graphlib.api.util.SimpleSidedNodeKeyExtra;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
@@ -57,10 +58,10 @@ public interface BlockNode {
      * Often one of the pre-defined implementations will do.
      *
      * @return this block-node's unique data.
-     * @see com.kneelawk.graphlib.api.util.SimpleUniqueData
-     * @see SimpleSidedUniqueData
+     * @see SimpleNodeKeyExtra
+     * @see SimpleSidedNodeKeyExtra
      */
-    @NotNull UniqueData getUniqueData();
+    @NotNull NodeKeyExtra getKeyExtra();
 
     /**
      * Encodes this block node's data to an NBT element.
@@ -145,7 +146,7 @@ public interface BlockNode {
     default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world, @NotNull GraphView graphView,
                           @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(getUniqueData().hashCode());
+        buf.writeInt(getKeyExtra().hashCode());
 
         // Class name hash for use in default node coloring
         buf.writeInt(getClass().getName().hashCode());

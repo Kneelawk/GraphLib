@@ -60,7 +60,7 @@ public interface NodeHolder<T extends BlockNode> {
      * @return this holder's key.
      */
     default @NotNull NodeKey toNodeKey() {
-        return new NodeKey(getPos(), getNode().getUniqueData());
+        return new NodeKey(getPos(), getNode().getKeyExtra());
     }
 
     /**

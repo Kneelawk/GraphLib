@@ -111,7 +111,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
         return discoverers.stream()
             .flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
             .collect(Object2ObjectLinkedOpenHashMap::new,
-                (map, discovery) -> map.put(new NodeKey(pos, discovery.uniqueData()), discovery.nodeCreator()),
+                (map, discovery) -> map.put(new NodeKey(pos, discovery.nodeKeyExtra()), discovery.nodeCreator()),
                 Map::putAll);
     }
 

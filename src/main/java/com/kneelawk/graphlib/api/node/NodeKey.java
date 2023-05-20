@@ -10,17 +10,17 @@ import net.minecraft.util.math.BlockPos;
  * This is the type that node lookups are performed against.
  *
  * @param pos        the block position of the node.
- * @param uniqueData any extra data a node wishes to use to make itself unique.
+ * @param nodeKeyExtra any extra data a node wishes to use to make itself unique.
  */
-public record NodeKey(@NotNull BlockPos pos, @NotNull UniqueData uniqueData) {
+public record NodeKey(@NotNull BlockPos pos, @NotNull NodeKeyExtra nodeKeyExtra) {
     /**
      * Creates a NodeKey.
      *
      * @param pos        the block-position of the node. Note, this is made immutable.
-     * @param uniqueData the unique data associated with this node.
+     * @param nodeKeyExtra the unique data associated with this node.
      */
-    public NodeKey(@NotNull BlockPos pos, UniqueData uniqueData) {
+    public NodeKey(@NotNull BlockPos pos, NodeKeyExtra nodeKeyExtra) {
         this.pos = pos.toImmutable();
-        this.uniqueData = uniqueData;
+        this.nodeKeyExtra = nodeKeyExtra;
     }
 }
