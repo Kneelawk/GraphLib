@@ -14,19 +14,19 @@ import com.kneelawk.graphlib.api.node.BlockNode;
  *
  * @param pos     the block position of the node.
  * @param node    the node itself.
- * @param graphId the id of the graph that this node belonged to when {@link NodeHolder#toPositionedNode()} was called.
+ * @param graphId the id of the graph that this node belonged to when {@link NodeHolder#toSnapshot()} was called.
  * @param <T>     the specific type of the node.
  */
-public record PositionedNode<T extends BlockNode>(@NotNull BlockPos pos, @NotNull T node, long graphId) {
+public record SnapshotNode<T extends BlockNode>(@NotNull BlockPos pos, @NotNull T node, long graphId) {
     /**
      * Creates a PositionedNode.
      *
      * @param pos     the block position of the node.
      * @param node    the node itself.
-     * @param graphId the id of the graph that this node belonged to when {@link NodeHolder#toPositionedNode()} was called.
+     * @param graphId the id of the graph that this node belonged to when {@link NodeHolder#toSnapshot()} was called.
      */
     @ApiStatus.Internal
-    public PositionedNode(@NotNull BlockPos pos, @NotNull T node, long graphId) {
+    public SnapshotNode(@NotNull BlockPos pos, @NotNull T node, long graphId) {
         this.pos = pos.toImmutable();
         this.node = node;
         this.graphId = graphId;
