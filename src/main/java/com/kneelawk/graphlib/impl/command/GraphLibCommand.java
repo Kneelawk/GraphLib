@@ -59,13 +59,13 @@ public class GraphLibCommand {
     }
 
     private static int updateBlocks(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe, BlockPos from, BlockPos to) {
-        source.sendFeedback(Constants.command("graphlib.updateblocks.starting", blockPosText(from), blockPosText(to)),
+        source.sendFeedback(() -> Constants.command("graphlib.updateblocks.starting", blockPosText(from), blockPosText(to)),
             true);
 
         ServerWorld world = source.getWorld();
         universe.value().getGraphWorld(world).updateNodes(BlockPos.stream(from, to));
 
-        source.sendFeedback(Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
+        source.sendFeedback(() -> Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
             true);
 
         return 15;
@@ -74,7 +74,7 @@ public class GraphLibCommand {
     private static int removeEmptyGraphsCommand(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe) {
         int result = universe.value().getGraphWorld(source.getWorld()).removeEmptyGraphs();
 
-        source.sendFeedback(Constants.command("graphlib.removeemptygraphs.success", result), true);
+        source.sendFeedback(() -> Constants.command("graphlib.removeemptygraphs.success", result), true);
 
         return result;
     }
