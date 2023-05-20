@@ -15,8 +15,8 @@ import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.util.SimpleNodeKeyExtra;
-import com.kneelawk.graphlib.api.util.SimpleSidedNodeKeyExtra;
+import com.kneelawk.graphlib.api.util.SimpleNodeKey;
+import com.kneelawk.graphlib.api.util.SimpleSidedNodeKey;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
@@ -43,7 +43,7 @@ public interface BlockNode {
      * Gets this block node's type ID, associated with its decoder.
      * <p>
      * A block node's {@link BlockNodeDecoder} must always be registered with
-     * {@link GraphUniverse#addDecoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
+     * {@link GraphUniverse#addNodeDecoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
      *
      * @return the id of this block node.
      */
@@ -58,10 +58,10 @@ public interface BlockNode {
      * Often one of the pre-defined implementations will do.
      *
      * @return this block-node's unique data.
-     * @see SimpleNodeKeyExtra
-     * @see SimpleSidedNodeKeyExtra
+     * @see SimpleNodeKey
+     * @see SimpleSidedNodeKey
      */
-    @NotNull NodeKeyExtra getKeyExtra();
+    @NotNull NodeKey getKey();
 
     /**
      * Encodes this block node's data to an NBT element.
@@ -146,7 +146,7 @@ public interface BlockNode {
     default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world, @NotNull GraphView graphView,
                           @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(getKeyExtra().hashCode());
+        buf.writeInt(getKey().hashCode());
 
         // Class name hash for use in default node coloring
         buf.writeInt(getClass().getName().hashCode());

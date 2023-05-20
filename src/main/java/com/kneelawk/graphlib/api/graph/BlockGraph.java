@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
@@ -46,7 +46,7 @@ public interface BlockGraph {
      * @param key the key to look for the node by.
      * @return a node holder holding the node with the given key.
      */
-    @Nullable NodeHolder<BlockNode> getNode(NodeKey key);
+    @Nullable NodeHolder<BlockNode> getNode(PosNodeKey key);
 
     /**
      * Gets all the nodes in this graph.

@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 
 /**
  * Positioned holder for a block node.
@@ -44,7 +44,7 @@ public interface NodeHolder<T extends BlockNode> {
      *
      * @return a collection of all the {@link NodeLink}s this node has with other nodes.
      */
-    @NotNull Map<NodeKey, NodeLink> getConnections();
+    @NotNull Map<PosNodeKey, NodeLink> getConnections();
 
     /**
      * Gets an immutable view of this node holder's position and node.
@@ -59,8 +59,8 @@ public interface NodeHolder<T extends BlockNode> {
      *
      * @return this holder's key.
      */
-    default @NotNull NodeKey toNodeKey() {
-        return new NodeKey(getPos(), getNode().getKeyExtra());
+    default @NotNull PosNodeKey toNodeKey() {
+        return new PosNodeKey(getPos(), getNode().getKey());
     }
 
     /**

@@ -49,7 +49,7 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -92,7 +92,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private final ObjectSet<BlockPos> nodeUpdates = new ObjectLinkedOpenHashSet<>();
     private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
-    private final Object2ObjectMap<NodeKey, NodeHolder<BlockNode>> callbackUpdates =
+    private final Object2ObjectMap<PosNodeKey, NodeHolder<BlockNode>> callbackUpdates =
         new Object2ObjectLinkedOpenHashMap<>();
 
     private boolean stateDirty = false;
@@ -231,7 +231,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return a node holder holding the node with the given key.
      */
     @Override
-    public @Nullable NodeHolder<BlockNode> getNode(NodeKey key) {
+    public @Nullable NodeHolder<BlockNode> getNode(PosNodeKey key) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(key.pos()));
         if (chunk != null) {
             BlockGraph graph = chunk.getGraphForKey(key, this::getGraph);
@@ -478,7 +478,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         GraphLibEvents.GRAPH_DESTROYED.invoker().graphDestroyed(world, this, id);
     }
 
-    void putGraphWithKey(long id, @NotNull NodeKey key) {
+    void putGraphWithKey(long id, @NotNull PosNodeKey key) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(key.pos());
         SimpleBlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
         chunk.putGraphWithKey(id, key, this::getGraph);
@@ -486,7 +486,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         timer.onChunkUse(sectionPos);
     }
 
-    void removeGraphWithKey(long id, @NotNull NodeKey key) {
+    void removeGraphWithKey(long id, @NotNull PosNodeKey key) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(key.pos());
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
@@ -517,8 +517,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
     }
 
-    void removeGraphInPoses(long id, Set<NodeKey> removedKeys, @NotNull Iterable<BlockPos> poses, @NotNull LongIterable chunkPoses) {
-        for (NodeKey key : removedKeys) {
+    void removeGraphInPoses(long id, Set<PosNodeKey> removedKeys, @NotNull Iterable<BlockPos> poses, @NotNull LongIterable chunkPoses) {
+        for (PosNodeKey key : removedKeys) {
             removeGraphWithKey(id, key);
         }
         for (BlockPos pos : poses) {
@@ -534,7 +534,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     private void handleNodeUpdates() {
         for (BlockPos pos : nodeUpdates) {
             try {
-                Map<NodeKey, Supplier<BlockNode>> nodes = universe.discoverNodesInBlock(world, pos);
+                Map<PosNodeKey, Supplier<BlockNode>> nodes = universe.discoverNodesInBlock(world, pos);
                 onNodesChanged(pos, nodes);
             } catch (Exception e) {
                 GLLog.error("Error discovering block nodes at {}", pos, e);
@@ -578,8 +578,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     // ---- Private Methods ---- //
 
-    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Map<NodeKey, Supplier<BlockNode>> nodes) {
-        Map<NodeKey, Supplier<BlockNode>> newNodes = new Object2ObjectLinkedOpenHashMap<>(nodes);
+    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Map<PosNodeKey, Supplier<BlockNode>> nodes) {
+        Map<PosNodeKey, Supplier<BlockNode>> newNodes = new Object2ObjectLinkedOpenHashMap<>(nodes);
 
         for (long graphId : getGraphsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
@@ -590,7 +590,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
 
             for (var node : graph.getNodesAt(pos).toList()) {
-                NodeKey key = node.toNodeKey();
+                PosNodeKey key = node.toNodeKey();
                 if (!nodes.containsKey(key)) {
                     graph.destroyNode(node);
                 }
@@ -615,17 +615,17 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
 
         // Gather old connections
-        Map<NodeKey, NodeLink> nodeConnections = node.getConnections();
-        Map<NodeKey, NodeHolder<BlockNode>> oldConnections =
+        Map<PosNodeKey, NodeLink> nodeConnections = node.getConnections();
+        Map<PosNodeKey, NodeHolder<BlockNode>> oldConnections =
             new Object2ObjectLinkedOpenHashMap<>(nodeConnections.size());
-        NodeKey nodeKey = node.toNodeKey();
-        for (Map.Entry<NodeKey, NodeLink> entry : nodeConnections.entrySet()) {
-            oldConnections.put(entry.getKey(), entry.getValue().other(nodeKey));
+        PosNodeKey posNodeKey = node.toNodeKey();
+        for (Map.Entry<PosNodeKey, NodeLink> entry : nodeConnections.entrySet()) {
+            oldConnections.put(entry.getKey(), entry.getValue().other(posNodeKey));
         }
 
         // Gather wanted connections
         Collection<NodeHolder<BlockNode>> foundConnections = node.getNode().findConnections(node, world, this);
-        Map<NodeKey, NodeHolder<BlockNode>> wantedConnections =
+        Map<PosNodeKey, NodeHolder<BlockNode>> wantedConnections =
             new Object2ObjectLinkedOpenHashMap<>(foundConnections.size());
         for (NodeHolder<BlockNode> other : foundConnections) {
             if (other.getNode().canConnect(other, world, this, node)) {
@@ -635,7 +635,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
         // Gather new connections
         List<NodeHolder<BlockNode>> newConnections = new ObjectArrayList<>();
-        for (Map.Entry<NodeKey, NodeHolder<BlockNode>> entry : wantedConnections.entrySet()) {
+        for (Map.Entry<PosNodeKey, NodeHolder<BlockNode>> entry : wantedConnections.entrySet()) {
             if (entry.getValue().getGraphId() != nodeGraphId || !oldConnections.containsKey(entry.getKey())) {
                 newConnections.add(entry.getValue());
             }
@@ -643,7 +643,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
         // Gather removed connections
         List<NodeHolder<BlockNode>> removedConnections = new ObjectArrayList<>();
-        for (Map.Entry<NodeKey, NodeHolder<BlockNode>> entry : oldConnections.entrySet()) {
+        for (Map.Entry<PosNodeKey, NodeHolder<BlockNode>> entry : oldConnections.entrySet()) {
             if (!wantedConnections.containsKey(entry.getKey())) {
                 removedConnections.add(entry.getValue());
             }

@@ -35,8 +35,8 @@ import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.LinkKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.NodeKey;
-import com.kneelawk.graphlib.api.node.NodeKeyExtra;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Graph;
@@ -64,7 +64,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
 
-        List<@Nullable NodeKey> nodes = new ArrayList<>();
+        List<@Nullable PosNodeKey> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
             SimplePositionedNode node = SimplePositionedNode.fromTag(world.universe, (NbtCompound) nodeElement);
@@ -94,8 +94,8 @@ public class SimpleBlockGraph implements BlockGraph {
     final SimpleGraphWorld world;
     private final long id;
 
-    private final Graph<NodeKey, SimpleNodeWrapper> graph = new Graph<>();
-    private final Table<BlockPos, NodeKeyExtra, SimpleNodeHolder<BlockNode>> nodesInPos = HashBasedTable.create();
+    private final Graph<PosNodeKey, SimpleNodeWrapper> graph = new Graph<>();
+    private final Table<BlockPos, NodeKey, SimpleNodeHolder<BlockNode>> nodesInPos = HashBasedTable.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
     private final Map<Class<?>, List<?>> nodeTypeCache = new HashMap<>();
 
@@ -124,17 +124,17 @@ public class SimpleBlockGraph implements BlockGraph {
 
         tag.put("chunks", chunksTag);
 
-        List<Node<NodeKey, SimpleNodeWrapper>> nodes = new ObjectArrayList<>(graph.values());
+        List<Node<PosNodeKey, SimpleNodeWrapper>> nodes = new ObjectArrayList<>(graph.values());
         int nodeCount = nodes.size();
 
-        Object2IntMap<NodeKey> nodeIndexMap = new Object2IntOpenHashMap<>();
+        Object2IntMap<PosNodeKey> nodeIndexMap = new Object2IntOpenHashMap<>();
         for (int i = 0; i < nodeCount; i++) {
             nodeIndexMap.put(nodes.get(i).key(), i);
         }
 
         NbtList nodesTag = new NbtList();
 
-        for (Node<NodeKey, SimpleNodeWrapper> node : nodes) {
+        for (Node<PosNodeKey, SimpleNodeWrapper> node : nodes) {
             SimplePositionedNode positioned = new SimplePositionedNode(node.key().pos(), node.value().node);
             nodesTag.add(positioned.toTag());
         }
@@ -144,8 +144,8 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList linksTag = new NbtList();
 
         Set<LinkKey> connections = new ObjectLinkedOpenHashSet<>();
-        for (Node<NodeKey, SimpleNodeWrapper> node : nodes) {
-            for (Link<NodeKey, SimpleNodeWrapper> link : node.connections().values()) {
+        for (Node<PosNodeKey, SimpleNodeWrapper> node : nodes) {
+            for (Link<PosNodeKey, SimpleNodeWrapper> link : node.connections().values()) {
                 connections.add(LinkKey.from(link));
             }
         }
@@ -216,7 +216,7 @@ public class SimpleBlockGraph implements BlockGraph {
      * @return a node holder holding the node with the given key.
      */
     @Override
-    public @Nullable NodeHolder<BlockNode> getNode(NodeKey key) {
+    public @Nullable NodeHolder<BlockNode> getNode(PosNodeKey key) {
         return new SimpleNodeHolder<>(graph.get(key));
     }
 
@@ -287,17 +287,17 @@ public class SimpleBlockGraph implements BlockGraph {
             BlockPos pos = node.key().pos();
             chunks.add(ChunkSectionPos.from(pos).asLong());
             SimpleNodeHolder<BlockNode> holder = new SimpleNodeHolder<>(node);
-            nodesInPos.put(pos, holder.getNode().getKeyExtra(), holder);
+            nodesInPos.put(pos, holder.getNode().getKey(), holder);
         }
     }
 
     @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
         BlockPos pos = blockPos.toImmutable();
-        NodeKey key = new NodeKey(pos, node.getKeyExtra());
+        PosNodeKey key = new PosNodeKey(pos, node.getKey());
 
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(
             graph.add(key, new SimpleNodeWrapper(node, id)));
-        nodesInPos.put(pos, graphNode.getNode().getKeyExtra(), graphNode);
+        nodesInPos.put(pos, graphNode.getNode().getKey(), graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();
         world.putGraphWithKey(id, key);
@@ -309,10 +309,10 @@ public class SimpleBlockGraph implements BlockGraph {
     void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
         // see if removing this node means removing a block-pos or a chunk
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
-        NodeKey removedKey = node.toNodeKey();
+        PosNodeKey removedKey = node.toNodeKey();
         BlockPos removedPos = node.getPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
-        nodesInPos.remove(removedPos, node.getNode().getKeyExtra());
+        nodesInPos.remove(removedPos, node.getNode().getKey());
         nodeTypeCache.clear();
         world.markDirty(id);
 
@@ -404,11 +404,11 @@ public class SimpleBlockGraph implements BlockGraph {
 
         if (!newGraphs.isEmpty()) {
             // collect the keys, block-poses, and chunks we are no longer a part of
-            Set<NodeKey> removedKeys = new LinkedHashSet<>();
+            Set<PosNodeKey> removedKeys = new LinkedHashSet<>();
             Set<BlockPos> removedPoses = new LinkedHashSet<>();
             LongSet removedChunks = new LongLinkedOpenHashSet();
 
-            for (Graph<NodeKey, SimpleNodeWrapper> graph : newGraphs) {
+            for (Graph<PosNodeKey, SimpleNodeWrapper> graph : newGraphs) {
                 for (var node : graph) {
                     removedKeys.add(node.key());
                     BlockPos pos = node.key().pos();
@@ -416,7 +416,7 @@ public class SimpleBlockGraph implements BlockGraph {
                     removedChunks.add(ChunkSectionPos.from(pos).asLong());
 
                     // the node is in a new graph, so it obviously isn't in our graph anymore
-                    nodesInPos.remove(pos, node.key().nodeKeyExtra());
+                    nodesInPos.remove(pos, node.key().nodeKey());
                 }
             }
 
@@ -436,7 +436,7 @@ public class SimpleBlockGraph implements BlockGraph {
             // setup block-graphs for the newly created graphs
             List<SimpleBlockGraph> newBlockGraphs = new ArrayList<>(newGraphs.size());
 
-            for (Graph<NodeKey, SimpleNodeWrapper> graph : newGraphs) {
+            for (Graph<PosNodeKey, SimpleNodeWrapper> graph : newGraphs) {
                 // create the new graph and set its nodes correctly
                 SimpleBlockGraph bg = world.createGraph();
                 bg.graph.join(graph);

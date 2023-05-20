@@ -20,7 +20,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
@@ -79,19 +79,19 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public void addDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder) {
+    public void addNodeDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder) {
         decoders.put(typeId, decoder);
     }
 
     @Override
-    public void addDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder> @NotNull ... decoders) {
+    public void addNodeDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder> @NotNull ... decoders) {
         for (Pair<Identifier, ? extends BlockNodeDecoder> pair : decoders) {
             this.decoders.put(pair.key(), pair.value());
         }
     }
 
     @Override
-    public void addDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders) {
+    public void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders) {
         this.decoders.putAll(decoders);
     }
 
@@ -106,12 +106,12 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull Map<NodeKey, Supplier<BlockNode>> discoverNodesInBlock(@NotNull ServerWorld world,
-                                                                           @NotNull BlockPos pos) {
+    public @NotNull Map<PosNodeKey, Supplier<BlockNode>> discoverNodesInBlock(@NotNull ServerWorld world,
+                                                                              @NotNull BlockPos pos) {
         return discoverers.stream()
             .flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
             .collect(Object2ObjectLinkedOpenHashMap::new,
-                (map, discovery) -> map.put(new NodeKey(pos, discovery.nodeKeyExtra()), discovery.nodeCreator()),
+                (map, discovery) -> map.put(new PosNodeKey(pos, discovery.nodeKey()), discovery.nodeCreator()),
                 Map::putAll);
     }
 

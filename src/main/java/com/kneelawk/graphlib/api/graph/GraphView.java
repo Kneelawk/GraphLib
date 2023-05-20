@@ -12,7 +12,7 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
@@ -51,7 +51,7 @@ public interface GraphView {
      * @param key the key to look for the node by.
      * @return a node holder holding the node with the given key.
      */
-    @Nullable NodeHolder<BlockNode> getNode(NodeKey key);
+    @Nullable NodeHolder<BlockNode> getNode(PosNodeKey key);
 
     /**
      * Gets the IDs of all graphs with nodes in the given block-position.

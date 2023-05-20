@@ -5,7 +5,7 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.
@@ -31,7 +31,7 @@ public interface NodeLink {
      * @param node the node to check against.
      * @return <code>true</code> if either node matches the given node.
      */
-    default boolean contains(@NotNull NodeKey node) {
+    default boolean contains(@NotNull PosNodeKey node) {
         return Objects.equals(getFirst().toNodeKey(), node) || Objects.equals(getSecond().toNodeKey(), node);
     }
 
@@ -41,7 +41,7 @@ public interface NodeLink {
      * @param node the node to get the other end of the connection from.
      * @return the node at the other end of the connection from the given node.
      */
-    default @NotNull NodeHolder<BlockNode> other(@NotNull NodeKey node) {
+    default @NotNull NodeHolder<BlockNode> other(@NotNull PosNodeKey node) {
         NodeHolder<BlockNode> first = getFirst();
         if (Objects.equals(first.toNodeKey(), node)) {
             return getSecond();

@@ -14,14 +14,14 @@ import com.kneelawk.graphlib.api.util.graph.Link;
  * @param first  the key of the first node in this link.
  * @param second the key of the second node in this link.
  */
-public record LinkKey(@NotNull NodeKey first, @NotNull NodeKey second) {
+public record LinkKey(@NotNull PosNodeKey first, @NotNull PosNodeKey second) {
     /**
      * Checks to see if this link contains the given key.
      *
      * @param key the key to see if this link contains.
      * @return whether this link contains the given key.
      */
-    public boolean contains(@NotNull NodeKey key) {
+    public boolean contains(@NotNull PosNodeKey key) {
         return first.equals(key) || second.equals(key);
     }
 
@@ -31,7 +31,7 @@ public record LinkKey(@NotNull NodeKey first, @NotNull NodeKey second) {
      * @param key the key to get the node-key opposite of.
      * @return the node-ley at the other end of this link from the given key.
      */
-    public @NotNull NodeKey other(@NotNull NodeKey key) {
+    public @NotNull PosNodeKey other(@NotNull PosNodeKey key) {
         if (first.equals(key)) {
             return second;
         } else {
@@ -68,7 +68,7 @@ public record LinkKey(@NotNull NodeKey first, @NotNull NodeKey second) {
      * @param link the link to get the link-key of.
      * @return a new link-key describing the given link.
      */
-    public static LinkKey from(Link<NodeKey, ?> link) {
+    public static LinkKey from(Link<PosNodeKey, ?> link) {
         return new LinkKey(link.first().key(), link.second().key());
     }
 

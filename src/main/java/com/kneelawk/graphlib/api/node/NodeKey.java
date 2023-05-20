@@ -1,26 +1,48 @@
 package com.kneelawk.graphlib.api.node;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.util.Identifier;
+
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 
 /**
- * Holds all comparable information about a block-node.
- * <p>
- * This is the type that node lookups are performed against.
- *
- * @param pos        the block position of the node.
- * @param nodeKeyExtra any extra data a node wishes to use to make itself unique.
+ * Describes the unique-data associated with a {@link BlockNode} that is used as its key.
  */
-public record NodeKey(@NotNull BlockPos pos, @NotNull NodeKeyExtra nodeKeyExtra) {
+public interface NodeKey {
     /**
-     * Creates a NodeKey.
+     * Gets the type id associated with this unique-data.
+     * <p>
+     * This should be the same as is registered with {@link GraphUniverse#addNodeDecoder(Identifier, BlockNodeDecoder)}.
      *
-     * @param pos        the block-position of the node. Note, this is made immutable.
-     * @param nodeKeyExtra the unique data associated with this node.
+     * @return this unique-data's type id.
+     * @see BlockNode#getTypeId()
      */
-    public NodeKey(@NotNull BlockPos pos, NodeKeyExtra nodeKeyExtra) {
-        this.pos = pos.toImmutable();
-        this.nodeKeyExtra = nodeKeyExtra;
-    }
+    @NotNull Identifier getTypeId();
+
+    /**
+     * Encodes this unique data to an NBT element.
+     * <p>
+     * This can return <code>null</code> if the unique-data's type is all that needs to be stored.
+     *
+     * @return this as an NBT element.
+     */
+    @Nullable NbtElement toTag();
+
+    /**
+     * All unique-data must implement consistent {@link Object#hashCode()} and {@link Object#equals(Object)} methods.
+     *
+     * @return this unique-data's hash-code.
+     */
+    int hashCode();
+
+    /**
+     * All unique-data must implement consistent {@link Object#hashCode()} and {@link Object#equals(Object)} methods.
+     *
+     * @param other the other object this is being compared to.
+     * @return whether this object and the other object are equals.
+     */
+    boolean equals(Object other);
 }

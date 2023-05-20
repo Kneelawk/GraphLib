@@ -4,10 +4,10 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 
 /**
- * Client version of {@link NodeKey}.
+ * Client version of {@link PosNodeKey}.
  *
  * @param pos        the position of the block node.
  * @param uniqueData the unique data associated with the block node.

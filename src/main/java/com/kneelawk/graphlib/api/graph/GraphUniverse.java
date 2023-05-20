@@ -82,7 +82,7 @@ public interface GraphUniverse {
      * @param typeId  the type id of the block node the decoder is being registered for.
      * @param decoder the block node decoder responsible for decoding the associated type of block node.
      */
-    void addDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
+    void addNodeDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
 
     /**
      * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
@@ -92,7 +92,7 @@ public interface GraphUniverse {
      *
      * @param decoders the set of block node decoders to be registered.
      */
-    void addDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder>... decoders);
+    void addNodeDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder>... decoders);
 
     /**
      * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
@@ -102,7 +102,7 @@ public interface GraphUniverse {
      *
      * @param decoders the set of block node decoders to be registered.
      */
-    void addDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
+    void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
 
     /**
      * Registers this graph universe so that it can be found by its id.

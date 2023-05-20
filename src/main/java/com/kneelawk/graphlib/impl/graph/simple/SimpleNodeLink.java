@@ -6,14 +6,14 @@ import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.util.graph.Link;
 
 public class SimpleNodeLink implements NodeLink {
-    private final Link<NodeKey, SimpleNodeWrapper> link;
+    private final Link<PosNodeKey, SimpleNodeWrapper> link;
 
-    public SimpleNodeLink(Link<NodeKey, SimpleNodeWrapper> link) {
+    public SimpleNodeLink(Link<PosNodeKey, SimpleNodeWrapper> link) {
         this.link = link;
     }
 
@@ -27,7 +27,7 @@ public class SimpleNodeLink implements NodeLink {
         return new SimpleNodeHolder<>(link.second());
     }
 
-    Link<NodeKey, SimpleNodeWrapper> getLink() {
+    Link<PosNodeKey, SimpleNodeWrapper> getLink() {
         return link;
     }
 

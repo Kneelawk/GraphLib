@@ -11,17 +11,17 @@ import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.PositionedNode;
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingMap;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
-    final Node<NodeKey, SimpleNodeWrapper> node;
+    final Node<PosNodeKey, SimpleNodeWrapper> node;
 
     /**
      * @param node treat this as if it were parameterized on <code>&lt;T&gt;</code>.
      */
-    public SimpleNodeHolder(Node<NodeKey, SimpleNodeWrapper> node) {
+    public SimpleNodeHolder(Node<PosNodeKey, SimpleNodeWrapper> node) {
         this.node = node;
     }
 
@@ -42,7 +42,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull Map<NodeKey, NodeLink> getConnections() {
+    public @NotNull Map<PosNodeKey, NodeLink> getConnections() {
         return new ReadOnlyMappingMap<>(node.connections(), SimpleNodeLink::new, conn -> {
             if (conn instanceof SimpleNodeLink simple) {
                 return simple.getLink();

@@ -38,10 +38,8 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeLink;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.LinkKey;
-import com.kneelawk.graphlib.api.node.NodeKey;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 
 public final class GraphLibCommonNetworking {
     private GraphLibCommonNetworking() {
@@ -181,7 +179,7 @@ public final class GraphLibCommonNetworking {
         buf.writeLong(graph.getId());
 
         AtomicInteger index = new AtomicInteger();
-        Map<NodeKey, Integer> indexMap = new HashMap<>();
+        Map<PosNodeKey, Integer> indexMap = new HashMap<>();
         Set<LinkKey> distinct = new LinkedHashSet<>();
 
         buf.writeVarInt(graph.size());

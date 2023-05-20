@@ -9,15 +9,15 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
-import com.kneelawk.graphlib.api.node.NodeKeyExtra;
+import com.kneelawk.graphlib.api.node.NodeKey;
 
 /**
- * Generic {@link SidedBlockNode} unique data for use when implementing {@link BlockNode#getKeyExtra()}.
+ * Generic {@link SidedBlockNode} unique data for use when implementing {@link BlockNode#getKey()}.
  *
  * @param typeId the type-id of the sided-block-node.
  * @param side   the side that the node is on.
  */
-public record SimpleSidedNodeKeyExtra(Identifier typeId, Direction side) implements NodeKeyExtra {
+public record SimpleSidedNodeKey(Identifier typeId, Direction side) implements NodeKey {
     @Override
     public @NotNull Identifier getTypeId() {
         return typeId;
