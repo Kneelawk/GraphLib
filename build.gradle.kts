@@ -110,6 +110,12 @@ tasks {
     test {
         useJUnit()
     }
+
+    afterEvaluate {
+        named("genSources") {
+            setDependsOn(listOf("genSourcesWithQuiltflower"))
+        }
+    }
 }
 
 publishing {
