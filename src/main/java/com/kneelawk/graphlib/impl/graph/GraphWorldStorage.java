@@ -29,7 +29,9 @@ public class GraphWorldStorage implements AutoCloseable {
 
     public GraphWorldImpl get(Identifier universe) {
         if (!worlds.containsKey(universe)) {
-            throw new IllegalStateException("Attempted to get a graph world that does not exist. Universe: " + universe);
+            throw new IllegalStateException(
+                "Attempted to get a graph world for a universe that has not been registered. Make sure to call the universe's register() function in your mod's init. Universe: " +
+                    universe);
         }
 
         return worlds.get(universe);

@@ -19,6 +19,8 @@ import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
 /**
  * Represents one {@link GraphWorld} per {@link ServerWorld}. Provides access to each world's associated {@link GraphWorld}.
+ * <p>
+ * <b>Note: GraphUniverses must be registered with the {@link #register()} method in order to work properly.</b>
  */
 public interface GraphUniverse {
     /**
@@ -105,8 +107,7 @@ public interface GraphUniverse {
     /**
      * Registers this graph universe so that it can be found by its id.
      * <p>
-     * If a graph universe is not registered, it will not be accessible from commands and its debug renderer will not
-     * work.
+     * If a graph universe is not registered, it will not work.
      */
     void register();
 
@@ -125,9 +126,12 @@ public interface GraphUniverse {
      */
     interface Builder {
         /**
-         * Builds the {@link GraphUniverse} described by this builder.
+         * Builds the {@link GraphUniverse} described by this builder. Universes must be registered separately.
+         * <p>
+         * <b>Note: This does not register universes. Registration should be performed with the
+         * {@link GraphUniverse#register()} method.</b>
          *
-         * @param universeId the unique id of the GraphUniverse to be built.
+         * @param universeId the unique id of the universe to be built.
          * @return the newly created {@link GraphUniverse}.
          */
         @NotNull GraphUniverse build(@NotNull Identifier universeId);
