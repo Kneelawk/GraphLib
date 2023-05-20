@@ -138,4 +138,9 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     public @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId) {
         return nodeDecoders.get(typeId);
     }
+
+    @Override
+    public @Nullable NodeKeyDecoder getNodeKeyDecoder(@NotNull Identifier typeId) {
+        return nodeKeyDecoders.get(typeId);
+    }
 }
