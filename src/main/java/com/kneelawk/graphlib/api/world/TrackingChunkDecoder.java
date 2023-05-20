@@ -10,6 +10,7 @@ import net.minecraft.util.math.ChunkSectionPos;
  *
  * @param <R> the type of storage chunk being decoded.
  */
+@FunctionalInterface
 public interface TrackingChunkDecoder<R extends StorageChunk> {
     /**
      * Decode a storage chunk.

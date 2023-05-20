@@ -9,6 +9,7 @@ import net.minecraft.util.math.ChunkSectionPos;
  *
  * @param <R> the type of storage chunk this creates.
  */
+@FunctionalInterface
 public interface TrackingChunkFactory<R extends StorageChunk> {
     /**
      * Create a new storage chunk.
