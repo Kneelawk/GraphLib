@@ -29,7 +29,7 @@ public record BlockNodeDiscovery(NodeKeyExtra nodeKeyExtra, Supplier<BlockNode> 
      * @param unique the unique block node.
      * @return a new block node discovery containing the unique block node.
      */
-    public static BlockNodeDiscovery ofUniqueBlockNode(KeyBlockNode unique) {
+    public static BlockNodeDiscovery ofKeyBlockNodeNode(KeyBlockNode unique) {
         return new BlockNodeDiscovery(unique, () -> unique);
     }
 }
