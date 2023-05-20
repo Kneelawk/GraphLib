@@ -9,7 +9,7 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.PositionedNode;
+import com.kneelawk.graphlib.api.graph.SnapshotNode;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
@@ -54,8 +54,8 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public @NotNull PositionedNode<T> toPositionedNode() {
-        return new PositionedNode<>(node.key().pos(), (T) node.value().getNode(), node.value().getGraphId());
+    public @NotNull SnapshotNode<T> toSnapshot() {
+        return new SnapshotNode<>(node.key().pos(), (T) node.value().getNode(), node.value().getGraphId());
     }
 
     @Override

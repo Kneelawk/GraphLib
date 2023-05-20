@@ -51,7 +51,7 @@ public interface NodeHolder<T extends BlockNode> {
      *
      * @return a positioned node containing this holder's position and node.
      */
-    @NotNull PositionedNode<T> toPositionedNode();
+    @NotNull SnapshotNode<T> toSnapshot();
 
     /**
      * Gets an immutable, unique, comparable view of this node holder's position and data that can be used to look up
