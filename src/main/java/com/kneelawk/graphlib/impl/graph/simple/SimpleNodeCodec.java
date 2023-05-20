@@ -8,21 +8,25 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
-public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
-    public SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
+public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleBlockNodeContext ctx) {
+    public SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleBlockNodeContext ctx) {
         this.pos = pos.toImmutable();
         this.node = node;
+        this.ctx = ctx;
     }
 
-    public @NotNull NbtCompound toTag() {
+    public static @NotNull NbtCompound encode(@NotNull BlockPos pos, @NotNull BlockNode node) {
         NbtCompound tag = new NbtCompound();
 
         tag.putInt("x", pos.getX());
@@ -40,7 +44,9 @@ public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode nod
     }
 
     @Nullable
-    public static SimplePositionedNode fromTag(@NotNull GraphUniverseImpl universe, @NotNull NbtCompound tag) {
+    public static SimpleNodeCodec decode(long initialGraphId, @NotNull GraphUniverseImpl universe,
+                                         @NotNull ServerWorld blockWorld, @NotNull SimpleGraphWorld graphWorld,
+                                         @NotNull NbtCompound tag) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
@@ -51,14 +57,16 @@ public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode nod
             return null;
         }
 
+        SimpleBlockNodeContext ctx = new SimpleBlockNodeContext(initialGraphId, blockWorld, graphWorld, pos);
+
         NbtElement nodeTag = tag.get("node");
-        BlockNode node = decoder.createBlockNodeFromTag(nodeTag);
+        BlockNode node = decoder.decode(nodeTag, ctx);
 
         if (node == null) {
             GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
             return null;
         }
 
-        return new SimplePositionedNode(pos, node);
+        return new SimpleNodeCodec(pos, node, ctx);
     }
 }

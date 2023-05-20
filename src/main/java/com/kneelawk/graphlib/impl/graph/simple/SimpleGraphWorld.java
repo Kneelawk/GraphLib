@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.LongStream;
@@ -49,6 +48,7 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.BlockNodeFactory;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
@@ -517,7 +517,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
     }
 
-    void removeGraphInPoses(long id, Set<PosNodeKey> removedKeys, @NotNull Iterable<BlockPos> poses, @NotNull LongIterable chunkPoses) {
+    void removeGraphInPoses(long id, Set<PosNodeKey> removedKeys, @NotNull Iterable<BlockPos> poses,
+                            @NotNull LongIterable chunkPoses) {
         for (PosNodeKey key : removedKeys) {
             removeGraphWithKey(id, key);
         }
@@ -534,7 +535,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     private void handleNodeUpdates() {
         for (BlockPos pos : nodeUpdates) {
             try {
-                Map<PosNodeKey, Supplier<BlockNode>> nodes = universe.discoverNodesInBlock(world, pos);
+                Map<PosNodeKey, BlockNodeFactory> nodes = universe.discoverNodesInBlock(world, pos);
                 onNodesChanged(pos, nodes);
             } catch (Exception e) {
                 GLLog.error("Error discovering block nodes at {}", pos, e);
@@ -571,15 +572,15 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private void handleCallbackUpdates() {
         for (var entry : callbackUpdates.entrySet()) {
-            entry.getValue().getNode().onConnectionsChanged(entry.getValue(), world, this);
+            entry.getValue().getNode().onConnectionsChanged();
         }
         callbackUpdates.clear();
     }
 
     // ---- Private Methods ---- //
 
-    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Map<PosNodeKey, Supplier<BlockNode>> nodes) {
-        Map<PosNodeKey, Supplier<BlockNode>> newNodes = new Object2ObjectLinkedOpenHashMap<>(nodes);
+    private void onNodesChanged(@NotNull BlockPos pos, @NotNull Map<PosNodeKey, BlockNodeFactory> nodes) {
+        Map<PosNodeKey, BlockNodeFactory> newNodes = new Object2ObjectLinkedOpenHashMap<>(nodes);
 
         for (long graphId : getGraphsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
@@ -598,9 +599,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
         }
 
-        for (Supplier<BlockNode> bn : newNodes.values()) {
+        for (BlockNodeFactory bn : newNodes.values()) {
             SimpleBlockGraph newGraph = createGraph();
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn.get());
+            SimpleBlockNodeContext ctx =
+                new SimpleBlockNodeContext(newGraph.getId(), world, this, pos);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn.createNew(ctx), ctx);
             updateNodeConnections(node);
         }
     }
@@ -624,11 +627,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
 
         // Gather wanted connections
-        Collection<NodeHolder<BlockNode>> foundConnections = node.getNode().findConnections(node, world, this);
+        Collection<NodeHolder<BlockNode>> foundConnections = node.getNode().findConnections();
         Map<PosNodeKey, NodeHolder<BlockNode>> wantedConnections =
             new Object2ObjectLinkedOpenHashMap<>(foundConnections.size());
         for (NodeHolder<BlockNode> other : foundConnections) {
-            if (other.getNode().canConnect(other, world, this, node)) {
+            if (other.getNode().canConnect(node)) {
                 wantedConnections.put(other.toNodeKey(), other);
             }
         }

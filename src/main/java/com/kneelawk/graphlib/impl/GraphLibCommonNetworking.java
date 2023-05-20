@@ -186,7 +186,7 @@ public final class GraphLibCommonNetworking {
         graph.getNodes().forEachOrdered(node -> {
             buf.writeVarInt(getIdentifierInt(world, node.getNode().getTypeId()));
             buf.writeBlockPos(node.getPos());
-            node.getNode().toPacket(node, world, graphWorld, buf);
+            node.getNode().toPacket(buf);
             indexMap.put(node.toNodeKey(), index.getAndIncrement());
 
             for (NodeLink link : node.getConnections().values()) {

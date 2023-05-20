@@ -6,12 +6,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
-import com.kneelawk.graphlib.api.graph.GraphView;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
@@ -30,7 +27,7 @@ public final class GraphLibClient {
      * Registers a {@link BlockNodePacketDecoder} in the given universe for the given block node type id.
      * <p>
      * Only register a decoder if you implement
-     * {@link BlockNode#toPacket(NodeHolder, ServerWorld, GraphView, PacketByteBuf)}
+     * {@link BlockNode#toPacket(PacketByteBuf)}
      * to provide custom node data to the client.
      *
      * @param universeId the universe this decoder is to be registered under.

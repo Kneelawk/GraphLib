@@ -34,9 +34,9 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.PosLinkKey;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
-import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Graph;
@@ -67,9 +67,10 @@ public class SimpleBlockGraph implements BlockGraph {
         List<@Nullable PosNodeKey> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
-            SimplePositionedNode node = SimplePositionedNode.fromTag(world.universe, (NbtCompound) nodeElement);
+            SimpleNodeCodec node =
+                SimpleNodeCodec.decode(id, world.universe, world.world, world, (NbtCompound) nodeElement);
             if (node != null) {
-                nodes.add(graph.createNode(node.pos(), node.node()).toNodeKey());
+                nodes.add(graph.createNode(node.pos(), node.node(), node.ctx()).toNodeKey());
             } else {
                 // keep the gap so other nodes' links don't get messed up
                 nodes.add(null);
@@ -135,8 +136,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = new NbtList();
 
         for (Node<PosNodeKey, SimpleNodeWrapper> node : nodes) {
-            SimplePositionedNode positioned = new SimplePositionedNode(node.key().pos(), node.value().node);
-            nodesTag.add(positioned.toTag());
+            nodesTag.add(SimpleNodeCodec.encode(node.key().pos(), node.value().node));
         }
 
         tag.put("nodes", nodesTag);
@@ -291,12 +291,16 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
+    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
+                                                    @NotNull SimpleBlockNodeContext ctx) {
         BlockPos pos = blockPos.toImmutable();
         PosNodeKey key = new PosNodeKey(pos, node.getKey());
 
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(
             graph.add(key, new SimpleNodeWrapper(node, id)));
+        ctx.setSelf(graphNode);
+        node.onInit();
+
         nodesInPos.put(pos, graphNode.getNode().getKey(), graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();

@@ -28,7 +28,7 @@ public final class WireConnectionDiscoverers {
      * Finds nodes that can connect to this wire node.
      * <p>
      * This is intended for use in
-     * {@link BlockNode#findConnections(NodeHolder, ServerWorld, GraphView)} implementations.
+     * {@link BlockNode#findConnections()} implementations.
      *
      * @param self      this node.
      * @param selfNode  this node's holder.
@@ -36,7 +36,7 @@ public final class WireConnectionDiscoverers {
      * @param graphView the node world to find connections in.
      * @param filter    a general connection filter, used to filter connections.
      * @return a collection of nodes this node can connect to.
-     * @see BlockNode#findConnections(NodeHolder, ServerWorld, GraphView)
+     * @see BlockNode#findConnections()
      */
     public static @NotNull Collection<NodeHolder<BlockNode>> wireFindConnections(@NotNull SidedWireBlockNode self,
                                                                                  @NotNull NodeHolder<BlockNode> selfNode,
@@ -75,7 +75,7 @@ public final class WireConnectionDiscoverers {
      * Checks if this wire node can connect to the given node.
      * <p>
      * This is intended for use in
-     * {@link BlockNode#canConnect(NodeHolder, ServerWorld, GraphView, NodeHolder)} implementations.
+     * {@link BlockNode#canConnect(NodeHolder)} implementations.
      *
      * @param self      this node.
      * @param selfNode  this node's holder.
