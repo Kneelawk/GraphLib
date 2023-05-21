@@ -22,6 +22,8 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import com.kneelawk.graphlib.api.util.ColorUtils;
+
 /**
  * Assorted utilities for rendering debug block-nodes.
  */
@@ -276,8 +278,7 @@ public final class RenderUtils {
      * @return an ARGB color integer based on the given graph id.
      */
     public static int graphColor(long graphId) {
-        Random rand = new Random(graphId);
-        return rand.nextInt() | 0xFF000000;
+        return ColorUtils.hsba2Argb(graphId * MathHelper.HALF_PI / 10f, 1f, 1f, 1f);
     }
 
     /**

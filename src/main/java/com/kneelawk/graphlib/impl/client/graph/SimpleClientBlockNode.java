@@ -8,7 +8,7 @@ import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.node.client.ClientUniqueData;
 import com.kneelawk.graphlib.impl.Constants;
 
-public record SimpleClientBlockNode(int hash, int classHash) implements ClientBlockNode, ClientUniqueData {
+public record SimpleClientBlockNode(int hash, int color) implements ClientBlockNode, ClientUniqueData {
     @Override
     public @NotNull Identifier getRenderId() {
         return Constants.id("simple");

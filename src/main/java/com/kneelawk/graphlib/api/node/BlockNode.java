@@ -148,8 +148,8 @@ public interface BlockNode {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(getKey().hashCode());
 
-        // Class name hash for use in default node coloring
-        buf.writeInt(getClass().getName().hashCode());
+        // Get the default color for our node type
+        buf.writeInt(graphView.getUniverse().getDefaultDebugColor(getTypeId()));
 
         // A 0 byte to distinguish ourselves from SidedBlockNode, because both implementations use the same decoder
         buf.writeByte(0);

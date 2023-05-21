@@ -37,13 +37,13 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -197,8 +197,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return the universe this belongs to.
      */
     @Override
-    public @NotNull Identifier getUniverse() {
-        return universe.getId();
+    public @NotNull GraphUniverse getUniverse() {
+        return universe;
     }
 
     /**
