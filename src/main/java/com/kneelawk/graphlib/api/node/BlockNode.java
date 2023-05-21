@@ -14,6 +14,7 @@ import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
@@ -56,8 +57,8 @@ public interface BlockNode {
      * Often one of the pre-defined implementations will do.
      *
      * @return this block-node's unique data.
-     * @see SimpleNodeKey
-     * @see SimpleSidedNodeKey
+     * @see com.kneelawk.graphlib.api.util.SimpleNodeKey
+     * @see com.kneelawk.graphlib.api.util.SimpleSidedNodeKey
      */
     @NotNull NodeKey getKey();
 
@@ -71,7 +72,9 @@ public interface BlockNode {
     @Nullable NbtElement toTag();
 
     /**
-     * Called when a block node's
+     * Called after a node has been inserted into its graph and its context has been completed.
+     * <p>
+     * Calling {@link NodeContext#getSelf()} should not return <code>null</code> after this point.
      */
     default void onInit() {
     }

@@ -42,6 +42,8 @@ public interface NodeContext {
 
     /**
      * Gets the block graph that this node would belong to, if it exists.
+     * <p>
+     * Be careful <b>not</b> to store references to this, as which block graph a node is part of can change.
      *
      * @return the block graph that this node would belong to, if it exists.
      */
