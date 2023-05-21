@@ -4,27 +4,26 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeContext;
+import com.kneelawk.graphlib.api.node.PosNodeKey;
 
 public class SimpleBlockNodeContext implements BlockNodeContext {
-    private final long initialGraphId;
     private final ServerWorld blockWorld;
     private final SimpleGraphWorld graphWorld;
-    private @Nullable NodeHolder<BlockNode> self = null;
-    private final BlockPos pos;
+    private final NodeHolder<BlockNode> self;
+    private final PosNodeKey key;
 
-    public SimpleBlockNodeContext(long initialGraphId, ServerWorld blockWorld, SimpleGraphWorld graphWorld,
-                                  BlockPos pos) {
-        this.initialGraphId = initialGraphId;
+    public SimpleBlockNodeContext(ServerWorld blockWorld, SimpleGraphWorld graphWorld,
+                                  NodeHolder<BlockNode> self, PosNodeKey key) {
         this.blockWorld = blockWorld;
         this.graphWorld = graphWorld;
-        this.pos = pos;
+        this.self = self;
+        this.key = key;
     }
 
     @Override
@@ -33,18 +32,18 @@ public class SimpleBlockNodeContext implements BlockNodeContext {
     }
 
     @Override
-    public ServerWorld getBlockWorld() {
+    public @NotNull ServerWorld getBlockWorld() {
         return blockWorld;
     }
 
     @Override
-    public GraphWorld getGraphWorld() {
+    public @NotNull GraphWorld getGraphWorld() {
         return graphWorld;
     }
 
     @Override
     public long getGraphId() {
-        return self == null ? initialGraphId : self.getGraphId();
+        return self.getGraphId();
     }
 
     @Override
@@ -57,12 +56,8 @@ public class SimpleBlockNodeContext implements BlockNodeContext {
         return self;
     }
 
-    public void setSelf(@NotNull NodeHolder<BlockNode> self) {
-        this.self = self;
-    }
-
     @Override
-    public BlockPos getPos() {
-        return pos;
+    public @NotNull PosNodeKey getKey() {
+        return key;
     }
 }

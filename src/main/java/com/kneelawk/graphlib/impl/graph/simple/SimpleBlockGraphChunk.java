@@ -25,7 +25,6 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.node.NodeKey;
@@ -77,7 +76,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                     }
 
                     NbtElement dataTag = keyCom.get("data");
-                    NodeKey data = decoder.createKeyFromTag(dataTag);
+                    NodeKey data = decoder.decode(dataTag);
 
                     if (graphKeys == null) {
                         graphKeys = new Short2ObjectLinkedOpenHashMap<>();
@@ -272,7 +271,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
             }
 
             for (NodeHolder<BlockNode> holder : graph.getNodes().toList()) {
-                PosNodeKey key = holder.toNodeKey();
+                PosNodeKey key = holder.getNodeKey();
                 BlockPos pos = key.pos();
                 if (chunkPos.getMinX() <= pos.getX() && pos.getX() <= chunkPos.getMaxX() &&
                     chunkPos.getMinY() <= pos.getY() && pos.getY() <= chunkPos.getMaxY() &&

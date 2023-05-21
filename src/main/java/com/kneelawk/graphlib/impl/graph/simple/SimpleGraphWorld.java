@@ -567,7 +567,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             return;
         }
 
-        callbackUpdates.put(node.toNodeKey(), node);
+        callbackUpdates.put(node.getNodeKey(), node);
     }
 
     private void handleCallbackUpdates() {
@@ -591,7 +591,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
 
             for (var node : graph.getNodesAt(pos).toList()) {
-                PosNodeKey key = node.toNodeKey();
+                PosNodeKey key = node.getNodeKey();
                 if (!nodes.containsKey(key)) {
                     graph.destroyNode(node);
                 }
@@ -599,12 +599,12 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
         }
 
-        for (BlockNodeFactory bn : newNodes.values()) {
+        for (Map.Entry<PosNodeKey, BlockNodeFactory> bn : newNodes.entrySet()) {
             SimpleBlockGraph newGraph = createGraph();
-            SimpleBlockNodeContext ctx =
-                new SimpleBlockNodeContext(newGraph.getId(), world, this, pos);
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn.createNew(ctx), ctx);
-            updateNodeConnections(node);
+            NodeHolder<BlockNode> node = newGraph.createNode(bn.getKey(), bn.getValue());
+            if (node != null) {
+                updateNodeConnections(node);
+            }
         }
     }
 
@@ -621,7 +621,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         Map<PosNodeKey, NodeLink> nodeConnections = node.getConnections();
         Map<PosNodeKey, NodeHolder<BlockNode>> oldConnections =
             new Object2ObjectLinkedOpenHashMap<>(nodeConnections.size());
-        PosNodeKey posNodeKey = node.toNodeKey();
+        PosNodeKey posNodeKey = node.getNodeKey();
         for (Map.Entry<PosNodeKey, NodeLink> entry : nodeConnections.entrySet()) {
             oldConnections.put(entry.getKey(), entry.getValue().other(posNodeKey));
         }
@@ -632,7 +632,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             new Object2ObjectLinkedOpenHashMap<>(foundConnections.size());
         for (NodeHolder<BlockNode> other : foundConnections) {
             if (other.getNode().canConnect(node)) {
-                wantedConnections.put(other.toNodeKey(), other);
+                wantedConnections.put(other.getNodeKey(), other);
             }
         }
 

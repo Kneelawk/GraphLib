@@ -1,5 +1,6 @@
 package com.kneelawk.graphlib.api.node;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.world.ServerWorld;
@@ -26,14 +27,14 @@ public interface BlockNodeContext {
      *
      * @return this node's block world.
      */
-    ServerWorld getBlockWorld();
+    @NotNull ServerWorld getBlockWorld();
 
     /**
      * Gets this node's graph world.
      *
      * @return this node's graph world.
      */
-    GraphWorld getGraphWorld();
+    @NotNull GraphWorld getGraphWorld();
 
     /**
      * Gets the id of the last block graph that this context belonged to.
@@ -64,5 +65,5 @@ public interface BlockNodeContext {
      *
      * @return this node's block position.
      */
-    BlockPos getPos();
+    @NotNull PosNodeKey getKey();
 }

@@ -10,7 +10,7 @@ import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.NodeKey;
 
 /**
- * Generic {@link BlockNode} unique data for use when implementing {@link BlockNode#getKey()}.
+ * Generic {@link BlockNode} key that can be used as an implementation of {@link NodeKey}.
  *
  * @param typeId the type id of the block node this is associated with.
  */

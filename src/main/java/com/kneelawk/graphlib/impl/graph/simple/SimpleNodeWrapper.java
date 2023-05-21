@@ -4,20 +4,21 @@ package com.kneelawk.graphlib.impl.graph.simple;
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
 
 public final class SimpleNodeWrapper {
-    final @NotNull BlockNode node;
+    @Nullable BlockNode node = null;
 
     long graphId;
 
-    public SimpleNodeWrapper(@NotNull BlockNode node, long graphId) {
-        this.node = node;
+    public SimpleNodeWrapper(long graphId) {
         this.graphId = graphId;
     }
 
     public @NotNull BlockNode getNode() {
+        if (node == null) throw new IllegalStateException("Node accessed before it has been initialized");
         return node;
     }
 

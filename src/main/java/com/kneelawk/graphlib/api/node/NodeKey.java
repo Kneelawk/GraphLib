@@ -27,7 +27,7 @@ public interface NodeKey {
      * This can return <code>null</code> if the unique-data's type is all that needs to be stored.
      *
      * @return this as an NBT element.
-     * @see NodeKeyDecoder#createKeyFromTag(NbtElement)
+     * @see NodeKeyDecoder#decode(NbtElement)
      */
     @Nullable NbtElement toTag();
 

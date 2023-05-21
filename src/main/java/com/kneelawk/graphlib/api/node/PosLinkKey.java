@@ -79,6 +79,6 @@ public record PosLinkKey(@NotNull PosNodeKey first, @NotNull PosNodeKey second) 
      * @return a new link-key describing the given connection.
      */
     public static PosLinkKey from(NodeLink conn) {
-        return new PosLinkKey(conn.getFirst().toNodeKey(), conn.getSecond().toNodeKey());
+        return new PosLinkKey(conn.getFirst().getNodeKey(), conn.getSecond().getNodeKey());
     }
 }

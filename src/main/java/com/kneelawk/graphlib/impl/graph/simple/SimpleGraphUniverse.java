@@ -24,6 +24,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.node.BlockNodeFactory;
+import com.kneelawk.graphlib.api.node.LegacyBlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
 import com.kneelawk.graphlib.api.util.ColorUtils;
@@ -39,6 +40,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Map<Identifier, BlockNodeDecoder> nodeDecoders = new LinkedHashMap<>();
     private final Object2IntMap<Identifier> typeIndices = new Object2IntLinkedOpenHashMap<>();
     private final Map<Identifier, NodeKeyDecoder> nodeKeyDecoders = new LinkedHashMap<>();
+    private final Map<Identifier, LegacyBlockNodeDecoder> legacyDecoders = new LinkedHashMap<>();
     final SaveMode saveMode;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
@@ -123,6 +125,23 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
+    public void addLegacyDecoder(@NotNull Identifier typeId, LegacyBlockNodeDecoder decoder) {
+        legacyDecoders.put(typeId, decoder);
+    }
+
+    @Override
+    public void addLegacyDecoders(@NotNull Pair<Identifier, ? extends LegacyBlockNodeDecoder>... decoders) {
+        for (Pair<Identifier, ? extends LegacyBlockNodeDecoder> decoder : decoders) {
+            this.legacyDecoders.put(decoder.key(), decoder.value());
+        }
+    }
+
+    @Override
+    public void addLegacyDecoders(@NotNull Map<Identifier, ? extends LegacyBlockNodeDecoder> decoders) {
+        this.legacyDecoders.putAll(decoders);
+    }
+
+    @Override
     public void register() {
         GraphLibImpl.register(this);
     }
@@ -155,5 +174,10 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     @Override
     public @Nullable NodeKeyDecoder getNodeKeyDecoder(@NotNull Identifier typeId) {
         return nodeKeyDecoders.get(typeId);
+    }
+
+    @Override
+    public @Nullable LegacyBlockNodeDecoder getLegacyDecoder(@NotNull Identifier typeId) {
+        return legacyDecoders.get(typeId);
     }
 }

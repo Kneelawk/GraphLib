@@ -47,21 +47,19 @@ public interface NodeHolder<T extends BlockNode> {
     @NotNull Map<PosNodeKey, NodeLink> getConnections();
 
     /**
-     * Gets an immutable view of this node holder's position and node.
-     *
-     * @return a positioned node containing this holder's position and node.
-     */
-    @NotNull SnapshotNode<T> toSnapshot();
-
-    /**
      * Gets an immutable, unique, comparable view of this node holder's position and data that can be used to look up
      * this node-holder.
      *
      * @return this holder's key.
      */
-    default @NotNull PosNodeKey toNodeKey() {
-        return new PosNodeKey(getPos(), getNode().getKey());
-    }
+    @NotNull PosNodeKey getNodeKey();
+
+    /**
+     * Gets an immutable view of this node holder's position and node.
+     *
+     * @return a positioned node containing this holder's position and node.
+     */
+    @NotNull SnapshotNode<T> toSnapshot();
 
     /**
      * Checks whether the contained node can be cast to the new type.

@@ -32,7 +32,7 @@ public interface NodeLink {
      * @return <code>true</code> if either node matches the given node.
      */
     default boolean contains(@NotNull PosNodeKey node) {
-        return Objects.equals(getFirst().toNodeKey(), node) || Objects.equals(getSecond().toNodeKey(), node);
+        return Objects.equals(getFirst().getNodeKey(), node) || Objects.equals(getSecond().getNodeKey(), node);
     }
 
     /**
@@ -43,7 +43,7 @@ public interface NodeLink {
      */
     default @NotNull NodeHolder<BlockNode> other(@NotNull PosNodeKey node) {
         NodeHolder<BlockNode> first = getFirst();
-        if (Objects.equals(first.toNodeKey(), node)) {
+        if (Objects.equals(first.getNodeKey(), node)) {
             return getSecond();
         } else {
             return first;

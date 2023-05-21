@@ -6,10 +6,8 @@ import net.minecraft.nbt.NbtElement;
 
 /**
  * A decoder for node-keys.
- * <p>
- * This interface is not used in block node decoding, but is instead used where unique data needs to be cached apart
- * from the data's associated block node.
  */
+@FunctionalInterface
 public interface NodeKeyDecoder {
     /**
      * Decodes a {@link NodeKey} from an NBT element.
@@ -19,5 +17,5 @@ public interface NodeKeyDecoder {
      * @param tag the NBT element used to decode the unique data.
      * @return the decoded unique data.
      */
-    @Nullable NodeKey createKeyFromTag(@Nullable NbtElement tag);
+    @Nullable NodeKey decode(@Nullable NbtElement tag);
 }

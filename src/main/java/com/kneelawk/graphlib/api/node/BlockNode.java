@@ -50,20 +50,6 @@ public interface BlockNode {
     @NotNull Identifier getTypeId();
 
     /**
-     * Gets the data unique to this block-node.
-     * <p>
-     * The returned objects must implement consistent hash-code and equals functions, as this allows the graph-world to
-     * correctly evaluate if nodes need to be removed or added at a given position.
-     * <p>
-     * Often one of the pre-defined implementations will do.
-     *
-     * @return this block-node's unique data.
-     * @see SimpleNodeKey
-     * @see SimpleSidedNodeKey
-     */
-    @NotNull NodeKey getKey();
-
-    /**
      * Encodes this block node's data to an NBT element.
      * <p>
      * This can return null if this block node's type is all the data that needs to be stored.
@@ -144,8 +130,9 @@ public interface BlockNode {
      * @param buf the buffer to encode this node to.
      */
     default void toPacket(@NotNull PacketByteBuf buf) {
+        // FIXME: node keys and block nodes are no longer tightly coupled
         // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(getKey().hashCode());
+//        buf.writeInt(getKey().hashCode());
 
         // Get the default color for our node type
         buf.writeInt(graphView.getUniverse().getDefaultDebugColor(getTypeId()));

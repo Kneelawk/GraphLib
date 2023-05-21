@@ -44,8 +44,9 @@ public interface SidedBlockNode extends BlockNode {
      */
     @Override
     default void toPacket(@NotNull PacketByteBuf buf) {
+        // FIXME: node keys and block nodes are no longer tightly coupled
         // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(getKey().hashCode());
+//        buf.writeInt(getKey().hashCode());
 
         // Class name hash for use in default node coloring
         buf.writeInt(getClass().getName().hashCode());

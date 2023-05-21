@@ -59,6 +59,11 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
+    public @NotNull PosNodeKey getNodeKey() {
+        return node.key();
+    }
+
+    @Override
     public boolean canCast(Class<?> newType) {
         return newType.isInstance(node.value().getNode());
     }

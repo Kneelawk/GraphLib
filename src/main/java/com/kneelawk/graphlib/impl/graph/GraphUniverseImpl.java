@@ -2,7 +2,6 @@ package com.kneelawk.graphlib.impl.graph;
 
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,11 +11,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeFactory;
+import com.kneelawk.graphlib.api.node.LegacyBlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 
 public interface GraphUniverseImpl extends GraphUniverse {
     @Override
@@ -29,4 +28,6 @@ public interface GraphUniverseImpl extends GraphUniverse {
     @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId);
 
     @Nullable NodeKeyDecoder getNodeKeyDecoder(@NotNull Identifier typeId);
+
+    @Nullable LegacyBlockNodeDecoder getLegacyDecoder(@NotNull Identifier typeId);
 }

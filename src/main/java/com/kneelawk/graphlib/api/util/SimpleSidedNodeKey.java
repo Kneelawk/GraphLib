@@ -12,7 +12,7 @@ import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.node.NodeKey;
 
 /**
- * Generic {@link SidedBlockNode} unique data for use when implementing {@link BlockNode#getKey()}.
+ * Generic {@link SidedBlockNode} key that can be used as an implementation of {@link NodeKey}.
  *
  * @param typeId the type-id of the sided-block-node.
  * @param side   the side that the node is on.

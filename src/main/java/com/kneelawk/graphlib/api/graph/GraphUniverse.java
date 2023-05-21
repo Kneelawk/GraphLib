@@ -14,6 +14,7 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.node.LegacyBlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.world.SaveMode;
@@ -107,7 +108,7 @@ public interface GraphUniverse {
     void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
 
     /**
-     * Registers a {@link NodeKeyDecoder} for the given node key id.
+     * Registers a {@link NodeKeyDecoder} for the given node key type id.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated node key's
      * {@link NodeKey#getTypeId()}.
@@ -118,7 +119,7 @@ public interface GraphUniverse {
     void addNodeKeyDecoder(@NotNull Identifier typeId, NodeKeyDecoder decoder);
 
     /**
-     * Registers a set of {@link NodeKeyDecoder} with associated block node type ids.
+     * Registers a set of {@link NodeKeyDecoder} with associated node key type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated node key's
      * {@link NodeKey#getTypeId()}.
@@ -128,7 +129,7 @@ public interface GraphUniverse {
     void addNodeKeyDecoders(@NotNull Pair<Identifier, ? extends NodeKeyDecoder>... decoders);
 
     /**
-     * Registers a set of {@link NodeKeyDecoder} with associated block node type ids.
+     * Registers a set of {@link NodeKeyDecoder} with associated node key type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated node key's
      * {@link NodeKey#getTypeId()}.
@@ -136,6 +137,49 @@ public interface GraphUniverse {
      * @param decoders the set of node key decoders to be registered.
      */
     void addNodeKeyDecoders(@NotNull Map<Identifier, ? extends NodeKeyDecoder> decoders);
+
+    /**
+     * Registers a {@link LegacyBlockNodeDecoder} for the given block node type id.
+     * <p>
+     * The identifier under which the decoder is registered corresponds to the one returned by the associated block
+     * node's {@link BlockNode#getTypeId()}.
+     * <p>
+     * This is only needed for decoding block nodes and node keys from GraphLib versions prior to
+     * <code>v1.0.0-alpha.16</code>. Decoding nodes from version <code>v1.0.0-alpha.16</code> and later do not need one
+     * of these registered.
+     *
+     * @param typeId  the type of the block node the decoder is being registered for.
+     * @param decoder the legacy block node decoder for decoding the associated type of block node and node key.
+     */
+    void addLegacyDecoder(@NotNull Identifier typeId, LegacyBlockNodeDecoder decoder);
+
+    /**
+     * Registers a {@link LegacyBlockNodeDecoder} for the given block node type id.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated block
+     * node's {@link BlockNode#getTypeId()}.
+     * <p>
+     * This is only needed for decoding block nodes and node keys from GraphLib versions prior to
+     * <code>v1.0.0-alpha.16</code>. Decoding nodes from version <code>v1.0.0-alpha.16</code> and later do not need one
+     * of these registered.
+     *
+     * @param decoders the set of block node and node key decoders to be registered.
+     */
+    void addLegacyDecoders(@NotNull Pair<Identifier, ? extends LegacyBlockNodeDecoder>... decoders);
+
+    /**
+     * Registers a {@link LegacyBlockNodeDecoder} for the given block node type id.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated block
+     * node's {@link BlockNode#getTypeId()}.
+     * <p>
+     * This is only needed for decoding block nodes and node keys from GraphLib versions prior to
+     * <code>v1.0.0-alpha.16</code>. Decoding nodes from version <code>v1.0.0-alpha.16</code> and later do not need one
+     * of these registered.
+     *
+     * @param decoders the set of block node and node key decoders to be registered.
+     */
+    void addLegacyDecoders(@NotNull Map<Identifier, ? extends LegacyBlockNodeDecoder> decoders);
 
     /**
      * Registers this graph universe so that it can be found by its id.

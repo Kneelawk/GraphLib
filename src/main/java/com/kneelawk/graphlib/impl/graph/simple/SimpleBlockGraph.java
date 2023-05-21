@@ -34,6 +34,8 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.BlockNodeContext;
+import com.kneelawk.graphlib.api.node.BlockNodeFactory;
 import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.PosLinkKey;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
@@ -68,9 +70,14 @@ public class SimpleBlockGraph implements BlockGraph {
 
         for (NbtElement nodeElement : nodesTag) {
             SimpleNodeCodec node =
-                SimpleNodeCodec.decode(id, world.universe, world.world, world, (NbtCompound) nodeElement);
+                SimpleNodeCodec.decode(world.universe, (NbtCompound) nodeElement);
             if (node != null) {
-                nodes.add(graph.createNode(node.pos(), node.node(), node.ctx()).toNodeKey());
+                SimpleNodeHolder<BlockNode> holder = graph.createNode(node.pos(), node.node());
+                if (holder != null) {
+                    nodes.add(holder.getNodeKey());
+                } else {
+                    nodes.add(null);
+                }
             } else {
                 // keep the gap so other nodes' links don't get messed up
                 nodes.add(null);
@@ -136,7 +143,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = new NbtList();
 
         for (Node<PosNodeKey, SimpleNodeWrapper> node : nodes) {
-            nodesTag.add(SimpleNodeCodec.encode(node.key().pos(), node.value().node));
+            nodesTag.add(SimpleNodeCodec.encode(node.key(), node.value().node));
         }
 
         tag.put("nodes", nodesTag);
@@ -284,27 +291,28 @@ public class SimpleBlockGraph implements BlockGraph {
         for (var node : graph) {
             SimpleNodeWrapper data = node.value();
             data.graphId = id;
-            BlockPos pos = node.key().pos();
+            PosNodeKey key = node.key();
+            BlockPos pos = key.pos();
             chunks.add(ChunkSectionPos.from(pos).asLong());
             SimpleNodeHolder<BlockNode> holder = new SimpleNodeHolder<>(node);
-            nodesInPos.put(pos, holder.getNode().getKey(), holder);
+            nodesInPos.put(pos, key.nodeKey(), holder);
         }
     }
 
-    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
-                                                    @NotNull SimpleBlockNodeContext ctx) {
-        BlockPos pos = blockPos.toImmutable();
-        PosNodeKey key = new PosNodeKey(pos, node.getKey());
-
+    @Nullable SimpleNodeHolder<BlockNode> createNode(@NotNull PosNodeKey pos, @NotNull BlockNodeFactory factory) {
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(
-            graph.add(key, new SimpleNodeWrapper(node, id)));
-        ctx.setSelf(graphNode);
+            graph.add(pos, new SimpleNodeWrapper(id)));
+
+        BlockNodeContext ctx = new SimpleBlockNodeContext(world.world, world, graphNode, pos);
+        BlockNode node = factory.createNew(ctx);
+        if (node == null) return null;
+
         node.onInit();
 
-        nodesInPos.put(pos, graphNode.getNode().getKey(), graphNode);
-        chunks.add(ChunkSectionPos.from(pos).asLong());
+        nodesInPos.put(pos.pos(), pos.nodeKey(), graphNode);
+        chunks.add(ChunkSectionPos.from(pos.pos()).asLong());
         nodeTypeCache.clear();
-        world.putGraphWithKey(id, key);
+        world.putGraphWithKey(id, pos);
         world.scheduleCallbackUpdate(graphNode);
         world.markDirty(id);
         return graphNode;
@@ -313,10 +321,10 @@ public class SimpleBlockGraph implements BlockGraph {
     void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
         // see if removing this node means removing a block-pos or a chunk
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
-        PosNodeKey removedKey = node.toNodeKey();
+        PosNodeKey removedKey = node.getNodeKey();
         BlockPos removedPos = node.getPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
-        nodesInPos.remove(removedPos, node.getNode().getKey());
+        nodesInPos.remove(removedPos, node.getNodeKey().nodeKey());
         nodeTypeCache.clear();
         world.markDirty(id);
 
@@ -324,12 +332,12 @@ public class SimpleBlockGraph implements BlockGraph {
         for (NodeLink link : node.getConnections().values()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
-            world.scheduleCallbackUpdate(link.other(node.toNodeKey()));
+            world.scheduleCallbackUpdate(link.other(node.getNodeKey()));
         }
         world.scheduleCallbackUpdate(node);
 
         // actually remove the node
-        graph.remove(node.toNodeKey());
+        graph.remove(node.getNodeKey());
 
         // check to see if the pos or chunk are used by any of our other nodes
         for (var ourNode : graph) {
@@ -355,6 +363,9 @@ public class SimpleBlockGraph implements BlockGraph {
             chunks.remove(chunkLong);
         }
 
+        // notify the node it has been deleted
+        node.getNode().onDelete();
+
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
             world.destroyGraph(id);
@@ -366,14 +377,14 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     void link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
-        graph.link(a.toNodeKey(), b.toNodeKey());
+        graph.link(a.getNodeKey(), b.getNodeKey());
         world.scheduleCallbackUpdate(a);
         world.scheduleCallbackUpdate(b);
         world.markDirty(id);
     }
 
     void unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
-        graph.unlink(a.toNodeKey(), b.toNodeKey());
+        graph.unlink(a.getNodeKey(), b.getNodeKey());
         world.scheduleCallbackUpdate(a);
         world.scheduleCallbackUpdate(b);
         world.markDirty(id);
