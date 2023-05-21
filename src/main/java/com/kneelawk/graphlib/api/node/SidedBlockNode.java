@@ -47,9 +47,6 @@ public interface SidedBlockNode extends BlockNode {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(getKey().hashCode());
 
-        // Class name hash for use in default node coloring
-        buf.writeInt(getClass().getName().hashCode());
-
         // A 1 byte to distinguish ourselves from BlockNode, because both implementations use the same decoder
         buf.writeByte(1);
 

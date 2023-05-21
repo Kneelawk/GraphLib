@@ -15,10 +15,12 @@ public interface BlockNodePacketDecoder {
     /**
      * Decodes a {@link ClientBlockNode} from a {@link PacketByteBuf}.
      *
-     * @param buf a buffer for reading the data written by
-     *            {@link BlockNode#toPacket(PacketByteBuf)}.
-     *            Note: this buffer will contain other data besides this node's data.
+     * @param typeIndex the index of this node's type among the node types.
+     * @param typeCount the number of node types registered.
+     * @param buf       a buffer for reading the data written by
+     *                  {@link BlockNode#toPacket(PacketByteBuf)}.
+     *                  Note: this buffer will contain other data besides this node's data.
      * @return a {@link ClientBlockNode} containing the data decoded from the {@link PacketByteBuf}.
      */
-    @Nullable ClientBlockNode fromPacket(@NotNull PacketByteBuf buf);
+    @Nullable ClientBlockNode fromPacket(int typeIndex, int typeCount, @NotNull PacketByteBuf buf);
 }

@@ -26,7 +26,6 @@ import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.node.BlockNodeFactory;
 import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
-import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -128,8 +127,13 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public int getDefaultDebugColor(@NotNull Identifier typeId) {
-        return ColorUtils.hsba2Argb((float) typeIndices.getInt(typeId) / (float) typeIndices.size(), 1f, 1f, 1f);
+    public int getNodeDecoderCount() {
+        return typeIndices.size();
+    }
+
+    @Override
+    public int getNodeDecoderIndex(Identifier typeId) {
+        return typeIndices.getInt(typeId);
     }
 
     @Override
