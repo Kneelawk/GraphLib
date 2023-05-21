@@ -9,7 +9,7 @@ import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.node.client.SidedClientBlockNode;
 import com.kneelawk.graphlib.impl.Constants;
 
-public record SimpleClientSidedBlockNode(int hash, int classHash, @NotNull Direction side)
+public record SimpleClientSidedBlockNode(int hash, int color, @NotNull Direction side)
     implements ClientBlockNode, SidedClientBlockNode {
     @Override
     public @NotNull Identifier getRenderId() {

@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
 import com.kneelawk.graphlib.impl.Constants;
 
-public record SimpleClientBlockNode(int hash, int classHash) implements ClientBlockNode {
+public record SimpleClientBlockNode(int hash, int color) implements ClientBlockNode {
     @Override
     public @NotNull Identifier getRenderId() {
         return Constants.id("simple");

@@ -26,7 +26,7 @@ public final class SimpleBlockNodeRenderer implements BlockNodeRenderer<SimpleCl
                        @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack,
                        @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint, int graphColor) {
         RenderUtils.drawCube(stack, consumers.getBuffer(DebugRenderer.Layers.DEBUG_LINES), (float) endpoint.x,
-            (float) endpoint.y, (float) endpoint.z, 3f / 64f, 3f / 64f, 3f / 64f, node.classHash() | 0xFF000000);
+            (float) endpoint.y, (float) endpoint.z, 3f / 64f, 3f / 64f, 3f / 64f, node.color() | 0xFF000000);
     }
 
     @Override

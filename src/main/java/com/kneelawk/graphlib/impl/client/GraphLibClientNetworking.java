@@ -43,13 +43,13 @@ public final class GraphLibClientNetworking {
 
     public static final BlockNodePacketDecoder DEFAULT_DECODER = buf -> {
         int hashCode = buf.readInt();
-        int classHash = buf.readInt();
+        int color = buf.readInt();
 
         byte type = buf.readByte();
 
         return switch (type) {
-            case 0 -> new SimpleClientBlockNode(hashCode, classHash);
-            case 1 -> new SimpleClientSidedBlockNode(hashCode, classHash, Direction.byId(buf.readByte()));
+            case 0 -> new SimpleClientBlockNode(hashCode, color);
+            case 1 -> new SimpleClientSidedBlockNode(hashCode, color, Direction.byId(buf.readByte()));
             default -> {
                 GLLog.error("Attempted default BlockNode decoding but encountered unknown default id: {}", type);
                 yield null;

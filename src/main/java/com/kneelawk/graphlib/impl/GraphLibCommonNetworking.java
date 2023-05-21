@@ -65,10 +65,10 @@ public final class GraphLibCommonNetworking {
         GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonNetworking::sendBlockGraph);
         GraphLibEvents.GRAPH_DESTROYED.register((world, graphWorld, id) -> {
             PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse()));
+            buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
             buf.writeLong(id);
 
-            sendToDebuggingPlayers(world, graphWorld.getUniverse(), GRAPH_DESTROY_ID, buf);
+            sendToDebuggingPlayers(world, graphWorld.getUniverse().getId(), GRAPH_DESTROY_ID, buf);
         });
     }
 
@@ -156,14 +156,14 @@ public final class GraphLibCommonNetworking {
         }
 
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse()));
+        buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
 
         encodeBlockGraph(world, graphWorld, graph, buf);
 
         Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
         graph.getChunks().forEachOrdered(section -> {
             for (ServerPlayerEntity player : PlayerLookup.tracking(world, section.toChunkPos())) {
-                if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse())) {
+                if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse().getId())) {
                     sendTo.add(player);
                 }
             }
