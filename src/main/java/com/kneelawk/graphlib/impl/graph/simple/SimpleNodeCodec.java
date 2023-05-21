@@ -8,20 +8,19 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.node.BlockNodeFactory;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
-public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleNodeContext ctx) {
-    public SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleNodeContext ctx) {
+public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNodeFactory factory) {
+    public SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNodeFactory factory) {
         this.pos = pos.toImmutable();
-        this.node = node;
-        this.ctx = ctx;
+        this.factory = factory;
     }
 
     public static @NotNull NbtCompound encode(@NotNull BlockPos pos, @NotNull BlockNode node) {
@@ -42,9 +41,7 @@ public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @N
     }
 
     @Nullable
-    public static SimpleNodeCodec decode(long initialGraphId, @NotNull GraphUniverseImpl universe,
-                                         @NotNull ServerWorld blockWorld, @NotNull SimpleGraphWorld graphWorld,
-                                         @NotNull NbtCompound tag) {
+    public static SimpleNodeCodec decode(GraphUniverseImpl universe, @NotNull NbtCompound tag) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
@@ -55,16 +52,17 @@ public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @N
             return null;
         }
 
-        SimpleNodeContext ctx = new SimpleNodeContext(initialGraphId, blockWorld, graphWorld, pos);
-
         NbtElement nodeTag = tag.get("node");
-        BlockNode node = decoder.decode(nodeTag, ctx);
+        BlockNodeFactory factory = ctx -> {
+            BlockNode node = decoder.decode(nodeTag, ctx);
 
-        if (node == null) {
-            GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
-            return null;
-        }
+            if (node == null) {
+                GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
+            }
 
-        return new SimpleNodeCodec(pos, node, ctx);
+            return node;
+        };
+
+        return new SimpleNodeCodec(pos, factory);
     }
 }

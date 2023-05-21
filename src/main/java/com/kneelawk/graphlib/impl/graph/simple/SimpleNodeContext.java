@@ -33,12 +33,12 @@ public class SimpleNodeContext implements NodeContext {
     }
 
     @Override
-    public ServerWorld getBlockWorld() {
+    public @NotNull ServerWorld getBlockWorld() {
         return blockWorld;
     }
 
     @Override
-    public GraphWorld getGraphWorld() {
+    public @NotNull GraphWorld getGraphWorld() {
         return graphWorld;
     }
 
@@ -62,7 +62,7 @@ public class SimpleNodeContext implements NodeContext {
     }
 
     @Override
-    public BlockPos getPos() {
+    public @NotNull BlockPos getPos() {
         return pos;
     }
 }
