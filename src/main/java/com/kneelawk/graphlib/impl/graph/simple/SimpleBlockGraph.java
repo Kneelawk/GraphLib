@@ -355,6 +355,9 @@ public class SimpleBlockGraph implements BlockGraph {
             chunks.remove(chunkLong);
         }
 
+        // notify the node it's been removed
+        node.getNode().onDelete();
+
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
             world.destroyGraph(id);
