@@ -32,7 +32,7 @@ public interface NodeContext {
      *
      * @return this node's graph world.
      */
-    @NotNull GraphWorld getGraphWorld();
+    @NotNull GraphView getGraphWorld();
 
     /**
      * Gets the id of the last block graph that this context belonged to.

@@ -7,7 +7,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.graph.NodeContext;
@@ -38,7 +38,7 @@ public class SimpleNodeContext implements NodeContext {
     }
 
     @Override
-    public @NotNull GraphWorld getGraphWorld() {
+    public @NotNull GraphView getGraphWorld() {
         return graphWorld;
     }
 
