@@ -483,4 +483,10 @@ public class SimpleBlockGraph implements BlockGraph {
             return List.of();
         }
     }
+
+    void onUnload() {
+        for (var node : graph) {
+            node.value().getNode().onUnload();
+        }
+    }
 }

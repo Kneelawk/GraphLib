@@ -15,8 +15,6 @@ import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.util.SimpleNodeKey;
-import com.kneelawk.graphlib.api.util.SimpleSidedNodeKey;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
@@ -61,7 +59,8 @@ public interface BlockNode {
     /**
      * Called when a block node's
      */
-    default void onInit() {}
+    default void onInit() {
+    }
 
     /**
      * Called when a block node's graph is about to be unloaded.
