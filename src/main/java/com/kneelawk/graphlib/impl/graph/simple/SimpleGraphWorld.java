@@ -601,8 +601,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
         for (BlockNodeFactory bn : newNodes.values()) {
             SimpleBlockGraph newGraph = createGraph();
-            SimpleBlockNodeContext ctx =
-                new SimpleBlockNodeContext(newGraph.getId(), world, this, pos);
+            SimpleNodeContext ctx =
+                new SimpleNodeContext(newGraph.getId(), world, this, pos);
             NodeHolder<BlockNode> node = newGraph.createNode(pos, bn.createNew(ctx), ctx);
             updateNodeConnections(node);
         }

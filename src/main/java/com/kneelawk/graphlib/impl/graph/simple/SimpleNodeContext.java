@@ -10,17 +10,17 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeContext;
+import com.kneelawk.graphlib.api.graph.NodeContext;
 
-public class SimpleBlockNodeContext implements BlockNodeContext {
+public class SimpleNodeContext implements NodeContext {
     private final long initialGraphId;
     private final ServerWorld blockWorld;
     private final SimpleGraphWorld graphWorld;
     private @Nullable NodeHolder<BlockNode> self = null;
     private final BlockPos pos;
 
-    public SimpleBlockNodeContext(long initialGraphId, ServerWorld blockWorld, SimpleGraphWorld graphWorld,
-                                  BlockPos pos) {
+    public SimpleNodeContext(long initialGraphId, ServerWorld blockWorld, SimpleGraphWorld graphWorld,
+                             BlockPos pos) {
         this.initialGraphId = initialGraphId;
         this.blockWorld = blockWorld;
         this.graphWorld = graphWorld;

@@ -292,7 +292,7 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
-                                                    @NotNull SimpleBlockNodeContext ctx) {
+                                                    @NotNull SimpleNodeContext ctx) {
         BlockPos pos = blockPos.toImmutable();
         PosNodeKey key = new PosNodeKey(pos, node.getKey());
 

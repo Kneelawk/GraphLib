@@ -4,6 +4,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
+import com.kneelawk.graphlib.api.graph.NodeContext;
+
 /**
  * Used for decoding a {@link BlockNode} from an NBT element.
  */
@@ -17,5 +19,5 @@ public interface BlockNodeDecoder {
      * @param ctx the context this node is to be created with.
      * @return the decoded block node.
      */
-    @Nullable BlockNode decode(@Nullable NbtElement tag, BlockNodeContext ctx);
+    @Nullable BlockNode decode(@Nullable NbtElement tag, NodeContext ctx);
 }

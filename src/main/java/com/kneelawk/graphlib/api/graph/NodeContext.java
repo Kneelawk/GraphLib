@@ -1,13 +1,11 @@
-package com.kneelawk.graphlib.api.node;
+package com.kneelawk.graphlib.api.graph;
 
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.node.BlockNode;
 
 /**
  * The context that is passed to a block node during construction.
@@ -15,7 +13,7 @@ import com.kneelawk.graphlib.api.graph.NodeHolder;
  * This is safe to store inside the constructed block node, as everything referenced should remain valid for the node's
  * lifetime.
  */
-public interface BlockNodeContext {
+public interface NodeContext {
     /**
      * Marks this node's graph as dirty, so
      */

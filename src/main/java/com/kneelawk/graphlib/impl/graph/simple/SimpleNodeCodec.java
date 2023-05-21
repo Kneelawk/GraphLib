@@ -12,15 +12,13 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
-public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleBlockNodeContext ctx) {
-    public SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleBlockNodeContext ctx) {
+public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleNodeContext ctx) {
+    public SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @NotNull SimpleNodeContext ctx) {
         this.pos = pos.toImmutable();
         this.node = node;
         this.ctx = ctx;
@@ -57,7 +55,7 @@ public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNode node, @N
             return null;
         }
 
-        SimpleBlockNodeContext ctx = new SimpleBlockNodeContext(initialGraphId, blockWorld, graphWorld, pos);
+        SimpleNodeContext ctx = new SimpleNodeContext(initialGraphId, blockWorld, graphWorld, pos);
 
         NbtElement nodeTag = tag.get("node");
         BlockNode node = decoder.decode(nodeTag, ctx);
