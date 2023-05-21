@@ -99,8 +99,8 @@ public interface BlockNode {
      * <code>true</code> for.
      *
      * @return all nodes this node can connect to.
-     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeHolder, ServerWorld, GraphView, SidedWireConnectionFilter)
-     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeHolder, ServerWorld, GraphView, FullWireConnectionFilter)
+     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeContext, SidedWireConnectionFilter)
+     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeContext, FullWireConnectionFilter)
      * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeContext, CenterWireConnectionFilter)
      */
     @NotNull Collection<NodeHolder<BlockNode>> findConnections();
@@ -113,7 +113,7 @@ public interface BlockNode {
      *
      * @param other the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
-     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeHolder, ServerWorld, NodeHolder, SidedWireConnectionFilter)
+     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeContext, NodeHolder, SidedWireConnectionFilter)
      * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeContext, NodeHolder, FullWireConnectionFilter)
      * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeContext, NodeHolder, CenterWireConnectionFilter)
      */
