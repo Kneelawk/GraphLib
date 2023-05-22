@@ -99,6 +99,7 @@ jobs:
             let lines = [];
             lines.push(`**GraphLib prerelease ${versions[0]} has been published for Minecraft ${versions[1]}!**`);
             lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", `With the identifier: \`com.kneelawk:graphlib:${mavenVersion}\``);
+            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/javadoc/index.html`);
             return lines.join('\n');
           result-encoding: string
       - name: Make Release Announcement
