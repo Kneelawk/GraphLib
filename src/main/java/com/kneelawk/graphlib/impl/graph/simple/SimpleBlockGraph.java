@@ -34,9 +34,10 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.BlockNodeFactory;
+import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.PosLinkKey;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
-import com.kneelawk.graphlib.api.node.NodeKey;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Graph;
@@ -67,9 +68,13 @@ public class SimpleBlockGraph implements BlockGraph {
         List<@Nullable PosNodeKey> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
-            SimplePositionedNode node = SimplePositionedNode.fromTag(world.universe, (NbtCompound) nodeElement);
+            SimpleNodeCodec node =
+                SimpleNodeCodec.decode(world.universe, (NbtCompound) nodeElement);
             if (node != null) {
-                nodes.add(graph.createNode(node.pos(), node.node()).toNodeKey());
+                NodeHolder<BlockNode> holder = graph.createNode(node.pos(), node.factory());
+                if (holder != null) {
+                    nodes.add(holder.toNodeKey());
+                }
             } else {
                 // keep the gap so other nodes' links don't get messed up
                 nodes.add(null);
@@ -135,8 +140,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList nodesTag = new NbtList();
 
         for (Node<PosNodeKey, SimpleNodeWrapper> node : nodes) {
-            SimplePositionedNode positioned = new SimplePositionedNode(node.key().pos(), node.value().node);
-            nodesTag.add(positioned.toTag());
+            nodesTag.add(SimpleNodeCodec.encode(node.key().pos(), node.value().node));
         }
 
         tag.put("nodes", nodesTag);
@@ -291,19 +295,27 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node) {
+    @Nullable SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNodeFactory factory) {
         BlockPos pos = blockPos.toImmutable();
-        PosNodeKey key = new PosNodeKey(pos, node.getKey());
 
-        SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(
+        SimpleNodeContext ctx = new SimpleNodeContext(id, world.world, world, blockPos);
+        BlockNode node = factory.createNew(ctx);
+        if (node == null) return null;
+
+        PosNodeKey key = new PosNodeKey(pos, node.getKey());
+        SimpleNodeHolder<BlockNode> holder = new SimpleNodeHolder<>(
             graph.add(key, new SimpleNodeWrapper(node, id)));
-        nodesInPos.put(pos, graphNode.getNode().getKey(), graphNode);
+        ctx.setSelf(holder);
+        node.onInit();
+
+        nodesInPos.put(pos, holder.getNode().getKey(), holder);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();
         world.putGraphWithKey(id, key);
-        world.scheduleCallbackUpdate(graphNode);
+        world.scheduleCallbackUpdate(holder);
         world.markDirty(id);
-        return graphNode;
+
+        return holder;
     }
 
     void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
@@ -350,6 +362,9 @@ public class SimpleBlockGraph implements BlockGraph {
             world.removeGraphInChunk(id, chunkLong);
             chunks.remove(chunkLong);
         }
+
+        // notify the node it's been removed
+        node.getNode().onDelete();
 
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
@@ -466,6 +481,12 @@ public class SimpleBlockGraph implements BlockGraph {
             GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world.world, world, this);
 
             return List.of();
+        }
+    }
+
+    void onUnload() {
+        for (var node : graph) {
+            node.value().getNode().onUnload();
         }
     }
 }

@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,12 +21,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.node.BlockNodeFactory;
 import com.kneelawk.graphlib.api.node.NodeKeyDecoder;
 import com.kneelawk.graphlib.api.node.PosNodeKey;
-import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -129,8 +127,13 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public int getDefaultDebugColor(@NotNull Identifier typeId) {
-        return ColorUtils.hsba2Argb((float) typeIndices.getInt(typeId) / (float) typeIndices.size(), 1f, 1f, 1f);
+    public int getNodeDecoderCount() {
+        return typeIndices.size();
+    }
+
+    @Override
+    public int getNodeDecoderIndex(Identifier typeId) {
+        return typeIndices.getInt(typeId);
     }
 
     @Override
@@ -139,8 +142,8 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull Map<PosNodeKey, Supplier<BlockNode>> discoverNodesInBlock(@NotNull ServerWorld world,
-                                                                              @NotNull BlockPos pos) {
+    public @NotNull Map<PosNodeKey, BlockNodeFactory> discoverNodesInBlock(@NotNull ServerWorld world,
+                                                                           @NotNull BlockPos pos) {
         return discoverers.stream()
             .flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
             .collect(Object2ObjectLinkedOpenHashMap::new,

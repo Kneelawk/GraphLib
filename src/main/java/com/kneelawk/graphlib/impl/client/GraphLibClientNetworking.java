@@ -25,10 +25,10 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
 import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.node.client.ClientNodeKey;
+import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.graph.Graph;
-import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
@@ -42,9 +42,10 @@ public final class GraphLibClientNetworking {
     private static final Map<Integer, Identifier> idMap =
         Collections.synchronizedMap(new Int2ObjectLinkedOpenHashMap<>());
 
-    public static final BlockNodePacketDecoder DEFAULT_DECODER = buf -> {
+    public static final BlockNodePacketDecoder DEFAULT_DECODER = (nodeIndex, nodeCount, buf) -> {
+        int color = ColorUtils.hsba2Argb((float) nodeIndex / (float) nodeCount, 1f, 1f, 1f);
+
         int hashCode = buf.readInt();
-        int color = buf.readInt();
 
         byte type = buf.readByte();
 
@@ -187,13 +188,15 @@ public final class GraphLibClientNetworking {
             }
 
             BlockPos pos = buf.readBlockPos();
+            int typeIndex = buf.readVarInt();
+            int typeCount = buf.readVarInt();
 
             BlockNodePacketDecoder decoder = GraphLibClientImpl.getDecoder(universeId, nodeTypeId);
             if (decoder == null) {
                 decoder = DEFAULT_DECODER;
             }
 
-            ClientBlockNode data = decoder.fromPacket(buf);
+            ClientBlockNode data = decoder.fromPacket(typeIndex, typeCount, buf);
             if (data == null) {
                 GLLog.error("Unable to decode BlockNode packet for {}", nodeTypeId);
                 return null;

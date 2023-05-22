@@ -13,16 +13,17 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.node.BlockNodeFactory;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
-public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
-    public SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
+public record SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNodeFactory factory) {
+    public SimpleNodeCodec(@NotNull BlockPos pos, @NotNull BlockNodeFactory factory) {
         this.pos = pos.toImmutable();
-        this.node = node;
+        this.factory = factory;
     }
 
-    public @NotNull NbtCompound toTag() {
+    public static @NotNull NbtCompound encode(@NotNull BlockPos pos, @NotNull BlockNode node) {
         NbtCompound tag = new NbtCompound();
 
         tag.putInt("x", pos.getX());
@@ -40,7 +41,7 @@ public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode nod
     }
 
     @Nullable
-    public static SimplePositionedNode fromTag(@NotNull GraphUniverseImpl universe, @NotNull NbtCompound tag) {
+    public static SimpleNodeCodec decode(GraphUniverseImpl universe, @NotNull NbtCompound tag) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
@@ -52,13 +53,16 @@ public record SimplePositionedNode(@NotNull BlockPos pos, @NotNull BlockNode nod
         }
 
         NbtElement nodeTag = tag.get("node");
-        BlockNode node = decoder.createBlockNodeFromTag(nodeTag);
+        BlockNodeFactory factory = ctx -> {
+            BlockNode node = decoder.decode(nodeTag, ctx);
 
-        if (node == null) {
-            GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
-            return null;
-        }
+            if (node == null) {
+                GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
+            }
 
-        return new SimplePositionedNode(pos, node);
+            return node;
+        };
+
+        return new SimpleNodeCodec(pos, factory);
     }
 }

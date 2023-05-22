@@ -65,10 +65,10 @@ public final class GraphLibCommonNetworking {
         GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonNetworking::sendBlockGraph);
         GraphLibEvents.GRAPH_DESTROYED.register((world, graphWorld, id) -> {
             PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse()));
+            buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
             buf.writeLong(id);
 
-            sendToDebuggingPlayers(world, graphWorld.getUniverse(), GRAPH_DESTROY_ID, buf);
+            sendToDebuggingPlayers(world, graphWorld.getUniverse().getId(), GRAPH_DESTROY_ID, buf);
         });
     }
 
@@ -156,14 +156,14 @@ public final class GraphLibCommonNetworking {
         }
 
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse()));
+        buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
 
         encodeBlockGraph(world, graphWorld, graph, buf);
 
         Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
         graph.getChunks().forEachOrdered(section -> {
             for (ServerPlayerEntity player : PlayerLookup.tracking(world, section.toChunkPos())) {
-                if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse())) {
+                if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse().getId())) {
                     sendTo.add(player);
                 }
             }
@@ -176,6 +176,7 @@ public final class GraphLibCommonNetworking {
 
     private static void encodeBlockGraph(ServerWorld world, GraphWorld graphWorld, BlockGraph graph,
                                          PacketByteBuf buf) {
+        GraphUniverse universe = graphWorld.getUniverse();
         buf.writeLong(graph.getId());
 
         AtomicInteger index = new AtomicInteger();
@@ -186,7 +187,9 @@ public final class GraphLibCommonNetworking {
         graph.getNodes().forEachOrdered(node -> {
             buf.writeVarInt(getIdentifierInt(world, node.getNode().getTypeId()));
             buf.writeBlockPos(node.getPos());
-            node.getNode().toPacket(node, world, graphWorld, buf);
+            buf.writeVarInt(universe.getNodeDecoderIndex(node.getNode().getTypeId()));
+            buf.writeVarInt(universe.getNodeDecoderCount());
+            node.getNode().toPacket(buf);
             indexMap.put(node.toNodeKey(), index.getAndIncrement());
 
             for (NodeLink link : node.getConnections().values()) {

@@ -2,7 +2,6 @@ package com.kneelawk.graphlib.api.wire;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -18,15 +17,12 @@ public interface SidedWireBlockNode extends SidedBlockNode {
     /**
      * Checks whether this sided block node can connect to the given other block node.
      *
-     * @param self           the block node holder associated with this node.
-     * @param world          the block world that both nodes are in.
      * @param inDirection    the direction that the other node is connecting from.
      * @param connectionType the type of connection that would be formed.
      * @param other          the other block node.
      * @return <code>true</code> if a connection should be allowed to form, <code>false</code> otherwise.
      */
-    default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWorld world,
-                               @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
+    default boolean canConnect(@NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
                                @NotNull NodeHolder<BlockNode> other) {
         return true;
     }
