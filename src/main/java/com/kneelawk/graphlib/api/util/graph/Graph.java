@@ -2,16 +2,21 @@ package com.kneelawk.graphlib.api.util.graph;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.SortedMap;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 
 // Translated from 2xsaiko's HCTM-Base Graph code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt
@@ -19,10 +24,11 @@ import org.jetbrains.annotations.NotNull;
 /**
  * General purpose graph data structure.
  *
- * @param <T> the type of data this graph contains in each node.
+ * @param <K> the type of node keys used.
+ * @param <V> the type of node value contained.
  */
-public final class Graph<T> implements Iterable<Node<T>> {
-    private final Set<Node<T>> nodes = new LinkedHashSet<>();
+public final class Graph<K, V> implements Iterable<Node<K, V>> {
+    private final Object2ObjectMap<K, Node<K, V>> nodes = new Object2ObjectLinkedOpenHashMap<>();
 
     /**
      * Constructs an empty graph.
@@ -33,13 +39,14 @@ public final class Graph<T> implements Iterable<Node<T>> {
     /**
      * Adds a node to this graph containing the given data.
      *
-     * @param data the data for the new node to contain.
+     * @param key   the new node's unique key.
+     * @param value the value for the new node to contain.
      * @return the new node.
      */
-    public @NotNull Node<T> add(T data) {
-        Node<T> node = new Node<>(data);
-        nodes.forEach(n -> n.onAdded(node));
-        nodes.add(node);
+    public @NotNull Node<K, V> add(K key, V value) {
+        Node<K, V> node = new Node<>(key, value);
+        nodes.values().forEach(n -> n.nodeAdded(node));
+        nodes.put(key, node);
         return node;
     }
 
@@ -48,13 +55,23 @@ public final class Graph<T> implements Iterable<Node<T>> {
      * <p>
      * Note: this does not perform graph splitting. That must be done separately.
      *
-     * @param node the node to remove.
+     * @param key the key of the node to remove.
      */
-    public void remove(@NotNull Node<T> node) {
-        if (nodes.contains(node)) {
-            nodes.remove(node);
-            nodes.forEach(n -> n.onRemoved(node));
+    public void remove(@NotNull K key) {
+        if (nodes.containsKey(key)) {
+            nodes.remove(key);
+            nodes.values().forEach(n -> n.nodeRemoved(key));
         }
+    }
+
+    /**
+     * Gets the node in this graph with the given key.
+     *
+     * @param key the key of the node to get.
+     * @return the node with the given key.
+     */
+    public @Nullable Node<K, V> get(@NotNull K key) {
+        return nodes.get(key);
     }
 
     /**
@@ -64,20 +81,20 @@ public final class Graph<T> implements Iterable<Node<T>> {
      *
      * @return the new graphs made from the disconnected nodes.
      */
-    public @NotNull List<Graph<T>> split() {
-        List<Graph<T>> result = new ArrayList<>();
+    public @NotNull List<Graph<K, V>> split() {
+        List<Graph<K, V>> result = new ArrayList<>();
         int largestGraphSize = 0;
         int largestGraphIndex = 0;
 
-        Set<Node<T>> toBeChecked = new LinkedHashSet<>(nodes);
-        Set<Node<T>> connected = new LinkedHashSet<>();
+        SortedMap<K, Node<K, V>> toBeChecked = new Object2ObjectLinkedOpenHashMap<>(nodes);
+        Map<K, Node<K, V>> connected = new Object2ObjectLinkedOpenHashMap<>();
 
         while (!toBeChecked.isEmpty()) {
             connected.clear();
-            descend(connected, toBeChecked, toBeChecked.iterator().next());
+            descend(connected, toBeChecked, toBeChecked.firstKey());
 
             if (!toBeChecked.isEmpty()) {
-                Graph<T> newGraph = new Graph<>();
+                Graph<K, V> newGraph = new Graph<>();
                 moveBulkUnchecked(newGraph, connected);
 
                 if (newGraph.size() > largestGraphSize) {
@@ -91,40 +108,44 @@ public final class Graph<T> implements Iterable<Node<T>> {
 
         if (connected.size() < largestGraphSize) {
             // find the largest graph and make it ours
-            Graph<T> newGraph = new Graph<>();
+            Graph<K, V> newGraph = new Graph<>();
             moveBulkUnchecked(newGraph, connected);
-            Graph<T> largestGraph = result.set(largestGraphIndex, newGraph);
+            Graph<K, V> largestGraph = result.set(largestGraphIndex, newGraph);
             join(largestGraph);
         }
 
         return result;
     }
 
-    private void descend(@NotNull Set<Node<T>> connected, @NotNull Set<Node<T>> toBeChecked, @NotNull Node<T> node) {
-        Deque<Node<T>> stack = new ArrayDeque<>();
-        stack.push(node);
+    private void descend(@NotNull Map<K, Node<K, V>> connected, @NotNull Map<K, Node<K, V>> toBeChecked,
+                         @NotNull K key) {
+        Node<K, V> firstNode = toBeChecked.get(key);
+        Deque<K> stack = new ArrayDeque<>();
+        stack.push(key);
 
-        connected.add(node);
-        toBeChecked.remove(node);
+        connected.put(key, firstNode);
+        toBeChecked.remove(key);
 
         while (!stack.isEmpty()) {
-            Node<T> cur = stack.pop();
+            K cur = stack.pop();
 
-            for (Link<T> link : cur.connections()) {
-                Node<T> a = link.other(cur);
+            for (Link<K, V> link : connected.get(cur).connections().values()) {
+                Node<K, V> a = link.other(cur);
 
-                if (toBeChecked.contains(a)) {
-                    stack.push(a);
-                    connected.add(a);
-                    toBeChecked.remove(a);
+                if (toBeChecked.containsKey(a.key())) {
+                    stack.push(a.key());
+                    connected.put(a.key(), a);
+                    toBeChecked.remove(a.key());
                 }
             }
         }
     }
 
-    private void moveBulkUnchecked(@NotNull Graph<T> into, @NotNull Set<Node<T>> nodes) {
-        this.nodes.removeAll(nodes);
-        into.nodes.addAll(nodes);
+    private void moveBulkUnchecked(@NotNull Graph<K, V> into, @NotNull Map<K, Node<K, V>> nodes) {
+        for (K key : nodes.keySet()) {
+            this.nodes.remove(key);
+        }
+        into.nodes.putAll(nodes);
     }
 
     /**
@@ -132,82 +153,92 @@ public final class Graph<T> implements Iterable<Node<T>> {
      *
      * @param other the other graph to join with.
      */
-    public void join(@NotNull Graph<T> other) {
-        this.nodes.addAll(other.nodes);
+    public void join(@NotNull Graph<K, V> other) {
+        this.nodes.putAll(other.nodes);
         other.nodes.clear();
     }
 
     /**
      * Links two nodes.
      *
-     * @param a the first node to link.
-     * @param b the second node to link.
+     * @param aKey the key of the first node to link.
+     * @param bKey the key of the second node to link.
      * @return the link between the two nodes.
      */
-    public @NotNull Link<T> link(@NotNull Node<T> a, @NotNull Node<T> b) {
-        Link<T> link = new Link<>(a, b);
-        a.onLink(link);
-        b.onLink(link);
+    public @Nullable Link<K, V> link(@NotNull K aKey, @NotNull K bKey) {
+        Node<K, V> a = nodes.get(aKey);
+        if (a == null) return null;
+
+        Node<K, V> b = nodes.get(bKey);
+        if (b == null) return null;
+
+        Link<K, V> link = new Link<>(a, b);
+        a.addLink(link);
+        b.addLink(link);
         return link;
     }
 
     /**
      * Unlinks two nodes.
      * <p>
-     * Note: this tries unlinking in both directions, so node order is not an issue.
+     * Note: links are stored by opposite-node, so node order is not an issue.
      *
-     * @param a the first node to unlink.
-     * @param b the second node to unlink.
+     * @param aKey the key of the first node to unlink.
+     * @param bKey the key of the second node to unlink.
+     * @return the link that was just removed.
      */
-    public void unlink(@NotNull Node<T> a, @NotNull Node<T> b) {
-        Link<T> link1 = new Link<>(a, b);
-        Link<T> link2 = new Link<>(b, a);
-        a.onUnlink(link1);
-        b.onUnlink(link1);
-        a.onUnlink(link2);
-        b.onUnlink(link2);
+    public @Nullable Link<K, V> unlink(@NotNull K aKey, @NotNull K bKey) {
+        Node<K, V> a = nodes.get(aKey);
+        if (a == null) return null;
+
+        Node<K, V> b = nodes.get(bKey);
+        if (b == null) return null;
+
+        Link<K, V> aLink = a.removeLink(bKey);
+        Link<K, V> bLink = b.removeLink(aKey);
+
+        assert aLink == bLink;
+        return aLink;
     }
 
     /**
      * Checks to see if this graph contains the given node.
      *
-     * @param node the node to check.
+     * @param nodeKey the key to check.
      * @return whether this graph contains the given node.
      */
-    public boolean contains(@NotNull Node<T> node) {
-        return nodes.contains(node);
+    public boolean containsKey(@NotNull K nodeKey) {
+        return nodes.containsKey(nodeKey);
     }
 
     /**
      * Checks to see if this graph contains all the given nodes.
      *
-     * @param nodes the nodes to check to see if this graph contains.
+     * @param keys the keys to check to see if this graph contains.
      * @return whether this graph contains all the given nodes.
      */
-    @SafeVarargs
-    public final boolean contains(@NotNull Node<T>... nodes) {
-        for (Node<T> node : nodes) {
-            if (!contains(node))
-                return false;
+    public boolean containsKeys(@NotNull K... keys) {
+        for (K node : keys) {
+            if (!containsKey(node)) return false;
         }
         return true;
     }
 
     @NotNull
     @Override
-    public Iterator<Node<T>> iterator() {
-        return nodes.iterator();
+    public Iterator<Node<K, V>> iterator() {
+        return nodes.values().iterator();
     }
 
     @Override
-    public void forEach(@NotNull Consumer<? super Node<T>> action) {
-        nodes.forEach(action);
+    public void forEach(@NotNull Consumer<? super Node<K, V>> action) {
+        nodes.values().forEach(action);
     }
 
     @NotNull
     @Override
-    public Spliterator<Node<T>> spliterator() {
-        return nodes.spliterator();
+    public Spliterator<Node<K, V>> spliterator() {
+        return nodes.values().spliterator();
     }
 
     /**
@@ -215,8 +246,17 @@ public final class Graph<T> implements Iterable<Node<T>> {
      *
      * @return a stream of all the nodes in this graph.
      */
-    public @NotNull Stream<Node<T>> stream() {
-        return nodes.stream();
+    public @NotNull Stream<Node<K, V>> stream() {
+        return nodes.values().stream();
+    }
+
+    /**
+     * Returns a collection of all the nodes in this graph.
+     *
+     * @return a collection of all the nodes in this graph.
+     */
+    public @NotNull Collection<Node<K, V>> values() {
+        return nodes.values();
     }
 
     /**
