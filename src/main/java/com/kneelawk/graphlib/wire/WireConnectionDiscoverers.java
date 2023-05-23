@@ -36,7 +36,7 @@ public final class WireConnectionDiscoverers {
      * @param nodeView the node world to find connections in.
      * @param pos      this node's position.
      * @param selfNode this node's holder.
-     * @param filter   a general connection filter, used to filter connections.
+     * @param filter   a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return a collection of nodes this node can connect to.
      * @see com.kneelawk.graphlib.graph.BlockNode#findConnections(ServerWorld, NodeView, BlockPos, Node)
      */
@@ -84,7 +84,7 @@ public final class WireConnectionDiscoverers {
      * @param pos       this node's position.
      * @param selfNode  this node's holder.
      * @param otherNode the node that this node could potentially connect to.
-     * @param filter    a general connection filter, used to filter connections.
+     * @param filter    a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return <code>true</code> if this node can connect to the given node.
      */
     public static boolean wireCanConnect(@NotNull SidedWireBlockNode self, @NotNull ServerWorld world,
@@ -158,7 +158,7 @@ public final class WireConnectionDiscoverers {
      * @param nodeView the node world to find connections in.
      * @param pos      the position of this node.
      * @param selfNode this node's holder.
-     * @param filter   a general connection filter, used to filter connections.
+     * @param filter   a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return a collection of nodes this node can connect to.
      */
     public static @NotNull Collection<Node<BlockNodeHolder>> fullBlockFindConnections(@NotNull FullWireBlockNode self,
@@ -186,7 +186,7 @@ public final class WireConnectionDiscoverers {
      * @param pos       this node's position.
      * @param selfNode  this node's holder.
      * @param otherNode the node that this node could potentially connect to.
-     * @param filter    a general connection filter, used to filter connections.
+     * @param filter    a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return <code>true</code> if this node can connect to the given node.
      */
     public static boolean fullBlockCanConnect(@NotNull FullWireBlockNode self, @NotNull ServerWorld world,
@@ -225,7 +225,7 @@ public final class WireConnectionDiscoverers {
      * @param nodeView the node world to find connections in.
      * @param pos      the position of this node.
      * @param selfNode this node's holder.
-     * @param filter   a general connection filter, used to filter connections.
+     * @param filter   a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return a collection of nodes this node can connect to.
      */
     public static @NotNull Collection<Node<BlockNodeHolder>> centerWireFindConnections(
@@ -255,7 +255,7 @@ public final class WireConnectionDiscoverers {
      * @param pos       this node's position.
      * @param selfNode  this node's holder.
      * @param otherNode the node that this node could potentially connect to.
-     * @param filter    a general connection filter, used to filter connections.
+     * @param filter    a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return <code>true</code> if this node can connect to the given node.
      */
     public static boolean centerWireCanConnect(@NotNull CenterWireBlockNode self, @NotNull ServerWorld world,

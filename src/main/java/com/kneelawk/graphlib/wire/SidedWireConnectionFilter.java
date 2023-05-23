@@ -34,7 +34,7 @@ public interface SidedWireConnectionFilter {
      * @param otherFilter the other filter that must be satisfied.
      * @return a new connection filter that must satisfy both this filter and the other filter.
      */
-    default SidedWireConnectionFilter and(@NotNull SidedWireConnectionFilter otherFilter) {
+    default @NotNull SidedWireConnectionFilter and(@NotNull SidedWireConnectionFilter otherFilter) {
         return (self, world, pos, inDirection, connectionType, selfNode, otherNode) ->
             canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode) &&
                 otherFilter.canConnect(self, world, pos, inDirection, connectionType, selfNode, otherNode);
