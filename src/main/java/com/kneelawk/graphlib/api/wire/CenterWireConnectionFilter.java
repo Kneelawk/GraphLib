@@ -25,4 +25,15 @@ public interface CenterWireConnectionFilter {
     boolean canConnect(@NotNull CenterWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
                        @NotNull ServerWorld world, @NotNull Direction onSide,
                        @NotNull NodeHolder<BlockNode> otherNode);
+
+    /**
+     * Creates a new connection filter that must satisfy both this filter and the other filter.
+     *
+     * @param otherFilter the other filter that must be satisfied.
+     * @return a new connection filter that must satisfy both this filter and the other filter.
+     */
+    default @NotNull CenterWireConnectionFilter and(@NotNull CenterWireConnectionFilter otherFilter) {
+        return (self, selfNode, world, onSide, otherNode) -> canConnect(self, selfNode, world, onSide, otherNode) &&
+            otherFilter.canConnect(self, selfNode, world, onSide, otherNode);
+    }
 }

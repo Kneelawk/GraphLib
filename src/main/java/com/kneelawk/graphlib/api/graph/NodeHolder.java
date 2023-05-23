@@ -50,7 +50,7 @@ public interface NodeHolder<T extends BlockNode> {
      *
      * @return a positioned node containing this holder's position and node.
      */
-    @NotNull PositionedNode<T> toPositionedNode();
+    @NotNull SnapshotNode<T> toSnapshot();
 
     /**
      * Checks whether the contained node can be cast to the new type.
