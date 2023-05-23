@@ -35,7 +35,7 @@ public interface FullWireConnectionFilter {
      * @param otherFilter the other filter that must be satisfied.
      * @return a new connection filter that must satisfy both this filter and the other filter.
      */
-    default FullWireConnectionFilter and(@NotNull FullWireConnectionFilter otherFilter) {
+    default @NotNull FullWireConnectionFilter and(@NotNull FullWireConnectionFilter otherFilter) {
         return (self, selfNode, world, onSide, wireSide, otherNode) ->
             canConnect(self, selfNode, world, onSide, wireSide, otherNode) &&
                 otherFilter.canConnect(self, selfNode, world, onSide, wireSide, otherNode);
