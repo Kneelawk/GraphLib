@@ -1,7 +1,10 @@
 package com.kneelawk.graphlib.api.graph;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
@@ -75,5 +78,23 @@ public interface NodeEntityContext {
      */
     default @NotNull NodeContext toNodeContext() {
         return new NodeContext(getHolder(), getBlockWorld(), getGraphWorld());
+    }
+
+    /**
+     * Gets the block state at this node entity's position.
+     *
+     * @return the block state at this node entity's position.
+     */
+    default @NotNull BlockState getBlockState() {
+        return getBlockWorld().getBlockState(getPos());
+    }
+
+    /**
+     * Gets the block entity at this node entity's position, if any.
+     *
+     * @return the block entity at this node entity's position, if any.
+     */
+    default @Nullable BlockEntity getBlockEntity() {
+        return getBlockWorld().getBlockEntity(getPos());
     }
 }
