@@ -41,6 +41,7 @@ import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
@@ -531,7 +532,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private void handleCallbackUpdates() {
         for (var node : callbackUpdates) {
-            node.getNode().onConnectionsChanged(node, world, this);
+            node.getNode().onConnectionsChanged(new NodeContext(node, world, this));
         }
         callbackUpdates.clear();
     }
@@ -583,9 +584,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         var oldConnections = node.getConnections().stream().map(link -> link.other(node))
             .collect(Collectors.toCollection(LinkedHashSet::new));
         var wantedConnections =
-            new LinkedHashSet<>(node.getNode().findConnections(node, world, this));
+            new LinkedHashSet<>(node.getNode().findConnections(new NodeContext(node, world, this)));
         wantedConnections.removeIf(
-            other -> !other.getNode().canConnect(other, world, this, node));
+            other -> !other.getNode().canConnect(new NodeContext(other, world, this), node));
         var newConnections = wantedConnections.stream()
             .filter(other -> other.getGraphId() != nodeGraphId ||
                 !oldConnections.contains(other)).toList();
