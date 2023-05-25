@@ -567,7 +567,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
 
             SimpleBlockGraph newGraph = createGraph();
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, bn::createNodeEntity);
             updateNodeConnections(node);
         }
     }
@@ -678,6 +678,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             for (long id : toUnload) {
                 // unload the graphs
                 SimpleBlockGraph graph = loadedGraphs.remove(id);
+                graph.onUnload();
                 writeGraph(graph);
                 unsavedGraphs.remove(id);
             }
