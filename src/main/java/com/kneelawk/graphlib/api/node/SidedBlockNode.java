@@ -41,7 +41,7 @@ public interface SidedBlockNode extends BlockNode {
      * This method does <b>not</b> need to be implemented in order for client-side graph debug rendering to work.
      * This method should only be overridden to provide custom data to the client.
      *
-     * @param ctx
+     * @param ctx the node context for this node.
      * @param buf the buffer to encode this node to.
      */
     @Override
