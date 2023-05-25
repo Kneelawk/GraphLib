@@ -3,9 +3,9 @@ package com.kneelawk.graphlib.api.wire;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Direction;
 
+import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.node.BlockNode;
 
@@ -25,22 +25,22 @@ public interface WireConnectionFilter
     boolean accepts(@NotNull BlockNode self, @NotNull BlockNode other);
 
     @Override
-    default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
-                               @NotNull ServerWorld world, @NotNull Direction onSide, @Nullable Direction wireSide,
+    default boolean canConnect(@NotNull FullWireBlockNode self,
+                               @NotNull NodeContext ctx, @NotNull Direction onSide, @Nullable Direction wireSide,
                                @NotNull NodeHolder<BlockNode> otherNode) {
         return accepts(self, otherNode.getNode());
     }
 
     @Override
-    default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
-                               @NotNull ServerWorld world, @NotNull Direction inDirection,
+    default boolean canConnect(@NotNull SidedWireBlockNode self,
+                               @NotNull NodeContext ctx, @NotNull Direction inDirection,
                                @NotNull WireConnectionType connectionType, @NotNull NodeHolder<BlockNode> otherNode) {
         return accepts(self, otherNode.getNode());
     }
 
     @Override
-    default boolean canConnect(@NotNull CenterWireBlockNode self, @NotNull NodeHolder<BlockNode> selfNode,
-                               @NotNull ServerWorld world, @NotNull Direction onSide,
+    default boolean canConnect(@NotNull CenterWireBlockNode self,
+                               @NotNull NodeContext ctx, @NotNull Direction onSide,
                                @NotNull NodeHolder<BlockNode> otherNode) {
         return accepts(self, otherNode.getNode());
     }
