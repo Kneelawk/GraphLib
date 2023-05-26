@@ -62,7 +62,9 @@ public interface BlockNode {
      * @param ctx the node context for this node.
      * @return <code>true</code> if this node should have a node entity associated with it.
      */
-    boolean shouldHaveNodeEntity(@NotNull NodeContext ctx);
+    default boolean shouldHaveNodeEntity(@NotNull NodeContext ctx) {
+        return false;
+    }
 
     /**
      * Creates a new node entity that will be associated with this node.
@@ -70,7 +72,9 @@ public interface BlockNode {
      * @param entityCtx the new entity's context.
      * @return a newly created node entity, or <code>null</code> if an entity could not be created.
      */
-    @Nullable NodeEntity createNodeEntity(@NotNull NodeEntityContext entityCtx);
+    default @Nullable NodeEntity createNodeEntity(@NotNull NodeEntityContext entityCtx) {
+        return null;
+    }
 
     /**
      * Collects nodes in the world that this node can connect to.
