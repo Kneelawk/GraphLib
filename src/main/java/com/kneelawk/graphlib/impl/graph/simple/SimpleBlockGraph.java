@@ -300,6 +300,7 @@ public class SimpleBlockGraph implements BlockGraph {
     @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
                                                     @NotNull Function<NodeEntityContext, @Nullable NodeEntity> entityFactory) {
         BlockPos pos = blockPos.toImmutable();
+        NodePos nodePos = new NodePos(pos, node);
 
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(graph.add(new SimpleNodeWrapper(pos, node, id)));
 
@@ -308,13 +309,13 @@ public class SimpleBlockGraph implements BlockGraph {
             entity = entityFactory.apply(new SimpleNodeEntityContext(graphNode, controller.world, controller));
         }
         if (entity != null) {
-            nodeEntities.put(new NodePos(pos, node), entity);
+            nodeEntities.put(nodePos, entity);
         }
 
         nodesInPos.put(pos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();
-        controller.addGraphInPos(id, pos);
+        controller.putGraphWithNode(id, nodePos);
         controller.scheduleCallbackUpdate(graphNode);
         controller.markDirty(id);
 
@@ -324,6 +325,7 @@ public class SimpleBlockGraph implements BlockGraph {
     void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
         // see if removing this node means removing a block-pos or a chunk
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
+        NodePos removedNode = node.toNodePos();
         BlockPos removedPos = node.getPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node);
@@ -355,6 +357,7 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         // do the house-cleaning
+        controller.removeGraphWithNode(id, removedNode);
         if (removedPos != null) {
             controller.removeGraphInPos(id, removedPos);
         }
@@ -402,7 +405,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         // add our graph to all the positions and chunks the other graph is in
         for (var node : other.graph) {
-            controller.addGraphInPos(id, node.data().getPos());
+            controller.putGraphWithNode(id, new NodePos(node.data().getPos(), node.data().getNode()));
 
             // might as well set the node's graph id here as well
             node.data().graphId = id;
@@ -423,13 +426,15 @@ public class SimpleBlockGraph implements BlockGraph {
         var newGraphs = graph.split();
 
         if (!newGraphs.isEmpty()) {
-            // collect the block-poses and chunks we are no longer a part of
+            // collect the block-nodes, block-poses, and chunks we are no longer a part of
+            Set<NodePos> removedNodes = new LinkedHashSet<>();
             Set<BlockPos> removedPoses = new LinkedHashSet<>();
             LongSet removedChunks = new LongLinkedOpenHashSet();
 
             for (Graph<SimpleNodeWrapper> graph : newGraphs) {
                 for (var node : graph) {
                     BlockPos pos = node.data().getPos();
+                    removedNodes.add(new NodePos(pos, node.data().getNode()));
                     removedPoses.add(pos);
                     removedChunks.add(ChunkSectionPos.from(pos).asLong());
 
@@ -446,7 +451,7 @@ public class SimpleBlockGraph implements BlockGraph {
             }
 
             // do this stuff instead of rebuilding-refs later
-            controller.removeGraphInPoses(id, removedPoses, removedChunks);
+            controller.removeGraphInPoses(id, removedNodes, removedPoses, removedChunks);
             chunks.removeAll(removedChunks);
             nodeTypeCache.clear();
             controller.markDirty(id);
@@ -463,13 +468,14 @@ public class SimpleBlockGraph implements BlockGraph {
                 bg.rebuildRefs();
 
                 for (var node : bg.graph) {
+                    NodePos key = new NodePos(node.data().getPos(), node.data().getNode());
+
                     // Add the new graph to the graphs-in-chunks and graphs-in-poses trackers.
                     // I considered trying to group block-poses by chunk to avoid duplicate look-ups, but it didn't look
                     // like it was worth the extra computation.
-                    controller.addGraphInPos(bg.id, node.data().getPos());
+                    controller.putGraphWithNode(bg.id, key);
 
                     // make sure to move the node entities over too
-                    NodePos key = new NodePos(node.data().getPos(), node.data().getNode());
                     NodeEntity entity = nodeEntities.remove(key);
                     if (entity != null) {
                         bg.nodeEntities.put(key, entity);

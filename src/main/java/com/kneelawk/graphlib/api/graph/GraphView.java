@@ -11,7 +11,9 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.node.NodeEntity;
 import com.kneelawk.graphlib.api.node.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
 /**
@@ -40,6 +42,30 @@ public interface GraphView {
      * @return a stream of all the nodes in the given sided block-position.
      */
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
+
+    /**
+     * Checks whether the given node with the given position exists.
+     *
+     * @param pos the positioned node to try to find.
+     * @return <code>true</code> if the node was found, <code>false</code> otherwise.
+     */
+    boolean nodeExistsAt(@NotNull NodePos pos);
+
+    /**
+     * Gets the graph id of the given node at the given position.
+     *
+     * @param pos th positioned node to find the graph id of.
+     * @return the graph id of the node, of empty if the node was not found.
+     */
+    @Nullable BlockGraph getGraphForNode(@NotNull NodePos pos);
+
+    /**
+     * Gets the node entity at the given position, if it exists.
+     *
+     * @param pos the position to find the node entity at.
+     * @return the node entity at the given position, if it exists.
+     */
+    @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos);
 
     /**
      * Gets the IDs of all graphs with nodes in the given block-position.

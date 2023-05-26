@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
  * Positioned holder for a block node.
@@ -51,6 +52,13 @@ public interface NodeHolder<T extends BlockNode> {
      * @return a positioned node containing this holder's position and node.
      */
     @NotNull SnapshotNode<T> toSnapshot();
+
+    /**
+     * Gets the node pos of this node holder, holding only the block position and block node.
+     *
+     * @return the node pos of this node holder.
+     */
+    @NotNull NodePos toNodePos();
 
     /**
      * Checks whether the contained node can be cast to the new type.
