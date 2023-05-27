@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 
 public interface GraphUniverseImpl extends GraphUniverse {
@@ -26,4 +27,8 @@ public interface GraphUniverseImpl extends GraphUniverse {
     @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId);
 
     @Nullable NodeEntityDecoder getNodeEntityDecoder(@NotNull Identifier typeId);
+
+    @Nullable GraphEntityType<?> getGraphEntityType(@NotNull Identifier typeId);
+
+    @NotNull Iterable<GraphEntityType<?>> getAllGraphEntityTypes();
 }
