@@ -14,15 +14,17 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 public interface NodeEntity {
     /**
      * Get this node entity's type id.
-     *
+     * <p>
      * The id returned here must be the same as the one registered with
      * {@link GraphUniverse#addNodeEntityDecoder(Identifier, NodeEntityDecoder)}.
+     *
      * @return this node entity's type id.
      */
     @NotNull Identifier getTypeId();
 
     /**
      * Encodes this node entity as an NBT tag.
+     *
      * @return this node entity as an NBT tag.
      */
     @Nullable NbtElement toTag();

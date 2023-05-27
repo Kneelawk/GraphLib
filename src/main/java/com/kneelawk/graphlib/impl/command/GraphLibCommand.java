@@ -34,7 +34,8 @@ public class GraphLibCommand {
                     .then(argument("from", BlockPosArgumentType.blockPos())
                         .then(argument("to", BlockPosArgumentType.blockPos())
                             .executes(context -> updateBlocks(context.getSource(),
-                                RegistryEntryArgumentType.getRegistryEntry(context, "universe", GraphLibImpl.UNIVERSE_KEY),
+                                RegistryEntryArgumentType.getRegistryEntry(context, "universe",
+                                    GraphLibImpl.UNIVERSE_KEY),
                                 BlockPosArgumentType.getBlockPos(context, "from"),
                                 BlockPosArgumentType.getBlockPos(context, "to")))
                         )
@@ -58,20 +59,24 @@ public class GraphLibCommand {
         );
     }
 
-    private static int updateBlocks(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe, BlockPos from, BlockPos to) {
-        source.sendFeedback(() -> Constants.command("graphlib.updateblocks.starting", blockPosText(from), blockPosText(to)),
+    private static int updateBlocks(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe,
+                                    BlockPos from, BlockPos to) {
+        source.sendFeedback(
+            () -> Constants.command("graphlib.updateblocks.starting", blockPosText(from), blockPosText(to)),
             true);
 
         ServerWorld world = source.getWorld();
         universe.value().getGraphWorld(world).updateNodes(BlockPos.stream(from, to));
 
-        source.sendFeedback(() -> Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
+        source.sendFeedback(
+            () -> Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
             true);
 
         return 15;
     }
 
-    private static int removeEmptyGraphsCommand(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe) {
+    private static int removeEmptyGraphsCommand(ServerCommandSource source,
+                                                Holder.Reference<GraphUniverseImpl> universe) {
         int result = universe.value().getGraphWorld(source.getWorld()).removeEmptyGraphs();
 
         source.sendFeedback(() -> Constants.command("graphlib.removeemptygraphs.success", result), true);
@@ -79,12 +84,14 @@ public class GraphLibCommand {
         return result;
     }
 
-    private static int startDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe) throws CommandSyntaxException {
+    private static int startDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe)
+        throws CommandSyntaxException {
         GraphLibCommonNetworking.startDebuggingPlayer(source.getPlayerOrThrow(), universe.value());
         return 15;
     }
 
-    private static int stopDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe) throws CommandSyntaxException {
+    private static int stopDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe)
+        throws CommandSyntaxException {
         GraphLibCommonNetworking.stopDebuggingPlayer(source.getPlayerOrThrow(), universe.getRegistryKey().getValue());
         return 15;
     }

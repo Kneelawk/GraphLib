@@ -56,14 +56,11 @@ public final class DebugRenderer {
     private static final VertexConsumerProvider.Immediate immediate =
         VertexConsumerProvider.immediate(layerMap, new BufferBuilder(256));
 
-    private sealed interface NPos {
-    }
+    private sealed interface NPos {}
 
-    private record NBlockPos(BlockPos pos) implements NPos {
-    }
+    private record NBlockPos(BlockPos pos) implements NPos {}
 
-    private record NSidedPos(SidedPos pos) implements NPos {
-    }
+    private record NSidedPos(SidedPos pos) implements NPos {}
 
     private static class NPosData {
         int nodeCount = 0;
@@ -197,7 +194,8 @@ public final class DebugRenderer {
 
                 for (var node : graph.graph()) {
                     ClientBlockNode cbn = node.data().node();
-                    BlockNodeRendererHolder<?> renderer = GraphLibClientImpl.getRenderer(graph.universeId(), cbn.getRenderId());
+                    BlockNodeRendererHolder<?> renderer =
+                        GraphLibClientImpl.getRenderer(graph.universeId(), cbn.getRenderId());
                     if (renderer == null) continue;
 
                     NPos pos;

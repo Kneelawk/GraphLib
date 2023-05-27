@@ -19,23 +19,23 @@ public final class GraphLibEvents {
      * This event is fired when a graph is created in any world.
      */
     public static final Event<GraphCreatedListener> GRAPH_CREATED =
-        EventFactory.createArrayBacked(GraphCreatedListener.class, (world, controller, graph) -> {
-        }, listeners -> (world, graphWorld, graph) -> {
-            for (GraphCreatedListener listener : listeners) {
-                listener.graphCreated(world, graphWorld, graph);
-            }
-        });
+        EventFactory.createArrayBacked(GraphCreatedListener.class, (world, controller, graph) -> {},
+            listeners -> (world, graphWorld, graph) -> {
+                for (GraphCreatedListener listener : listeners) {
+                    listener.graphCreated(world, graphWorld, graph);
+                }
+            });
 
     /**
      * This event is fired when a graph is changed in any world.
      */
     public static final Event<GraphUpdatedListener> GRAPH_UPDATED =
-        EventFactory.createArrayBacked(GraphUpdatedListener.class, (world, controller, graph) -> {
-        }, listeners -> (world, graphWorld, graph) -> {
-            for (GraphUpdatedListener listener : listeners) {
-                listener.graphUpdated(world, graphWorld, graph);
-            }
-        });
+        EventFactory.createArrayBacked(GraphUpdatedListener.class, (world, controller, graph) -> {},
+            listeners -> (world, graphWorld, graph) -> {
+                for (GraphUpdatedListener listener : listeners) {
+                    listener.graphUpdated(world, graphWorld, graph);
+                }
+            });
 
     /**
      * This event is fired when a graph is about to be unloaded.
@@ -43,23 +43,23 @@ public final class GraphLibEvents {
      * Note: Unloading cannot be cancelled.
      */
     public static final Event<GraphUnloadingListener> GRAPH_UNLOADING =
-        EventFactory.createArrayBacked(GraphUnloadingListener.class, (world, graphWorld, graph) -> {
-        }, listeners -> (world, graphWorld, graph) -> {
-            for (GraphUnloadingListener listener : listeners) {
-                listener.graphUnloading(world, graphWorld, graph);
-            }
-        });
+        EventFactory.createArrayBacked(GraphUnloadingListener.class, (world, graphWorld, graph) -> {},
+            listeners -> (world, graphWorld, graph) -> {
+                for (GraphUnloadingListener listener : listeners) {
+                    listener.graphUnloading(world, graphWorld, graph);
+                }
+            });
 
     /**
      * This event is fired when a graph is destroyed in any world.
      */
     public static final Event<GraphDestroyedListener> GRAPH_DESTROYED =
-        EventFactory.createArrayBacked(GraphDestroyedListener.class, (world, controller, id) -> {
-        }, listeners -> (world, graphWorld, id) -> {
-            for (GraphDestroyedListener listener : listeners) {
-                listener.graphDestroyed(world, graphWorld, id);
-            }
-        });
+        EventFactory.createArrayBacked(GraphDestroyedListener.class, (world, controller, id) -> {},
+            listeners -> (world, graphWorld, id) -> {
+                for (GraphDestroyedListener listener : listeners) {
+                    listener.graphDestroyed(world, graphWorld, id);
+                }
+            });
 
     /**
      * Listener for when a graph is created in any world.
@@ -94,7 +94,7 @@ public final class GraphLibEvents {
      * <p>
      * Note: Unloading cannot be cancelled.
      */
-    public static interface GraphUnloadingListener {
+    public interface GraphUnloadingListener {
         /**
          * Called when a graph is about to be unloaded in any world.
          * <p>

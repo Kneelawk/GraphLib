@@ -1,7 +1,6 @@
 package com.kneelawk.graphlib.api.client.render;
 
 import java.math.RoundingMode;
-import java.util.Random;
 
 import com.google.common.math.IntMath;
 

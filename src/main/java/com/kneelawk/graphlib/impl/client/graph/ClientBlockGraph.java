@@ -9,5 +9,6 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 
-public record ClientBlockGraph(@NotNull Identifier universeId, long graphId, @NotNull Graph<ClientBlockNodeHolder> graph, @NotNull LongSet chunks) {
+public record ClientBlockGraph(@NotNull Identifier universeId, long graphId,
+                               @NotNull Graph<ClientBlockNodeHolder> graph, @NotNull LongSet chunks) {
 }
