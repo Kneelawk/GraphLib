@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.api.node.client;
+package com.kneelawk.graphlib.api.graph.user.client;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -6,7 +6,7 @@ import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Implemented by any representation of a {@link BlockNode} on the client.

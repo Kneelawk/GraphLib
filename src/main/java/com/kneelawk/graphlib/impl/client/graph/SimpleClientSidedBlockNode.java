@@ -5,8 +5,8 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 
-import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.node.client.SidedClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.client.SidedClientBlockNode;
 import com.kneelawk.graphlib.impl.Constants;
 
 public record SimpleClientSidedBlockNode(int hash, int color, @NotNull Direction side)

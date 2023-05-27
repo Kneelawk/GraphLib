@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Represents a positioned block node.

@@ -11,9 +11,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.node.NodeEntityDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 
 public interface GraphUniverseImpl extends GraphUniverse {
     @Override

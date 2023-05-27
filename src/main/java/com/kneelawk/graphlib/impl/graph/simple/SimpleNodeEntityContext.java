@@ -7,7 +7,7 @@ import net.minecraft.server.world.ServerWorld;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 public record SimpleNodeEntityContext(@NotNull NodeHolder<BlockNode> holder, @NotNull ServerWorld blockWorld,
                                       @NotNull SimpleGraphWorld graphWorld) implements NodeEntityContext {

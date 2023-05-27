@@ -7,7 +7,7 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * More general wire connection filter, designed only to determine if two types of block nodes should be allowed to

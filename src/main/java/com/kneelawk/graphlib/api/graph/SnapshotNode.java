@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Immutable version of {@link NodeHolder}, holding only a node and its position.

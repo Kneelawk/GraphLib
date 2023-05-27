@@ -6,7 +6,7 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * A block node that sits, hovering in the center of the block but without taking up the entire block space.

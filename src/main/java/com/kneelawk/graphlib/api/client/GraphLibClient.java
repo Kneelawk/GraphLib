@@ -9,8 +9,8 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
 import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
 import com.kneelawk.graphlib.impl.client.render.BlockNodeRendererHolder;
 

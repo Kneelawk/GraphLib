@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
 
 /**
  * Holds a {@link ClientBlockNode} along with its {@link BlockPos}.

@@ -24,8 +24,8 @@ import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.world.StorageChunk;
 import com.kneelawk.graphlib.impl.GLLog;

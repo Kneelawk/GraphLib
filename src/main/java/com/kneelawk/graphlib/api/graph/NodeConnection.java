@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.

@@ -10,7 +10,7 @@ import net.minecraft.util.math.BlockPos;
 import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.SnapshotNode;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;

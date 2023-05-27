@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.OptionalLong;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,9 +44,9 @@ import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.NodeEntity;
-import com.kneelawk.graphlib.api.node.SidedBlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -541,7 +540,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
     }
 
-    void removeGraphInPoses(long id, @NotNull Iterable<NodePos> nodes, @NotNull Iterable<BlockPos> poses, @NotNull LongIterable chunkPoses) {
+    void removeGraphInPoses(long id, @NotNull Iterable<NodePos> nodes, @NotNull Iterable<BlockPos> poses,
+                            @NotNull LongIterable chunkPoses) {
         for (NodePos node : nodes) {
             removeGraphWithNode(id, node);
         }

@@ -11,11 +11,11 @@ import it.unimi.dsi.fastutil.Pair;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
-import com.kneelawk.graphlib.api.node.NodeEntity;
-import com.kneelawk.graphlib.api.node.NodeEntityDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 

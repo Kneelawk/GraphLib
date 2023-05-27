@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.api.node.client;
+package com.kneelawk.graphlib.api.graph.user.client;
 
 import java.util.List;
 

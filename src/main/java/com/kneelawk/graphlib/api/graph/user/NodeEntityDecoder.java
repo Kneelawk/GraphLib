@@ -1,4 +1,4 @@
-package com.kneelawk.graphlib.api.node;
+package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

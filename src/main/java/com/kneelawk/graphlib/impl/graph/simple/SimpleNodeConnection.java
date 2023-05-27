@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.graph.Link;
 
 public class SimpleNodeConnection implements NodeConnection {
