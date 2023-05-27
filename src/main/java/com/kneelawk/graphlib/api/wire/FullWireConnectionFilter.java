@@ -7,7 +7,7 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Allows an external object to filter the connections connecting to a full block wire block node.

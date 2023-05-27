@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
 import com.kneelawk.graphlib.impl.Constants;
 
 public record SimpleClientBlockNode(int hash, int color) implements ClientBlockNode {

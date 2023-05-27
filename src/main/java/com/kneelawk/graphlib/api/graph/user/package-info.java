@@ -1,4 +1,4 @@
 /**
  * This package contains the interfaces that are expected to be implemented by users of GraphLib.
  */
-package com.kneelawk.graphlib.api.node;
+package com.kneelawk.graphlib.api.graph.user;

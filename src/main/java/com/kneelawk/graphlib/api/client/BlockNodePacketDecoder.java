@@ -5,8 +5,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.network.PacketByteBuf;
 
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
 
 /**
  * Used for decoding a {@link ClientBlockNode} from a {@link PacketByteBuf}.

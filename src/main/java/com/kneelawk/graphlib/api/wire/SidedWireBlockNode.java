@@ -6,8 +6,8 @@ import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.SidedBlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 
 /**
  * A block node wire that occupies the side of a block.

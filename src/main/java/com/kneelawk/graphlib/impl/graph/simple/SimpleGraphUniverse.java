@@ -23,9 +23,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
-import com.kneelawk.graphlib.api.node.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;

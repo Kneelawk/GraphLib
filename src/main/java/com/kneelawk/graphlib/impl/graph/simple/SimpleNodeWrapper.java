@@ -13,8 +13,8 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.node.BlockNode;
-import com.kneelawk.graphlib.api.node.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 

@@ -13,7 +13,7 @@ import net.minecraft.util.math.Direction;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.node.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.DirectionUtils;
 
 /**
