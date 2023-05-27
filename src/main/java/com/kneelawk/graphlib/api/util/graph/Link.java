@@ -38,4 +38,27 @@ public record Link<T>(@NotNull Node<T> first, @NotNull Node<T> second) {
             return first;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Link<?> linkKey = (Link<?>) o;
+
+        if (first.equals(linkKey.first)) {
+            return second.equals(linkKey.second);
+        } else if (second.equals(linkKey.first)) {
+            return first.equals(linkKey.second);
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = first.hashCode();
+        result = result ^ second.hashCode();
+        return result;
+    }
 }

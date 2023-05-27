@@ -53,7 +53,7 @@ public final class SimpleNodeWrapper {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
-        BlockNodeDecoder decoder = universe.getDecoder(typeId);
+        BlockNodeDecoder decoder = universe.getNodeDecoder(typeId);
 
         if (decoder == null) {
             GLLog.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);
@@ -61,7 +61,7 @@ public final class SimpleNodeWrapper {
         }
 
         NbtElement nodeTag = tag.get("node");
-        BlockNode node = decoder.createBlockNodeFromTag(nodeTag);
+        BlockNode node = decoder.decode(nodeTag);
 
         if (node == null) {
             GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);

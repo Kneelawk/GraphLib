@@ -26,6 +26,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
@@ -36,8 +37,9 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Identifier id;
     private final List<BlockNodeDiscoverer> discoverers = new ArrayList<>();
-    private final Map<Identifier, BlockNodeDecoder> decoders = new LinkedHashMap<>();
+    private final Map<Identifier, BlockNodeDecoder> nodeDecoders = new LinkedHashMap<>();
     private final Object2IntMap<Identifier> typeIndices = new Object2IntLinkedOpenHashMap<>();
+    private final Map<Identifier, NodeEntityDecoder> nodeEntityDecoders = new LinkedHashMap<>();
     final SaveMode saveMode;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
@@ -83,25 +85,42 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public void addDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder) {
-        decoders.put(typeId, decoder);
+    public void addNodeDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder) {
+        nodeDecoders.put(typeId, decoder);
         typeIndices.put(typeId, typeIndices.size());
     }
 
     @Override
-    public void addDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder> @NotNull ... decoders) {
+    public void addNodeDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder> @NotNull ... decoders) {
         for (Pair<Identifier, ? extends BlockNodeDecoder> pair : decoders) {
-            this.decoders.put(pair.key(), pair.value());
+            this.nodeDecoders.put(pair.key(), pair.value());
             typeIndices.put(pair.key(), typeIndices.size());
         }
     }
 
     @Override
-    public void addDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders) {
-        this.decoders.putAll(decoders);
+    public void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders) {
+        this.nodeDecoders.putAll(decoders);
         for (Identifier id : decoders.keySet()) {
             typeIndices.put(id, typeIndices.size());
         }
+    }
+
+    @Override
+    public void addNodeEntityDecoder(@NotNull Identifier typeId, @NotNull NodeEntityDecoder decoder) {
+        this.nodeEntityDecoders.put(typeId, decoder);
+    }
+
+    @Override
+    public void addNodeEntityDecoders(@NotNull Pair<Identifier, ? extends NodeEntityDecoder>... decoders) {
+        for (Pair<Identifier, ? extends NodeEntityDecoder> pair : decoders) {
+            this.nodeEntityDecoders.put(pair.key(), pair.value());
+        }
+    }
+
+    @Override
+    public void addNodeEntityDecoders(@NotNull Map<Identifier, ? extends NodeEntityDecoder> decoders) {
+        this.nodeEntityDecoders.putAll(decoders);
     }
 
     @Override
@@ -127,7 +146,12 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @Nullable BlockNodeDecoder getDecoder(@NotNull Identifier typeId) {
-        return decoders.get(typeId);
+    public @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId) {
+        return nodeDecoders.get(typeId);
+    }
+
+    @Override
+    public @Nullable NodeEntityDecoder getNodeEntityDecoder(@NotNull Identifier typeId) {
+        return nodeEntityDecoders.get(typeId);
     }
 }

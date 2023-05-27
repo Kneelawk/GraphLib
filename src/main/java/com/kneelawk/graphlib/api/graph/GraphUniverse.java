@@ -14,6 +14,8 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
@@ -82,7 +84,7 @@ public interface GraphUniverse {
      * @param typeId  the type id of the block node the decoder is being registered for.
      * @param decoder the block node decoder responsible for decoding the associated type of block node.
      */
-    void addDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
+    void addNodeDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
 
     /**
      * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
@@ -92,7 +94,7 @@ public interface GraphUniverse {
      *
      * @param decoders the set of block node decoders to be registered.
      */
-    void addDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder>... decoders);
+    void addNodeDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder>... decoders);
 
     /**
      * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
@@ -102,7 +104,38 @@ public interface GraphUniverse {
      *
      * @param decoders the set of block node decoders to be registered.
      */
-    void addDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
+    void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
+
+    /**
+     * Registers a {@link NodeEntityDecoder} for the given node entity type id.
+     * <p>
+     * The identifier under which the decoder is registered corresponds to the one returned by the associated node
+     * entity's {@link NodeEntity#getTypeId()}.
+     *
+     * @param typeId  the type id of the node entity the decoder is being registered for.
+     * @param decoder the node entity decoder responsible for decoding the associated type of node entity.
+     */
+    void addNodeEntityDecoder(@NotNull Identifier typeId, @NotNull NodeEntityDecoder decoder);
+
+    /**
+     * Registers a set of {@link NodeEntityDecoder} with associated node entity type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated node
+     * entity's {@link NodeEntity#getTypeId()}.
+     *
+     * @param decoders the set of node entity decoders to be registered.
+     */
+    void addNodeEntityDecoders(@NotNull Pair<Identifier, ? extends NodeEntityDecoder>... decoders);
+
+    /**
+     * Registers a set of {@link NodeEntityDecoder} with associated node entity type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated node
+     * entity's {@link NodeEntity#getTypeId()}.
+     *
+     * @param decoders the set of node entity decoders to be registered.
+     */
+    void addNodeEntityDecoders(@NotNull Map<Identifier, ? extends NodeEntityDecoder> decoders);
 
     /**
      * Registers this graph universe so that it can be found by its id.

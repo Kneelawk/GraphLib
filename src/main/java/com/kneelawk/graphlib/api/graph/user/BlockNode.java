@@ -13,6 +13,7 @@ import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeContext;
+import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
@@ -40,7 +41,7 @@ public interface BlockNode {
      * Gets this block node's type ID, associated with its decoder.
      * <p>
      * A block node's {@link BlockNodeDecoder} must always be registered with
-     * {@link GraphUniverse#addDecoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
+     * {@link GraphUniverse#addNodeDecoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
      *
      * @return the id of this block node.
      */
@@ -54,6 +55,26 @@ public interface BlockNode {
      * @return a (possibly null) NBT element describing this block node's data.
      */
     @Nullable NbtElement toTag();
+
+    /**
+     * Checks whether this specific node should have a node entity associated with it.
+     *
+     * @param ctx the node context for this node.
+     * @return <code>true</code> if this node should have a node entity associated with it.
+     */
+    default boolean shouldHaveNodeEntity(@NotNull NodeContext ctx) {
+        return false;
+    }
+
+    /**
+     * Creates a new node entity that will be associated with this node.
+     *
+     * @param entityCtx the new entity's context.
+     * @return a newly created node entity, or <code>null</code> if an entity could not be created.
+     */
+    default @Nullable NodeEntity createNodeEntity(@NotNull NodeEntityContext entityCtx) {
+        return null;
+    }
 
     /**
      * Collects nodes in the world that this node can connect to.
@@ -76,7 +97,7 @@ public interface BlockNode {
      * <b>Contract:</b> This method must only return <code>true</code> for nodes that would be returned from
      * {@link #findConnections(NodeContext)}.
      *
-     * @param ctx the node context for this node.
+     * @param ctx   the node context for this node.
      * @param other the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
      * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeContext, NodeHolder, SidedWireConnectionFilter)

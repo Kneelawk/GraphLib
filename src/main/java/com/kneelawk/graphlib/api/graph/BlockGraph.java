@@ -3,12 +3,15 @@ package com.kneelawk.graphlib.api.graph;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
 /**
@@ -37,6 +40,14 @@ public interface BlockGraph {
      * @return a stream of all the nodes in this graph in the given sided block-position.
      */
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
+
+    /**
+     * Gets the node entity at a given pos, if it exists.
+     *
+     * @param pos the position to find the node entity at.
+     * @return the node entity, or <code>null</code> if there is no node entity present at the given location.
+     */
+    @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos);
 
     /**
      * Gets all the nodes in this graph.

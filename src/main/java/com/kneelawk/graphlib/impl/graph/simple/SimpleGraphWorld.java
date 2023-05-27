@@ -38,14 +38,17 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
+import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.api.world.UnloadingRegionBasedStorage;
@@ -97,7 +100,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                             boolean syncChunkWrites) {
         this.universe = universe;
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
-            SimpleBlockGraphChunk::new, SimpleBlockGraphChunk::new, universe.saveMode);
+            (compound, pos, markDirty) -> new SimpleBlockGraphChunk(compound, pos, markDirty, universe),
+            SimpleBlockGraphChunk::new, universe.saveMode);
         this.world = world;
         this.saveMode = universe.saveMode;
         graphsDir = path.resolve(Constants.GRAPHS_DIRNAME);
@@ -217,6 +221,54 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     }
 
     /**
+     * Checks whether the given node with the given position exists.
+     *
+     * @param pos the positioned node to try to find.
+     * @return <code>true</code> if the node was found, <code>false</code> otherwise.
+     */
+    @Override
+    public boolean nodeExistsAt(@NotNull NodePos pos) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
+        if (chunk != null) {
+            return chunk.containsNode(pos, this::getGraph);
+        }
+        return false;
+    }
+
+    /**
+     * Gets the graph id of the given node at the given position.
+     *
+     * @param pos th positioned node to find the graph id of.
+     * @return the graph id of the node, of empty if the node was not found.
+     */
+    @Override
+    public @Nullable BlockGraph getGraphForNode(@NotNull NodePos pos) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
+        if (chunk != null) {
+            return chunk.getGraphForNode(pos, this::getGraph);
+        }
+        return null;
+    }
+
+    /**
+     * Gets the node entity at the given position, if it exists.
+     *
+     * @param pos the position to find the node entity at.
+     * @return the node entity at the given position, if it exists.
+     */
+    @Override
+    public @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
+        if (chunk != null) {
+            BlockGraph graph = chunk.getGraphForNode(pos, this::getGraph);
+            if (graph != null) {
+                return graph.getNodeEntity(pos);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Gets the IDs of all graph with nodes in the given block-position.
      *
      * @param pos the block-position to get the IDs of graphs with nodes at.
@@ -226,7 +278,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     public @NotNull LongStream getGraphsAt(@NotNull BlockPos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
         if (chunk != null) {
-            LongSet graphsInPos = chunk.graphsInPos.get(ChunkSectionPos.packLocal(pos));
+            LongSet graphsInPos = chunk.getGraphsAt(pos);
             if (graphsInPos != null) {
                 return graphsInPos.longStream();
             } else {
@@ -334,7 +386,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     public @NotNull LongStream getGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(pos);
         if (chunk != null) {
-            return chunk.graphsInChunk.longStream();
+            return chunk.getGraphs().longStream();
         } else {
             return LongStream.empty();
         }
@@ -449,25 +501,29 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         GraphLibEvents.GRAPH_DESTROYED.invoker().graphDestroyed(world, this, id);
     }
 
-    void addGraphInPos(long id, @NotNull BlockPos pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
+    void putGraphWithNode(long id, @NotNull NodePos pos) {
+        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
         SimpleBlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
-        chunk.addGraphInPos(id, pos);
+        chunk.putGraphWithNode(id, pos, this::getGraph);
 
         timer.onChunkUse(sectionPos);
+    }
+
+    void removeGraphWithNode(long id, @NotNull NodePos pos) {
+        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
+        if (chunk != null) {
+            chunk.removeGraphWithNodeUnchecked(pos);
+        } else {
+            GLLog.warn("Tried to remove node fom non-existent chunk. Id: {}, chunk: {}, node: {}", id, sectionPos, pos);
+        }
     }
 
     void removeGraphInPos(long id, @NotNull BlockPos pos) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
-            short local = ChunkSectionPos.packLocal(pos);
-            LongSet graphsInPos = chunk.graphsInPos.get(local);
-            graphsInPos.remove(id);
-            if (graphsInPos.isEmpty()) {
-                chunk.markDirty.run();
-                chunk.graphsInPos.remove(local);
-            }
+            chunk.removeGraphInPosUnchecked(id, pos);
         } else {
             GLLog.warn("Tried to remove graph from non-existent chunk. Id: {}, chunk: {}, block: {}", id, sectionPos,
                 pos);
@@ -478,14 +534,17 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
-            chunk.markDirty.run();
-            chunk.graphsInChunk.remove(id);
+            chunk.removeGraphUnchecked(id);
         } else {
             GLLog.warn("Tried to remove graph fom non-existent chunk. Id: {}, chunk: {}", id, sectionPos);
         }
     }
 
-    void removeGraphInPoses(long id, @NotNull Iterable<BlockPos> poses, @NotNull LongIterable chunkPoses) {
+    void removeGraphInPoses(long id, @NotNull Iterable<NodePos> nodes, @NotNull Iterable<BlockPos> poses,
+                            @NotNull LongIterable chunkPoses) {
+        for (NodePos node : nodes) {
+            removeGraphWithNode(id, node);
+        }
         for (BlockPos pos : poses) {
             removeGraphInPos(id, pos);
         }
@@ -567,7 +626,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
 
             SimpleBlockGraph newGraph = createGraph();
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, bn::createNodeEntity);
             updateNodeConnections(node);
         }
     }
@@ -583,13 +642,10 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
         var oldConnections = node.getConnections().stream().map(link -> link.other(node))
             .collect(Collectors.toCollection(LinkedHashSet::new));
-        var wantedConnections =
-            new LinkedHashSet<>(node.getNode().findConnections(new NodeContext(node, world, this)));
-        wantedConnections.removeIf(
-            other -> !other.getNode().canConnect(new NodeContext(other, world, this), node));
+        var wantedConnections = new LinkedHashSet<>(node.getNode().findConnections(new NodeContext(node, world, this)));
+        wantedConnections.removeIf(other -> !other.getNode().canConnect(new NodeContext(other, world, this), node));
         var newConnections = wantedConnections.stream()
-            .filter(other -> other.getGraphId() != nodeGraphId ||
-                !oldConnections.contains(other)).toList();
+            .filter(other -> other.getGraphId() != nodeGraphId || !oldConnections.contains(other)).toList();
         var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
 
         long mergedGraphId = nodeGraphId;
@@ -634,7 +690,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         for (int y = world.getBottomSectionCoord(); y < world.getTopSectionCoord(); y++) {
             SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.x, y, pos.z));
             if (chunk != null) {
-                for (long id : chunk.graphsInChunk) {
+                for (long id : chunk.getGraphs()) {
                     getGraph(id);
                 }
             }
@@ -678,6 +734,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             for (long id : toUnload) {
                 // unload the graphs
                 SimpleBlockGraph graph = loadedGraphs.remove(id);
+                graph.onUnload();
                 writeGraph(graph);
                 unsavedGraphs.remove(id);
             }

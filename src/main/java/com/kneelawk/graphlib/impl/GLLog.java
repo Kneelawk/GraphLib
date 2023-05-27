@@ -47,6 +47,10 @@ public final class GLLog {
     private GLLog() {
     }
 
+    public static void debug(String msg, Object arg1) {
+        log.debug(msg, arg1);
+    }
+
     public static void info(String msg) {
         log.info(msg);
     }

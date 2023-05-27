@@ -16,5 +16,5 @@ public interface BlockNodeDecoder {
      * @param tag the NBT element used to decode the block node.
      * @return the decoded block node.
      */
-    @Nullable BlockNode createBlockNodeFromTag(@Nullable NbtElement tag);
+    @Nullable BlockNode decode(@Nullable NbtElement tag);
 }

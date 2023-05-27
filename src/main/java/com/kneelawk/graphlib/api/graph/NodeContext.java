@@ -10,6 +10,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 
 /**
  * Context passed to a node in method calls.
@@ -58,5 +59,36 @@ public record NodeContext(@NotNull NodeHolder<BlockNode> self, @NotNull ServerWo
      */
     public @Nullable BlockEntity getBlockEntity() {
         return blockWorld.getBlockEntity(getPos());
+    }
+
+    /**
+     * Gets the node entity associated with this block node.
+     *
+     * @return the node entity associated with this block node, or <code>null</code> if this block node's graph does not
+     * exist or if this block node has no associated node entity.
+     */
+    public @Nullable NodeEntity getNodeEntity() {
+        BlockGraph graph = graphWorld.getGraph(self.getGraphId());
+        if (graph != null) {
+            return graph.getNodeEntity(self.toNodePos());
+        }
+        return null;
+    }
+
+    /**
+     * Gets the node entity associated with this block node and casts it to the given type, if possible.
+     *
+     * @param entityClass the class of the node entity to try and get.
+     * @param <T>         the type of node entity to try and get.
+     * @return the node entity associated with this block node, or <code>null</code> if this block node's graph does not
+     * exist, if this block node has no associated node entity, or if this block node's associated node entity is of a
+     * different class.
+     */
+    public <T extends NodeEntity> @Nullable T getNodeEntity(Class<T> entityClass) {
+        NodeEntity entity = getNodeEntity();
+        if (entityClass.isInstance(entity)) {
+            return entityClass.cast(entity);
+        }
+        return null;
     }
 }

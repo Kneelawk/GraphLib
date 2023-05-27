@@ -161,11 +161,8 @@ public final class Graph<T> implements Iterable<Node<T>> {
      */
     public void unlink(@NotNull Node<T> a, @NotNull Node<T> b) {
         Link<T> link1 = new Link<>(a, b);
-        Link<T> link2 = new Link<>(b, a);
         a.onUnlink(link1);
         b.onUnlink(link1);
-        a.onUnlink(link2);
-        b.onUnlink(link2);
     }
 
     /**
