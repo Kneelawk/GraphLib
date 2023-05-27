@@ -38,6 +38,19 @@ public final class GraphLibEvents {
         });
 
     /**
+     * This event is fired when a graph is about to be unloaded.
+     * <p>
+     * Note: Unloading cannot be cancelled.
+     */
+    public static final Event<GraphUnloadingListener> GRAPH_UNLOADING =
+        EventFactory.createArrayBacked(GraphUnloadingListener.class, (world, graphWorld, graph) -> {
+        }, listeners -> (world, graphWorld, graph) -> {
+            for (GraphUnloadingListener listener : listeners) {
+                listener.graphUnloading(world, graphWorld, graph);
+            }
+        });
+
+    /**
      * This event is fired when a graph is destroyed in any world.
      */
     public static final Event<GraphDestroyedListener> GRAPH_DESTROYED =
@@ -74,6 +87,24 @@ public final class GraphLibEvents {
          * @param graph      the graph that was changed.
          */
         void graphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+    }
+
+    /**
+     * Listener for when a graph is about to be unloaded.
+     * <p>
+     * Note: Unloading cannot be cancelled.
+     */
+    public static interface GraphUnloadingListener {
+        /**
+         * Called when a graph is about to be unloaded in any world.
+         * <p>
+         * Note: Unloading cannot be cancelled.
+         *
+         * @param world      the world in which the graph is being unloaded.
+         * @param graphWorld the graph-world in which the graph is being unloaded.
+         * @param graph      the graph that is being unloaded.
+         */
+        void graphUnloading(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
     }
 
     /**

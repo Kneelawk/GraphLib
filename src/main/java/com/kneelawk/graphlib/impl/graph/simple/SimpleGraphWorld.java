@@ -734,6 +734,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             for (long id : toUnload) {
                 // unload the graphs
                 SimpleBlockGraph graph = loadedGraphs.remove(id);
+                GraphLibEvents.GRAPH_UNLOADING.invoker().graphUnloading(world, this, graph);
                 graph.onUnload();
                 writeGraph(graph);
                 unsavedGraphs.remove(id);
