@@ -14,6 +14,7 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.world.SaveMode;
@@ -136,6 +137,27 @@ public interface GraphUniverse {
      * @param decoders the set of node entity decoders to be registered.
      */
     void addNodeEntityDecoders(@NotNull Map<Identifier, ? extends NodeEntityDecoder> decoders);
+
+    /**
+     * Registers a {@link GraphEntityType}.
+     *
+     * @param type the graph entity type to be registered.
+     */
+    void addGraphEntityType(@NotNull GraphEntityType<?> type);
+
+    /**
+     * Registers a set of {@link GraphEntityType}s.
+     *
+     * @param types the graph entity types to be registered.
+     */
+    void addGraphEntityTypes(@NotNull GraphEntityType<?>... types);
+
+    /**
+     * Registers a set of {@link GraphEntityType}s.
+     *
+     * @param types the graph entity types to be registered.
+     */
+    void addGraphEntityTypes(@NotNull Iterable<GraphEntityType<?>> types);
 
     /**
      * Registers this graph universe so that it can be found by its id.

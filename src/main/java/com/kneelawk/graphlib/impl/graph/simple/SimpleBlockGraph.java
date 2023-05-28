@@ -36,6 +36,8 @@ import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
@@ -66,6 +68,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
+        NbtCompound graphEntities = tag.getCompound("graphEntities");
 
         List<@Nullable Node<SimpleNodeWrapper>> nodes = new ArrayList<>();
 
@@ -101,6 +104,23 @@ public class SimpleBlockGraph implements BlockGraph {
             }
         }
 
+        // decode the graph entities
+        for (GraphEntityType<?> type : controller.universe.getAllGraphEntityTypes()) {
+            SimpleGraphEntityContext ctx = new SimpleGraphEntityContext(controller.world, controller, graph);
+            if (graphEntities.contains(type.id().toString(), NbtElement.COMPOUND_TYPE)) {
+                NbtCompound entityCom = graphEntities.getCompound(type.id().toString());
+                GraphEntity<?> entity = type.decoder().decode(entityCom.get("entity"), ctx);
+                if (entity == null) {
+                    entity = type.factory().createNew(ctx);
+                }
+                graph.graphEntities.put(type, entity);
+            } else {
+                GLLog.warn("Graph missing graph entity of type: {}, creating a new one...", type.id());
+                GraphEntity<?> entity = type.factory().createNew(ctx);
+                graph.graphEntities.put(type, entity);
+            }
+        }
+
         // no need to rebuild refs as that stuff is handled by graph.createNode(...)
 
         return graph;
@@ -114,13 +134,22 @@ public class SimpleBlockGraph implements BlockGraph {
     private final Multimap<BlockPos, SimpleNodeHolder<BlockNode>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
     private final Map<Class<?>, List<?>> nodeTypeCache = new HashMap<>();
+    private final Map<GraphEntityType<?>, GraphEntity<?>> graphEntities = new Object2ObjectLinkedOpenHashMap<>();
 
-    public SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id) {
+    public SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id, boolean initializeGraphEntities) {
         this(controller, id, LongSet.of());
 
         // When newly-creating a graph, mark it dirty, so it'll get saved.
         // If this is a throw-away graph, it should get absorbed and deleted before the next tick.
         this.controller.markDirty(id);
+
+        // Add all the empty graph entities
+        if (initializeGraphEntities) {
+            for (GraphEntityType<?> type : this.controller.universe.getAllGraphEntityTypes()) {
+                graphEntities.put(type, type.factory()
+                    .createNew(new SimpleGraphEntityContext(this.controller.world, this.controller, this)));
+            }
+        }
     }
 
     private SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id, @NotNull LongSet chunks) {
@@ -184,6 +213,16 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         tag.put("links", linksTag);
+
+        NbtCompound graphEntitiesCom = new NbtCompound();
+
+        for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
+            NbtCompound graphEntityCom = new NbtCompound();
+            graphEntityCom.put("entity", entry.getValue().toTag());
+            graphEntitiesCom.put(entry.getKey().id().toString(), graphEntityCom);
+        }
+
+        tag.put("graphEntities", graphEntitiesCom);
 
         return tag;
     }
@@ -263,6 +302,21 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     /**
+     * Gets a graph entity attached to this graph.
+     *
+     * @param type the type of graph entity to retrieve.
+     * @return the given graph entity attached to this graph.
+     * @throws IllegalArgumentException if the given graph entity type has not been registered with this graph's universe.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <G extends GraphEntity<G>> @NotNull G getGraphEntity(GraphEntityType<G> type) {
+        GraphEntity<?> entity = graphEntities.get(type);
+        if (entity == null) throw new IllegalArgumentException("No graph entity type registered with id: " + type.id());
+        return (G) entity;
+    }
+
+    /**
      * Gets the number of nodes in this graph.
      *
      * @return the number of nodes in this graph.
@@ -304,12 +358,12 @@ public class SimpleBlockGraph implements BlockGraph {
 
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(graph.add(new SimpleNodeWrapper(pos, node, id)));
 
-        NodeEntity entity = null;
+        NodeEntity nodeEntity = null;
         if (node.shouldHaveNodeEntity(new NodeContext(graphNode, controller.world, controller))) {
-            entity = entityFactory.apply(new SimpleNodeEntityContext(graphNode, controller.world, controller));
+            nodeEntity = entityFactory.apply(new SimpleNodeEntityContext(graphNode, controller.world, controller));
         }
-        if (entity != null) {
-            nodeEntities.put(nodePos, entity);
+        if (nodeEntity != null) {
+            nodeEntities.put(nodePos, nodeEntity);
         }
 
         nodesInPos.put(pos, graphNode);
@@ -317,6 +371,11 @@ public class SimpleBlockGraph implements BlockGraph {
         nodeTypeCache.clear();
         controller.putGraphWithNode(id, nodePos);
         controller.scheduleCallbackUpdate(graphNode);
+
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onNodeCreated(graphNode, nodeEntity);
+        }
+
         controller.markDirty(id);
 
         return graphNode;
@@ -373,6 +432,11 @@ public class SimpleBlockGraph implements BlockGraph {
             entity.onDelete();
         }
 
+        // notify the graph entities that a node was destroyed
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onNodeDestroyed(holder, entity);
+        }
+
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
             controller.destroyGraph(id);
@@ -387,6 +451,11 @@ public class SimpleBlockGraph implements BlockGraph {
         graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
+
+        for (GraphEntity<?> entity : graphEntities.values()) {
+            entity.onLink(a, b);
+        }
+
         controller.markDirty(id);
     }
 
@@ -394,6 +463,11 @@ public class SimpleBlockGraph implements BlockGraph {
         graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
+
+        for (GraphEntity<?> entity : graphEntities.values()) {
+            entity.onUnlink(a, b);
+        }
+
         controller.markDirty(id);
     }
 
@@ -417,6 +491,17 @@ public class SimpleBlockGraph implements BlockGraph {
         chunks.addAll(other.chunks);
         nodeTypeCache.clear();
         controller.markDirty(id);
+
+        // merge all our graph entities
+        for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
+            GraphEntityType<?> type = entry.getKey();
+            GraphEntity<?> otherEntity = other.graphEntities.get(type);
+            if (otherEntity != null) {
+                type.merge(entry.getValue(), otherEntity);
+            } else {
+                GLLog.warn("Merging graph with missing graph entity: {}. Skipping...", type.id());
+            }
+        }
 
         // finally we destroy the old graph, removing it from all the graphs-in-pos and graphs-in-chunk trackers
         controller.destroyGraph(other.id);
@@ -461,7 +546,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
             for (Graph<SimpleNodeWrapper> graph : newGraphs) {
                 // create the new graph and set its nodes correctly
-                SimpleBlockGraph bg = controller.createGraph();
+                SimpleBlockGraph bg = controller.createGraph(false);
                 bg.graph.join(graph);
 
                 // this sets the nodes' graph ids, and sets up the new block-graph's chunks and nodes-in-pos
@@ -480,6 +565,13 @@ public class SimpleBlockGraph implements BlockGraph {
                     if (entity != null) {
                         bg.nodeEntities.put(key, entity);
                     }
+                }
+
+                // Split the graph entity
+                for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
+                    GraphEntityType<?> type = entry.getKey();
+                    bg.graphEntities.put(type, type.splitNew(entry.getValue(), this,
+                        new SimpleGraphEntityContext(controller.world, controller, bg)));
                 }
 
                 newBlockGraphs.add(bg);
@@ -503,6 +595,15 @@ public class SimpleBlockGraph implements BlockGraph {
     void onUnload() {
         for (NodeEntity entity : nodeEntities.values()) {
             entity.onUnload();
+        }
+        for (GraphEntity<?> entity : graphEntities.values()) {
+            entity.onUnload();
+        }
+    }
+
+    void onDestroy() {
+        for (GraphEntity<?> entity : graphEntities.values()) {
+            entity.onDestroy();
         }
     }
 }

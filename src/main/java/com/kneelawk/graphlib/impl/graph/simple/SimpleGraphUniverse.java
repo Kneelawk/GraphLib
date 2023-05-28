@@ -26,6 +26,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.world.SaveMode;
@@ -40,6 +41,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Map<Identifier, BlockNodeDecoder> nodeDecoders = new LinkedHashMap<>();
     private final Object2IntMap<Identifier> typeIndices = new Object2IntLinkedOpenHashMap<>();
     private final Map<Identifier, NodeEntityDecoder> nodeEntityDecoders = new LinkedHashMap<>();
+    private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
     final SaveMode saveMode;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
@@ -124,6 +126,25 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
+    public void addGraphEntityType(@NotNull GraphEntityType<?> type) {
+        this.graphEntityTypes.put(type.id(), type);
+    }
+
+    @Override
+    public void addGraphEntityTypes(@NotNull GraphEntityType<?>... types) {
+        for (GraphEntityType<?> type : types) {
+            this.graphEntityTypes.put(type.id(), type);
+        }
+    }
+
+    @Override
+    public void addGraphEntityTypes(@NotNull Iterable<GraphEntityType<?>> types) {
+        for (GraphEntityType<?> type : types) {
+            this.graphEntityTypes.put(type.id(), type);
+        }
+    }
+
+    @Override
     public void register() {
         GraphLibImpl.register(this);
     }
@@ -153,5 +174,15 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     @Override
     public @Nullable NodeEntityDecoder getNodeEntityDecoder(@NotNull Identifier typeId) {
         return nodeEntityDecoders.get(typeId);
+    }
+
+    @Override
+    public @Nullable GraphEntityType<?> getGraphEntityType(@NotNull Identifier typeId) {
+        return graphEntityTypes.get(typeId);
+    }
+
+    @Override
+    public @NotNull Iterable<GraphEntityType<?>> getAllGraphEntityTypes() {
+        return graphEntityTypes.values();
     }
 }
