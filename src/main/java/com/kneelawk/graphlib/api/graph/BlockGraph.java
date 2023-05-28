@@ -9,6 +9,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -71,6 +73,16 @@ public interface BlockGraph {
      * @return a stream of all the chunk sections this graph is in.
      */
     @NotNull Stream<ChunkSectionPos> getChunks();
+
+    /**
+     * Gets a graph entity attached to this graph.
+     *
+     * @param type the type of graph entity to retrieve.
+     * @param <G>  the type of graph entity to retrieve.
+     * @return the given graph entity attached to this graph.
+     * @throws IllegalArgumentException if the given graph entity type has not been registered with this graph's universe.
+     */
+    @NotNull <G extends GraphEntity<G>> G getGraphEntity(GraphEntityType<G> type);
 
     /**
      * Gets the number of nodes in this graph.

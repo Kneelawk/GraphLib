@@ -472,8 +472,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      *
      * @return the newly-created graph.
      */
-    @NotNull SimpleBlockGraph createGraph() {
-        SimpleBlockGraph graph = new SimpleBlockGraph(this, getNextGraphId());
+    @NotNull SimpleBlockGraph createGraph(boolean initializeGraphEntities) {
+        SimpleBlockGraph graph = new SimpleBlockGraph(this, getNextGraphId(), initializeGraphEntities);
         loadedGraphs.put(graph.getId(), graph);
 
         // Fire graph created event
@@ -625,7 +625,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                 continue;
             }
 
-            SimpleBlockGraph newGraph = createGraph();
+            SimpleBlockGraph newGraph = createGraph(true);
             NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, bn::createNodeEntity);
             updateNodeConnections(node);
         }
@@ -892,6 +892,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                     ChunkSectionPos.from(sectionPos));
             }
         }
+
+        graph.onDestroy();
     }
 
     private void markStateDirty() {
