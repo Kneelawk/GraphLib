@@ -21,8 +21,8 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <T> the type of data this graph contains in each node.
  */
-public final class Graph<T> implements Iterable<Node<T>> {
-    private final Set<Node<T>> nodes = new LinkedHashSet<>();
+public final class Graph<T, L> implements Iterable<Node<T, L>> {
+    private final Set<Node<T, L>> nodes = new LinkedHashSet<>();
 
     /**
      * Constructs an empty graph.
@@ -36,8 +36,8 @@ public final class Graph<T> implements Iterable<Node<T>> {
      * @param data the data for the new node to contain.
      * @return the new node.
      */
-    public @NotNull Node<T> add(T data) {
-        Node<T> node = new Node<>(data);
+    public @NotNull Node<T, L> add(T data) {
+        Node<T, L> node = new Node<>(data);
         nodes.forEach(n -> n.onAdded(node));
         nodes.add(node);
         return node;
@@ -50,7 +50,7 @@ public final class Graph<T> implements Iterable<Node<T>> {
      *
      * @param node the node to remove.
      */
-    public void remove(@NotNull Node<T> node) {
+    public void remove(@NotNull Node<T, L> node) {
         if (nodes.contains(node)) {
             nodes.remove(node);
             nodes.forEach(n -> n.onRemoved(node));
@@ -64,20 +64,20 @@ public final class Graph<T> implements Iterable<Node<T>> {
      *
      * @return the new graphs made from the disconnected nodes.
      */
-    public @NotNull List<Graph<T>> split() {
-        List<Graph<T>> result = new ArrayList<>();
+    public @NotNull List<Graph<T, L>> split() {
+        List<Graph<T, L>> result = new ArrayList<>();
         int largestGraphSize = 0;
         int largestGraphIndex = 0;
 
-        Set<Node<T>> toBeChecked = new LinkedHashSet<>(nodes);
-        Set<Node<T>> connected = new LinkedHashSet<>();
+        Set<Node<T, L>> toBeChecked = new LinkedHashSet<>(nodes);
+        Set<Node<T, L>> connected = new LinkedHashSet<>();
 
         while (!toBeChecked.isEmpty()) {
             connected.clear();
             descend(connected, toBeChecked, toBeChecked.iterator().next());
 
             if (!toBeChecked.isEmpty()) {
-                Graph<T> newGraph = new Graph<>();
+                Graph<T, L> newGraph = new Graph<>();
                 moveBulkUnchecked(newGraph, connected);
 
                 if (newGraph.size() > largestGraphSize) {
@@ -91,27 +91,27 @@ public final class Graph<T> implements Iterable<Node<T>> {
 
         if (connected.size() < largestGraphSize) {
             // find the largest graph and make it ours
-            Graph<T> newGraph = new Graph<>();
+            Graph<T, L> newGraph = new Graph<>();
             moveBulkUnchecked(newGraph, connected);
-            Graph<T> largestGraph = result.set(largestGraphIndex, newGraph);
+            Graph<T, L> largestGraph = result.set(largestGraphIndex, newGraph);
             join(largestGraph);
         }
 
         return result;
     }
 
-    private void descend(@NotNull Set<Node<T>> connected, @NotNull Set<Node<T>> toBeChecked, @NotNull Node<T> node) {
-        Deque<Node<T>> stack = new ArrayDeque<>();
+    private void descend(@NotNull Set<Node<T, L>> connected, @NotNull Set<Node<T, L>> toBeChecked, @NotNull Node<T, L> node) {
+        Deque<Node<T, L>> stack = new ArrayDeque<>();
         stack.push(node);
 
         connected.add(node);
         toBeChecked.remove(node);
 
         while (!stack.isEmpty()) {
-            Node<T> cur = stack.pop();
+            Node<T, L> cur = stack.pop();
 
-            for (Link<T> link : cur.connections()) {
-                Node<T> a = link.other(cur);
+            for (Link<T, L> link : cur.connections()) {
+                Node<T, L> a = link.other(cur);
 
                 if (toBeChecked.contains(a)) {
                     stack.push(a);
@@ -122,7 +122,7 @@ public final class Graph<T> implements Iterable<Node<T>> {
         }
     }
 
-    private void moveBulkUnchecked(@NotNull Graph<T> into, @NotNull Set<Node<T>> nodes) {
+    private void moveBulkUnchecked(@NotNull Graph<T, L> into, @NotNull Set<Node<T, L>> nodes) {
         this.nodes.removeAll(nodes);
         into.nodes.addAll(nodes);
     }
@@ -132,7 +132,7 @@ public final class Graph<T> implements Iterable<Node<T>> {
      *
      * @param other the other graph to join with.
      */
-    public void join(@NotNull Graph<T> other) {
+    public void join(@NotNull Graph<T, L> other) {
         this.nodes.addAll(other.nodes);
         other.nodes.clear();
     }
@@ -144,8 +144,8 @@ public final class Graph<T> implements Iterable<Node<T>> {
      * @param b the second node to link.
      * @return the link between the two nodes.
      */
-    public @NotNull Link<T> link(@NotNull Node<T> a, @NotNull Node<T> b) {
-        Link<T> link = new Link<>(a, b);
+    public @NotNull Link<T, L> link(@NotNull Node<T, L> a, @NotNull Node<T, L> b, @NotNull L linkKey) {
+        Link<T, L> link = new Link<>(a, b, linkKey);
         a.onLink(link);
         b.onLink(link);
         return link;
@@ -159,8 +159,8 @@ public final class Graph<T> implements Iterable<Node<T>> {
      * @param a the first node to unlink.
      * @param b the second node to unlink.
      */
-    public void unlink(@NotNull Node<T> a, @NotNull Node<T> b) {
-        Link<T> link1 = new Link<>(a, b);
+    public void unlink(@NotNull Node<T, L> a, @NotNull Node<T, L> b, @NotNull L linkKey) {
+        Link<T, L> link1 = new Link<>(a, b, linkKey);
         a.onUnlink(link1);
         b.onUnlink(link1);
     }
@@ -171,7 +171,7 @@ public final class Graph<T> implements Iterable<Node<T>> {
      * @param node the node to check.
      * @return whether this graph contains the given node.
      */
-    public boolean contains(@NotNull Node<T> node) {
+    public boolean contains(@NotNull Node<T, L> node) {
         return nodes.contains(node);
     }
 
@@ -182,8 +182,8 @@ public final class Graph<T> implements Iterable<Node<T>> {
      * @return whether this graph contains all the given nodes.
      */
     @SafeVarargs
-    public final boolean contains(@NotNull Node<T>... nodes) {
-        for (Node<T> node : nodes) {
+    public final boolean contains(@NotNull Node<T, L>... nodes) {
+        for (Node<T, L> node : nodes) {
             if (!contains(node))
                 return false;
         }
@@ -192,18 +192,18 @@ public final class Graph<T> implements Iterable<Node<T>> {
 
     @NotNull
     @Override
-    public Iterator<Node<T>> iterator() {
+    public Iterator<Node<T, L>> iterator() {
         return nodes.iterator();
     }
 
     @Override
-    public void forEach(@NotNull Consumer<? super Node<T>> action) {
+    public void forEach(@NotNull Consumer<? super Node<T, L>> action) {
         nodes.forEach(action);
     }
 
     @NotNull
     @Override
-    public Spliterator<Node<T>> spliterator() {
+    public Spliterator<Node<T, L>> spliterator() {
         return nodes.spliterator();
     }
 
@@ -212,7 +212,7 @@ public final class Graph<T> implements Iterable<Node<T>> {
      *
      * @return a stream of all the nodes in this graph.
      */
-    public @NotNull Stream<Node<T>> stream() {
+    public @NotNull Stream<Node<T, L>> stream() {
         return nodes.stream();
     }
 
