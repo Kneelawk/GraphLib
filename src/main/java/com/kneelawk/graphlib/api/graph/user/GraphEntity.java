@@ -9,6 +9,8 @@ import com.kneelawk.graphlib.api.graph.NodeHolder;
 
 /**
  * Arbitrary data that can be stored in a graph.
+ *
+ * @param <G> this graph entity class.
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
     /**
