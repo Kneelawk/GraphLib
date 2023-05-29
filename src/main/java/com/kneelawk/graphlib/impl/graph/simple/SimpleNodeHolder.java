@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.NodeConnection;
+import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.SnapshotNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -43,8 +43,8 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull Collection<NodeConnection> getConnections() {
-        return new ReadOnlyMappingCollection<>(node.connections(), SimpleNodeConnection::new);
+    public @NotNull Collection<NodeLink> getConnections() {
+        return new ReadOnlyMappingCollection<>(node.connections(), SimpleNodeLink::new);
     }
 
     @Override

@@ -10,7 +10,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.
  */
-public interface NodeConnection {
+public interface NodeLink {
     /**
      * Gets the first node in this connection.
      *

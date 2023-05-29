@@ -42,9 +42,9 @@ public interface NodeHolder<T extends BlockNode> {
     /**
      * Gets all the connections this node has with other nodes.
      *
-     * @return a collection of all the {@link NodeConnection}s this node has with other nodes.
+     * @return a collection of all the {@link NodeLink}s this node has with other nodes.
      */
-    @NotNull Collection<NodeConnection> getConnections();
+    @NotNull Collection<NodeLink> getConnections();
 
     /**
      * Gets an immutable view of this node holder's position and node.

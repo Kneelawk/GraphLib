@@ -37,7 +37,7 @@ import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.NodeConnection;
+import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -181,7 +181,7 @@ public final class GraphLibCommonNetworking {
 
         AtomicInteger index = new AtomicInteger();
         Map<NodeHolder<BlockNode>, Integer> indexMap = new HashMap<>();
-        Set<NodeConnection> distinct = new LinkedHashSet<>();
+        Set<NodeLink> distinct = new LinkedHashSet<>();
 
         buf.writeVarInt(graph.size());
         graph.getNodes().forEachOrdered(node -> {
@@ -194,7 +194,7 @@ public final class GraphLibCommonNetworking {
 
         PacketByteBuf linkBuf = PacketByteBufs.create();
         int written = 0;
-        for (NodeConnection link : distinct) {
+        for (NodeLink link : distinct) {
             if (!indexMap.containsKey(link.getFirst())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
