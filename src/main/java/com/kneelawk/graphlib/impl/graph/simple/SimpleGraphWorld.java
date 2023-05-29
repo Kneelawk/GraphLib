@@ -209,7 +209,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     @Override
     public @NotNull Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos) {
         // no need for a .distict() here, because you should never have the same node be part of multiple graphs
-        return getGraphsAt(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
+        return getAllGraphIdsAt(pos).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
     }
 
     /**
@@ -220,7 +220,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     @Override
     public @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos) {
-        return getGraphsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull).flatMap(g -> g.getNodesAt(pos));
+        return getAllGraphIdsAt(pos.pos()).mapToObj(this::getGraph).filter(Objects::nonNull)
+            .flatMap(g -> g.getNodesAt(pos));
     }
 
     /**
@@ -278,7 +279,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return a stream of all the IDs of graphs with nodes in the given block-position.
      */
     @Override
-    public @NotNull LongStream getGraphsAt(@NotNull BlockPos pos) {
+    public @NotNull LongStream getAllGraphIdsAt(@NotNull BlockPos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
         if (chunk != null) {
             LongSet graphsInPos = chunk.getGraphsAt(pos);
@@ -290,6 +291,17 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         } else {
             return LongStream.empty();
         }
+    }
+
+    /**
+     * Gets all loaded graphs at the given position.
+     *
+     * @param pos the block-position to get the loaded graphs with nodes at.
+     * @return all loaded graphs at the given position.
+     */
+    @Override
+    public @NotNull Stream<BlockGraph> getLoadedGraphsAt(@NotNull BlockPos pos) {
+        return getAllGraphIdsAt(pos).mapToObj(loadedGraphs::get).filter(Objects::nonNull).map(Function.identity());
     }
 
     /**
@@ -386,13 +398,25 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return a stream of all graph ids in the given chunk section.
      */
     @Override
-    public @NotNull LongStream getGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+    public @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull ChunkSectionPos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(pos);
         if (chunk != null) {
             return chunk.getGraphs().longStream();
         } else {
             return LongStream.empty();
         }
+    }
+
+    /**
+     * Gets all loaded graphs in the given chunk section.
+     *
+     * @param pos the position of the chunk section to get the loaded graphs in.
+     * @return a stream of all the loaded graphs in the given chunk section.
+     */
+    @Override
+    public @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+        return getAllGraphIdsInChunkSection(pos).mapToObj(loadedGraphs::get).filter(Objects::nonNull)
+            .map(Function.identity());
     }
 
     /**
@@ -405,9 +429,20 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return a stream of all graph ids in the given chunk.
      */
     @Override
-    public @NotNull LongStream getGraphsInChunk(@NotNull ChunkPos pos) {
+    public @NotNull LongStream getAllGraphIdsInChunk(@NotNull ChunkPos pos) {
         return LongStream.range(world.getBottomSectionCoord(), world.getTopSectionCoord())
-            .flatMap(y -> getGraphsInChunkSection(ChunkSectionPos.from(pos, (int) y)));
+            .flatMap(y -> getAllGraphIdsInChunkSection(ChunkSectionPos.from(pos, (int) y)));
+    }
+
+    /**
+     * Gets all loaded graphs in the given chunk.
+     *
+     * @param pos the position of the chunk to get the loaded graphs in.
+     * @return a stream of all loaded graphs in the given chunk.
+     */
+    @Override
+    public @NotNull Stream<BlockGraph> getLoadedGraphsInChunk(@NotNull ChunkPos pos) {
+        return getAllGraphIdsInChunk(pos).mapToObj(loadedGraphs::get).filter(Objects::nonNull).map(Function.identity());
     }
 
     /**
@@ -615,7 +650,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNode> nodes) {
         Set<BlockNode> newNodes = new LinkedHashSet<>(nodes);
 
-        for (long graphId : getGraphsAt(pos).toArray()) {
+        for (long graphId : getAllGraphIdsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
             if (graph == null) {
                 GLLog.warn("Encountered invalid graph in position when detecting node changes. Id: {}, pos: {}",

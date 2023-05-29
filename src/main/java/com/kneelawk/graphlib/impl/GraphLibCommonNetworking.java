@@ -98,7 +98,7 @@ public final class GraphLibCommonNetworking {
                     viewDistance)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
-                    graphWorld.getGraphsInChunk(pos).forEach(graphIds::add);
+                    graphWorld.getAllGraphIdsInChunk(pos).forEach(graphIds::add);
                 }
             }
         }
