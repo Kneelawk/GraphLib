@@ -28,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
@@ -45,11 +46,13 @@ import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
+import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.world.SaveMode;
@@ -689,25 +692,46 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             return;
         }
 
-        // TODO: make nodes' connections return link data or something
+        // Collect the old node connections
+        Set<HalfLink> oldConnections = new ObjectLinkedOpenHashSet<>();
+        for (NodeLink link : node.getConnections()) {
+            oldConnections.add(link.toHalfLink(node));
+        }
 
-        var oldConnections = node.getConnections().stream().map(link -> link.other(node))
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-        var wantedConnections = new LinkedHashSet<>(node.getNode().findConnections(new NodeContext(node, world, this)));
-        wantedConnections.removeIf(other -> !other.getNode().canConnect(new NodeContext(other, world, this), node));
-        var newConnections = wantedConnections.stream()
-            .filter(other -> other.getGraphId() != nodeGraphId || !oldConnections.contains(other)).toList();
-        var removedConnections = oldConnections.stream().filter(other -> !wantedConnections.contains(other)).toList();
+        // Collect the new connections that are wanted by both parties
+        Set<HalfLink> wantedConnections = new ObjectLinkedOpenHashSet<>();
+        for (HalfLink wanted : node.getNode().findConnections(new NodeContext(node, world, this))) {
+            NodeHolder<BlockNode> other = wanted.other();
+            if (other.getNode().canConnect(new NodeContext(other, world, this), wanted)) {
+                wantedConnections.add(wanted);
+            }
+        }
+
+        // Collect the new wanted connections we don't have yet
+        List<HalfLink> newConnections = new ObjectArrayList<>();
+        for (HalfLink wanted : wantedConnections) {
+            NodeHolder<BlockNode> other = wanted.other();
+            if (other.getGraphId() != nodeGraphId || !oldConnections.contains(wanted)) {
+                newConnections.add(wanted);
+            }
+        }
+
+        List<HalfLink> removedConnections = new ObjectArrayList<>();
+        for (HalfLink old : oldConnections) {
+            if (!wantedConnections.contains(old)) {
+                removedConnections.add(old);
+            }
+        }
 
         long mergedGraphId = nodeGraphId;
         SimpleBlockGraph mergedGraph = graph;
 
-        for (var other : newConnections) {
-            long otherGraphId = other.getGraphId();
+        for (var link : newConnections) {
+            long otherGraphId = link.other().getGraphId();
             if (otherGraphId != mergedGraphId) {
                 SimpleBlockGraph otherGraph = getGraph(otherGraphId);
                 if (otherGraph == null) {
-                    GLLog.warn("Tried to connect to node with invalid graph id. Node: {}", other);
+                    GLLog.warn("Tried to connect to node with invalid graph id. Half-link: {}", link);
                     continue;
                 }
 
@@ -722,11 +746,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                 }
             }
 
-            mergedGraph.link(node, other, EmptyLinkKey.INSTANCE);
+            mergedGraph.link(node, link.other(), link.key());
         }
 
-        for (var other : removedConnections) {
-            mergedGraph.unlink(node, other, EmptyLinkKey.INSTANCE);
+        for (var link : removedConnections) {
+            mergedGraph.unlink(node, link.other(), link.key());
         }
 
         if (!removedConnections.isEmpty()) {

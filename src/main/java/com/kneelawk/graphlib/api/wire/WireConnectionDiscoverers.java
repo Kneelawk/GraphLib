@@ -72,7 +72,7 @@ public final class WireConnectionDiscoverers {
      * Checks if this wire node can connect to the given node.
      * <p>
      * This is intended for use in
-     * {@link BlockNode#canConnect(com.kneelawk.graphlib.api.graph.NodeContext, NodeHolder)} implementations.
+     * {@link BlockNode#canConnect(com.kneelawk.graphlib.api.graph.NodeContext, com.kneelawk.graphlib.api.util.HalfLink)} implementations.
      *
      * @param self      this node.
      * @param ctx       the node context for the given node.

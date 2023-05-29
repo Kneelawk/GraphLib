@@ -15,6 +15,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
@@ -80,7 +81,7 @@ public interface BlockNode {
      * Collects nodes in the world that this node can connect to.
      * <p>
      * <b>Contract:</b> This method must only return nodes that
-     * {@link #canConnect(NodeContext, NodeHolder)} would have returned
+     * {@link #canConnect(NodeContext, HalfLink)} would have returned
      * <code>true</code> for.
      *
      * @param ctx the node context for this node.
@@ -89,7 +90,7 @@ public interface BlockNode {
      * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeContext, FullWireConnectionFilter)
      * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeContext, CenterWireConnectionFilter)
      */
-    @NotNull Collection<NodeHolder<BlockNode>> findConnections(@NotNull NodeContext ctx);
+    @NotNull Collection<HalfLink> findConnections(@NotNull NodeContext ctx);
 
     /**
      * Determines whether this node can connect to another node.
@@ -104,7 +105,7 @@ public interface BlockNode {
      * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeContext, NodeHolder, FullWireConnectionFilter)
      * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeContext, NodeHolder, CenterWireConnectionFilter)
      */
-    boolean canConnect(@NotNull NodeContext ctx, @NotNull NodeHolder<BlockNode> other);
+    boolean canConnect(@NotNull NodeContext ctx, @NotNull HalfLink other);
 
     /**
      * Called when the block graph controller has determined that this specific node's connections have been changed.
