@@ -9,6 +9,12 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Link in a general purpose graph data structure.
+ * <p>
+ * This link is non-directional. A link from node 'A' to node 'B' is equal to a link from node 'B' to node 'A'. This is
+ * upheld in this type's {@link #equals(Object)} and {@link #hashCode()}.
+ * <p>
+ * If a link needs to be directional, then its data should reference one of the nodes, making it asymmetrical.
+ * Referencing a node can be done with a {@link com.kneelawk.graphlib.api.util.NodePos}.
  *
  * @param first  the first node in this link.
  * @param second the second node in this link.
