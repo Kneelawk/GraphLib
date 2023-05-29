@@ -243,7 +243,12 @@ public class SimpleBlockGraph implements BlockGraph {
 
         for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
             NbtCompound graphEntityCom = new NbtCompound();
-            graphEntityCom.put("entity", entry.getValue().toTag());
+
+            NbtElement entityTag = entry.getValue().toTag();
+            if (entityTag != null) {
+                graphEntityCom.put("entity", entityTag);
+            }
+
             graphEntitiesCom.put(entry.getKey().id().toString(), graphEntityCom);
         }
 
