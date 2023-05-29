@@ -6,8 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeContext;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.util.HalfLink;
 
 /**
  * More general wire connection filter, designed only to determine if two types of block nodes should be allowed to
@@ -27,21 +27,21 @@ public interface WireConnectionFilter
     @Override
     default boolean canConnect(@NotNull FullWireBlockNode self,
                                @NotNull NodeContext ctx, @NotNull Direction onSide, @Nullable Direction wireSide,
-                               @NotNull NodeHolder<BlockNode> otherNode) {
-        return accepts(self, otherNode.getNode());
+                               @NotNull HalfLink link) {
+        return accepts(self, link.other().getNode());
     }
 
     @Override
     default boolean canConnect(@NotNull SidedWireBlockNode self,
                                @NotNull NodeContext ctx, @NotNull Direction inDirection,
-                               @NotNull WireConnectionType connectionType, @NotNull NodeHolder<BlockNode> otherNode) {
-        return accepts(self, otherNode.getNode());
+                               @NotNull WireConnectionType connectionType, @NotNull HalfLink link) {
+        return accepts(self, link.other().getNode());
     }
 
     @Override
     default boolean canConnect(@NotNull CenterWireBlockNode self,
                                @NotNull NodeContext ctx, @NotNull Direction onSide,
-                               @NotNull NodeHolder<BlockNode> otherNode) {
-        return accepts(self, otherNode.getNode());
+                               @NotNull HalfLink link) {
+        return accepts(self, link.other().getNode());
     }
 }

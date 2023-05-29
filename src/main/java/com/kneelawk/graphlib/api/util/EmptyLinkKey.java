@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
+import com.kneelawk.graphlib.api.wire.LinkKeyFactory;
 import com.kneelawk.graphlib.impl.Constants;
 
 /**
@@ -30,6 +31,11 @@ public class EmptyLinkKey implements LinkKey {
      * Decoder for the empty link key. Always returns this singleton's instance.
      */
     public static final LinkKeyDecoder DECODER = tag -> INSTANCE;
+
+    /**
+     * Always returns this singleton's link key instance.
+     */
+    public static final LinkKeyFactory FACTORY = (ctx, other) -> INSTANCE;
 
     private EmptyLinkKey() {}
 
