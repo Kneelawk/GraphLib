@@ -1,5 +1,6 @@
 package com.kneelawk.graphlib.api.graph;
 
+import java.util.Objects;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
@@ -114,7 +115,28 @@ public interface GraphView {
      * Note: Not all graph-ids returned here are guaranteed to belong to valid graphs. {@link #getGraph(long)} may
      * return <code>null</code>.
      *
-     * @return a stream of all graph ids in this graph controller.
+     * @return a stream of all graph ids in this graph world.
      */
-    @NotNull LongStream getGraphs();
+    @NotNull LongStream getAllGraphIds();
+
+    /**
+     * Gets all graphs in this graph world, loading all graphs. <b>Use with care.</b>
+     * <p>
+     * This filters out all the null graphs.
+     * <p>
+     * Because this loads all graphs in the graph world, it can cause significant lag. Chances are, you actually want
+     * {@link #getLoadedGraphs()}.
+     *
+     * @return a stream of all the graphs in this graph world.
+     */
+    default @NotNull Stream<BlockGraph> getAllGraphs() {
+        return getAllGraphIds().mapToObj(this::getGraph).filter(Objects::nonNull);
+    }
+
+    /**
+     * Gets all currently loaded graphs.
+     *
+     * @return all the currently loaded graphs.
+     */
+    @NotNull Stream<BlockGraph> getLoadedGraphs();
 }

@@ -611,4 +611,10 @@ public class SimpleBlockGraph implements BlockGraph {
             entity.onDestroy();
         }
     }
+
+    void onTick() {
+        for (GraphEntity<?> entity : graphEntities.values()) {
+            entity.onTick();
+        }
+    }
 }

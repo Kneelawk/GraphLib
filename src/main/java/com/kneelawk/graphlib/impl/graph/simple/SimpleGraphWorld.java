@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -145,6 +146,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         chunks.tick();
         timer.tick();
 
+        tickGraphs();
         handleNodeUpdates();
         handleConnectionUpdates();
         handleCallbackUpdates();
@@ -416,8 +418,19 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return a stream of all graph ids in this graph controller.
      */
     @Override
-    public @NotNull LongStream getGraphs() {
+    public @NotNull LongStream getAllGraphIds() {
         return getExistingGraphs().longStream();
+    }
+
+    /**
+     * Gets all currently loaded graphs.
+     *
+     * @return all the currently loaded graphs.
+     */
+    @Override
+    public @NotNull Stream<BlockGraph> getLoadedGraphs() {
+        // Java type variance is broken
+        return loadedGraphs.values().stream().map(Function.identity());
     }
 
     /**
@@ -683,6 +696,12 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             mergedGraph.split();
         } else {
             GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
+        }
+    }
+
+    private void tickGraphs() {
+        for (SimpleBlockGraph graph : loadedGraphs.values()) {
+            graph.onTick();
         }
     }
 
