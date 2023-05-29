@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
  * Node in a general purpose graph data structure.
  *
  * @param <T> the type of data this node contains.
+ * @param <L> the type of link data contained in links between nodes.
  */
 public final class Node<T, L> {
     private final T data;

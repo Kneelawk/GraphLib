@@ -422,7 +422,7 @@ public class SimpleBlockGraph implements BlockGraph {
         controller.markDirty(id);
 
         // schedule updates for each of the node's connected nodes
-        for (Link<SimpleNodeWrapper> link : node.node.connections()) {
+        for (Link<SimpleNodeWrapper, LinkKey> link : node.node.connections()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
             controller.scheduleCallbackUpdate(new SimpleNodeHolder<>(link.other(node.node)));
@@ -477,8 +477,8 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    void link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
-        graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
+    void link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key) {
+        graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
 
@@ -489,8 +489,8 @@ public class SimpleBlockGraph implements BlockGraph {
         controller.markDirty(id);
     }
 
-    void unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {
-        graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node);
+    void unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key) {
+        graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
 
@@ -546,7 +546,7 @@ public class SimpleBlockGraph implements BlockGraph {
             Set<BlockPos> removedPoses = new LinkedHashSet<>();
             LongSet removedChunks = new LongLinkedOpenHashSet();
 
-            for (Graph<SimpleNodeWrapper> graph : newGraphs) {
+            for (Graph<SimpleNodeWrapper, LinkKey> graph : newGraphs) {
                 for (var node : graph) {
                     BlockPos pos = node.data().getPos();
                     removedNodes.add(new NodePos(pos, node.data().getNode()));
@@ -574,7 +574,7 @@ public class SimpleBlockGraph implements BlockGraph {
             // setup block-graphs for the newly created graphs
             List<SimpleBlockGraph> newBlockGraphs = new ArrayList<>(newGraphs.size());
 
-            for (Graph<SimpleNodeWrapper> graph : newGraphs) {
+            for (Graph<SimpleNodeWrapper, LinkKey> graph : newGraphs) {
                 // create the new graph and set its nodes correctly
                 SimpleBlockGraph bg = controller.createGraph(false);
                 bg.graph.join(graph);

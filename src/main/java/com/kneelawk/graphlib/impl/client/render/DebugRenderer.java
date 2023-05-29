@@ -40,6 +40,7 @@ import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.client.render.RenderUtils;
 import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
 import com.kneelawk.graphlib.api.graph.user.client.SidedClientBlockNode;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
@@ -188,9 +189,9 @@ public final class DebugRenderer {
         for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
             for (ClientBlockGraph graph : universe.values()) {
                 int graphColor = RenderUtils.graphColor(graph.graphId());
-                Object2ObjectMap<Node<ClientBlockNodeHolder>, Vec3d> endpoints =
+                Object2ObjectMap<Node<ClientBlockNodeHolder, EmptyLinkKey>, Vec3d> endpoints =
                     new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
-                ObjectSet<Link<ClientBlockNodeHolder>> links = new ObjectLinkedOpenHashSet<>();
+                ObjectSet<Link<ClientBlockNodeHolder, EmptyLinkKey>> links = new ObjectLinkedOpenHashSet<>();
 
                 for (var node : graph.graph()) {
                     ClientBlockNode cbn = node.data().node();

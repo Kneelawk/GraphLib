@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
  * General purpose graph data structure.
  *
  * @param <T> the type of data this graph contains in each node.
+ * @param <L> the type of link data this graph contains between nodes.
  */
 public final class Graph<T, L> implements Iterable<Node<T, L>> {
     private final Set<Node<T, L>> nodes = new LinkedHashSet<>();
@@ -100,7 +101,8 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
         return result;
     }
 
-    private void descend(@NotNull Set<Node<T, L>> connected, @NotNull Set<Node<T, L>> toBeChecked, @NotNull Node<T, L> node) {
+    private void descend(@NotNull Set<Node<T, L>> connected, @NotNull Set<Node<T, L>> toBeChecked,
+                         @NotNull Node<T, L> node) {
         Deque<Node<T, L>> stack = new ArrayDeque<>();
         stack.push(node);
 
@@ -140,8 +142,9 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
     /**
      * Links two nodes.
      *
-     * @param a the first node to link.
-     * @param b the second node to link.
+     * @param a       the first node to link.
+     * @param b       the second node to link.
+     * @param linkKey the key for the new link.
      * @return the link between the two nodes.
      */
     public @NotNull Link<T, L> link(@NotNull Node<T, L> a, @NotNull Node<T, L> b, @NotNull L linkKey) {
@@ -156,8 +159,9 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
      * <p>
      * Note: this tries unlinking in both directions, so node order is not an issue.
      *
-     * @param a the first node to unlink.
-     * @param b the second node to unlink.
+     * @param a       the first node to unlink.
+     * @param b       the second node to unlink.
+     * @param linkKey the key of the link to be removed.
      */
     public void unlink(@NotNull Node<T, L> a, @NotNull Node<T, L> b, @NotNull L linkKey) {
         Link<T, L> link1 = new Link<>(a, b, linkKey);

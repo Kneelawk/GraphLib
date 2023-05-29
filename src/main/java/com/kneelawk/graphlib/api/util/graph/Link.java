@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param first  the first node in this link.
  * @param second the second node in this link.
+ * @param key    the key that makes this link unique out of all the links between the same two nodes.
  * @param <T>    the type of data contained in each node.
+ * @param <L>    the type of link data contained in this link.
  */
 public record Link<T, L>(@NotNull Node<T, L> first, @NotNull Node<T, L> second, @NotNull L key) {
     /**

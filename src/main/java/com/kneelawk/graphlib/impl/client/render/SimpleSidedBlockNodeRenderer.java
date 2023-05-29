@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
 import com.kneelawk.graphlib.api.client.render.RenderUtils;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
 import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
@@ -22,7 +23,7 @@ public final class SimpleSidedBlockNodeRenderer implements BlockNodeRenderer<Sim
     }
 
     @Override
-    public void render(@NotNull SimpleClientSidedBlockNode node, @NotNull Node<ClientBlockNodeHolder> holderNode,
+    public void render(@NotNull SimpleClientSidedBlockNode node, @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
                        @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack,
                        @NotNull ClientBlockGraph graph, @NotNull Vec3d endpoint, int graphColor) {
         RenderUtils.drawRect(stack, consumers.getBuffer(DebugRenderer.Layers.DEBUG_LINES), (float) endpoint.x,
@@ -31,7 +32,7 @@ public final class SimpleSidedBlockNodeRenderer implements BlockNodeRenderer<Sim
 
     @Override
     public @NotNull Vec3d getLineEndpoint(@NotNull SimpleClientSidedBlockNode node,
-                                          @NotNull Node<ClientBlockNodeHolder> holderNode,
+                                          @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
                                           @NotNull ClientBlockGraph graph, int nodesAtPos, int indexAmongNodes,
                                           @NotNull List<Vec3d> otherEndpoints) {
         return RenderUtils.distributedEndpoint(nodesAtPos, indexAmongNodes, node.side(), 1.0 / 8.0, 1.0 / 8.0,

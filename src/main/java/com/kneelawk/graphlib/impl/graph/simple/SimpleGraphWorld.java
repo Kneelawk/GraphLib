@@ -49,6 +49,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.world.SaveMode;
@@ -653,6 +654,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             return;
         }
 
+        // TODO: make nodes' connections return link data or something
+
         var oldConnections = node.getConnections().stream().map(link -> link.other(node))
             .collect(Collectors.toCollection(LinkedHashSet::new));
         var wantedConnections = new LinkedHashSet<>(node.getNode().findConnections(new NodeContext(node, world, this)));
@@ -684,11 +687,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                 }
             }
 
-            mergedGraph.link(node, other);
+            mergedGraph.link(node, other, EmptyLinkKey.INSTANCE);
         }
 
         for (var other : removedConnections) {
-            mergedGraph.unlink(node, other);
+            mergedGraph.unlink(node, other, EmptyLinkKey.INSTANCE);
         }
 
         if (!removedConnections.isEmpty()) {
