@@ -74,7 +74,28 @@ public interface GraphView {
      * @param pos the block-position to get the IDs of graphs with nodes at.
      * @return a stream of all the IDs of graphs with nodes in the given block-position.
      */
-    @NotNull LongStream getGraphsAt(@NotNull BlockPos pos);
+    @NotNull LongStream getAllGraphIdsAt(@NotNull BlockPos pos);
+
+    /**
+     * Gets all graphs with nodes in the given block-position.
+     * <p>
+     * Note: this loads any unloaded graphs at the given position. If that is not what you want,
+     * {@link #getLoadedGraphsAt(BlockPos)} may be what you want.
+     *
+     * @param pos the block-position to get the graphs with nodes at.
+     * @return all graphs with nodes in the given block-position.
+     */
+    default @NotNull Stream<BlockGraph> getAllGraphsAt(@NotNull BlockPos pos) {
+        return getAllGraphIdsAt(pos).mapToObj(this::getGraph).filter(Objects::nonNull);
+    }
+
+    /**
+     * Gets all loaded graphs at the given position.
+     *
+     * @param pos the block-position to get the loaded graphs with nodes at.
+     * @return all loaded graphs at the given position.
+     */
+    @NotNull Stream<BlockGraph> getLoadedGraphsAt(@NotNull BlockPos pos);
 
     /**
      * Gets the graph with the given ID.
@@ -96,7 +117,28 @@ public interface GraphView {
      * @param pos the position of the chunk section to get the graphs in.
      * @return a stream of all graph ids in the given chunk section.
      */
-    @NotNull LongStream getGraphsInChunkSection(@NotNull ChunkSectionPos pos);
+    @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull ChunkSectionPos pos);
+
+    /**
+     * Gets all graphs in the given chunk section.
+     * <p>
+     * Note: this loads all graphs in the given chunk section, which may not be what you want. If you only want the
+     * loaded graphs, {@link #getLoadedGraphsInChunkSection(ChunkSectionPos)} may be a better fit.
+     *
+     * @param pos the position of the chunk section to get the graphs in.
+     * @return a stream of all the graphs in the given chunk section.
+     */
+    default @NotNull Stream<BlockGraph> getAllGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+        return getAllGraphIdsInChunkSection(pos).mapToObj(this::getGraph).filter(Objects::nonNull);
+    }
+
+    /**
+     * Gets all loaded graphs in the given chunk section.
+     *
+     * @param pos the position of the chunk section to get the loaded graphs in.
+     * @return a stream of all the loaded graphs in the given chunk section.
+     */
+    @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull ChunkSectionPos pos);
 
     /**
      * Gets all graph ids in the given chunk.
@@ -107,7 +149,28 @@ public interface GraphView {
      * @param pos the position of the chunk to get the graphs in.
      * @return a stream of all graph ids in the given chunk.
      */
-    @NotNull LongStream getGraphsInChunk(@NotNull ChunkPos pos);
+    @NotNull LongStream getAllGraphIdsInChunk(@NotNull ChunkPos pos);
+
+    /**
+     * Gets all graphs in the given chunk.
+     * <p>
+     * Note: this loads all graphs in the given chunk, which may not be what you want. If you only want the loaded
+     * graphs, {@link #getLoadedGraphsInChunk(ChunkPos)} may be a better fit.
+     *
+     * @param pos the position of the chunk to get the graphs in.
+     * @return a stream of all graphs in the given chunk.
+     */
+    default @NotNull Stream<BlockGraph> getAllGraphsInChunk(@NotNull ChunkPos pos) {
+        return getAllGraphIdsInChunk(pos).mapToObj(this::getGraph).filter(Objects::nonNull);
+    }
+
+    /**
+     * Gets all loaded graphs in the given chunk.
+     *
+     * @param pos the position of the chunk to get the loaded graphs in.
+     * @return a stream of all loaded graphs in the given chunk.
+     */
+    @NotNull Stream<BlockGraph> getLoadedGraphsInChunk(@NotNull ChunkPos pos);
 
     /**
      * Gets all graph ids in this graph controller.
