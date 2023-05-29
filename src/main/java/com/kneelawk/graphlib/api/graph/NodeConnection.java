@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.
@@ -23,6 +24,12 @@ public interface NodeConnection {
      * @return the second node in this connection.
      */
     @NotNull NodeHolder<BlockNode> getSecond();
+
+    /**
+     * Gets the key of this link.
+     * @return the key of this link.
+     */
+    @NotNull LinkKey getKey();
 
     /**
      * Checks whether either node is the given node.

@@ -27,8 +27,10 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.util.ColorUtils;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -41,12 +43,15 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Map<Identifier, BlockNodeDecoder> nodeDecoders = new LinkedHashMap<>();
     private final Object2IntMap<Identifier> typeIndices = new Object2IntLinkedOpenHashMap<>();
     private final Map<Identifier, NodeEntityDecoder> nodeEntityDecoders = new LinkedHashMap<>();
+    private final Map<Identifier, LinkKeyDecoder> linkKeyDecoders = new LinkedHashMap<>();
     private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
     final SaveMode saveMode;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
         this.id = universeId;
         saveMode = builder.saveMode;
+
+        linkKeyDecoders.put(EmptyLinkKey.TYPE_ID, EmptyLinkKey.DECODER);
     }
 
     @Override
@@ -126,6 +131,23 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
+    public void addLinkKeyDecoder(@NotNull Identifier typeId, @NotNull LinkKeyDecoder decoder) {
+        this.linkKeyDecoders.put(typeId, decoder);
+    }
+
+    @Override
+    public void addLinkKeyDecoders(@NotNull Pair<Identifier, ? extends LinkKeyDecoder> @NotNull ... decoders) {
+        for (Pair<Identifier, ? extends LinkKeyDecoder> pair : decoders) {
+            this.linkKeyDecoders.put(pair.key(), pair.value());
+        }
+    }
+
+    @Override
+    public void addLinkKeyDecoders(@NotNull Map<Identifier, ? extends LinkKeyDecoder> decoders) {
+        this.linkKeyDecoders.putAll(decoders);
+    }
+
+    @Override
     public void addGraphEntityType(@NotNull GraphEntityType<?> type) {
         this.graphEntityTypes.put(type.id(), type);
     }
@@ -174,6 +196,11 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     @Override
     public @Nullable NodeEntityDecoder getNodeEntityDecoder(@NotNull Identifier typeId) {
         return nodeEntityDecoders.get(typeId);
+    }
+
+    @Override
+    public @Nullable LinkKeyDecoder getLinkKeyDecoder(@NotNull Identifier typeId) {
+        return linkKeyDecoders.get(typeId);
     }
 
     @Override

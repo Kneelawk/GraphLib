@@ -38,9 +38,12 @@ import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Graph;
@@ -70,7 +73,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
         NbtCompound graphEntities = tag.getCompound("graphEntities");
 
-        List<@Nullable Node<SimpleNodeWrapper>> nodes = new ArrayList<>();
+        List<@Nullable Node<SimpleNodeWrapper, LinkKey>> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
             NbtCompound com = (NbtCompound) nodeElement;
@@ -99,8 +102,22 @@ public class SimpleBlockGraph implements BlockGraph {
             var first = nodes.get(linkTag.getInt("first"));
             var second = nodes.get(linkTag.getInt("second"));
 
+            LinkKey key = EmptyLinkKey.INSTANCE;
+            if (linkTag.contains("keyType", NbtElement.STRING_TYPE)) {
+                Identifier keyTypeId = new Identifier(linkTag.getString("keyType"));
+                LinkKeyDecoder decoder = controller.universe.getLinkKeyDecoder(keyTypeId);
+                if (decoder != null) {
+                    LinkKey decodedKey = decoder.decode(linkTag.get("key"));
+                    if (decodedKey != null) {
+                        key = decodedKey;
+                    }
+                } else {
+                    GLLog.warn("Encountered link key with unknown type id: {}", keyTypeId);
+                }
+            }
+
             if (first != null && second != null) {
-                graph.graph.link(first, second);
+                graph.graph.link(first, second, key);
             }
         }
 
@@ -129,7 +146,7 @@ public class SimpleBlockGraph implements BlockGraph {
     final SimpleGraphWorld controller;
     private final long id;
 
-    private final Graph<SimpleNodeWrapper> graph = new Graph<>();
+    private final Graph<SimpleNodeWrapper, LinkKey> graph = new Graph<>();
     private final Map<NodePos, NodeEntity> nodeEntities = new Object2ObjectLinkedOpenHashMap<>();
     private final Multimap<BlockPos, SimpleNodeHolder<BlockNode>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
@@ -209,6 +226,14 @@ public class SimpleBlockGraph implements BlockGraph {
             NbtCompound linkTag = new NbtCompound();
             linkTag.putInt("first", nodeIndexMap.get(link.first()));
             linkTag.putInt("second", nodeIndexMap.get(link.second()));
+
+            LinkKey key = link.key();
+            linkTag.putString("keyType", key.getTypeId().toString());
+            NbtElement keyTag = key.toTag();
+            if (keyTag != null) {
+                linkTag.put("key", keyTag);
+            }
+
             linksTag.add(linkTag);
         }
 

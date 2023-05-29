@@ -11,17 +11,18 @@ import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.SnapshotNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
-    final Node<SimpleNodeWrapper> node;
+    final Node<SimpleNodeWrapper, LinkKey> node;
 
     /**
      * @param node treat this as if it were parameterized on <code>&lt;T&gt;</code>.
      */
-    public SimpleNodeHolder(Node<SimpleNodeWrapper> node) {
+    public SimpleNodeHolder(Node<SimpleNodeWrapper, LinkKey> node) {
         this.node = node;
     }
 
