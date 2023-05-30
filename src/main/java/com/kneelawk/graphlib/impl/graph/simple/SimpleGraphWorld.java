@@ -48,6 +48,7 @@ import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
@@ -694,7 +695,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
         // Collect the old node connections
         Set<HalfLink> oldConnections = new ObjectLinkedOpenHashSet<>();
-        for (NodeLink link : node.getConnections()) {
+        for (NodeLink<LinkKey> link : node.getConnections()) {
             oldConnections.add(link.toHalfLink(node));
         }
 
