@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.HalfLink;
+import com.kneelawk.graphlib.api.util.LinkPos;
 
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.
@@ -68,5 +69,14 @@ public interface NodeLink<K extends LinkKey> {
      */
     default @NotNull HalfLink toHalfLink(@NotNull NodeHolder<BlockNode> perspective) {
         return new HalfLink(getKey(), other(perspective));
+    }
+
+    /**
+     * Gets the link pos of this link, holding only node-positions and link key.
+     *
+     * @return the link pos of this link holder.
+     */
+    default @NotNull LinkPos toLinkPos() {
+        return new LinkPos(getFirst().toNodePos(), getSecond().toNodePos(), getKey());
     }
 }

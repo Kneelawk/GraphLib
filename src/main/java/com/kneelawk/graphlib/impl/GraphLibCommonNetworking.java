@@ -37,10 +37,10 @@ import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeContext;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.NodeLink;
+import com.kneelawk.graphlib.api.util.LinkPos;
+import com.kneelawk.graphlib.api.util.NodePos;
 
 public final class GraphLibCommonNetworking {
     private GraphLibCommonNetworking() {
@@ -180,35 +180,35 @@ public final class GraphLibCommonNetworking {
         buf.writeLong(graph.getId());
 
         AtomicInteger index = new AtomicInteger();
-        Map<NodeHolder<BlockNode>, Integer> indexMap = new HashMap<>();
-        Set<NodeLink> distinct = new LinkedHashSet<>();
+        Map<NodePos, Integer> indexMap = new HashMap<>();
+        Set<LinkPos> distinct = new LinkedHashSet<>();
 
         buf.writeVarInt(graph.size());
         graph.getNodes().forEachOrdered(node -> {
             buf.writeVarInt(getIdentifierInt(world, node.getNode().getTypeId()));
             buf.writeBlockPos(node.getPos());
             node.getNode().toPacket(new NodeContext(node, world, graphWorld), buf);
-            indexMap.put(node, index.getAndIncrement());
-            distinct.addAll(node.getConnections());
+            indexMap.put(node.toNodePos(), index.getAndIncrement());
+            node.getConnections().stream().map(NodeLink::toLinkPos).forEach(distinct::add);
         });
 
         PacketByteBuf linkBuf = PacketByteBufs.create();
         int written = 0;
-        for (NodeLink link : distinct) {
-            if (!indexMap.containsKey(link.getFirst())) {
+        for (LinkPos link : distinct) {
+            if (!indexMap.containsKey(link.first())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
-                    graph.getId(), link.getSecond(), link.getFirst());
+                    graph.getId(), link.second(), link.first());
                 continue;
             }
-            if (!indexMap.containsKey(link.getFirst())) {
+            if (!indexMap.containsKey(link.second())) {
                 GLLog.warn(
                     "Attempted to save link with non-existent node. Graph Id: {}, offending node: {}, missing node: {}",
-                    graph.getId(), link.getFirst(), link.getSecond());
+                    graph.getId(), link.first(), link.second());
                 continue;
             }
-            linkBuf.writeVarInt(indexMap.get(link.getFirst()));
-            linkBuf.writeVarInt(indexMap.get(link.getSecond()));
+            linkBuf.writeVarInt(indexMap.get(link.first()));
+            linkBuf.writeVarInt(indexMap.get(link.second()));
             written++;
         }
         buf.writeVarInt(written);
