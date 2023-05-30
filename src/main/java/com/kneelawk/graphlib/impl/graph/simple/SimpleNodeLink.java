@@ -9,26 +9,29 @@ import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.graph.Link;
+import com.kneelawk.graphlib.api.util.graph.Node;
 
-public class SimpleNodeLink implements NodeLink {
-    private final Link<SimpleNodeWrapper, LinkKey> link;
+public class SimpleNodeLink<K extends LinkKey> implements NodeLink<K> {
+    private final Link<SimpleNodeWrapper, K> link;
 
-    public SimpleNodeLink(Link<SimpleNodeWrapper, LinkKey> link) {
+    public SimpleNodeLink(Link<SimpleNodeWrapper, K> link) {
         this.link = link;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public @NotNull NodeHolder<BlockNode> getFirst() {
-        return new SimpleNodeHolder<>(link.first());
+        return new SimpleNodeHolder<>((Node<SimpleNodeWrapper, LinkKey>) link.first());
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public @NotNull NodeHolder<BlockNode> getSecond() {
-        return new SimpleNodeHolder<>(link.second());
+        return new SimpleNodeHolder<>((Node<SimpleNodeWrapper, LinkKey>) link.second());
     }
 
     @Override
-    public @NotNull LinkKey getKey() {
+    public @NotNull K getKey() {
         return link.key();
     }
 
@@ -36,7 +39,7 @@ public class SimpleNodeLink implements NodeLink {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SimpleNodeLink that = (SimpleNodeLink) o;
+        SimpleNodeLink<?> that = (SimpleNodeLink<?>) o;
         return Objects.equals(link, that.link);
     }
 

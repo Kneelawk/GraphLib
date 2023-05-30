@@ -10,8 +10,10 @@ import com.kneelawk.graphlib.api.util.HalfLink;
 
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.
+ *
+ * @param <K> the type of key stored in this node link.
  */
-public interface NodeLink {
+public interface NodeLink<K extends LinkKey> {
     /**
      * Gets the first node in this connection.
      *
@@ -31,7 +33,7 @@ public interface NodeLink {
      *
      * @return the key of this link.
      */
-    @NotNull LinkKey getKey();
+    @NotNull K getKey();
 
     /**
      * Checks whether either node is the given node.

@@ -2,17 +2,20 @@ package com.kneelawk.graphlib.impl.graph.simple;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.SnapshotNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
@@ -43,8 +46,24 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull Collection<NodeLink> getConnections() {
+    public @NotNull Collection<NodeLink<LinkKey>> getConnections() {
         return new ReadOnlyMappingCollection<>(node.connections(), SimpleNodeLink::new);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public @NotNull <K extends LinkKey> Stream<NodeLink<K>> getConnectionsOfType(Class<K> keyClass) {
+        return node.connections().stream().filter(link -> keyClass.isInstance(link.key()))
+            .map(link -> new SimpleNodeLink<>((Link<SimpleNodeWrapper, K>) link));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public @NotNull <K extends LinkKey> Stream<NodeLink<K>> getConnectionsThatMatch(Class<K> keyClass,
+                                                                                    Predicate<K> filter) {
+        return node.connections().stream()
+            .filter(link -> keyClass.isInstance(link.key()) && filter.test(keyClass.cast(link.key())))
+            .map(link -> new SimpleNodeLink<>((Link<SimpleNodeWrapper, K>) link));
     }
 
     @Override
