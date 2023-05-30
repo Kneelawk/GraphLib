@@ -14,7 +14,7 @@ import com.kneelawk.graphlib.api.util.LinkPos;
  *
  * @param <K> the type of key stored in this node link.
  */
-public interface NodeLink<K extends LinkKey> {
+public interface LinkHolder<K extends LinkKey> {
     /**
      * Gets the first node in this connection.
      *

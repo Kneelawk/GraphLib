@@ -32,18 +32,24 @@ import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.LinkContext;
+import com.kneelawk.graphlib.api.graph.LinkEntityContext;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Graph;
@@ -73,7 +79,7 @@ public class SimpleBlockGraph implements BlockGraph {
         NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
         NbtCompound graphEntities = tag.getCompound("graphEntities");
 
-        List<@Nullable Node<SimpleNodeWrapper, LinkKey>> nodes = new ArrayList<>();
+        List<@Nullable NodeHolder<BlockNode>> nodes = new ArrayList<>();
 
         for (NbtElement nodeElement : nodesTag) {
             NbtCompound com = (NbtCompound) nodeElement;
@@ -90,7 +96,7 @@ public class SimpleBlockGraph implements BlockGraph {
                     }
                 }
 
-                nodes.add(graph.createNode(node.getPos(), node.getNode(), entityFactory).node);
+                nodes.add(graph.createNode(node.getPos(), node.getNode(), entityFactory));
             } else {
                 // keep the gap so other nodes' links don't get messed up
                 nodes.add(null);
@@ -102,22 +108,33 @@ public class SimpleBlockGraph implements BlockGraph {
             var first = nodes.get(linkTag.getInt("first"));
             var second = nodes.get(linkTag.getInt("second"));
 
-            LinkKey key = EmptyLinkKey.INSTANCE;
-            if (linkTag.contains("keyType", NbtElement.STRING_TYPE)) {
-                Identifier keyTypeId = new Identifier(linkTag.getString("keyType"));
-                LinkKeyDecoder decoder = controller.universe.getLinkKeyDecoder(keyTypeId);
-                if (decoder != null) {
-                    LinkKey decodedKey = decoder.decode(linkTag.get("key"));
-                    if (decodedKey != null) {
-                        key = decodedKey;
-                    }
-                } else {
-                    GLLog.warn("Encountered link key with unknown type id: {}", keyTypeId);
-                }
-            }
-
             if (first != null && second != null) {
-                graph.graph.link(first, second, key);
+                LinkKey key = EmptyLinkKey.INSTANCE;
+                if (linkTag.contains("keyType", NbtElement.STRING_TYPE)) {
+                    Identifier keyTypeId = new Identifier(linkTag.getString("keyType"));
+                    LinkKeyDecoder decoder = controller.universe.getLinkKeyDecoder(keyTypeId);
+                    if (decoder != null) {
+                        LinkKey decodedKey = decoder.decode(linkTag.get("key"));
+                        if (decodedKey != null) {
+                            key = decodedKey;
+                        }
+                    } else {
+                        GLLog.warn("Encountered link key with unknown type id: {}", keyTypeId);
+                    }
+                }
+
+                Function<LinkEntityContext, @Nullable LinkEntity> entityFactory = key::createLinkEntity;
+                if (linkTag.contains("entityType", NbtElement.STRING_TYPE)) {
+                    Identifier entityTypeId = new Identifier(linkTag.getString("entityType"));
+                    LinkEntityDecoder decoder = controller.universe.getLinkEntityDecoder(entityTypeId);
+                    if (decoder != null) {
+                        entityFactory = ctx -> decoder.decode(linkTag.get("entity"), ctx);
+                    } else {
+                        GLLog.warn("Encountered Link Entity with unknown id: {}", entityTypeId);
+                    }
+                }
+
+                graph.link(first, second, key, entityFactory);
             }
         }
 
@@ -148,6 +165,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
     private final Graph<SimpleNodeWrapper, LinkKey> graph = new Graph<>();
     private final Map<NodePos, NodeEntity> nodeEntities = new Object2ObjectLinkedOpenHashMap<>();
+    private final Map<LinkPos, LinkEntity> linkEntities = new Object2ObjectLinkedOpenHashMap<>();
     private final Multimap<BlockPos, SimpleNodeHolder<BlockNode>> nodesInPos = LinkedHashMultimap.create();
     final LongSet chunks = new LongLinkedOpenHashSet();
     private final Map<Class<?>, List<?>> nodeTypeCache = new HashMap<>();
@@ -199,7 +217,10 @@ public class SimpleBlockGraph implements BlockGraph {
             NodeEntity entity = nodeEntities.get(key);
             if (entity != null) {
                 com.putString("entityType", entity.getTypeId().toString());
-                com.put("entity", entity.toTag());
+                NbtElement entityTag = entity.toTag();
+                if (entityTag != null) {
+                    com.put("entity", entityTag);
+                }
             }
 
             nodesTag.add(com);
@@ -232,6 +253,17 @@ public class SimpleBlockGraph implements BlockGraph {
             NbtElement keyTag = key.toTag();
             if (keyTag != null) {
                 linkTag.put("key", keyTag);
+            }
+
+            LinkEntity entity = linkEntities.get(
+                new LinkPos(link.first().data().getPos(), link.first().data().getNode(), link.second().data().getPos(),
+                    link.second().data().getNode(), link.key()));
+            if (entity != null) {
+                linkTag.putString("entityType", entity.getTypeId().toString());
+                NbtElement entityTag = entity.toTag();
+                if (entityTag != null) {
+                    linkTag.put("entity", entityTag);
+                }
             }
 
             linksTag.add(linkTag);
@@ -294,6 +326,11 @@ public class SimpleBlockGraph implements BlockGraph {
     @Override
     public @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos) {
         return nodeEntities.get(pos);
+    }
+
+    @Override
+    public @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos) {
+        return linkEntities.get(pos);
     }
 
     /**
@@ -421,11 +458,22 @@ public class SimpleBlockGraph implements BlockGraph {
         nodeTypeCache.clear();
         controller.markDirty(id);
 
-        // schedule updates for each of the node's connected nodes
+        Map<LinkPos, LinkEntity> removedLinks = new Object2ObjectLinkedOpenHashMap<>();
+
+        // schedule updates for each of the node's connected nodes while collecting removed connections
         for (Link<SimpleNodeWrapper, LinkKey> link : node.node.connections()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
             controller.scheduleCallbackUpdate(new SimpleNodeHolder<>(link.other(node.node)));
+
+            // collect the link entities to be removed
+            LinkPos linkKey =
+                new LinkPos(link.first().data().getPos(), link.first().data().getNode(), link.second().data().getPos(),
+                    link.second().data().getNode(), link.key());
+            LinkEntity linkEntity = linkEntities.get(linkKey);
+            if (linkEntity != null) {
+                removedLinks.put(linkKey, linkEntity);
+            }
         }
         controller.scheduleCallbackUpdate(node);
 
@@ -457,14 +505,20 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         // remove the associated node entity if any
-        NodeEntity entity = nodeEntities.remove(new NodePos(node.getPos(), node.getNode()));
-        if (entity != null) {
-            entity.onDelete();
+        NodeEntity nodeEntity = nodeEntities.remove(node.toNodePos());
+        if (nodeEntity != null) {
+            nodeEntity.onDelete();
+        }
+
+        // remove connected link entities
+        for (Map.Entry<LinkPos, LinkEntity> entry : removedLinks.entrySet()) {
+            linkEntities.remove(entry.getKey());
+            entry.getValue().onDelete();
         }
 
         // notify the graph entities that a node was destroyed
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
-            graphEntity.onNodeDestroyed(holder, entity);
+            graphEntity.onNodeDestroyed(holder, nodeEntity, removedLinks);
         }
 
         if (graph.isEmpty()) {
@@ -477,13 +531,24 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    void link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key) {
-        graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
+    void link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
+              @NotNull Function<LinkEntityContext, @Nullable LinkEntity> entityFactory) {
+        LinkHolder<LinkKey> link = new SimpleLinkHolder<>(
+            graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key));
+
+        LinkEntity linkEntity = null;
+        if (key.shouldHaveLinkEntity(new LinkContext(link, controller.world, controller))) {
+            linkEntity = entityFactory.apply(new SimpleLinkEntityContext(link, controller.world, controller));
+        }
+        if (linkEntity != null) {
+            linkEntities.put(link.toLinkPos(), linkEntity);
+        }
+
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
 
-        for (GraphEntity<?> entity : graphEntities.values()) {
-            entity.onLink(a, b);
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onLink(a, b, linkEntity);
         }
 
         controller.markDirty(id);
@@ -494,8 +559,13 @@ public class SimpleBlockGraph implements BlockGraph {
         controller.scheduleCallbackUpdate(a);
         controller.scheduleCallbackUpdate(b);
 
-        for (GraphEntity<?> entity : graphEntities.values()) {
-            entity.onUnlink(a, b);
+        LinkEntity entity = linkEntities.remove(new LinkPos(a.toNodePos(), b.toNodePos(), key));
+        if (entity != null) {
+            entity.onDelete();
+        }
+
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onUnlink(a, b, entity);
         }
 
         controller.markDirty(id);
@@ -517,6 +587,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         graph.join(other.graph);
         nodeEntities.putAll(other.nodeEntities);
+        linkEntities.putAll(other.linkEntities);
         nodesInPos.putAll(other.nodesInPos);
         chunks.addAll(other.chunks);
         nodeTypeCache.clear();
@@ -595,6 +666,17 @@ public class SimpleBlockGraph implements BlockGraph {
                     if (entity != null) {
                         bg.nodeEntities.put(key, entity);
                     }
+
+                    // make sure to move link entities over too
+                    for (var link : node.connections()) {
+                        Node<SimpleNodeWrapper, LinkKey> other = link.other(node);
+                        LinkPos linkKey =
+                            new LinkPos(key, new NodePos(other.data().getPos(), other.data().getNode()), link.key());
+                        LinkEntity linkEntity = linkEntities.remove(linkKey);
+                        if (linkEntity != null) {
+                            bg.linkEntities.put(linkKey, linkEntity);
+                        }
+                    }
                 }
 
                 // Split the graph entity
@@ -624,6 +706,9 @@ public class SimpleBlockGraph implements BlockGraph {
 
     void onUnload() {
         for (NodeEntity entity : nodeEntities.values()) {
+            entity.onUnload();
+        }
+        for (LinkEntity entity : linkEntities.values()) {
             entity.onUnload();
         }
         for (GraphEntity<?> entity : graphEntities.values()) {

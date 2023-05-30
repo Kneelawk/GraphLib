@@ -4,17 +4,17 @@ import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.api.graph.NodeLink;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 
-public class SimpleNodeLink<K extends LinkKey> implements NodeLink<K> {
+public class SimpleLinkHolder<K extends LinkKey> implements LinkHolder<K> {
     private final Link<SimpleNodeWrapper, K> link;
 
-    public SimpleNodeLink(Link<SimpleNodeWrapper, K> link) {
+    public SimpleLinkHolder(Link<SimpleNodeWrapper, K> link) {
         this.link = link;
     }
 
@@ -39,7 +39,7 @@ public class SimpleNodeLink<K extends LinkKey> implements NodeLink<K> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        SimpleNodeLink<?> that = (SimpleNodeLink<?>) o;
+        SimpleLinkHolder<?> that = (SimpleLinkHolder<?>) o;
         return Objects.equals(link, that.link);
     }
 

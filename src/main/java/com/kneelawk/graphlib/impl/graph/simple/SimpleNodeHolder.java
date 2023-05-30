@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.NodeLink;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.SnapshotNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -46,24 +46,24 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull Collection<NodeLink<LinkKey>> getConnections() {
-        return new ReadOnlyMappingCollection<>(node.connections(), SimpleNodeLink::new);
+    public @NotNull Collection<LinkHolder<LinkKey>> getConnections() {
+        return new ReadOnlyMappingCollection<>(node.connections(), SimpleLinkHolder::new);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public @NotNull <K extends LinkKey> Stream<NodeLink<K>> getConnectionsOfType(Class<K> keyClass) {
+    public @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsOfType(Class<K> keyClass) {
         return node.connections().stream().filter(link -> keyClass.isInstance(link.key()))
-            .map(link -> new SimpleNodeLink<>((Link<SimpleNodeWrapper, K>) link));
+            .map(link -> new SimpleLinkHolder<>((Link<SimpleNodeWrapper, K>) link));
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public @NotNull <K extends LinkKey> Stream<NodeLink<K>> getConnectionsThatMatch(Class<K> keyClass,
-                                                                                    Predicate<K> filter) {
+    public @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsThatMatch(Class<K> keyClass,
+                                                                                      Predicate<K> filter) {
         return node.connections().stream()
             .filter(link -> keyClass.isInstance(link.key()) && filter.test(keyClass.cast(link.key())))
-            .map(link -> new SimpleNodeLink<>((Link<SimpleNodeWrapper, K>) link));
+            .map(link -> new SimpleLinkHolder<>((Link<SimpleNodeWrapper, K>) link));
     }
 
     @Override

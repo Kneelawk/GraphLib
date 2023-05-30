@@ -45,9 +45,9 @@ public interface NodeHolder<T extends BlockNode> {
     /**
      * Gets all the connections this node has with other nodes.
      *
-     * @return a collection of all the {@link NodeLink}s this node has with other nodes.
+     * @return a collection of all the {@link LinkHolder}s this node has with other nodes.
      */
-    @NotNull Collection<NodeLink<LinkKey>> getConnections();
+    @NotNull Collection<LinkHolder<LinkKey>> getConnections();
 
     /**
      * Gets all connections with keys of the given type.
@@ -56,7 +56,7 @@ public interface NodeHolder<T extends BlockNode> {
      * @param <K>      the type of the key to filter by.
      * @return all connections with keys of the given type.
      */
-    @NotNull <K extends LinkKey> Stream<NodeLink<K>> getConnectionsOfType(Class<K> keyClass);
+    @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsOfType(Class<K> keyClass);
 
     /**
      * Gets all the connections with keys that match the given predicate.
@@ -66,8 +66,8 @@ public interface NodeHolder<T extends BlockNode> {
      * @param <K>      the type of key to filter by.
      * @return all connections with keys that match the given predicate.
      */
-    @NotNull <K extends LinkKey> Stream<NodeLink<K>> getConnectionsThatMatch(Class<K> keyClass,
-                                                                                 Predicate<K> filter);
+    @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsThatMatch(Class<K> keyClass,
+                                                                               Predicate<K> filter);
 
     /**
      * Gets an immutable view of this node holder's position and node.

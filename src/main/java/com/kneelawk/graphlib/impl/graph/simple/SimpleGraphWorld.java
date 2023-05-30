@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
@@ -44,16 +43,17 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.NodeLink;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
-import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.HalfLink;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.world.SaveMode;
@@ -271,6 +271,24 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             BlockGraph graph = chunk.getGraphForNode(pos, this::getGraph);
             if (graph != null) {
                 return graph.getNodeEntity(pos);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the link entity at the given position, if it exists.
+     *
+     * @param pos the position to find the link entity at.
+     * @return the link entity at the given position, if it exists.
+     */
+    @Override
+    public @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.first().pos()));
+        if (chunk != null) {
+            BlockGraph graph = chunk.getGraphForNode(pos.first(), this::getGraph);
+            if (graph != null) {
+                return graph.getLinkEntity(pos);
             }
         }
         return null;
@@ -695,7 +713,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
         // Collect the old node connections
         Set<HalfLink> oldConnections = new ObjectLinkedOpenHashSet<>();
-        for (NodeLink<LinkKey> link : node.getConnections()) {
+        for (LinkHolder<LinkKey> link : node.getConnections()) {
             oldConnections.add(link.toHalfLink(node));
         }
 
@@ -747,7 +765,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                 }
             }
 
-            mergedGraph.link(node, link.other(), link.key());
+            mergedGraph.link(node, link.other(), link.key(), link.key()::createLinkEntity);
         }
 
         for (var link : removedConnections) {

@@ -1,5 +1,8 @@
 package com.kneelawk.graphlib.api.util;
 
+import net.minecraft.util.math.BlockPos;
+
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 
 /**
@@ -13,6 +16,19 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
  * @param key    the key of this link that makes it unique among all the links between the same two nodes.
  */
 public record LinkPos(NodePos first, NodePos second, LinkKey key) {
+    /**
+     * Creates a new link pos from raw positions, nodes, and the link key.
+     *
+     * @param firstPos   the block position of the first end of this link.
+     * @param firstNode  the block node at the first end of this link.
+     * @param secondPos  the block position of the second end of this link.
+     * @param secondNode the block node at the second end of this link.
+     * @param key        the key of this link.
+     */
+    public LinkPos(BlockPos firstPos, BlockNode firstNode, BlockPos secondPos, BlockNode secondNode, LinkKey key) {
+        this(new NodePos(firstPos, firstNode), new NodePos(secondPos, secondNode), key);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

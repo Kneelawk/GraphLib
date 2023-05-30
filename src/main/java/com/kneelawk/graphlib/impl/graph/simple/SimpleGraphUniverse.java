@@ -27,6 +27,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.util.ColorUtils;
@@ -44,6 +45,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Object2IntMap<Identifier> typeIndices = new Object2IntLinkedOpenHashMap<>();
     private final Map<Identifier, NodeEntityDecoder> nodeEntityDecoders = new LinkedHashMap<>();
     private final Map<Identifier, LinkKeyDecoder> linkKeyDecoders = new LinkedHashMap<>();
+    private final Map<Identifier, LinkEntityDecoder> linkEntityDecoders = new LinkedHashMap<>();
     private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
     final SaveMode saveMode;
 
@@ -148,6 +150,23 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
+    public void addLinkEntityDecoder(@NotNull Identifier typeId, @NotNull LinkEntityDecoder decoder) {
+        this.linkEntityDecoders.put(typeId, decoder);
+    }
+
+    @Override
+    public void addLinkEntityDecoders(@NotNull Pair<Identifier, ? extends LinkEntityDecoder>... decoders) {
+        for (Pair<Identifier, ? extends LinkEntityDecoder> pair : decoders) {
+            this.linkEntityDecoders.put(pair.key(), pair.value());
+        }
+    }
+
+    @Override
+    public void addLinkEntityDecoders(@NotNull Map<Identifier, ? extends LinkEntityDecoder> decoders) {
+        this.linkEntityDecoders.putAll(decoders);
+    }
+
+    @Override
     public void addGraphEntityType(@NotNull GraphEntityType<?> type) {
         this.graphEntityTypes.put(type.id(), type);
     }
@@ -201,6 +220,11 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     @Override
     public @Nullable LinkKeyDecoder getLinkKeyDecoder(@NotNull Identifier typeId) {
         return linkKeyDecoders.get(typeId);
+    }
+
+    @Override
+    public @Nullable LinkEntityDecoder getLinkEntityDecoder(@NotNull Identifier typeId) {
+        return linkEntityDecoders.get(typeId);
     }
 
     @Override

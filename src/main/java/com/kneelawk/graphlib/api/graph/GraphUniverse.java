@@ -15,6 +15,8 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
@@ -170,6 +172,37 @@ public interface GraphUniverse {
      * @param decoders the set of link key decoders to be registered.
      */
     void addLinkKeyDecoders(@NotNull Map<Identifier, ? extends LinkKeyDecoder> decoders);
+
+    /**
+     * Registers a {@link LinkEntityDecoder} for the given link type id.
+     * <p>
+     * The identifier under which the decoder is registered corresponds to the one returned by the associated link
+     * entity's {@link LinkEntity#getTypeId()}.
+     *
+     * @param typeId  the type id of the link entity the decoder is being registered for.
+     * @param decoder the link entity decoder responsible for decoding the associated type of link entity.
+     */
+    void addLinkEntityDecoder(@NotNull Identifier typeId, @NotNull LinkEntityDecoder decoder);
+
+    /**
+     * Registers a set of {@link LinkEntityDecoder}s with associated link entity type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated link
+     * entity's {@link LinkEntity#getTypeId()}.
+     *
+     * @param decoders the set of link entity decoders to be registered.
+     */
+    void addLinkEntityDecoders(@NotNull Pair<Identifier, ? extends LinkEntityDecoder>... decoders);
+
+    /**
+     * Registers a set of {@link LinkEntityDecoder}s with associated link entity type ids.
+     * <p>
+     * The identifier under which a decoder is registered corresponds to the one returned by the associated link
+     * entity's {@link LinkEntity#getTypeId()}.
+     *
+     * @param decoders the set of link entity decoders to be registered.
+     */
+    void addLinkEntityDecoders(@NotNull Map<Identifier, ? extends LinkEntityDecoder> decoders);
 
     /**
      * Registers a {@link GraphEntityType}.
