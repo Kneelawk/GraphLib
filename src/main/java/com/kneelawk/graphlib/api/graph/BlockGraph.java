@@ -11,8 +11,10 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
@@ -50,6 +52,14 @@ public interface BlockGraph {
      * @return the node entity, or <code>null</code> if there is no node entity present at the given location.
      */
     @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos);
+
+    /**
+     * Gets the link entity at the given pos, if it exists.
+     *
+     * @param pos the position to find the link entity at.
+     * @return the link entity, or <code>null</code> if there is no link entity present at the given location.
+     */
+    @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos);
 
     /**
      * Gets all the nodes in this graph.

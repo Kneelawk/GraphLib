@@ -26,6 +26,7 @@ import net.minecraft.util.math.Direction;
 import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
@@ -170,8 +171,8 @@ public final class GraphLibClientNetworking {
 
     @Nullable
     private static ClientBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
-        Graph<ClientBlockNodeHolder> graph = new Graph<>();
-        List<Node<ClientBlockNodeHolder>> nodeList = new ArrayList<>();
+        Graph<ClientBlockNodeHolder, EmptyLinkKey> graph = new Graph<>();
+        List<Node<ClientBlockNodeHolder, EmptyLinkKey>> nodeList = new ArrayList<>();
         LongSet chunks = new LongLinkedOpenHashSet();
 
         long graphId = buf.readLong();
@@ -198,7 +199,7 @@ public final class GraphLibClientNetworking {
                 return null;
             }
 
-            Node<ClientBlockNodeHolder> node = graph.add(new ClientBlockNodeHolder(pos, data, graphId));
+            Node<ClientBlockNodeHolder, EmptyLinkKey> node = graph.add(new ClientBlockNodeHolder(pos, data, graphId));
             nodeList.add(node);
 
             chunks.add(ChunkPos.toLong(pos));
@@ -206,10 +207,23 @@ public final class GraphLibClientNetworking {
 
         int linkCount = buf.readVarInt();
         for (int i = 0; i < linkCount; i++) {
-            Node<ClientBlockNodeHolder> nodeA = nodeList.get(buf.readVarInt());
-            Node<ClientBlockNodeHolder> nodeB = nodeList.get(buf.readVarInt());
+            int nodeAIndex = buf.readVarInt();
+            int nodeBIndex = buf.readVarInt();
 
-            graph.link(nodeA, nodeB);
+            Node<ClientBlockNodeHolder, EmptyLinkKey> nodeA = nodeList.get(nodeAIndex);
+            Node<ClientBlockNodeHolder, EmptyLinkKey> nodeB = nodeList.get(nodeBIndex);
+
+            if (nodeA == null) {
+                GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeAIndex);
+                continue;
+            }
+
+            if (nodeB == null) {
+                GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeBIndex);
+                continue;
+            }
+
+            graph.link(nodeA, nodeB, EmptyLinkKey.INSTANCE);
         }
 
         return new ClientBlockGraph(universeId, graphId, graph, chunks);

@@ -1,11 +1,14 @@
 package com.kneelawk.graphlib.api.graph.user;
 
+import java.util.Map;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.util.LinkPos;
 
 /**
  * Arbitrary data that can be stored in a graph.
@@ -50,26 +53,32 @@ public interface GraphEntity<G extends GraphEntity<G>> {
     /**
      * Called when a node in this graph is destroyed.
      *
-     * @param node       the node destroyed.
-     * @param nodeEntity the node's entity, if any.
+     * @param node         the node destroyed.
+     * @param nodeEntity   the node's entity, if any.
+     * @param linkEntities any link entities that were removed.
      */
-    default void onNodeDestroyed(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity) {onUpdate();}
+    default void onNodeDestroyed(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity,
+                                 Map<LinkPos, LinkEntity> linkEntities) {onUpdate();}
 
     /**
      * Called when two nodes in the graph are linked.
      *
-     * @param a the first node in the link.
-     * @param b the second node in the link.
+     * @param a      the first node in the link.
+     * @param b      the second node in the link.
+     * @param entity the link entity that was added, if any.
      */
-    default void onLink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {onUpdate();}
+    default void onLink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
+                        @Nullable LinkEntity entity) {onUpdate();}
 
     /**
      * Called when two nodes in the graph ar unlinked.
      *
-     * @param a the first node in the link.
-     * @param b the second node in the link.
+     * @param a      the first node in the link.
+     * @param b      the second node in the link.
+     * @param entity the link entity that was removed, if any.
      */
-    default void onUnlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b) {onUpdate();}
+    default void onUnlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
+                          @Nullable LinkEntity entity) {onUpdate();}
 
     /**
      * Called by the default implementations of the node update methods.

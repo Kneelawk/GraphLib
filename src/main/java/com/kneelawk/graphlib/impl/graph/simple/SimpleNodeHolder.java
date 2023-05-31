@@ -2,26 +2,30 @@ package com.kneelawk.graphlib.impl.graph.simple;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.NodeConnection;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.SnapshotNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
-    final Node<SimpleNodeWrapper> node;
+    final Node<SimpleNodeWrapper, LinkKey> node;
 
     /**
      * @param node treat this as if it were parameterized on <code>&lt;T&gt;</code>.
      */
-    public SimpleNodeHolder(Node<SimpleNodeWrapper> node) {
+    public SimpleNodeHolder(Node<SimpleNodeWrapper, LinkKey> node) {
         this.node = node;
     }
 
@@ -42,8 +46,24 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull Collection<NodeConnection> getConnections() {
-        return new ReadOnlyMappingCollection<>(node.connections(), SimpleNodeConnection::new);
+    public @NotNull Collection<LinkHolder<LinkKey>> getConnections() {
+        return new ReadOnlyMappingCollection<>(node.connections(), SimpleLinkHolder::new);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsOfType(Class<K> keyClass) {
+        return node.connections().stream().filter(link -> keyClass.isInstance(link.key()))
+            .map(link -> new SimpleLinkHolder<>((Link<SimpleNodeWrapper, K>) link));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsThatMatch(Class<K> keyClass,
+                                                                                      Predicate<K> filter) {
+        return node.connections().stream()
+            .filter(link -> keyClass.isInstance(link.key()) && filter.test(keyClass.cast(link.key())))
+            .map(link -> new SimpleLinkHolder<>((Link<SimpleNodeWrapper, K>) link));
     }
 
     @Override

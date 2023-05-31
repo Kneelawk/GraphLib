@@ -14,7 +14,7 @@ import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
@@ -80,16 +80,16 @@ public interface BlockNode {
      * Collects nodes in the world that this node can connect to.
      * <p>
      * <b>Contract:</b> This method must only return nodes that
-     * {@link #canConnect(NodeContext, NodeHolder)} would have returned
+     * {@link #canConnect(NodeContext, HalfLink)} would have returned
      * <code>true</code> for.
      *
      * @param ctx the node context for this node.
      * @return all nodes this node can connect to.
-     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeContext, SidedWireConnectionFilter)
-     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeContext, FullWireConnectionFilter)
-     * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeContext, CenterWireConnectionFilter)
+     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeContext, SidedWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
+     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeContext, FullWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
+     * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeContext, CenterWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
      */
-    @NotNull Collection<NodeHolder<BlockNode>> findConnections(@NotNull NodeContext ctx);
+    @NotNull Collection<HalfLink> findConnections(@NotNull NodeContext ctx);
 
     /**
      * Determines whether this node can connect to another node.
@@ -100,11 +100,11 @@ public interface BlockNode {
      * @param ctx   the node context for this node.
      * @param other the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
-     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeContext, NodeHolder, SidedWireConnectionFilter)
-     * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeContext, NodeHolder, FullWireConnectionFilter)
-     * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeContext, NodeHolder, CenterWireConnectionFilter)
+     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeContext, HalfLink, SidedWireConnectionFilter)
+     * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeContext, HalfLink, FullWireConnectionFilter)
+     * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeContext, HalfLink, CenterWireConnectionFilter)
      */
-    boolean canConnect(@NotNull NodeContext ctx, @NotNull NodeHolder<BlockNode> other);
+    boolean canConnect(@NotNull NodeContext ctx, @NotNull HalfLink other);
 
     /**
      * Called when the block graph controller has determined that this specific node's connections have been changed.

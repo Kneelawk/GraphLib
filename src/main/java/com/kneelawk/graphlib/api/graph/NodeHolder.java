@@ -1,12 +1,15 @@
 package com.kneelawk.graphlib.api.graph;
 
 import java.util.Collection;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
@@ -42,9 +45,29 @@ public interface NodeHolder<T extends BlockNode> {
     /**
      * Gets all the connections this node has with other nodes.
      *
-     * @return a collection of all the {@link NodeConnection}s this node has with other nodes.
+     * @return a collection of all the {@link LinkHolder}s this node has with other nodes.
      */
-    @NotNull Collection<NodeConnection> getConnections();
+    @NotNull Collection<LinkHolder<LinkKey>> getConnections();
+
+    /**
+     * Gets all connections with keys of the given type.
+     *
+     * @param keyClass the class of the key to filter by.
+     * @param <K>      the type of the key to filter by.
+     * @return all connections with keys of the given type.
+     */
+    @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsOfType(Class<K> keyClass);
+
+    /**
+     * Gets all the connections with keys that match the given predicate.
+     *
+     * @param keyClass the class of the key to filter by.
+     * @param filter   predicate to filter keys by.
+     * @param <K>      the type of key to filter by.
+     * @return all connections with keys that match the given predicate.
+     */
+    @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsThatMatch(Class<K> keyClass,
+                                                                               Predicate<K> filter);
 
     /**
      * Gets an immutable view of this node holder's position and node.

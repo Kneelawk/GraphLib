@@ -5,11 +5,16 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.util.HalfLink;
+import com.kneelawk.graphlib.api.util.LinkPos;
 
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.
+ *
+ * @param <K> the type of key stored in this node link.
  */
-public interface NodeConnection {
+public interface LinkHolder<K extends LinkKey> {
     /**
      * Gets the first node in this connection.
      *
@@ -23,6 +28,13 @@ public interface NodeConnection {
      * @return the second node in this connection.
      */
     @NotNull NodeHolder<BlockNode> getSecond();
+
+    /**
+     * Gets the key of this link.
+     *
+     * @return the key of this link.
+     */
+    @NotNull K getKey();
 
     /**
      * Checks whether either node is the given node.
@@ -47,5 +59,33 @@ public interface NodeConnection {
         } else {
             return first;
         }
+    }
+
+    /**
+     * Gets the graph id of the graph this link is in.
+     *
+     * @return the graph id of the graph this link is in.
+     */
+    default long getGraphId() {
+        return getFirst().getGraphId();
+    }
+
+    /**
+     * Represents this node link from the perspective of one of its nodes.
+     *
+     * @param perspective the node whose perspective from which this link is to be represented.
+     * @return a keyed-node representing this link from the perspective of the given node.
+     */
+    default @NotNull HalfLink toHalfLink(@NotNull NodeHolder<BlockNode> perspective) {
+        return new HalfLink(getKey(), other(perspective));
+    }
+
+    /**
+     * Gets the link pos of this link, holding only node-positions and link key.
+     *
+     * @return the link pos of this link holder.
+     */
+    default @NotNull LinkPos toLinkPos() {
+        return new LinkPos(getFirst().toNodePos(), getSecond().toNodePos(), getKey());
     }
 }

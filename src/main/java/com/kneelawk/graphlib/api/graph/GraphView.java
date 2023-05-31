@@ -12,8 +12,10 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
@@ -67,6 +69,14 @@ public interface GraphView {
      * @return the node entity at the given position, if it exists.
      */
     @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos);
+
+    /**
+     * Gets the link entity at the given position, if it exists.
+     *
+     * @param pos the position to find the link entity at.
+     * @return the link entity at the given position, if it exists.
+     */
+    @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos);
 
     /**
      * Gets the IDs of all graphs with nodes in the given block-position.

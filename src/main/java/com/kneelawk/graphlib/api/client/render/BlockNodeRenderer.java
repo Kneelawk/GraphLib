@@ -13,6 +13,7 @@ import net.minecraft.util.math.Vec3d;
 
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
@@ -37,7 +38,7 @@ public interface BlockNodeRenderer<N extends ClientBlockNode> {
      * @param endpoint   the position returned by {@link #getLineEndpoint(ClientBlockNode, Node, ClientBlockGraph, int, int, List)}.
      * @param graphColor the color that this graph has been assigned.
      */
-    void render(@NotNull N node, @NotNull Node<ClientBlockNodeHolder> holderNode,
+    void render(@NotNull N node, @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
                 @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack, @NotNull ClientBlockGraph graph,
                 @NotNull Vec3d endpoint, int graphColor);
 
@@ -56,7 +57,7 @@ public interface BlockNodeRenderer<N extends ClientBlockNode> {
      *                        endpoints.
      * @return the position, relative to the node's block position, that lines should be drawn to.
      */
-    @NotNull Vec3d getLineEndpoint(@NotNull N node, @NotNull Node<ClientBlockNodeHolder> holderNode,
+    @NotNull Vec3d getLineEndpoint(@NotNull N node, @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
                                    @NotNull ClientBlockGraph graph, int nodesAtPos, int indexAmongNodes,
                                    @NotNull List<Vec3d> otherEndpoints);
 }

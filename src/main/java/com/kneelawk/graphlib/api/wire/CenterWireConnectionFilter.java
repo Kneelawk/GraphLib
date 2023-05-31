@@ -5,8 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeContext;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.util.HalfLink;
 
 /**
  * Allows an external object to filter the connections connecting to a center wire block node.
@@ -15,14 +14,14 @@ public interface CenterWireConnectionFilter {
     /**
      * Checks whether this filter allows the two block nodes to connect.
      *
-     * @param self      the node that this check is with respect to.
-     * @param ctx       the node context for the node this check is with respect to.
-     * @param onSide    the side of this block that the other node is trying to connect to.
-     * @param otherNode the block node holder holding the other node.
+     * @param self   the node that this check is with respect to.
+     * @param ctx    the node context for the node this check is with respect to.
+     * @param onSide the side of this block that the other node is trying to connect to.
+     * @param link   the link to the block node holder holding the other node.
      * @return <code>true</code> if the two nodes should be allowed to connect, <code>false</code> otherwise.
      */
     boolean canConnect(@NotNull CenterWireBlockNode self, @NotNull NodeContext ctx, @NotNull Direction onSide,
-                       @NotNull NodeHolder<BlockNode> otherNode);
+                       @NotNull HalfLink link);
 
     /**
      * Creates a new connection filter that must satisfy both this filter and the other filter.
@@ -31,7 +30,7 @@ public interface CenterWireConnectionFilter {
      * @return a new connection filter that must satisfy both this filter and the other filter.
      */
     default @NotNull CenterWireConnectionFilter and(@NotNull CenterWireConnectionFilter otherFilter) {
-        return (self, ctx, onSide, otherNode) -> canConnect(self, ctx, onSide, otherNode) &&
-            otherFilter.canConnect(self, ctx, onSide, otherNode);
+        return (self, ctx, onSide, link) -> canConnect(self, ctx, onSide, link) &&
+            otherFilter.canConnect(self, ctx, onSide, link);
     }
 }

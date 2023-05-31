@@ -13,10 +13,11 @@ import org.jetbrains.annotations.NotNull;
  * Node in a general purpose graph data structure.
  *
  * @param <T> the type of data this node contains.
+ * @param <L> the type of link data contained in links between nodes.
  */
-public final class Node<T> {
+public final class Node<T, L> {
     private final T data;
-    private final Set<Link<T>> connections;
+    private final Set<Link<T, L>> connections;
 
     /**
      * Constructs a new node containing the given data.
@@ -42,7 +43,7 @@ public final class Node<T> {
      *
      * @return this node's connections.
      */
-    public @NotNull Set<Link<T>> connections() {
+    public @NotNull Set<Link<T, L>> connections() {
         return connections;
     }
 
@@ -51,7 +52,7 @@ public final class Node<T> {
      *
      * @param other the other node added to the graph.
      */
-    public void onAdded(@NotNull Node<T> other) {
+    public void onAdded(@NotNull Node<T, L> other) {
     }
 
     /**
@@ -59,7 +60,7 @@ public final class Node<T> {
      *
      * @param other the other node removed from the graph.
      */
-    public void onRemoved(@NotNull Node<T> other) {
+    public void onRemoved(@NotNull Node<T, L> other) {
         connections.removeIf(link -> link.contains(other));
     }
 
@@ -68,7 +69,7 @@ public final class Node<T> {
      *
      * @param link the link between this node and another node.
      */
-    public void onLink(@NotNull Link<T> link) {
+    public void onLink(@NotNull Link<T, L> link) {
         connections.add(link);
     }
 
@@ -80,7 +81,7 @@ public final class Node<T> {
      *
      * @param link the link to remove.
      */
-    public void onUnlink(@NotNull Link<T> link) {
+    public void onUnlink(@NotNull Link<T, L> link) {
         connections.remove(link);
     }
 
