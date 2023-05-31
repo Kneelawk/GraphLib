@@ -51,6 +51,7 @@ import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
@@ -232,6 +233,24 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     }
 
     /**
+     * Gets the node holder at the given position.
+     *
+     * @param pos the position to get the node at.
+     * @return the node holder at the given position, if any.
+     */
+    @Override
+    public @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
+        if (chunk != null) {
+            BlockGraph graph = chunk.getGraphForNode(pos, this::getGraph);
+            if (graph != null) {
+                return graph.getNodeAt(pos);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Checks whether the given node with the given position exists.
      *
      * @param pos the positioned node to try to find.
@@ -327,6 +346,99 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     @Override
     public @NotNull Stream<BlockGraph> getLoadedGraphsAt(@NotNull BlockPos pos) {
         return getAllGraphIdsAt(pos).mapToObj(loadedGraphs::get).filter(Objects::nonNull).map(Function.identity());
+    }
+
+    /**
+     * Connects two nodes to each other.
+     * <p>
+     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
+     * {@link LinkKey#isAutomaticRemoval(LinkContext)} should return <code>false</code> for the given key.
+     *
+     * @param a             the first node to be connected.
+     * @param b             the second node to be connected.
+     * @param key           the key of the connection.
+     * @param entityFactory a factory for potentially creating the link's entity.
+     */
+    @Override
+    public void connectNodes(NodePos a, NodePos b, LinkKey key, LinkEntityFactory entityFactory) {
+        SimpleBlockGraphChunk aChunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
+        SimpleBlockGraphChunk bChunk = chunks.getIfExists(ChunkSectionPos.from(b.pos()));
+
+        if (aChunk != null && bChunk != null) {
+            SimpleBlockGraph aGraph = aChunk.getGraphForNode(a, this::getGraph);
+            SimpleBlockGraph bGraph = bChunk.getGraphForNode(b, this::getGraph);
+
+            if (aGraph != null && bGraph != null) {
+                // merge the two graphs if they're not already the same graph
+                SimpleBlockGraph mergedGraph;
+                if (aGraph.getId() != bGraph.getId()) {
+                    if (aGraph.size() >= bGraph.size()) {
+                        aGraph.merge(bGraph);
+                        mergedGraph = aGraph;
+                    } else {
+                        bGraph.merge(aGraph);
+                        mergedGraph = bGraph;
+                    }
+                } else {
+                    mergedGraph = aGraph;
+                }
+
+                NodeHolder<BlockNode> aHolder = mergedGraph.getNodeAt(a);
+                NodeHolder<BlockNode> bHolder = mergedGraph.getNodeAt(b);
+
+                if (aHolder == null) {
+                    GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", a);
+
+                    // the graph merge was faulty
+                    mergedGraph.split();
+                    return;
+                }
+                if (bHolder == null) {
+                    GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", b);
+
+                    // the graph merge was faulty
+                    mergedGraph.split();
+                    return;
+                }
+
+                mergedGraph.link(aHolder, bHolder, key, entityFactory);
+
+                // send updated event
+                GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
+            }
+        }
+    }
+
+    /**
+     * Disconnects two nodes from each other.
+     *
+     * @param a   the first node to be disconnected.
+     * @param b   the second node to be disconnected.
+     * @param key the key of the connection.
+     */
+    @Override
+    public void disconnectNodes(NodePos a, NodePos b, LinkKey key) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
+        if (chunk != null) {
+            SimpleBlockGraph graph = chunk.getGraphForNode(a, this::getGraph);
+            if (graph != null) {
+                NodeHolder<BlockNode> aHolder = graph.getNodeAt(a);
+                if (aHolder == null) {
+                    GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", a);
+                    return;
+                }
+                NodeHolder<BlockNode> bHolder = graph.getNodeAt(b);
+                if (bHolder == null) {
+                    // this just means that 'a' and 'b' were from different graphs and not connected in the first place
+                    return;
+                }
+
+                graph.unlink(aHolder, bHolder, key);
+
+                // this sends updated event
+                graph.split();
+            }
+        }
     }
 
     /**

@@ -46,6 +46,13 @@ public interface BlockGraph {
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
 
     /**
+     * Gets the node holder at a specific position.
+     * @param pos the position of the node to get.
+     * @return the node holder at the given position.
+     */
+    @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
+
+    /**
      * Gets the node entity at a given pos, if it exists.
      *
      * @param pos the position to find the node entity at.

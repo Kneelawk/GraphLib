@@ -47,6 +47,14 @@ public interface GraphView {
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
 
     /**
+     * Gets the node holder at the given position.
+     *
+     * @param pos the position to get the node at.
+     * @return the node holder at the given position, if any.
+     */
+    @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
+
+    /**
      * Checks whether the given node with the given position exists.
      *
      * @param pos the positioned node to try to find.
