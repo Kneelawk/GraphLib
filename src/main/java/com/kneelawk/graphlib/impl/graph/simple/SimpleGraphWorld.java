@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -27,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -43,6 +45,7 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.LinkContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -712,9 +715,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
 
         // Collect the old node connections
-        Set<HalfLink> oldConnections = new ObjectLinkedOpenHashSet<>();
+        Map<HalfLink, LinkHolder<LinkKey>> oldConnections = new Object2ObjectLinkedOpenHashMap<>();
         for (LinkHolder<LinkKey> link : node.getConnections()) {
-            oldConnections.add(link.toHalfLink(node));
+            oldConnections.put(link.toHalfLink(node), link);
         }
 
         // Collect the new connections that are wanted by both parties
@@ -730,16 +733,26 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         List<HalfLink> newConnections = new ObjectArrayList<>();
         for (HalfLink wanted : wantedConnections) {
             NodeHolder<BlockNode> other = wanted.other();
-            if (other.getGraphId() != nodeGraphId || !oldConnections.contains(wanted)) {
+            if (other.getGraphId() != nodeGraphId || !oldConnections.containsKey(wanted)) {
                 newConnections.add(wanted);
             }
         }
 
         // Collect the removed connections
         List<HalfLink> removedConnections = new ObjectArrayList<>();
-        for (HalfLink old : oldConnections) {
-            if (!wantedConnections.contains(old)) {
-                removedConnections.add(old);
+        for (Map.Entry<HalfLink, LinkHolder<LinkKey>> entry : oldConnections.entrySet()) {
+            HalfLink old = entry.getKey();
+            LinkHolder<LinkKey> link = entry.getValue();
+            if (link.getKey().isAutomaticRemoval(new LinkContext(link, world, this))) {
+                // automatic removal means that not being wanted causes removal
+                if (!wantedConnections.contains(old)) {
+                    removedConnections.add(old);
+                }
+            } else {
+                // if the other end has been removed, we still want to remove the manual link
+                if (!nodeExistsAt(old.other().toNodePos())) {
+                    removedConnections.add(old);
+                }
             }
         }
 

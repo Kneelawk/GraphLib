@@ -6,12 +6,34 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.BlockPos;
 
+import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
 /**
  * Holds and manages all block graphs for a given world.
  */
 public interface GraphWorld extends GraphView {
+
+    /**
+     * Connects two nodes to each other.
+     *
+     * @param a             the first node to be connected.
+     * @param b             the second node to be connected.
+     * @param key           the key of the connection.
+     * @param entityFactory a factory for potentially creating the link's entity.
+     */
+    void connectNodes(NodePos a, NodePos b, LinkKey key, LinkEntityFactory entityFactory);
+
+    /**
+     * Disconnects two nodes from each other.
+     *
+     * @param a   the first node to be disconnected.
+     * @param b   the second node to be disconnected.
+     * @param key the key of the connection.
+     */
+    void disconnectNodes(NodePos a, NodePos b, LinkKey key);
 
     /**
      * Notifies the controller that a block-position has been changed and may need to have its nodes and connections
