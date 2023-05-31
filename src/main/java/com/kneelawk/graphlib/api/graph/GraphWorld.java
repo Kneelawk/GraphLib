@@ -25,6 +25,20 @@ public interface GraphWorld extends GraphView {
      * @param a             the first node to be connected.
      * @param b             the second node to be connected.
      * @param key           the key of the connection.
+     */
+    default void connectNodes(NodePos a, NodePos b, LinkKey key) {
+        connectNodes(a, b, key, key::createLinkEntity);
+    }
+
+    /**
+     * Connects two nodes to each other.
+     * <p>
+     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
+     * {@link LinkKey#isAutomaticRemoval(LinkContext)} should return <code>false</code> for the given key.
+     *
+     * @param a             the first node to be connected.
+     * @param b             the second node to be connected.
+     * @param key           the key of the connection.
      * @param entityFactory a factory for potentially creating the link's entity.
      */
     void connectNodes(NodePos a, NodePos b, LinkKey key, LinkEntityFactory entityFactory);
