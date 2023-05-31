@@ -11,4 +11,14 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
  * @param other the other node in the link this describes.
  */
 public record HalfLink(LinkKey key, NodeHolder<BlockNode> other) {
+
+    /**
+     * Reverses this half link, replacing other with newOther.
+     *
+     * @param newOther the new end of the half link.
+     * @return a half link pointing at the new other node.
+     */
+    public HalfLink reverse(NodeHolder<BlockNode> newOther) {
+        return new HalfLink(key, newOther);
+    }
 }

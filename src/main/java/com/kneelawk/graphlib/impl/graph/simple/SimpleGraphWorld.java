@@ -721,7 +721,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         Set<HalfLink> wantedConnections = new ObjectLinkedOpenHashSet<>();
         for (HalfLink wanted : node.getNode().findConnections(new NodeContext(node, world, this))) {
             NodeHolder<BlockNode> other = wanted.other();
-            if (other.getNode().canConnect(new NodeContext(other, world, this), wanted)) {
+            if (other.getNode().canConnect(new NodeContext(other, world, this), wanted.reverse(node))) {
                 wantedConnections.add(wanted);
             }
         }
@@ -735,6 +735,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             }
         }
 
+        // Collect the removed connections
         List<HalfLink> removedConnections = new ObjectArrayList<>();
         for (HalfLink old : oldConnections) {
             if (!wantedConnections.contains(old)) {
