@@ -62,6 +62,15 @@ public interface LinkHolder<K extends LinkKey> {
     }
 
     /**
+     * Gets the graph id of the graph this link is in.
+     *
+     * @return the graph id of the graph this link is in.
+     */
+    default long getGraphId() {
+        return getFirst().getGraphId();
+    }
+
+    /**
      * Represents this node link from the perspective of one of its nodes.
      *
      * @param perspective the node whose perspective from which this link is to be represented.
