@@ -1,6 +1,7 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,7 +90,9 @@ public interface BlockNode {
      * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeContext, FullWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
      * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeContext, CenterWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
      */
-    @NotNull Collection<HalfLink> findConnections(@NotNull NodeContext ctx);
+    default @NotNull Collection<HalfLink> findConnections(@NotNull NodeContext ctx) {
+        return List.of();
+    }
 
     /**
      * Determines whether this node can connect to another node.
@@ -104,7 +107,9 @@ public interface BlockNode {
      * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeContext, HalfLink, FullWireConnectionFilter)
      * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeContext, HalfLink, CenterWireConnectionFilter)
      */
-    boolean canConnect(@NotNull NodeContext ctx, @NotNull HalfLink other);
+    default boolean canConnect(@NotNull NodeContext ctx, @NotNull HalfLink other) {
+        return false;
+    }
 
     /**
      * Called when the block graph controller has determined that this specific node's connections have been changed.
@@ -118,7 +123,7 @@ public interface BlockNode {
      *
      * @param ctx the node context for this node.
      */
-    void onConnectionsChanged(@NotNull NodeContext ctx);
+    default void onConnectionsChanged(@NotNull NodeContext ctx) {}
 
     /**
      * Block nodes are compared based on their hash-code and equals functions.

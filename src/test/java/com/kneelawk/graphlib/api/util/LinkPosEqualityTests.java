@@ -1,8 +1,5 @@
 package com.kneelawk.graphlib.api.util;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
@@ -12,7 +9,6 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 
@@ -30,19 +26,6 @@ public class LinkPosEqualityTests {
         public @Nullable NbtElement toTag() {
             return NbtString.of(str);
         }
-
-        @Override
-        public @NotNull Collection<HalfLink> findConnections(@NotNull NodeContext ctx) {
-            return List.of();
-        }
-
-        @Override
-        public boolean canConnect(@NotNull NodeContext ctx, @NotNull HalfLink other) {
-            return false;
-        }
-
-        @Override
-        public void onConnectionsChanged(@NotNull NodeContext ctx) {}
     }
 
     private record StringLinkKey(String str) implements LinkKey {
