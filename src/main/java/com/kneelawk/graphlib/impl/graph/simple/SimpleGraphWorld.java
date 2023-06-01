@@ -240,12 +240,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     @Override
     public @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
-        if (chunk != null) {
-            BlockGraph graph = chunk.getGraphForNode(pos, this::getGraph);
-            if (graph != null) {
-                return graph.getNodeAt(pos);
-            }
+        BlockGraph graph = getGraphForNode(pos);
+        if (graph != null) {
+            return graph.getNodeAt(pos);
         }
         return null;
     }
@@ -288,12 +285,39 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     @Override
     public @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
-        if (chunk != null) {
-            BlockGraph graph = chunk.getGraphForNode(pos, this::getGraph);
-            if (graph != null) {
-                return graph.getNodeEntity(pos);
-            }
+        BlockGraph graph = getGraphForNode(pos);
+        if (graph != null) {
+            return graph.getNodeEntity(pos);
+        }
+        return null;
+    }
+
+    /**
+     * Checks whether the given link exists.
+     *
+     * @param pos the position of the link to check.
+     * @return <code>true</code> if the given link exists.
+     */
+    @Override
+    public boolean linkExistsAt(@NotNull LinkPos pos) {
+        BlockGraph graph = getGraphForNode(pos.first());
+        if (graph != null) {
+            return graph.linkExistsAt(pos);
+        }
+        return false;
+    }
+
+    /**
+     * Gets the link holder at the given position, if it exists.
+     *
+     * @param pos the position of the link to get.
+     * @return the link holder at the given position, if it exists.
+     */
+    @Override
+    public @Nullable LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos) {
+        BlockGraph graph = getGraphForNode(pos.first());
+        if (graph != null) {
+            return graph.getLinkAt(pos);
         }
         return null;
     }
@@ -306,12 +330,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     @Override
     public @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.first().pos()));
-        if (chunk != null) {
-            BlockGraph graph = chunk.getGraphForNode(pos.first(), this::getGraph);
-            if (graph != null) {
-                return graph.getLinkEntity(pos);
-            }
+        BlockGraph graph = getGraphForNode(pos.first());
+        if (graph != null) {
+            return graph.getLinkEntity(pos);
         }
         return null;
     }
@@ -358,9 +379,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @param b             the second node to be connected.
      * @param key           the key of the connection.
      * @param entityFactory a factory for potentially creating the link's entity.
+     * @return the link created, or <code>null</code> if no link could be created.
      */
     @Override
-    public void connectNodes(NodePos a, NodePos b, LinkKey key, LinkEntityFactory entityFactory) {
+    public @Nullable LinkHolder<LinkKey> connectNodes(NodePos a, NodePos b, LinkKey key,
+                                                      LinkEntityFactory entityFactory) {
         SimpleBlockGraphChunk aChunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
         SimpleBlockGraphChunk bChunk = chunks.getIfExists(ChunkSectionPos.from(b.pos()));
 
@@ -391,22 +414,25 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
                     // the graph merge was faulty
                     mergedGraph.split();
-                    return;
+                    return null;
                 }
                 if (bHolder == null) {
                     GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", b);
 
                     // the graph merge was faulty
                     mergedGraph.split();
-                    return;
+                    return null;
                 }
 
-                mergedGraph.link(aHolder, bHolder, key, entityFactory);
+                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entityFactory);
 
                 // send updated event
                 GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
+
+                return holder;
             }
         }
+        return null;
     }
 
     /**
@@ -415,9 +441,10 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @param a   the first node to be disconnected.
      * @param b   the second node to be disconnected.
      * @param key the key of the connection.
+     * @return <code>true</code> if a link was actually removed, <code>false</code> otherwise.
      */
     @Override
-    public void disconnectNodes(NodePos a, NodePos b, LinkKey key) {
+    public boolean disconnectNodes(NodePos a, NodePos b, LinkKey key) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
         if (chunk != null) {
             SimpleBlockGraph graph = chunk.getGraphForNode(a, this::getGraph);
@@ -425,20 +452,23 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
                 NodeHolder<BlockNode> aHolder = graph.getNodeAt(a);
                 if (aHolder == null) {
                     GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", a);
-                    return;
+                    return false;
                 }
                 NodeHolder<BlockNode> bHolder = graph.getNodeAt(b);
                 if (bHolder == null) {
                     // this just means that 'a' and 'b' were from different graphs and not connected in the first place
-                    return;
+                    return false;
                 }
 
-                graph.unlink(aHolder, bHolder, key);
+                boolean removed = graph.unlink(aHolder, bHolder, key);
 
                 // this sends updated event
                 graph.split();
+
+                return removed;
             }
         }
+        return false;
     }
 
     /**

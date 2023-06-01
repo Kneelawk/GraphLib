@@ -162,11 +162,11 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
      * @param a       the first node to unlink.
      * @param b       the second node to unlink.
      * @param linkKey the key of the link to be removed.
+     * @return <code>true</code> if a link was removed from both nodes, <code>false</code> otherwise.
      */
-    public void unlink(@NotNull Node<T, L> a, @NotNull Node<T, L> b, @NotNull L linkKey) {
+    public boolean unlink(@NotNull Node<T, L> a, @NotNull Node<T, L> b, @NotNull L linkKey) {
         Link<T, L> link1 = new Link<>(a, b, linkKey);
-        a.onUnlink(link1);
-        b.onUnlink(link1);
+        return a.onUnlink(link1) & b.onUnlink(link1);
     }
 
     /**

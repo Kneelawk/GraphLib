@@ -12,6 +12,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.LinkPos;
@@ -46,11 +47,36 @@ public interface BlockGraph {
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
 
     /**
+     * Checks whether the given node actually exists in this graph.
+     *
+     * @param pos the position of the node to check.
+     * @return <code>true</code> if the given node actually exists.
+     */
+    boolean nodeExistsAt(@NotNull NodePos pos);
+
+    /**
      * Gets the node holder at a specific position.
+     *
      * @param pos the position of the node to get.
      * @return the node holder at the given position.
      */
     @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
+
+    /**
+     * Checks whether the given link actually exists in this graph.
+     *
+     * @param pos the position of the link to check.
+     * @return <code>true</code> if the given link actually exists.
+     */
+    boolean linkExistsAt(@NotNull LinkPos pos);
+
+    /**
+     * Gets the link holder at the given position, if it exists.
+     *
+     * @param pos the position to get the link at.
+     * @return the link holder at the given position, if it exists.
+     */
+    @Nullable LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos);
 
     /**
      * Gets the node entity at a given pos, if it exists.
