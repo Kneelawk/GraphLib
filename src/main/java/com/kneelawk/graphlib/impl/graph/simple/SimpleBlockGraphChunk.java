@@ -202,7 +202,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         if (uNodes == null) return null;
         if (!uNodes.containsKey(key.node())) return null;
 
-        return graphGetter.get(uNodes.getLong(key));
+        return graphGetter.get(uNodes.getLong(key.node()));
     }
 
     public boolean containsNode(NodePos key, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
