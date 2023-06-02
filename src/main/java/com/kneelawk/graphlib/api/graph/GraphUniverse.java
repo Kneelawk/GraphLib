@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.Pair;
 
@@ -112,6 +113,14 @@ public interface GraphUniverse {
     void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
 
     /**
+     * Gets the block node decoder for the given type id.
+     *
+     * @param typeId the type id of the block node decoder.
+     * @return the block node decoder for the given type id.
+     */
+    @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId);
+
+    /**
      * Registers a {@link NodeEntityDecoder} for the given node entity type id.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated node
@@ -141,6 +150,14 @@ public interface GraphUniverse {
      * @param decoders the set of node entity decoders to be registered.
      */
     void addNodeEntityDecoders(@NotNull Map<Identifier, ? extends NodeEntityDecoder> decoders);
+
+    /**
+     * Gets the node entity decoder for the given type id.
+     *
+     * @param typeId the type id of the node entity decoder.
+     * @return the node entity decoder for the given type id.
+     */
+    @Nullable NodeEntityDecoder getNodeEntityDecoder(@NotNull Identifier typeId);
 
     /**
      * Registers a {@link LinkKeyDecoder} for the given link type id.
@@ -174,6 +191,14 @@ public interface GraphUniverse {
     void addLinkKeyDecoders(@NotNull Map<Identifier, ? extends LinkKeyDecoder> decoders);
 
     /**
+     * Gets the link key decoder for the given type id.
+     *
+     * @param typeId the type id of the link key decoder.
+     * @return the link key decoder for the given type id.
+     */
+    @Nullable LinkKeyDecoder getLinkKeyDecoder(@NotNull Identifier typeId);
+
+    /**
      * Registers a {@link LinkEntityDecoder} for the given link type id.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated link
@@ -205,6 +230,14 @@ public interface GraphUniverse {
     void addLinkEntityDecoders(@NotNull Map<Identifier, ? extends LinkEntityDecoder> decoders);
 
     /**
+     * Gets the link entity decoder for the given type id.
+     *
+     * @param typeId the type id of the link entity decoder.
+     * @return the link entity decoder for the given type id.
+     */
+    @Nullable LinkEntityDecoder getLinkEntityDecoder(@NotNull Identifier typeId);
+
+    /**
      * Registers a {@link GraphEntityType}.
      *
      * @param type the graph entity type to be registered.
@@ -224,6 +257,21 @@ public interface GraphUniverse {
      * @param types the graph entity types to be registered.
      */
     void addGraphEntityTypes(@NotNull Iterable<GraphEntityType<?>> types);
+
+    /**
+     * Gets the graph entity type for the given type id.
+     *
+     * @param typeId the type id of the graph entity type.
+     * @return the graph entity type for the given type id.
+     */
+    @Nullable GraphEntityType<?> getGraphEntityType(@NotNull Identifier typeId);
+
+    /**
+     * Gets all the graph entity types registered.
+     *
+     * @return all the graph entity types currently registered.
+     */
+    @NotNull Iterable<GraphEntityType<?>> getAllGraphEntityTypes();
 
     /**
      * Registers this graph universe so that it can be found by its id.
