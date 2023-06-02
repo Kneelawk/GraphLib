@@ -185,7 +185,7 @@ public final class WireConnectionDiscoverers {
                 self.canConnect(ctx, posDiffDir, type, link);
         } else if (other instanceof CenterWireBlockNode) {
             // center-wire connections are only valid if we're both in the same block
-            return posDiffDir == null &&
+            return pos.equals(otherPos) &&
                 (filter == null || filter.canConnect(self, ctx, side.getOpposite(), WireConnectionType.ABOVE, link)) &&
                 self.canConnect(ctx, side.getOpposite(), WireConnectionType.ABOVE, link);
         } else {
@@ -388,7 +388,7 @@ public final class WireConnectionDiscoverers {
                 self.canConnect(ctx, posDiffDir, link);
         } else if (other instanceof SidedWireBlockNode otherSided) {
             Direction otherSide = otherSided.getSide();
-            return posDiffDir == null && (filter == null || filter.canConnect(self, ctx, otherSide, link)) &&
+            return pos.equals(otherPos) && (filter == null || filter.canConnect(self, ctx, otherSide, link)) &&
                 self.canConnect(ctx, otherSide, link);
         } else {
             // we only know how to handle connections to SidedWireBlockNodes, CenterWireBlockNodes, and FullWireBlockNodes for now
