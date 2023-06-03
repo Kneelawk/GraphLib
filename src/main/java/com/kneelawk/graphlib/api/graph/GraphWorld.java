@@ -7,8 +7,10 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.math.BlockPos;
 
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -17,6 +19,68 @@ import com.kneelawk.graphlib.api.util.SidedPos;
  * Holds and manages all block graphs for a given world.
  */
 public interface GraphWorld extends GraphView {
+
+    /**
+     * Adds a block node and optional node entity at the given position.
+     *
+     * @param pos  the block position of block node to be added.
+     * @param node the node to be added.
+     * @return the node created.
+     */
+    default @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
+        return addBlockNode(pos, node, node::createNodeEntity);
+    }
+
+    /**
+     * Adds a block node and optional node entity at the given position.
+     *
+     * @param pos           the block position of block node to be added.
+     * @param node          the node to be added.
+     * @param entityFactory a factory for potentially creating the node's entity.
+     * @return the node created.
+     */
+    default @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull BlockPos pos, @NotNull BlockNode node,
+                                                        @NotNull NodeEntityFactory entityFactory) {
+        return addBlockNode(new NodePos(pos, node), entityFactory);
+    }
+
+    /**
+     * Adds a block node and optional node entity at the given position.
+     *
+     * @param pos the position and block node to be added.
+     * @return the node created.
+     */
+    default @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos) {
+        return addBlockNode(pos, pos.node()::createNodeEntity);
+    }
+
+    /**
+     * Adds a block node and optional node entity at the given position.
+     *
+     * @param pos           the position and block node to be added.
+     * @param entityFactory a factory for potentially creating the node's entity.
+     * @return the node created.
+     */
+    @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @NotNull NodeEntityFactory entityFactory);
+
+    /**
+     * Removes a block node at a position.
+     *
+     * @param pos  the block position of the block node to be removed.
+     * @param node the block node to be removed.
+     * @return <code>true</code> if a node was actually removed, <code>false</code> otherwise.
+     */
+    default boolean removeBlockNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
+        return removeBlockNode(new NodePos(pos, node));
+    }
+
+    /**
+     * Removes a block node at a position.
+     *
+     * @param pos the position and block node to be removed.
+     * @return <code>true</code> if a node was actually removed, <code>false</code> otherwise.
+     */
+    boolean removeBlockNode(@NotNull NodePos pos);
 
     /**
      * Connects two nodes to each other.
@@ -28,7 +92,7 @@ public interface GraphWorld extends GraphView {
      * @param b the second node to be connected.
      * @return the link created, or <code>null</code> if no link could be created.
      */
-    default @Nullable LinkHolder<LinkKey> connectNodes(NodePos a, NodePos b) {
+    default @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b) {
         return connectNodes(a, b, EmptyLinkKey.INSTANCE, EmptyLinkKey.INSTANCE::createLinkEntity);
     }
 
@@ -43,7 +107,7 @@ public interface GraphWorld extends GraphView {
      * @param key the key of the connection.
      * @return the link created, or <code>null</code> if no link could be created.
      */
-    default @Nullable LinkHolder<LinkKey> connectNodes(NodePos a, NodePos b, LinkKey key) {
+    default @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key) {
         return connectNodes(a, b, key, key::createLinkEntity);
     }
 
@@ -59,7 +123,8 @@ public interface GraphWorld extends GraphView {
      * @param entityFactory a factory for potentially creating the link's entity.
      * @return the link created, or <code>null</code> if no link could be created.
      */
-    @Nullable LinkHolder<LinkKey> connectNodes(NodePos a, NodePos b, LinkKey key, LinkEntityFactory entityFactory);
+    @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
+                                               @NotNull LinkEntityFactory entityFactory);
 
     /**
      * Disconnects two nodes from each other.
@@ -68,7 +133,7 @@ public interface GraphWorld extends GraphView {
      * @param b the second node to be disconnected.
      * @return <code>true</code> if a link was actually removed, <code>false</code> otherwise.
      */
-    default boolean disconnectNodes(NodePos a, NodePos b) {
+    default boolean disconnectNodes(@NotNull NodePos a, @NotNull NodePos b) {
         return disconnectNodes(a, b, EmptyLinkKey.INSTANCE);
     }
 
@@ -80,7 +145,7 @@ public interface GraphWorld extends GraphView {
      * @param key the key of the connection.
      * @return <code>true</code> if a link was actually removed, <code>false</code> otherwise.
      */
-    boolean disconnectNodes(NodePos a, NodePos b, LinkKey key);
+    boolean disconnectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key);
 
     /**
      * Notifies the controller that a block-position has been changed and may need to have its nodes and connections

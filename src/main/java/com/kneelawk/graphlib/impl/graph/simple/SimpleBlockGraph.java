@@ -47,6 +47,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.LinkPos;
@@ -85,7 +86,7 @@ public class SimpleBlockGraph implements BlockGraph {
             NbtCompound com = (NbtCompound) nodeElement;
             SimpleNodeWrapper node = SimpleNodeWrapper.fromTag(controller.universe, com, id);
             if (node != null) {
-                Function<NodeEntityContext, @Nullable NodeEntity> entityFactory = node.node::createNodeEntity;
+                NodeEntityFactory entityFactory = node.node::createNodeEntity;
                 if (com.contains("entityType", NbtElement.STRING_TYPE)) {
                     Identifier entityTypeId = new Identifier(com.getString("entityType"));
                     NodeEntityDecoder decoder = controller.universe.getNodeEntityDecoder(entityTypeId);
@@ -482,19 +483,25 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
-                                                    @NotNull Function<NodeEntityContext, @Nullable NodeEntity> entityFactory) {
+    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node, @NotNull NodeEntityFactory entityFactory) {
         BlockPos pos = blockPos.toImmutable();
         NodePos nodePos = new NodePos(pos, node);
 
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(graph.add(new SimpleNodeWrapper(pos, node, id)));
 
-        NodeEntity nodeEntity = null;
-        if (node.shouldHaveNodeEntity(new NodeContext(graphNode, controller.world, controller))) {
-            nodeEntity = entityFactory.apply(new SimpleNodeEntityContext(graphNode, controller.world, controller));
-        }
-        if (nodeEntity != null) {
-            nodeEntities.put(nodePos, nodeEntity);
+        NodeEntity nodeEntity;
+        if (!nodeEntities.containsKey(nodePos)) {
+            NodeEntity newNodeEntity = null;
+            if (node.shouldHaveNodeEntity(new NodeContext(graphNode, controller.world, controller))) {
+                newNodeEntity =
+                    entityFactory.createNew(new SimpleNodeEntityContext(graphNode, controller.world, controller));
+            }
+            if (newNodeEntity != null) {
+                nodeEntities.put(nodePos, newNodeEntity);
+            }
+            nodeEntity = newNodeEntity;
+        } else {
+            nodeEntity = nodeEntities.get(nodePos);
         }
 
         nodesInPos.put(pos, graphNode);

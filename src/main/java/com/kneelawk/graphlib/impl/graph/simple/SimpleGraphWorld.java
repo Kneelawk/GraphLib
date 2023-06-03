@@ -54,6 +54,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -269,7 +270,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return the graph id of the node, of empty if the node was not found.
      */
     @Override
-    public @Nullable BlockGraph getGraphForNode(@NotNull NodePos pos) {
+    public @Nullable SimpleBlockGraph getGraphForNode(@NotNull NodePos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
         if (chunk != null) {
             return chunk.getGraphForNode(pos, this::getGraph);
@@ -370,6 +371,37 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     }
 
     /**
+     * Adds a block node and optional node entity at the given position.
+     *
+     * @param pos           the position and block node to be added.
+     * @param entityFactory a factory for potentially creating the node's entity.
+     * @return the node created.
+     */
+    @Override
+    public @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @NotNull NodeEntityFactory entityFactory) {
+        SimpleBlockGraph graph = createGraph(true);
+        NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entityFactory);
+        updateConnectionsImpl(node);
+        return node;
+    }
+
+    /**
+     * Removes a block node at a position.
+     *
+     * @param pos the position and block node to be removed.
+     * @return <code>true</code> if a node was actually removed, <code>false</code> otherwise.
+     */
+    @Override
+    public boolean removeBlockNode(@NotNull NodePos pos) {
+        SimpleBlockGraph graph = getGraphForNode(pos);
+        if (graph == null) return false;
+        NodeHolder<BlockNode> node = graph.getNodeAt(pos);
+        if (node == null) return false;
+        graph.destroyNode(node);
+        return true;
+    }
+
+    /**
      * Connects two nodes to each other.
      * <p>
      * Note: in order for manually connected links to not be removed when the connected nodes are updated,
@@ -382,8 +414,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return the link created, or <code>null</code> if no link could be created.
      */
     @Override
-    public @Nullable LinkHolder<LinkKey> connectNodes(NodePos a, NodePos b, LinkKey key,
-                                                      LinkEntityFactory entityFactory) {
+    public @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
+                                                      @NotNull LinkEntityFactory entityFactory) {
         SimpleBlockGraphChunk aChunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
         SimpleBlockGraphChunk bChunk = chunks.getIfExists(ChunkSectionPos.from(b.pos()));
 
@@ -444,7 +476,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * @return <code>true</code> if a link was actually removed, <code>false</code> otherwise.
      */
     @Override
-    public boolean disconnectNodes(NodePos a, NodePos b, LinkKey key) {
+    public boolean disconnectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
         if (chunk != null) {
             SimpleBlockGraph graph = chunk.getGraphForNode(a, this::getGraph);
@@ -783,11 +815,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         for (UpdatePos pos : connectionUpdates) {
             if (pos instanceof UpdateBlockPos blockPos) {
                 for (var node : getNodesAt(blockPos.pos).toList()) {
-                    updateNodeConnections(node);
+                    updateConnectionsImpl(node);
                 }
             } else if (pos instanceof UpdateSidedPos sidedPos) {
                 for (var node : getNodesAt(sidedPos.pos).toList()) {
-                    updateNodeConnections(node.cast(BlockNode.class));
+                    updateConnectionsImpl(node.cast(BlockNode.class));
                 }
             }
         }
@@ -827,7 +859,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
             for (var node : graph.getNodesAt(pos).toList()) {
                 BlockNode bn = node.getNode();
-                if (!nodes.contains(bn)) {
+                if (bn.isAutomaticRemoval(new NodeContext(node, world, this)) && !nodes.contains(bn)) {
                     graph.destroyNode(node);
                 }
                 newNodes.remove(bn);
@@ -843,11 +875,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
             SimpleBlockGraph newGraph = createGraph(true);
             NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, bn::createNodeEntity);
-            updateNodeConnections(node);
+            updateConnectionsImpl(node);
         }
     }
 
-    private void updateNodeConnections(@NotNull NodeHolder<BlockNode> node) {
+    private void updateConnectionsImpl(@NotNull NodeHolder<BlockNode> node) {
         long nodeGraphId = node.getGraphId();
         SimpleBlockGraph graph = getGraph(nodeGraphId);
 

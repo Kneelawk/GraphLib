@@ -57,6 +57,19 @@ public interface BlockNode {
     @Nullable NbtElement toTag();
 
     /**
+     * Checks if this block node should be automatically removed.
+     * <p>
+     * Automatic removal is performed if a {@link BlockNodeDiscoverer} stops discovering the given node at the given
+     * position.
+     *
+     * @param ctx the node context for this node.
+     * @return <code>true</code> if this node should be automatically removed.
+     */
+    default boolean isAutomaticRemoval(@NotNull NodeContext ctx) {
+        return true;
+    }
+
+    /**
      * Checks whether this specific node should have a node entity associated with it.
      *
      * @param ctx the node context for this node.
