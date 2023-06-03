@@ -68,9 +68,10 @@ public final class Node<T, L> {
      * Adds the given link as a connection this node has.
      *
      * @param link the link between this node and another node.
+     * @return <code>true</code> if the link did not already exist.
      */
-    public void onLink(@NotNull Link<T, L> link) {
-        connections.add(link);
+    public boolean onLink(@NotNull Link<T, L> link) {
+        return connections.add(link);
     }
 
     /**
@@ -80,9 +81,10 @@ public final class Node<T, L> {
      * has actually been removed.
      *
      * @param link the link to remove.
+     * @return <code>true</code> if the link existed before being removed.
      */
-    public void onUnlink(@NotNull Link<T, L> link) {
-        connections.remove(link);
+    public boolean onUnlink(@NotNull Link<T, L> link) {
+        return connections.remove(link);
     }
 
     @Override

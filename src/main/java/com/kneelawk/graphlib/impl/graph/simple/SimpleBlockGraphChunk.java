@@ -155,7 +155,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         nbt.put("inPos", inPosList);
     }
 
-    public void putGraphWithNode(long id, @NotNull NodePos key, Long2ObjectFunction<BlockGraph> graphGetter) {
+    public void putGraphWithNode(long id, @NotNull NodePos key, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
         markDirty.run();
 
         short posShort = ChunkSectionPos.packLocal(key.pos());
@@ -195,7 +195,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         }
     }
 
-    public @Nullable BlockGraph getGraphForNode(NodePos key, Long2ObjectFunction<BlockGraph> graphGetter) {
+    public @Nullable SimpleBlockGraph getGraphForNode(NodePos key, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
         Short2ObjectMap<Object2LongMap<BlockNode>> nodes = getGraphNodes(graphGetter);
 
         Object2LongMap<BlockNode> uNodes = nodes.get(ChunkSectionPos.packLocal(key.pos()));
@@ -205,7 +205,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         return graphGetter.get(uNodes.getLong(key.node()));
     }
 
-    public boolean containsNode(NodePos key, Long2ObjectFunction<BlockGraph> graphGetter) {
+    public boolean containsNode(NodePos key, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
         Short2ObjectMap<Object2LongMap<BlockNode>> nodes = getGraphNodes(graphGetter);
 
         Object2LongMap<BlockNode> uNodes = nodes.get(ChunkSectionPos.packLocal(key.pos()));
@@ -252,7 +252,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
     }
 
     private @NotNull Short2ObjectMap<Object2LongMap<BlockNode>> getGraphNodes(
-        Long2ObjectFunction<BlockGraph> graphGetter) {
+        Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
         if (blockNodes == null) {
             blockNodes = new Short2ObjectLinkedOpenHashMap<>();
 
@@ -261,7 +261,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         return blockNodes;
     }
 
-    private void rebuildGraphNodes(Long2ObjectFunction<BlockGraph> graphGetter) {
+    private void rebuildGraphNodes(Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
         // Should only be called when it is known that blockNodes != null
         assert blockNodes != null;
 

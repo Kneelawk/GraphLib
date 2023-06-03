@@ -13,6 +13,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.LinkPos;
@@ -47,6 +48,14 @@ public interface GraphView {
     @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
 
     /**
+     * Gets the node holder at the given position.
+     *
+     * @param pos the position to get the node at.
+     * @return the node holder at the given position, if any.
+     */
+    @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
+
+    /**
      * Checks whether the given node with the given position exists.
      *
      * @param pos the positioned node to try to find.
@@ -69,6 +78,22 @@ public interface GraphView {
      * @return the node entity at the given position, if it exists.
      */
     @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos);
+
+    /**
+     * Checks whether the given link exists.
+     *
+     * @param pos the position of the link to check.
+     * @return <code>true</code> if the given link exists.
+     */
+    boolean linkExistsAt(@NotNull LinkPos pos);
+
+    /**
+     * Gets the link holder at the given position, if it exists.
+     *
+     * @param pos the position of the link to get.
+     * @return the link holder at the given position, if it exists.
+     */
+    @Nullable LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos);
 
     /**
      * Gets the link entity at the given position, if it exists.

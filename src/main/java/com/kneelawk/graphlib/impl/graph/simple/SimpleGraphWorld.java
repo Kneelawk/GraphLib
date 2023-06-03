@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -27,6 +28,7 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -43,11 +45,13 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.LinkContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
@@ -229,6 +233,21 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     }
 
     /**
+     * Gets the node holder at the given position.
+     *
+     * @param pos the position to get the node at.
+     * @return the node holder at the given position, if any.
+     */
+    @Override
+    public @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos) {
+        BlockGraph graph = getGraphForNode(pos);
+        if (graph != null) {
+            return graph.getNodeAt(pos);
+        }
+        return null;
+    }
+
+    /**
      * Checks whether the given node with the given position exists.
      *
      * @param pos the positioned node to try to find.
@@ -266,12 +285,39 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     @Override
     public @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
-        if (chunk != null) {
-            BlockGraph graph = chunk.getGraphForNode(pos, this::getGraph);
-            if (graph != null) {
-                return graph.getNodeEntity(pos);
-            }
+        BlockGraph graph = getGraphForNode(pos);
+        if (graph != null) {
+            return graph.getNodeEntity(pos);
+        }
+        return null;
+    }
+
+    /**
+     * Checks whether the given link exists.
+     *
+     * @param pos the position of the link to check.
+     * @return <code>true</code> if the given link exists.
+     */
+    @Override
+    public boolean linkExistsAt(@NotNull LinkPos pos) {
+        BlockGraph graph = getGraphForNode(pos.first());
+        if (graph != null) {
+            return graph.linkExistsAt(pos);
+        }
+        return false;
+    }
+
+    /**
+     * Gets the link holder at the given position, if it exists.
+     *
+     * @param pos the position of the link to get.
+     * @return the link holder at the given position, if it exists.
+     */
+    @Override
+    public @Nullable LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos) {
+        BlockGraph graph = getGraphForNode(pos.first());
+        if (graph != null) {
+            return graph.getLinkAt(pos);
         }
         return null;
     }
@@ -284,12 +330,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      */
     @Override
     public @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.first().pos()));
-        if (chunk != null) {
-            BlockGraph graph = chunk.getGraphForNode(pos.first(), this::getGraph);
-            if (graph != null) {
-                return graph.getLinkEntity(pos);
-            }
+        BlockGraph graph = getGraphForNode(pos.first());
+        if (graph != null) {
+            return graph.getLinkEntity(pos);
         }
         return null;
     }
@@ -324,6 +367,108 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     @Override
     public @NotNull Stream<BlockGraph> getLoadedGraphsAt(@NotNull BlockPos pos) {
         return getAllGraphIdsAt(pos).mapToObj(loadedGraphs::get).filter(Objects::nonNull).map(Function.identity());
+    }
+
+    /**
+     * Connects two nodes to each other.
+     * <p>
+     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
+     * {@link LinkKey#isAutomaticRemoval(LinkContext)} should return <code>false</code> for the given key.
+     *
+     * @param a             the first node to be connected.
+     * @param b             the second node to be connected.
+     * @param key           the key of the connection.
+     * @param entityFactory a factory for potentially creating the link's entity.
+     * @return the link created, or <code>null</code> if no link could be created.
+     */
+    @Override
+    public @Nullable LinkHolder<LinkKey> connectNodes(NodePos a, NodePos b, LinkKey key,
+                                                      LinkEntityFactory entityFactory) {
+        SimpleBlockGraphChunk aChunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
+        SimpleBlockGraphChunk bChunk = chunks.getIfExists(ChunkSectionPos.from(b.pos()));
+
+        if (aChunk != null && bChunk != null) {
+            SimpleBlockGraph aGraph = aChunk.getGraphForNode(a, this::getGraph);
+            SimpleBlockGraph bGraph = bChunk.getGraphForNode(b, this::getGraph);
+
+            if (aGraph != null && bGraph != null) {
+                // merge the two graphs if they're not already the same graph
+                SimpleBlockGraph mergedGraph;
+                if (aGraph.getId() != bGraph.getId()) {
+                    if (aGraph.size() >= bGraph.size()) {
+                        aGraph.merge(bGraph);
+                        mergedGraph = aGraph;
+                    } else {
+                        bGraph.merge(aGraph);
+                        mergedGraph = bGraph;
+                    }
+                } else {
+                    mergedGraph = aGraph;
+                }
+
+                NodeHolder<BlockNode> aHolder = mergedGraph.getNodeAt(a);
+                NodeHolder<BlockNode> bHolder = mergedGraph.getNodeAt(b);
+
+                if (aHolder == null) {
+                    GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", a);
+
+                    // the graph merge was faulty
+                    mergedGraph.split();
+                    return null;
+                }
+                if (bHolder == null) {
+                    GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", b);
+
+                    // the graph merge was faulty
+                    mergedGraph.split();
+                    return null;
+                }
+
+                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entityFactory);
+
+                // send updated event
+                GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
+
+                return holder;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Disconnects two nodes from each other.
+     *
+     * @param a   the first node to be disconnected.
+     * @param b   the second node to be disconnected.
+     * @param key the key of the connection.
+     * @return <code>true</code> if a link was actually removed, <code>false</code> otherwise.
+     */
+    @Override
+    public boolean disconnectNodes(NodePos a, NodePos b, LinkKey key) {
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
+        if (chunk != null) {
+            SimpleBlockGraph graph = chunk.getGraphForNode(a, this::getGraph);
+            if (graph != null) {
+                NodeHolder<BlockNode> aHolder = graph.getNodeAt(a);
+                if (aHolder == null) {
+                    GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", a);
+                    return false;
+                }
+                NodeHolder<BlockNode> bHolder = graph.getNodeAt(b);
+                if (bHolder == null) {
+                    // this just means that 'a' and 'b' were from different graphs and not connected in the first place
+                    return false;
+                }
+
+                boolean removed = graph.unlink(aHolder, bHolder, key);
+
+                // this sends updated event
+                graph.split();
+
+                return removed;
+            }
+        }
+        return false;
     }
 
     /**
@@ -712,9 +857,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
 
         // Collect the old node connections
-        Set<HalfLink> oldConnections = new ObjectLinkedOpenHashSet<>();
+        Map<HalfLink, LinkHolder<LinkKey>> oldConnections = new Object2ObjectLinkedOpenHashMap<>();
         for (LinkHolder<LinkKey> link : node.getConnections()) {
-            oldConnections.add(link.toHalfLink(node));
+            oldConnections.put(link.toHalfLink(node), link);
         }
 
         // Collect the new connections that are wanted by both parties
@@ -730,16 +875,26 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         List<HalfLink> newConnections = new ObjectArrayList<>();
         for (HalfLink wanted : wantedConnections) {
             NodeHolder<BlockNode> other = wanted.other();
-            if (other.getGraphId() != nodeGraphId || !oldConnections.contains(wanted)) {
+            if (other.getGraphId() != nodeGraphId || !oldConnections.containsKey(wanted)) {
                 newConnections.add(wanted);
             }
         }
 
         // Collect the removed connections
         List<HalfLink> removedConnections = new ObjectArrayList<>();
-        for (HalfLink old : oldConnections) {
-            if (!wantedConnections.contains(old)) {
-                removedConnections.add(old);
+        for (Map.Entry<HalfLink, LinkHolder<LinkKey>> entry : oldConnections.entrySet()) {
+            HalfLink old = entry.getKey();
+            LinkHolder<LinkKey> link = entry.getValue();
+            if (link.getKey().isAutomaticRemoval(new LinkContext(link, world, this))) {
+                // automatic removal means that not being wanted causes removal
+                if (!wantedConnections.contains(old)) {
+                    removedConnections.add(old);
+                }
+            } else {
+                // if the other end has been removed, we still want to remove the manual link
+                if (!nodeExistsAt(old.other().toNodePos())) {
+                    removedConnections.add(old);
+                }
             }
         }
 
