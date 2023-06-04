@@ -896,7 +896,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         Set<HalfLink> wantedConnections = new ObjectLinkedOpenHashSet<>();
         for (HalfLink wanted : node.getNode().findConnections(node)) {
             NodeHolder<BlockNode> other = wanted.other();
-            if (other.getNode().canConnect(node, wanted.reverse(node))) {
+            if (other.getNode().canConnect(other, wanted.reverse(node))) {
                 wantedConnections.add(wanted);
             }
         }
