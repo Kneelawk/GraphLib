@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.math.Direction;
 
-import com.kneelawk.graphlib.api.graph.NodeContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.HalfLink;
 
@@ -25,23 +25,21 @@ public interface WireConnectionFilter
     boolean accepts(@NotNull BlockNode self, @NotNull BlockNode other);
 
     @Override
-    default boolean canConnect(@NotNull FullWireBlockNode self,
-                               @NotNull NodeContext ctx, @NotNull Direction onSide, @Nullable Direction wireSide,
+    default boolean canConnect(@NotNull FullWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                               @NotNull Direction onSide, @Nullable Direction wireSide, @NotNull HalfLink link) {
+        return accepts(self, link.other().getNode());
+    }
+
+    @Override
+    default boolean canConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                               @NotNull Direction inDirection, @NotNull WireConnectionType connectionType,
                                @NotNull HalfLink link) {
         return accepts(self, link.other().getNode());
     }
 
     @Override
-    default boolean canConnect(@NotNull SidedWireBlockNode self,
-                               @NotNull NodeContext ctx, @NotNull Direction inDirection,
-                               @NotNull WireConnectionType connectionType, @NotNull HalfLink link) {
-        return accepts(self, link.other().getNode());
-    }
-
-    @Override
-    default boolean canConnect(@NotNull CenterWireBlockNode self,
-                               @NotNull NodeContext ctx, @NotNull Direction onSide,
-                               @NotNull HalfLink link) {
+    default boolean canConnect(@NotNull CenterWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                               @NotNull Direction onSide, @NotNull HalfLink link) {
         return accepts(self, link.other().getNode());
     }
 }

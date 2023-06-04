@@ -3,9 +3,17 @@ package com.kneelawk.graphlib.api.graph;
 import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.LinkPos;
 
@@ -15,6 +23,20 @@ import com.kneelawk.graphlib.api.util.LinkPos;
  * @param <K> the type of key stored in this node link.
  */
 public interface LinkHolder<K extends LinkKey> {
+    /**
+     * Gets the world of blocks that this link is associated with.
+     *
+     * @return the world of blocks that this link is associated with.
+     */
+    @NotNull ServerWorld getBlockWorld();
+
+    /**
+     * Gets the world of graphs that this link is associated with.
+     *
+     * @return the world of graphs that this link is associated with.
+     */
+    @NotNull GraphView getGraphWorld();
+
     /**
      * Gets the first node in this connection.
      *
@@ -68,6 +90,162 @@ public interface LinkHolder<K extends LinkKey> {
      */
     default long getGraphId() {
         return getFirst().getGraphId();
+    }
+
+    /**
+     * Gets the block position of the first node in this link.
+     *
+     * @return the block position of the first node in this link.
+     */
+    default @NotNull BlockPos getFirstBlockPos() {
+        return getFirst().getPos();
+    }
+
+    /**
+     * Gets the block position of the second node in this link.
+     *
+     * @return the block position of the second node in this link.
+     */
+    default @NotNull BlockPos getSecondBlockPos() {
+        return getSecond().getPos();
+    }
+
+    /**
+     * Gets the block state of the first node in this link.
+     *
+     * @return the block state of the first node in this link.
+     */
+    default @NotNull BlockState getFirstBlockState() {
+        return getBlockWorld().getBlockState(getFirstBlockPos());
+    }
+
+    /**
+     * Gets the block state of the second node in this link.
+     *
+     * @return the block state of the second node in this link.
+     */
+    default @NotNull BlockState getSecondBlockState() {
+        return getBlockWorld().getBlockState(getSecondBlockPos());
+    }
+
+    /**
+     * Gets the block entity at the first node in this link.
+     *
+     * @return the block entity at the first node in this link.
+     */
+    default @Nullable BlockEntity getFirstBlockEntity() {
+        return getBlockWorld().getBlockEntity(getFirstBlockPos());
+    }
+
+    /**
+     * Gets the block entity at the second node in this link.
+     *
+     * @return the block entity at the second node in this link.
+     */
+    default @Nullable BlockEntity getSecondBlockEntity() {
+        return getBlockWorld().getBlockEntity(getSecondBlockPos());
+    }
+
+    /**
+     * Gets the first block node in this link.
+     *
+     * @return the first block node in this link.
+     */
+    default @NotNull BlockNode getFirstNode() {
+        return getFirst().getNode();
+    }
+
+    /**
+     * Gets the second block node in this link.
+     *
+     * @return the second block node in this link.
+     */
+    default @NotNull BlockNode getSecondNode() {
+        return getSecond().getNode();
+    }
+
+    /**
+     * Gets the node entity for the first node in this link.
+     *
+     * @return the node entity for the first node in this link.
+     */
+    default @Nullable NodeEntity getFirstNodeEntity() {
+        BlockGraph graph = getGraphWorld().getGraph(getFirst().getGraphId());
+        if (graph != null) {
+            return graph.getNodeEntity(getFirst().toNodePos());
+        }
+        return null;
+    }
+
+    /**
+     * Gets the node entity for the first node in this link, if the correct type.
+     *
+     * @param entityClass the class of the node entity to get.
+     * @param <T>         the type of the node entity to get.
+     * @return the node entity for the first node in this link, if the correct type.
+     */
+    default <T extends NodeEntity> @Nullable T getFirstNodeEntity(Class<T> entityClass) {
+        NodeEntity entity = getFirstNodeEntity();
+        if (entityClass.isInstance(entity)) {
+            return entityClass.cast(entity);
+        }
+        return null;
+    }
+
+    /**
+     * Gets the node entity for the second node in this link.
+     *
+     * @return the node entity for the second node in this link.
+     */
+    default @Nullable NodeEntity getSecondNodeEntity() {
+        BlockGraph graph = getGraphWorld().getGraph(getSecond().getGraphId());
+        if (graph != null) {
+            return graph.getNodeEntity(getSecond().toNodePos());
+        }
+        return null;
+    }
+
+    /**
+     * Gets the node entity for the second node in this link, if the correct type.
+     *
+     * @param entityClass the class of the node entity to get.
+     * @param <T>         the type of the node entity to get.
+     * @return the node entity for the second node in this link, if the correct type.
+     */
+    default <T extends NodeEntity> @Nullable T getSecondNodeEntity(Class<T> entityClass) {
+        NodeEntity entity = getSecondNodeEntity();
+        if (entityClass.isInstance(entity)) {
+            return entityClass.cast(entity);
+        }
+        return null;
+    }
+
+    /**
+     * Gets the link entity associated with this link.
+     *
+     * @return the link entity associated with this link.
+     */
+    default @Nullable LinkEntity getLinkEntity() {
+        BlockGraph graph = getGraphWorld().getGraph(getFirst().getGraphId());
+        if (graph != null) {
+            return graph.getLinkEntity(toLinkPos());
+        }
+        return null;
+    }
+
+    /**
+     * Gets the link entity associated with this link, if the correct type.
+     *
+     * @param entityClass the class of the entity to get.
+     * @param <T>         the type of the entity to get.
+     * @return the link entity associated with this link, if the correct type.
+     */
+    default <T extends LinkEntity> @Nullable T getLinkEntity(Class<T> entityClass) {
+        LinkEntity entity = getLinkEntity();
+        if (entityClass.isInstance(entity)) {
+            return entityClass.cast(entity);
+        }
+        return null;
     }
 
     /**

@@ -12,7 +12,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.NodeContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 
@@ -32,17 +32,17 @@ public class LinkPosEqualityTests {
         }
 
         @Override
-        public @NotNull Collection<HalfLink> findConnections(@NotNull NodeContext ctx) {
+        public @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self) {
             return List.of();
         }
 
         @Override
-        public boolean canConnect(@NotNull NodeContext ctx, @NotNull HalfLink other) {
+        public boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull HalfLink other) {
             return false;
         }
 
         @Override
-        public void onConnectionsChanged(@NotNull NodeContext ctx) {}
+        public void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self) {}
     }
 
     private record StringLinkKey(String str) implements LinkKey {

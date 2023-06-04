@@ -71,16 +71,6 @@ public interface NodeEntityContext {
     }
 
     /**
-     * Converts this node entity context to a node context for colling methods on this node entity's associated block
-     * node.
-     *
-     * @return this node entity context as a node context.
-     */
-    default @NotNull NodeContext toNodeContext() {
-        return new NodeContext(getHolder(), getBlockWorld(), getGraphWorld());
-    }
-
-    /**
      * Gets the block state at this node entity's position.
      *
      * @return the block state at this node entity's position.

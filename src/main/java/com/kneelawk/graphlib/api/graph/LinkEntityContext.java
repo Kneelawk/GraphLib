@@ -199,13 +199,4 @@ public interface LinkEntityContext {
         }
         return null;
     }
-
-    /**
-     * Converts this link entity context into a link context, for use in calling link key methods.
-     *
-     * @return this link entity context as a link context.
-     */
-    default @NotNull LinkContext toLinkContext() {
-        return new LinkContext(getHolder(), getBlockWorld(), getGraphWorld());
-    }
 }

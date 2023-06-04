@@ -37,7 +37,6 @@ import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -187,7 +186,7 @@ public final class GraphLibCommonNetworking {
         graph.getNodes().forEachOrdered(node -> {
             buf.writeVarInt(getIdentifierInt(world, node.getNode().getTypeId()));
             buf.writeBlockPos(node.getPos());
-            node.getNode().toPacket(new NodeContext(node, world, graphWorld), buf);
+            node.getNode().toPacket(node, buf);
             indexMap.put(node.toNodePos(), index.getAndIncrement());
             node.getConnections().stream().map(LinkHolder::toLinkPos).forEach(distinct::add);
         });

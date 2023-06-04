@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.math.Direction;
 
-import com.kneelawk.graphlib.api.graph.NodeContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.HalfLink;
 
@@ -18,7 +18,7 @@ public interface FullWireBlockNode extends BlockNode {
     /**
      * Checks whether this block node can connect to the given other block node.
      *
-     * @param ctx      the node context for this node.
+     * @param self     this node's holder and context.
      * @param onSide   the side of this block node that the other node is trying to connect to.
      * @param wireSide the side of the block that the connecting wire is at, or <code>null</code> if the wire is a full
      *                 block or otherwise non-sided.
@@ -26,8 +26,8 @@ public interface FullWireBlockNode extends BlockNode {
      * @return <code>true</code> if this node and the other node should be allowed to connect, <code>false</code>
      * otherwise.
      */
-    default boolean canConnect(@NotNull NodeContext ctx, @NotNull Direction onSide, @Nullable Direction wireSide,
-                               @NotNull HalfLink link) {
+    default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull Direction onSide,
+                               @Nullable Direction wireSide, @NotNull HalfLink link) {
         return true;
     }
 }

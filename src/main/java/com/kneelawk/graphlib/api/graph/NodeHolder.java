@@ -5,11 +5,16 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
@@ -18,9 +23,9 @@ import com.kneelawk.graphlib.api.util.NodePos;
  * All block nodes are associated with a block-position and are wrapped in a block-node-holder that stores the position
  * information along with information about what graph the block node is a part of.
  *
- * @param <T> the type of node this holder is holding.
+ * @param <N> the type of node this holder is holding.
  */
-public interface NodeHolder<T extends BlockNode> {
+public interface NodeHolder<N extends BlockNode> {
     /**
      * Gets this block node holder's block position.
      *
@@ -33,7 +38,7 @@ public interface NodeHolder<T extends BlockNode> {
      *
      * @return the BlockNode this holder is holding.
      */
-    @NotNull T getNode();
+    @NotNull N getNode();
 
     /**
      * Gets the graph id of the graph that this node is part of.
@@ -41,6 +46,20 @@ public interface NodeHolder<T extends BlockNode> {
      * @return the graph id of this node.
      */
     long getGraphId();
+
+    /**
+     * Gets the world of blocks that this node holder is associated with.
+     *
+     * @return the world of blocks that this node holder is associated with.
+     */
+    ServerWorld getBlockWorld();
+
+    /**
+     * Gets the world of graphs that this node holder is associated with.
+     *
+     * @return the world of graphs that this node holder is associated with.
+     */
+    GraphView getGraphWorld();
 
     /**
      * Gets all the connections this node has with other nodes.
@@ -74,7 +93,7 @@ public interface NodeHolder<T extends BlockNode> {
      *
      * @return a positioned node containing this holder's position and node.
      */
-    @NotNull SnapshotNode<T> toSnapshot();
+    @NotNull SnapshotNode<N> toSnapshot();
 
     /**
      * Gets the node pos of this node holder, holding only the block position and block node.
@@ -82,6 +101,52 @@ public interface NodeHolder<T extends BlockNode> {
      * @return the node pos of this node holder.
      */
     @NotNull NodePos toNodePos();
+
+    /**
+     * Gets the node entity associated with this node holder, if any.
+     *
+     * @return the node entity associated with this node holder, if any.
+     */
+    default @Nullable NodeEntity getNodeEntity() {
+        BlockGraph graph = getGraphWorld().getGraph(getGraphId());
+        if (graph == null) return null;
+        return graph.getNodeEntity(toNodePos());
+    }
+
+    /**
+     * Gets the node entity associated with this block node and casts it to the given type, if possible.
+     *
+     * @param entityClass the class of the node entity to try and get.
+     * @param <E>         the type of node entity to try and get.
+     * @return the node entity associated with this block node, or <code>null</code> if this block node's graph does not
+     * exist, if this block node has no associated node entity, or if this block node's associated node entity is of a
+     * different class.
+     */
+    default <E extends NodeEntity> @Nullable E getNodeEntity(Class<E> entityClass) {
+        NodeEntity entity = getNodeEntity();
+        if (entityClass.isInstance(entity)) {
+            return entityClass.cast(entity);
+        }
+        return null;
+    }
+
+    /**
+     * Gets the block state of the block at this node's position.
+     *
+     * @return the block state of the block at this node's position.
+     */
+    default @NotNull BlockState getBlockState() {
+        return getBlockWorld().getBlockState(getPos());
+    }
+
+    /**
+     * Gets the block entity at this node's position, if any.
+     *
+     * @return the block entity at this node's position, if any.
+     */
+    default @Nullable BlockEntity getBlockEntity() {
+        return getBlockWorld().getBlockEntity(getPos());
+    }
 
     /**
      * Checks whether the contained node can be cast to the new type.

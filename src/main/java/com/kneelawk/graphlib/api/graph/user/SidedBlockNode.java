@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Direction;
 
-import com.kneelawk.graphlib.api.graph.NodeContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
@@ -41,16 +41,16 @@ public interface SidedBlockNode extends BlockNode {
      * This method does <b>not</b> need to be implemented in order for client-side graph debug rendering to work.
      * This method should only be overridden to provide custom data to the client.
      *
-     * @param ctx the node context for this node.
-     * @param buf the buffer to encode this node to.
+     * @param self this node's node holder.
+     * @param buf  the buffer to encode this node to.
      */
     @Override
-    default void toPacket(@NotNull NodeContext ctx, @NotNull PacketByteBuf buf) {
+    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(hashCode());
 
         // Class name hash for use in default node coloring
-        buf.writeInt(ctx.graphWorld().getUniverse().getDefaultDebugColor(getTypeId()));
+        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getTypeId()));
 
         // A 1 byte to distinguish ourselves from BlockNode, because both implementations use the same decoder
         buf.writeByte(1);

@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.Direction;
 
-import com.kneelawk.graphlib.api.graph.NodeContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.HalfLink;
 
@@ -15,13 +15,13 @@ public interface CenterWireBlockNode extends BlockNode {
     /**
      * Checks whether this block node can connect to the given other block node.
      *
-     * @param ctx    the node context for this node.
+     * @param self this node's holder and context.
      * @param onSide the side of this block that the other node is trying to connect to.
      * @param link   the link to the block node holder holding the other node.
      * @return <code>true</code> if this node and the other node should be allowed to connect, <code>false</code>
      * otherwise.
      */
-    default boolean canConnect(@NotNull NodeContext ctx, @NotNull Direction onSide,
+    default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull Direction onSide,
                                @NotNull HalfLink link) {
         return true;
     }
