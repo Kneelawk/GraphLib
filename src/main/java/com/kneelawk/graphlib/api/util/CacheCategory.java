@@ -2,6 +2,7 @@ package com.kneelawk.graphlib.api.util;
 
 import java.util.function.Predicate;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -54,7 +55,8 @@ public class CacheCategory<T extends BlockNode> {
      * @param <T>       the type of node in this cache category.
      * @return a new cache category.
      */
-    public static <T extends BlockNode> CacheCategory<T> of(Class<T> nodeClass, Predicate<NodeHolder<T>> predicate) {
+    @Contract(value = "_, _ -> new", pure = true)
+    public static <T extends BlockNode> @NotNull CacheCategory<T> of(Class<T> nodeClass, Predicate<NodeHolder<T>> predicate) {
         return new CacheCategory<>(nodeClass, predicate);
     }
 
@@ -68,7 +70,8 @@ public class CacheCategory<T extends BlockNode> {
      * @param <T>       the type of node in this cache category.
      * @return a new cache category.
      */
-    public static <T extends BlockNode> CacheCategory<T> of(Class<T> nodeClass) {
+    @Contract(value = "_ -> new", pure = true)
+    public static <T extends BlockNode> @NotNull CacheCategory<T> of(Class<T> nodeClass) {
         return new CacheCategory<>(nodeClass, holder -> true);
     }
 
@@ -81,7 +84,8 @@ public class CacheCategory<T extends BlockNode> {
      * @param predicate the filter that all nodes in the associated caches match.
      * @return a new cache category.
      */
-    public static CacheCategory<BlockNode> of(Predicate<NodeHolder<BlockNode>> predicate) {
+    @Contract(value = "_ -> new", pure = true)
+    public static @NotNull CacheCategory<BlockNode> of(Predicate<NodeHolder<BlockNode>> predicate) {
         return new CacheCategory<>(BlockNode.class, predicate);
     }
 }
