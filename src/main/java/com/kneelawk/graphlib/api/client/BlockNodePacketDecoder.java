@@ -16,7 +16,7 @@ public interface BlockNodePacketDecoder {
      * Decodes a {@link ClientBlockNode} from a {@link PacketByteBuf}.
      *
      * @param buf a buffer for reading the data written by
-     *            {@link BlockNode#toPacket(com.kneelawk.graphlib.api.graph.NodeContext, PacketByteBuf)}.
+     *            {@link BlockNode#toPacket(com.kneelawk.graphlib.api.graph.NodeHolder, PacketByteBuf)}.
      *            Note: this buffer will contain other data besides this node's data.
      * @return a {@link ClientBlockNode} containing the data decoded from the {@link PacketByteBuf}.
      */

@@ -27,7 +27,7 @@ public final class GraphLibClient {
      * Registers a {@link BlockNodePacketDecoder} in the given universe for the given block node type id.
      * <p>
      * Only register a decoder if you implement
-     * {@link BlockNode#toPacket(com.kneelawk.graphlib.api.graph.NodeContext, PacketByteBuf)}
+     * {@link BlockNode#toPacket(com.kneelawk.graphlib.api.graph.NodeHolder, PacketByteBuf)}
      * to provide custom node data to the client.
      *
      * @param universeId the universe this decoder is to be registered under.

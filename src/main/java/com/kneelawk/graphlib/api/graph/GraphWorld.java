@@ -115,7 +115,7 @@ public interface GraphWorld extends GraphView {
      * Connects two nodes to each other.
      * <p>
      * Note: in order for manually connected links to not be removed when the connected nodes are updated,
-     * {@link LinkKey#isAutomaticRemoval(LinkContext)} should return <code>false</code> for the given key.
+     * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
      *
      * @param a             the first node to be connected.
      * @param b             the second node to be connected.

@@ -12,8 +12,8 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
 import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
@@ -62,20 +62,20 @@ public interface BlockNode {
      * Automatic removal is performed if a {@link BlockNodeDiscoverer} stops discovering the given node at the given
      * position.
      *
-     * @param ctx the node context for this node.
+     * @param self this node's holder, holding the context of this node.
      * @return <code>true</code> if this node should be automatically removed.
      */
-    default boolean isAutomaticRemoval(@NotNull NodeContext ctx) {
+    default boolean isAutomaticRemoval(@NotNull NodeHolder<BlockNode> self) {
         return true;
     }
 
     /**
      * Checks whether this specific node should have a node entity associated with it.
      *
-     * @param ctx the node context for this node.
+     * @param self this node's holder, holding the context of this node.
      * @return <code>true</code> if this node should have a node entity associated with it.
      */
-    default boolean shouldHaveNodeEntity(@NotNull NodeContext ctx) {
+    default boolean shouldHaveNodeEntity(@NotNull NodeHolder<BlockNode> self) {
         return false;
     }
 
@@ -93,31 +93,31 @@ public interface BlockNode {
      * Collects nodes in the world that this node can connect to.
      * <p>
      * <b>Contract:</b> This method must only return nodes that
-     * {@link #canConnect(NodeContext, HalfLink)} would have returned
+     * {@link #canConnect(NodeHolder, HalfLink)} would have returned
      * <code>true</code> for.
      *
-     * @param ctx the node context for this node.
+     * @param self this node's holder, holding the context of this node.
      * @return all nodes this node can connect to.
-     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeContext, SidedWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
-     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeContext, FullWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
-     * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeContext, CenterWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
+     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeHolder, SidedWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
+     * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeHolder, FullWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
+     * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeHolder, CenterWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
      */
-    @NotNull Collection<HalfLink> findConnections(@NotNull NodeContext ctx);
+    @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self);
 
     /**
      * Determines whether this node can connect to another node.
      * <p>
      * <b>Contract:</b> This method must only return <code>true</code> for nodes that would be returned from
-     * {@link #findConnections(NodeContext)}.
+     * {@link #findConnections(NodeHolder)}.
      *
-     * @param ctx   the node context for this node.
+     * @param self this node's holder, holding the context of this node.
      * @param other the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
-     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeContext, HalfLink, SidedWireConnectionFilter)
-     * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeContext, HalfLink, FullWireConnectionFilter)
-     * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeContext, HalfLink, CenterWireConnectionFilter)
+     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeHolder, HalfLink, SidedWireConnectionFilter)
+     * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeHolder, HalfLink, FullWireConnectionFilter)
+     * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeHolder, HalfLink, CenterWireConnectionFilter)
      */
-    boolean canConnect(@NotNull NodeContext ctx, @NotNull HalfLink other);
+    boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull HalfLink other);
 
     /**
      * Called when the block graph controller has determined that this specific node's connections have been changed.
@@ -129,9 +129,9 @@ public interface BlockNode {
      * Note: This is not called for every node change in a graph, only when this specific node's connection's have
      * changed.
      *
-     * @param ctx the node context for this node.
+     * @param self this node's holder, holding the context of this node.
      */
-    void onConnectionsChanged(@NotNull NodeContext ctx);
+    void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self);
 
     /**
      * Block nodes are compared based on their hash-code and equals functions.
@@ -168,15 +168,15 @@ public interface BlockNode {
      * {@link GraphLibClient#registerDecoder(Identifier, Identifier, BlockNodePacketDecoder)}
      * to register a decoder for the custom data.
      *
-     * @param ctx the node context for this node.
-     * @param buf the buffer to encode this node to.
+     * @param self this node's holder, holding the context of this node.
+     * @param buf  the buffer to encode this node to.
      */
-    default void toPacket(@NotNull NodeContext ctx, @NotNull PacketByteBuf buf) {
+    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(hashCode());
 
         // Get the default color for our node type
-        buf.writeInt(ctx.graphWorld().getUniverse().getDefaultDebugColor(getTypeId()));
+        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getTypeId()));
 
         // A 0 byte to distinguish ourselves from SidedBlockNode, because both implementations use the same decoder
         buf.writeByte(0);

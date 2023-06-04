@@ -35,7 +35,7 @@ public class EmptyLinkKey implements LinkKey {
     /**
      * Always returns this singleton's link key instance.
      */
-    public static final LinkKeyFactory FACTORY = (ctx, other) -> INSTANCE;
+    public static final LinkKeyFactory FACTORY = (self, other) -> INSTANCE;
 
     private EmptyLinkKey() {}
 

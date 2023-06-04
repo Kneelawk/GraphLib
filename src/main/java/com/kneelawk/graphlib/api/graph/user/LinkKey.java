@@ -6,9 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.graph.LinkContext;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
-import com.kneelawk.graphlib.api.graph.NodeContext;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 
 /**
@@ -35,10 +34,10 @@ public interface LinkKey {
     /**
      * Checks whether this specific link should have a link entity associated with it.
      *
-     * @param ctx the link context for this link.
+     * @param holder the link holder for this link.
      * @return <code>true</code> if this link should have a link entity associated with it.
      */
-    default boolean shouldHaveLinkEntity(@NotNull LinkContext ctx) {
+    default boolean shouldHaveLinkEntity(@NotNull LinkHolder<LinkKey> holder) {
         return false;
     }
 
@@ -57,18 +56,18 @@ public interface LinkKey {
      * <p>
      * Automatic removal follows the rules:
      * <ul>
-     *     <li>If a link does not appear in the result of {@link BlockNode#findConnections(NodeContext)}, then the link
+     *     <li>If a link does not appear in the result of {@link BlockNode#findConnections(com.kneelawk.graphlib.api.graph.NodeHolder)}, then the link
      *     is removed.</li>
-     *     <li>If either end's {@link BlockNode#canConnect(NodeContext, HalfLink)} returns <code>false</code>, the the
+     *     <li>If either end's {@link BlockNode#canConnect(com.kneelawk.graphlib.api.graph.NodeHolder, HalfLink)} returns <code>false</code>, the the
      *     link is removed.</li>
      * </ul>
      * <p>
      * Note: links are still automatically removed if the node at one end doesn't exist anymore.
      *
-     * @param ctx the link context for this link.
+     * @param holder the link holder for this link.
      * @return <code>true</code> if this node should be automatically removed.
      */
-    default boolean isAutomaticRemoval(@NotNull LinkContext ctx) {
+    default boolean isAutomaticRemoval(@NotNull LinkHolder<LinkKey> holder) {
         return true;
     }
 

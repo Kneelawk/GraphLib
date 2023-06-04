@@ -6,7 +6,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -32,10 +31,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.LinkContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
-import com.kneelawk.graphlib.api.graph.NodeContext;
-import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
@@ -161,7 +157,7 @@ public class SimpleBlockGraph implements BlockGraph {
         return graph;
     }
 
-    final SimpleGraphWorld controller;
+    final SimpleGraphWorld world;
     private final long id;
 
     private final Graph<SimpleNodeWrapper, LinkKey> graph = new Graph<>();
@@ -173,24 +169,24 @@ public class SimpleBlockGraph implements BlockGraph {
     private final Map<Class<?>, List<?>> nodeTypeCache = new HashMap<>();
     private final Map<GraphEntityType<?>, GraphEntity<?>> graphEntities = new Object2ObjectLinkedOpenHashMap<>();
 
-    public SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id, boolean initializeGraphEntities) {
-        this(controller, id, LongSet.of());
+    public SimpleBlockGraph(@NotNull SimpleGraphWorld world, long id, boolean initializeGraphEntities) {
+        this(world, id, LongSet.of());
 
         // When newly-creating a graph, mark it dirty, so it'll get saved.
         // If this is a throw-away graph, it should get absorbed and deleted before the next tick.
-        this.controller.markDirty(id);
+        this.world.markDirty(id);
 
         // Add all the empty graph entities
         if (initializeGraphEntities) {
-            for (GraphEntityType<?> type : this.controller.universe.getAllGraphEntityTypes()) {
+            for (GraphEntityType<?> type : this.world.universe.getAllGraphEntityTypes()) {
                 graphEntities.put(type, type.factory()
-                    .createNew(new SimpleGraphEntityContext(this.controller.world, this.controller, this)));
+                    .createNew(new SimpleGraphEntityContext(this.world.world, this.world, this)));
             }
         }
     }
 
-    private SimpleBlockGraph(@NotNull SimpleGraphWorld controller, long id, @NotNull LongSet chunks) {
-        this.controller = controller;
+    private SimpleBlockGraph(@NotNull SimpleGraphWorld world, long id, @NotNull LongSet chunks) {
+        this.world = world;
         this.id = id;
         this.chunks.addAll(chunks);
     }
@@ -382,7 +378,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         if (!node1.node.connections().contains(rawLink) || !node2.node.connections().contains(rawLink)) return null;
 
-        return new SimpleLinkHolder<>(rawLink);
+        return new SimpleLinkHolder<>(world.world, world, rawLink);
     }
 
     @Override
@@ -402,7 +398,7 @@ public class SimpleBlockGraph implements BlockGraph {
      */
     @Override
     public @NotNull Stream<NodeHolder<BlockNode>> getNodes() {
-        return graph.stream().map(SimpleNodeHolder::new);
+        return graph.stream().map(node -> new SimpleNodeHolder<>(world.world, world, node));
     }
 
     /**
@@ -416,7 +412,7 @@ public class SimpleBlockGraph implements BlockGraph {
     public <T extends BlockNode> @NotNull Stream<NodeHolder<T>> getNodesOfType(@NotNull Class<T> type) {
         List<NodeHolder<T>> nodesOfType = (List<NodeHolder<T>>) nodeTypeCache.computeIfAbsent(type,
             cls -> graph.stream().filter(node -> type.isInstance(node.data().getNode()))
-                .<NodeHolder<T>>map(SimpleNodeHolder::new).toList());
+                .<NodeHolder<T>>map(node1 -> new SimpleNodeHolder<>(world.world, world, node1)).toList());
         return nodesOfType.stream();
     }
 
@@ -471,30 +467,32 @@ public class SimpleBlockGraph implements BlockGraph {
         nodesInPos.clear();
         nodesToHolders.clear();
         nodeTypeCache.clear();
-        controller.markDirty(id);
+        world.markDirty(id);
         for (var node : graph) {
             SimpleNodeWrapper data = node.data();
             data.graphId = id;
             BlockPos pos = data.getPos();
             chunks.add(ChunkSectionPos.from(pos).asLong());
-            NodeHolder<BlockNode> holder = new SimpleNodeHolder<>(node);
+            NodeHolder<BlockNode> holder = new SimpleNodeHolder<>(world.world, world, node);
             nodesInPos.put(pos, holder);
             nodesToHolders.put(holder.toNodePos(), holder);
         }
     }
 
-    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node, @NotNull NodeEntityFactory entityFactory) {
+    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
+                                                    @NotNull NodeEntityFactory entityFactory) {
         BlockPos pos = blockPos.toImmutable();
         NodePos nodePos = new NodePos(pos, node);
 
-        SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(graph.add(new SimpleNodeWrapper(pos, node, id)));
+        SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(world.world, world,
+            graph.add(new SimpleNodeWrapper(pos, node, id)));
 
         NodeEntity nodeEntity;
         if (!nodeEntities.containsKey(nodePos)) {
             NodeEntity newNodeEntity = null;
-            if (node.shouldHaveNodeEntity(new NodeContext(graphNode, controller.world, controller))) {
+            if (node.shouldHaveNodeEntity(graphNode)) {
                 newNodeEntity =
-                    entityFactory.createNew(new SimpleNodeEntityContext(graphNode, controller.world, controller));
+                    entityFactory.createNew(new SimpleNodeEntityContext(graphNode, world.world, world));
             }
             if (newNodeEntity != null) {
                 nodeEntities.put(nodePos, newNodeEntity);
@@ -508,14 +506,14 @@ public class SimpleBlockGraph implements BlockGraph {
         nodesToHolders.put(nodePos, graphNode);
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();
-        controller.putGraphWithNode(id, nodePos);
-        controller.scheduleCallbackUpdate(graphNode);
+        world.putGraphWithNode(id, nodePos);
+        world.scheduleCallbackUpdate(graphNode);
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onNodeCreated(graphNode, nodeEntity);
         }
 
-        controller.markDirty(id);
+        world.markDirty(id);
 
         return graphNode;
     }
@@ -529,7 +527,7 @@ public class SimpleBlockGraph implements BlockGraph {
         nodesInPos.remove(removedPos, node);
         nodesToHolders.remove(removedNode);
         nodeTypeCache.clear();
-        controller.markDirty(id);
+        world.markDirty(id);
 
         Map<LinkPos, LinkEntity> removedLinks = new Object2ObjectLinkedOpenHashMap<>();
 
@@ -537,7 +535,8 @@ public class SimpleBlockGraph implements BlockGraph {
         for (Link<SimpleNodeWrapper, LinkKey> link : node.node.connections()) {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
-            controller.scheduleCallbackUpdate(new SimpleNodeHolder<>(link.other(node.node)));
+            world.scheduleCallbackUpdate(
+                new SimpleNodeHolder<>(world.world, world, link.other(node.node)));
 
             // collect the link entities to be removed
             LinkPos linkKey =
@@ -548,7 +547,7 @@ public class SimpleBlockGraph implements BlockGraph {
                 removedLinks.put(linkKey, linkEntity);
             }
         }
-        controller.scheduleCallbackUpdate(node);
+        world.scheduleCallbackUpdate(node);
 
         // actually remove the node
         graph.remove(node.node);
@@ -567,13 +566,13 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         // do the house-cleaning
-        controller.removeGraphWithNode(id, removedNode);
+        world.removeGraphWithNode(id, removedNode);
         if (removedPos != null) {
-            controller.removeGraphInPos(id, removedPos);
+            world.removeGraphInPos(id, removedPos);
         }
         if (removedChunk != null) {
             long chunkLong = removedChunk.asLong();
-            controller.removeGraphInChunk(id, chunkLong);
+            world.removeGraphInChunk(id, chunkLong);
             chunks.remove(chunkLong);
         }
 
@@ -596,7 +595,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
-            controller.destroyGraph(id);
+            world.destroyGraph(id);
         } else {
             // Split leaves both new graphs and this graph in valid states as far as refs go.
             // Also, split is guaranteed not to leave this graph empty.
@@ -606,16 +605,16 @@ public class SimpleBlockGraph implements BlockGraph {
 
     @NotNull LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
                                       @NotNull LinkEntityFactory entityFactory) {
-        LinkHolder<LinkKey> link = new SimpleLinkHolder<>(
+        LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.world, world,
             graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key));
         LinkPos linkPos = link.toLinkPos();
 
         LinkEntity linkEntity;
         if (!linkEntities.containsKey(linkPos)) {
             LinkEntity newLinkEntity = null;
-            if (key.shouldHaveLinkEntity(new LinkContext(link, controller.world, controller))) {
+            if (key.shouldHaveLinkEntity(link)) {
                 newLinkEntity =
-                    entityFactory.createNew(new SimpleLinkEntityContext(link, controller.world, controller));
+                    entityFactory.createNew(new SimpleLinkEntityContext(link, world.world, world));
             }
             if (newLinkEntity != null) {
                 linkEntities.put(linkPos, newLinkEntity);
@@ -625,14 +624,14 @@ public class SimpleBlockGraph implements BlockGraph {
             linkEntity = linkEntities.get(linkPos);
         }
 
-        controller.scheduleCallbackUpdate(a);
-        controller.scheduleCallbackUpdate(b);
+        world.scheduleCallbackUpdate(a);
+        world.scheduleCallbackUpdate(b);
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onLink(a, b, linkEntity);
         }
 
-        controller.markDirty(id);
+        world.markDirty(id);
 
         return link;
     }
@@ -648,14 +647,14 @@ public class SimpleBlockGraph implements BlockGraph {
 
         if (!linkRemoved) return false;
 
-        controller.scheduleCallbackUpdate(a);
-        controller.scheduleCallbackUpdate(b);
+        world.scheduleCallbackUpdate(a);
+        world.scheduleCallbackUpdate(b);
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onUnlink(a, b, entity);
         }
 
-        controller.markDirty(id);
+        world.markDirty(id);
 
         return true;
     }
@@ -668,7 +667,7 @@ public class SimpleBlockGraph implements BlockGraph {
 
         // add our graph to all the positions and chunks the other graph is in
         for (var node : other.graph) {
-            controller.putGraphWithNode(id, new NodePos(node.data().getPos(), node.data().getNode()));
+            world.putGraphWithNode(id, new NodePos(node.data().getPos(), node.data().getNode()));
 
             // might as well set the node's graph id here as well
             node.data().graphId = id;
@@ -681,7 +680,7 @@ public class SimpleBlockGraph implements BlockGraph {
         nodesToHolders.putAll(other.nodesToHolders);
         chunks.addAll(other.chunks);
         nodeTypeCache.clear();
-        controller.markDirty(id);
+        world.markDirty(id);
 
         // merge all our graph entities
         for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
@@ -695,7 +694,7 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         // finally we destroy the old graph, removing it from all the graphs-in-pos and graphs-in-chunk trackers
-        controller.destroyGraph(other.id);
+        world.destroyGraph(other.id);
     }
 
     @NotNull List<SimpleBlockGraph> split() {
@@ -716,7 +715,7 @@ public class SimpleBlockGraph implements BlockGraph {
                     removedChunks.add(ChunkSectionPos.from(pos).asLong());
 
                     // the node is in a new graph, so it obviously isn't in our graph anymore
-                    nodesInPos.remove(pos, new SimpleNodeHolder<>(node));
+                    nodesInPos.remove(pos, new SimpleNodeHolder<>(world.world, world, node));
                     nodesToHolders.remove(nodePos);
                 }
             }
@@ -729,17 +728,17 @@ public class SimpleBlockGraph implements BlockGraph {
             }
 
             // do this stuff instead of rebuilding-refs later
-            controller.removeGraphInPoses(id, removedNodes, removedPoses, removedChunks);
+            world.removeGraphInPoses(id, removedNodes, removedPoses, removedChunks);
             chunks.removeAll(removedChunks);
             nodeTypeCache.clear();
-            controller.markDirty(id);
+            world.markDirty(id);
 
             // setup block-graphs for the newly created graphs
             List<SimpleBlockGraph> newBlockGraphs = new ArrayList<>(newGraphs.size());
 
             for (Graph<SimpleNodeWrapper, LinkKey> graph : newGraphs) {
                 // create the new graph and set its nodes correctly
-                SimpleBlockGraph bg = controller.createGraph(false);
+                SimpleBlockGraph bg = world.createGraph(false);
                 bg.graph.join(graph);
 
                 // this sets the nodes' graph ids, and sets up the new block-graph's chunks and nodes-in-pos
@@ -751,7 +750,7 @@ public class SimpleBlockGraph implements BlockGraph {
                     // Add the new graph to the graphs-in-chunks and graphs-in-poses trackers.
                     // I considered trying to group block-poses by chunk to avoid duplicate look-ups, but it didn't look
                     // like it was worth the extra computation.
-                    controller.putGraphWithNode(bg.id, key);
+                    world.putGraphWithNode(bg.id, key);
 
                     // make sure to move the node entities over too
                     NodeEntity entity = nodeEntities.remove(key);
@@ -775,22 +774,22 @@ public class SimpleBlockGraph implements BlockGraph {
                 for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
                     GraphEntityType<?> type = entry.getKey();
                     bg.graphEntities.put(type, type.splitNew(entry.getValue(), this,
-                        new SimpleGraphEntityContext(controller.world, controller, bg)));
+                        new SimpleGraphEntityContext(world.world, world, bg)));
                 }
 
                 newBlockGraphs.add(bg);
 
                 // Fire update events for the new graphs
-                GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(controller.world, controller, bg);
+                GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world.world, world, bg);
             }
 
             // Fire the update events
-            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(controller.world, controller, this);
+            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world.world, world, this);
 
             return newBlockGraphs;
         } else {
             // Fire the update events
-            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(controller.world, controller, this);
+            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world.world, world, this);
 
             return List.of();
         }

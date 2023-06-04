@@ -45,9 +45,7 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.LinkContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
-import com.kneelawk.graphlib.api.graph.NodeContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
@@ -405,7 +403,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
      * Connects two nodes to each other.
      * <p>
      * Note: in order for manually connected links to not be removed when the connected nodes are updated,
-     * {@link LinkKey#isAutomaticRemoval(LinkContext)} should return <code>false</code> for the given key.
+     * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
      *
      * @param a             the first node to be connected.
      * @param b             the second node to be connected.
@@ -839,7 +837,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private void handleCallbackUpdates() {
         for (var node : callbackUpdates) {
-            node.getNode().onConnectionsChanged(new NodeContext(node, world, this));
+            node.getNode().onConnectionsChanged(node);
         }
         callbackUpdates.clear();
     }
@@ -859,7 +857,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
             for (var node : graph.getNodesAt(pos).toList()) {
                 BlockNode bn = node.getNode();
-                if (bn.isAutomaticRemoval(new NodeContext(node, world, this)) && !nodes.contains(bn)) {
+                if (bn.isAutomaticRemoval(node) && !nodes.contains(bn)) {
                     graph.destroyNode(node);
                 }
                 newNodes.remove(bn);
@@ -896,9 +894,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
         // Collect the new connections that are wanted by both parties
         Set<HalfLink> wantedConnections = new ObjectLinkedOpenHashSet<>();
-        for (HalfLink wanted : node.getNode().findConnections(new NodeContext(node, world, this))) {
+        for (HalfLink wanted : node.getNode().findConnections(node)) {
             NodeHolder<BlockNode> other = wanted.other();
-            if (other.getNode().canConnect(new NodeContext(other, world, this), wanted.reverse(node))) {
+            if (other.getNode().canConnect(node, wanted.reverse(node))) {
                 wantedConnections.add(wanted);
             }
         }
@@ -917,7 +915,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         for (Map.Entry<HalfLink, LinkHolder<LinkKey>> entry : oldConnections.entrySet()) {
             HalfLink old = entry.getKey();
             LinkHolder<LinkKey> link = entry.getValue();
-            if (link.getKey().isAutomaticRemoval(new LinkContext(link, world, this))) {
+            if (link.getKey().isAutomaticRemoval(link)) {
                 // automatic removal means that not being wanted causes removal
                 if (!wantedConnections.contains(old)) {
                     removedConnections.add(old);
