@@ -1,5 +1,6 @@
 package com.kneelawk.graphlib.api.graph;
 
+import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -102,13 +104,13 @@ public interface BlockGraph {
     @NotNull Stream<NodeHolder<BlockNode>> getNodes();
 
     /**
-     * Gets all nodes in this graph with the given type.
+     * Gets all nodes in this graph that match the given cache category.
      *
-     * @param type the type that all returned nodes must be.
-     * @param <T>  the type of the nodes we're searching for.
-     * @return a stream of all the nodes in this graph with the given type.
+     * @param category the category of the cache to retrieve.
+     * @param <T>      the type of node being retrieved.
+     * @return all nodes in this graph that match the given cache category.
      */
-    @NotNull <T extends BlockNode> Stream<NodeHolder<T>> getNodesOfType(@NotNull Class<T> type);
+    @NotNull <T extends BlockNode> Collection<NodeHolder<T>> getCachedNodes(@NotNull CacheCategory<T> category);
 
     /**
      * Gets all the chunk sections that this graph currently has nodes in.

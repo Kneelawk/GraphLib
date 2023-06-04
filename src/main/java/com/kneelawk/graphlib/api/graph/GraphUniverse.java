@@ -22,6 +22,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
+import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
@@ -272,6 +273,42 @@ public interface GraphUniverse {
      * @return all the graph entity types currently registered.
      */
     @NotNull Iterable<GraphEntityType<?>> getAllGraphEntityTypes();
+
+    /**
+     * Registers a cache category to be auto-initialized on all graphs.
+     *
+     * @param category the category to be registered.
+     */
+    void addCacheCategory(@NotNull CacheCategory<?> category);
+
+    /**
+     * Registers a set of cache categories to be auto-initialized on all graphs.
+     *
+     * @param categories the categories to be registered.
+     */
+    default void addCacheCategories(@NotNull CacheCategory<?>... categories) {
+        for (CacheCategory<?> category : categories) {
+            addCacheCategory(category);
+        }
+    }
+
+    /**
+     * Registers a set of cache categories to be auto-initialized on all graphs.
+     *
+     * @param categories the categories to be registered.
+     */
+    default void addCacheCategories(@NotNull Iterable<CacheCategory<?>> categories) {
+        for (CacheCategory<?> category : categories) {
+            addCacheCategory(category);
+        }
+    }
+
+    /**
+     * Gets all the cache categories currently registered.
+     *
+     * @return all cache categories currently registered.
+     */
+    @NotNull Iterable<CacheCategory<?>> getCacheCatetories();
 
     /**
      * Registers this graph universe so that it can be found by its id.
