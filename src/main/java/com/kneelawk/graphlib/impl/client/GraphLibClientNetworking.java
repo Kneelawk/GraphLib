@@ -144,29 +144,32 @@ public final class GraphLibClientNetworking {
                 });
             });
         ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.DEBUGGING_STOP_ID,
-            (client, handler, buf, responseSender) -> client.execute(() -> {
+            (client, handler, buf, responseSender) -> {
                 int universeInt = buf.readVarInt();
-                Identifier universeId = idMap.get(universeInt);
-                if (universeId == null) {
-                    GLLog.error("Received unknown universe id: {}", universeInt);
-                    return;
-                }
 
-                Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.remove(universeId);
-
-                if (GraphLibClientImpl.DEBUG_GRAPHS.isEmpty()) {
-                    GraphLibClientImpl.GRAPHS_PER_CHUNK.clear();
-                } else {
-                    if (universe == null) {
-                        GLLog.warn("Received DEBUGGING_STOP for un-tracked universe: {}", universeId);
+                client.execute(() -> {
+                    Identifier universeId = idMap.get(universeInt);
+                    if (universeId == null) {
+                        GLLog.error("Received unknown universe id: {}", universeInt);
                         return;
                     }
 
-                    for (ClientBlockGraph graph : universe.values()) {
-                        GraphLibClientImpl.removeGraphChunks(graph);
+                    Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.remove(universeId);
+
+                    if (GraphLibClientImpl.DEBUG_GRAPHS.isEmpty()) {
+                        GraphLibClientImpl.GRAPHS_PER_CHUNK.clear();
+                    } else {
+                        if (universe == null) {
+                            GLLog.warn("Received DEBUGGING_STOP for un-tracked universe: {}", universeId);
+                            return;
+                        }
+
+                        for (ClientBlockGraph graph : universe.values()) {
+                            GraphLibClientImpl.removeGraphChunks(graph);
+                        }
                     }
-                }
-            }));
+                });
+            });
     }
 
     @Nullable
