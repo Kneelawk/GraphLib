@@ -82,29 +82,35 @@ public final class WireConnectionDiscoverers {
         List<HalfLink> collector = new ArrayList<>();
 
         // add all the internal connections
-        graphView.getNodesAt(pos).map(other -> new HalfLink(keyFactory.createLinkKey(holder, other), other))
-            .filter(link -> wireCanConnect(self, holder, link, filter)).forEach(collector::add);
+        addFilteredNodes(self, holder, filter, keyFactory, graphView, pos, collector);
 
         // add all external connections
         for (Direction external : DirectionUtils.perpendiculars(side)) {
-            graphView.getNodesAt(pos.offset(external))
-                .map(other -> new HalfLink(keyFactory.createLinkKey(holder, other), other))
-                .filter(link -> wireCanConnect(self, holder, link, filter)).forEach(collector::add);
+            addFilteredNodes(self, holder, filter, keyFactory, graphView, pos.offset(external), collector);
         }
 
         // add all corner connections
         BlockPos under = pos.offset(side);
         for (Direction corner : DirectionUtils.perpendiculars(side)) {
-            graphView.getNodesAt(under.offset(corner))
-                .map(other -> new HalfLink(keyFactory.createLinkKey(holder, other), other))
-                .filter(link -> wireCanConnect(self, holder, link, filter)).forEach(collector::add);
+            addFilteredNodes(self, holder, filter, keyFactory, graphView, under.offset(corner), collector);
         }
 
         // add full-block under connection
-        graphView.getNodesAt(under).map(other -> new HalfLink(keyFactory.createLinkKey(holder, other), other))
-            .filter(link -> wireCanConnect(self, holder, link, filter)).forEach(collector::add);
+        addFilteredNodes(self, holder, filter, keyFactory, graphView, under, collector);
 
         return collector;
+    }
+
+    private static void addFilteredNodes(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                                  @Nullable SidedWireConnectionFilter filter, @NotNull LinkKeyFactory keyFactory,
+                                  @NotNull GraphView graphView, @NotNull BlockPos pos, @NotNull List<HalfLink> collector) {
+        for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext();) {
+            NodeHolder<BlockNode> other = iter.next();
+            HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
+            if (wireCanConnect(self, holder, link, filter)) {
+                collector.add(link);
+            }
+        }
     }
 
     /**
@@ -240,9 +246,13 @@ public final class WireConnectionDiscoverers {
         List<HalfLink> collector = new ArrayList<>();
 
         for (Direction side : Direction.values()) {
-            graphView.getNodesAt(pos.offset(side))
-                .map(other -> new HalfLink(keyFactory.createLinkKey(holder, other), other))
-                .filter(link -> fullBlockCanConnect(self, holder, link, filter)).forEach(collector::add);
+            for (var iter = graphView.getNodesAt(pos.offset(side)).iterator(); iter.hasNext();) {
+                NodeHolder<BlockNode> other = iter.next();
+                HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
+                if (fullBlockCanConnect(self, holder, link, filter)) {
+                    collector.add(link);
+                }
+            }
         }
 
         return collector;
@@ -341,14 +351,23 @@ public final class WireConnectionDiscoverers {
         List<HalfLink> collector = new ArrayList<>();
 
         // add internal connections
-        graphView.getNodesAt(pos).map(other -> new HalfLink(keyFactory.createLinkKey(holder, other), other))
-            .filter(link -> centerWireCanConnect(self, holder, link, filter)).forEach(collector::add);
+        for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext();) {
+            NodeHolder<BlockNode> other = iter.next();
+            HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
+            if (centerWireCanConnect(self, holder, link, filter)) {
+                collector.add(link);
+            }
+        }
 
         // add external connections
         for (Direction external : Direction.values()) {
-            graphView.getNodesAt(pos.offset(external))
-                .map(other -> new HalfLink(keyFactory.createLinkKey(holder, other), other))
-                .filter(link -> centerWireCanConnect(self, holder, link, filter)).forEach(collector::add);
+            for (var iter = graphView.getNodesAt(pos.offset(external)).iterator(); iter.hasNext();) {
+                NodeHolder<BlockNode> other = iter.next();
+                HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
+                if (centerWireCanConnect(self, holder, link, filter)) {
+                    collector.add(link);
+                }
+            }
         }
 
         return collector;
