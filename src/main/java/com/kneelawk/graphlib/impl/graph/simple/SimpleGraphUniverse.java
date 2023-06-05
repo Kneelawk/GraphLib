@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -30,6 +31,7 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
+import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.world.SaveMode;
@@ -47,6 +49,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Map<Identifier, LinkKeyDecoder> linkKeyDecoders = new LinkedHashMap<>();
     private final Map<Identifier, LinkEntityDecoder> linkEntityDecoders = new LinkedHashMap<>();
     private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
+    private final Set<CacheCategory<?>> cacheCategories = new ObjectLinkedOpenHashSet<>();
     final SaveMode saveMode;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
@@ -183,6 +186,16 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
         for (GraphEntityType<?> type : types) {
             this.graphEntityTypes.put(type.id(), type);
         }
+    }
+
+    @Override
+    public void addCacheCategory(@NotNull CacheCategory<?> category) {
+        cacheCategories.add(category);
+    }
+
+    @Override
+    public @NotNull Iterable<CacheCategory<?>> getCacheCatetories() {
+        return cacheCategories;
     }
 
     @Override

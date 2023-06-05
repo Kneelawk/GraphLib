@@ -1,6 +1,7 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -45,6 +47,7 @@ import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -167,6 +170,7 @@ public class SimpleBlockGraph implements BlockGraph {
     private final Map<NodePos, NodeHolder<BlockNode>> nodesToHolders = new Object2ObjectLinkedOpenHashMap<>();
     final LongSet chunks = new LongLinkedOpenHashSet();
     private final Map<Class<?>, List<?>> nodeTypeCache = new HashMap<>();
+    private final Map<CacheCategory<?>, List<?>> nodeCaches = new Object2ObjectLinkedOpenHashMap<>();
     private final Map<GraphEntityType<?>, GraphEntity<?>> graphEntities = new Object2ObjectLinkedOpenHashMap<>();
 
     public SimpleBlockGraph(@NotNull SimpleGraphWorld world, long id, boolean initializeGraphEntities) {
@@ -402,18 +406,27 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     /**
-     * Gets all nodes in this graph with the given type.
+     * Gets all nodes in this graph that match the given cache category.
      *
-     * @param type the type that all returned nodes must be.
-     * @return a stream of all the nodes in this graph with the given type.
+     * @param category the category of the cache to retrieve.
+     * @return all nodes in this graph that match the given cache category.
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends BlockNode> @NotNull Stream<NodeHolder<T>> getNodesOfType(@NotNull Class<T> type) {
-        List<NodeHolder<T>> nodesOfType = (List<NodeHolder<T>>) nodeTypeCache.computeIfAbsent(type,
-            cls -> graph.stream().filter(node -> type.isInstance(node.data().getNode()))
-                .<NodeHolder<T>>map(node1 -> new SimpleNodeHolder<>(world.world, world, node1)).toList());
-        return nodesOfType.stream();
+    public @NotNull <T extends BlockNode> Collection<NodeHolder<T>> getCachedNodes(@NotNull CacheCategory<T> category) {
+        List<NodeHolder<T>> cached = (List<NodeHolder<T>>) nodeCaches.get(category);
+        if (cached == null) {
+            ImmutableList.Builder<NodeHolder<T>> builder = ImmutableList.builder();
+            for (Node<SimpleNodeWrapper, LinkKey> node : graph) {
+                SimpleNodeHolder<?> holder = new SimpleNodeHolder<>(world.world, world, node);
+                if (category.matches(holder)) {
+                    builder.add(holder.cast(category.getNodeClass()));
+                }
+            }
+            cached = builder.build();
+            nodeCaches.put(category, cached);
+        }
+        return cached;
     }
 
     /**
@@ -479,6 +492,14 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
+    private void rebuildCaches() {
+        nodeCaches.clear();
+        for (CacheCategory<?> category : world.universe.getCacheCatetories()) {
+            // get the cache the first time, building the cache
+            getCachedNodes(category);
+        }
+    }
+
     @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
                                                     @NotNull NodeEntityFactory entityFactory) {
         BlockPos pos = blockPos.toImmutable();
@@ -512,6 +533,8 @@ public class SimpleBlockGraph implements BlockGraph {
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onNodeCreated(graphNode, nodeEntity);
         }
+
+        rebuildCaches();
 
         world.markDirty(id);
 
@@ -592,6 +615,8 @@ public class SimpleBlockGraph implements BlockGraph {
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onNodeDestroyed(holder, nodeEntity, removedLinks);
         }
+
+        rebuildCaches();
 
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
@@ -693,6 +718,8 @@ public class SimpleBlockGraph implements BlockGraph {
             }
         }
 
+        rebuildCaches();
+
         // finally we destroy the old graph, removing it from all the graphs-in-pos and graphs-in-chunk trackers
         world.destroyGraph(other.id);
     }
@@ -777,11 +804,16 @@ public class SimpleBlockGraph implements BlockGraph {
                         new SimpleGraphEntityContext(world.world, world, bg)));
                 }
 
+                // we want to rebuild caches after entities have been moved
+                bg.rebuildCaches();
+
                 newBlockGraphs.add(bg);
 
                 // Fire update events for the new graphs
                 GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world.world, world, bg);
             }
+
+            rebuildCaches();
 
             // Fire the update events
             GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world.world, world, this);
