@@ -23,7 +23,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
  * @param second the second node in this link.
  * @param key    the key of this link that makes it unique among all the links between the same two nodes.
  */
-public record LinkPos(NodePos first, NodePos second, LinkKey key) {
+public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull LinkKey key) {
     /**
      * Creates a new link pos from raw positions, nodes, and the link key.
      *
@@ -35,6 +35,20 @@ public record LinkPos(NodePos first, NodePos second, LinkKey key) {
      */
     public LinkPos(BlockPos firstPos, BlockNode firstNode, BlockPos secondPos, BlockNode secondNode, LinkKey key) {
         this(new NodePos(firstPos, firstNode), new NodePos(secondPos, secondNode), key);
+    }
+
+    /**
+     * Gets the node pos at the opposite end of this link from the given pos.
+     *
+     * @param pos the pos to get the opposite end of the link from.
+     * @return the pos at the opposite end of this link from the given pos.
+     */
+    public NodePos other(@NotNull NodePos pos) {
+        if (first.equals(pos)) {
+            return second;
+        } else {
+            return first;
+        }
     }
 
     @Override

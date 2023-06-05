@@ -878,6 +878,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     }
 
     private void updateConnectionsImpl(@NotNull NodeHolder<BlockNode> node) {
+        NodePos nodePos = node.toNodePos();
         long nodeGraphId = node.getGraphId();
         SimpleBlockGraph graph = getGraph(nodeGraphId);
 
@@ -887,43 +888,43 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
 
         // Collect the old node connections
-        Map<HalfLink, LinkHolder<LinkKey>> oldConnections = new Object2ObjectLinkedOpenHashMap<>();
+        Map<LinkPos, LinkHolder<LinkKey>> oldConnections = new Object2ObjectLinkedOpenHashMap<>();
         for (LinkHolder<LinkKey> link : node.getConnections()) {
-            oldConnections.put(link.toHalfLink(node), link);
+            oldConnections.put(link.toLinkPos(), link);
         }
 
         // Collect the new connections that are wanted by both parties
-        Set<HalfLink> wantedConnections = new ObjectLinkedOpenHashSet<>();
+        Map<LinkPos, HalfLink> wantedConnections = new Object2ObjectLinkedOpenHashMap<>();
         for (HalfLink wanted : node.getNode().findConnections(node)) {
             NodeHolder<BlockNode> other = wanted.other();
             if (other.getNode().canConnect(other, wanted.reverse(node))) {
-                wantedConnections.add(wanted);
+                wantedConnections.put(wanted.toLinkPos(nodePos), wanted);
             }
         }
 
         // Collect the new wanted connections we don't have yet
         List<HalfLink> newConnections = new ObjectArrayList<>();
-        for (HalfLink wanted : wantedConnections) {
-            NodeHolder<BlockNode> other = wanted.other();
-            if (other.getGraphId() != nodeGraphId || !oldConnections.containsKey(wanted)) {
+        for (Map.Entry<LinkPos, HalfLink> entry : wantedConnections.entrySet()) {
+            HalfLink wanted = entry.getValue();
+            if (wanted.other().getGraphId() != nodeGraphId || !oldConnections.containsKey(entry.getKey())) {
                 newConnections.add(wanted);
             }
         }
 
         // Collect the removed connections
-        List<HalfLink> removedConnections = new ObjectArrayList<>();
-        for (Map.Entry<HalfLink, LinkHolder<LinkKey>> entry : oldConnections.entrySet()) {
-            HalfLink old = entry.getKey();
+        List<LinkHolder<LinkKey>> removedConnections = new ObjectArrayList<>();
+        for (Map.Entry<LinkPos, LinkHolder<LinkKey>> entry : oldConnections.entrySet()) {
+            LinkPos old = entry.getKey();
             LinkHolder<LinkKey> link = entry.getValue();
             if (link.getKey().isAutomaticRemoval(link)) {
                 // automatic removal means that not being wanted causes removal
-                if (!wantedConnections.contains(old)) {
-                    removedConnections.add(old);
+                if (!wantedConnections.containsKey(old)) {
+                    removedConnections.add(link);
                 }
             } else {
                 // if the other end has been removed, we still want to remove the manual link
-                if (!nodeExistsAt(old.other().toNodePos())) {
-                    removedConnections.add(old);
+                if (!nodeExistsAt(old.other(nodePos))) {
+                    removedConnections.add(link);
                 }
             }
         }
@@ -955,7 +956,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
 
         for (var link : removedConnections) {
-            mergedGraph.unlink(node, link.other(), link.key());
+            mergedGraph.unlink(link.getFirst(), link.getSecond(), link.getKey());
         }
 
         if (!removedConnections.isEmpty()) {

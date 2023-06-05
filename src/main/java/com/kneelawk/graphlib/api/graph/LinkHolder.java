@@ -16,6 +16,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.LinkPos;
+import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
  * Describes a connection between two nodes. May contain its own data, depending on implementation.
@@ -77,6 +78,21 @@ public interface LinkHolder<K extends LinkKey> {
     default @NotNull NodeHolder<BlockNode> other(@NotNull NodeHolder<BlockNode> node) {
         NodeHolder<BlockNode> first = getFirst();
         if (Objects.equals(first, node)) {
+            return getSecond();
+        } else {
+            return first;
+        }
+    }
+
+    /**
+     * Gets the node opposite the given node pos.
+     *
+     * @param node the node pos to get the other end of the connection from.
+     * @return the node at the other end of the connection from the given node.
+     */
+    default @NotNull NodeHolder<BlockNode> other(@NotNull NodePos node) {
+        NodeHolder<BlockNode> first = getFirst();
+        if (Objects.equals(first.toNodePos(), node)) {
             return getSecond();
         } else {
             return first;

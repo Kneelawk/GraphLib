@@ -21,4 +21,14 @@ public record HalfLink(LinkKey key, NodeHolder<BlockNode> other) {
     public HalfLink reverse(NodeHolder<BlockNode> newOther) {
         return new HalfLink(key, newOther);
     }
+
+    /**
+     * Creates a link pos describing this link, including the given perspective.
+     *
+     * @param perspective the originator of this half link.
+     * @return a link pos containing both the given node and this half link.
+     */
+    public LinkPos toLinkPos(NodePos perspective) {
+        return new LinkPos(perspective, other.toNodePos(), key);
+    }
 }
