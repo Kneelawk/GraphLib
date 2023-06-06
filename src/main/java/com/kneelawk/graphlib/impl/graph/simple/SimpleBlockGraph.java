@@ -528,7 +528,7 @@ public class SimpleBlockGraph implements BlockGraph {
         chunks.add(ChunkSectionPos.from(pos).asLong());
         nodeTypeCache.clear();
         world.putGraphWithNode(id, nodePos);
-        world.scheduleCallbackUpdate(graphNode);
+        world.scheduleCallbackUpdate(graphNode, true);
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onNodeCreated(graphNode, nodeEntity);
@@ -559,7 +559,7 @@ public class SimpleBlockGraph implements BlockGraph {
             // scheduled updates happen after, so we don't need to worry whether the node's been removed from the graph
             // yet, as it will be when these updates are actually applied
             world.scheduleCallbackUpdate(
-                new SimpleNodeHolder<>(world.world, world, link.other(node.node)));
+                new SimpleNodeHolder<>(world.world, world, link.other(node.node)), true);
 
             // collect the link entities to be removed
             LinkPos linkKey =
@@ -570,7 +570,7 @@ public class SimpleBlockGraph implements BlockGraph {
                 removedLinks.put(linkKey, linkEntity);
             }
         }
-        world.scheduleCallbackUpdate(node);
+        world.scheduleCallbackUpdate(node, false);
 
         // actually remove the node
         graph.remove(node.node);
@@ -649,8 +649,8 @@ public class SimpleBlockGraph implements BlockGraph {
             linkEntity = linkEntities.get(linkPos);
         }
 
-        world.scheduleCallbackUpdate(a);
-        world.scheduleCallbackUpdate(b);
+        world.scheduleCallbackUpdate(a, true);
+        world.scheduleCallbackUpdate(b, true);
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onLink(a, b, linkEntity);
@@ -672,8 +672,8 @@ public class SimpleBlockGraph implements BlockGraph {
 
         if (!linkRemoved) return false;
 
-        world.scheduleCallbackUpdate(a);
-        world.scheduleCallbackUpdate(b);
+        world.scheduleCallbackUpdate(a, true);
+        world.scheduleCallbackUpdate(b, true);
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
             graphEntity.onUnlink(a, b, entity);

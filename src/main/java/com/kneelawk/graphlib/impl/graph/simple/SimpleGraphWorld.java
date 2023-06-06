@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +99,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     private final ObjectSet<BlockPos> nodeUpdates = new ObjectLinkedOpenHashSet<>();
     private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
-    private final ObjectSet<NodeHolder<BlockNode>> callbackUpdates = new ObjectLinkedOpenHashSet<>();
+    private final Map<NodePos, CallbackUpdate> callbackUpdates = new Object2ObjectLinkedOpenHashMap<>();
 
     private boolean stateDirty = false;
     private long prevGraphId = -1L;
@@ -824,7 +825,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         connectionUpdates.clear();
     }
 
-    void scheduleCallbackUpdate(@NotNull NodeHolder<BlockNode> node) {
+    void scheduleCallbackUpdate(@NotNull NodeHolder<BlockNode> node, boolean validate) {
         //noinspection ConstantConditions
         if (node == null) {
             GLLog.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",
@@ -832,14 +833,30 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
             return;
         }
 
-        callbackUpdates.add(node);
+        NodePos key = node.toNodePos();
+        if (!callbackUpdates.containsKey(key) || !validate) {
+            callbackUpdates.put(key, new CallbackUpdate(node, validate));
+        }
     }
 
     private void handleCallbackUpdates() {
-        for (var node : callbackUpdates) {
+        List<NodeHolder<BlockNode>> toRemove = new ArrayList<>();
+        for (CallbackUpdate update : callbackUpdates.values()) {
+            var node = update.holder();
             node.getNode().onConnectionsChanged(node);
+
+            if (update.validate() && !node.getNode().isValid(node)) {
+                toRemove.add(node);
+            }
         }
         callbackUpdates.clear();
+
+        for (NodeHolder<BlockNode> node : toRemove) {
+            SimpleBlockGraph graph = getGraph(node.getGraphId());
+            if (graph != null) {
+                graph.destroyNode(node);
+            }
+        }
     }
 
     // ---- Private Methods ---- //
@@ -1227,12 +1244,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
     }
 
-    private sealed interface UpdatePos {
-    }
+    private sealed interface UpdatePos {}
 
-    private record UpdateBlockPos(BlockPos pos) implements UpdatePos {
-    }
+    private record UpdateBlockPos(BlockPos pos) implements UpdatePos {}
 
-    private record UpdateSidedPos(SidedPos pos) implements UpdatePos {
-    }
+    private record UpdateSidedPos(SidedPos pos) implements UpdatePos {}
+
+    private record CallbackUpdate(NodeHolder<BlockNode> holder, boolean validate) {}
 }

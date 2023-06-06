@@ -110,7 +110,7 @@ public interface BlockNode {
      * <b>Contract:</b> This method must only return <code>true</code> for nodes that would be returned from
      * {@link #findConnections(NodeHolder)}.
      *
-     * @param self this node's holder, holding the context of this node.
+     * @param self  this node's holder, holding the context of this node.
      * @param other the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
      * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeHolder, HalfLink, SidedWireConnectionFilter)
@@ -132,6 +132,19 @@ public interface BlockNode {
      * @param self this node's holder, holding the context of this node.
      */
     void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self);
+
+    /**
+     * Checks whether this node is valid at the given position.
+     * <p>
+     * This method is used in cleaning up after a de-sync between the block world and the graph world. This method is
+     * called occasionally, and block nodes that should not be present, given the state of the block world, are removed.
+     *
+     * @param self the node holder holding this node's context.
+     * @return <code>true</code> if this node is valid and should remain that its current position.
+     */
+    default boolean isValid(@NotNull NodeHolder<BlockNode> self) {
+        return true;
+    }
 
     /**
      * Block nodes are compared based on their hash-code and equals functions.
