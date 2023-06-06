@@ -48,4 +48,14 @@ public interface WireConnectionFilter
                                @NotNull Direction inDirection, @NotNull HalfLink link) {
         return accepts(self, link.other().getNode());
     }
+
+    /**
+     * Creates a new connection filter that must satisfy both this filter and the other filter.
+     *
+     * @param otherFilter the other filter that must be satisfied.
+     * @return a new connection filter that must satisfy both this filter and the other filter.
+     */
+    default @NotNull WireConnectionFilter and(WireConnectionFilter otherFilter) {
+        return (self, other) -> accepts(self, other) && otherFilter.accepts(self, other);
+    }
 }
