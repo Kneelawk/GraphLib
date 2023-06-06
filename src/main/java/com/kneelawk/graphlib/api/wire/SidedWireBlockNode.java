@@ -34,20 +34,20 @@ public interface SidedWireBlockNode extends SidedBlockNode {
     /**
      * Default find connections implementation.
      * <p>
-     * This makes use of {@link WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeHolder)}.
+     * This makes use of {@link WireConnectionDiscoverers#sidedWireFindConnections(SidedWireBlockNode, NodeHolder)}.
      *
      * @param self this node's holder, holding the context of this node.
      * @return all the connections found through the default implementation.
      */
     @Override
     default @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self) {
-        return WireConnectionDiscoverers.wireFindConnections(this, self);
+        return WireConnectionDiscoverers.sidedWireFindConnections(this, self);
     }
 
     /**
      * Default can connect implementation.
      * <p>
-     * This makes use of {@link WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeHolder, HalfLink)}.
+     * This makes use of {@link WireConnectionDiscoverers#sidedWireCanConnect(SidedWireBlockNode, NodeHolder, HalfLink)}.
      *
      * @param self  this node's holder, holding the context of this node.
      * @param other the other node to attempt to connect to.
@@ -55,6 +55,6 @@ public interface SidedWireBlockNode extends SidedBlockNode {
      */
     @Override
     default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull HalfLink other) {
-        return WireConnectionDiscoverers.wireCanConnect(this, self, other);
+        return WireConnectionDiscoverers.sidedWireCanConnect(this, self, other);
     }
 }

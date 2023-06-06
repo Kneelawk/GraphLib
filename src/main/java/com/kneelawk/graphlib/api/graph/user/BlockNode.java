@@ -98,7 +98,7 @@ public interface BlockNode {
      *
      * @param self this node's holder, holding the context of this node.
      * @return all nodes this node can connect to.
-     * @see WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeHolder, SidedWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
+     * @see WireConnectionDiscoverers#sidedWireFindConnections(SidedWireBlockNode, NodeHolder, SidedWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
      * @see WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeHolder, FullWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
      * @see WireConnectionDiscoverers#centerWireFindConnections(CenterWireBlockNode, NodeHolder, CenterWireConnectionFilter, com.kneelawk.graphlib.api.wire.LinkKeyFactory)
      */
@@ -113,7 +113,7 @@ public interface BlockNode {
      * @param self  this node's holder, holding the context of this node.
      * @param other the other node to attempt to connect to.
      * @return whether this node can connect to the other node.
-     * @see WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeHolder, HalfLink, SidedWireConnectionFilter)
+     * @see WireConnectionDiscoverers#sidedWireCanConnect(SidedWireBlockNode, NodeHolder, HalfLink, SidedWireConnectionFilter)
      * @see WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeHolder, HalfLink, FullWireConnectionFilter)
      * @see WireConnectionDiscoverers#centerWireCanConnect(CenterWireBlockNode, NodeHolder, HalfLink, CenterWireConnectionFilter)
      */

@@ -37,9 +37,9 @@ public final class WireConnectionDiscoverers {
      * @return a collection of nodes this node can connect to.
      * @see BlockNode#findConnections(NodeHolder)
      */
-    public static @NotNull Collection<HalfLink> wireFindConnections(@NotNull SidedWireBlockNode self,
-                                                                    @NotNull NodeHolder<BlockNode> holder) {
-        return wireFindConnections(self, holder, null, EmptyLinkKey.FACTORY);
+    public static @NotNull Collection<HalfLink> sidedWireFindConnections(@NotNull SidedWireBlockNode self,
+                                                                         @NotNull NodeHolder<BlockNode> holder) {
+        return sidedWireFindConnections(self, holder, null, EmptyLinkKey.FACTORY);
     }
 
     /**
@@ -54,10 +54,10 @@ public final class WireConnectionDiscoverers {
      * @return a collection of nodes this node can connect to.
      * @see BlockNode#findConnections(NodeHolder)
      */
-    public static @NotNull Collection<HalfLink> wireFindConnections(@NotNull SidedWireBlockNode self,
-                                                                    @NotNull NodeHolder<BlockNode> holder,
-                                                                    @Nullable SidedWireConnectionFilter filter) {
-        return wireFindConnections(self, holder, filter, EmptyLinkKey.FACTORY);
+    public static @NotNull Collection<HalfLink> sidedWireFindConnections(@NotNull SidedWireBlockNode self,
+                                                                         @NotNull NodeHolder<BlockNode> holder,
+                                                                         @Nullable SidedWireConnectionFilter filter) {
+        return sidedWireFindConnections(self, holder, filter, EmptyLinkKey.FACTORY);
     }
 
     /**
@@ -73,10 +73,10 @@ public final class WireConnectionDiscoverers {
      * @return a collection of nodes this node can connect to.
      * @see BlockNode#findConnections(NodeHolder)
      */
-    public static @NotNull Collection<HalfLink> wireFindConnections(@NotNull SidedWireBlockNode self,
-                                                                    @NotNull NodeHolder<BlockNode> holder,
-                                                                    @Nullable SidedWireConnectionFilter filter,
-                                                                    @NotNull LinkKeyFactory keyFactory) {
+    public static @NotNull Collection<HalfLink> sidedWireFindConnections(@NotNull SidedWireBlockNode self,
+                                                                         @NotNull NodeHolder<BlockNode> holder,
+                                                                         @Nullable SidedWireConnectionFilter filter,
+                                                                         @NotNull LinkKeyFactory keyFactory) {
         GraphView graphView = holder.getGraphWorld();
         BlockPos pos = holder.getPos();
         Direction side = self.getSide();
@@ -109,7 +109,7 @@ public final class WireConnectionDiscoverers {
         for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext(); ) {
             NodeHolder<BlockNode> other = iter.next();
             HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
-            if (wireCanConnect(self, holder, link, filter)) {
+            if (sidedWireCanConnect(self, holder, link, filter)) {
                 collector.add(link);
             }
         }
@@ -126,9 +126,9 @@ public final class WireConnectionDiscoverers {
      * @param link   the link that this node could potentially form.
      * @return <code>true</code> if this node can connect to the given node.
      */
-    public static boolean wireCanConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
-                                         @NotNull HalfLink link) {
-        return wireCanConnect(self, holder, link, null);
+    public static boolean sidedWireCanConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                                              @NotNull HalfLink link) {
+        return sidedWireCanConnect(self, holder, link, null);
     }
 
     /**
@@ -143,8 +143,8 @@ public final class WireConnectionDiscoverers {
      * @param filter a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return <code>true</code> if this node can connect to the given node.
      */
-    public static boolean wireCanConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
-                                         @NotNull HalfLink link, @Nullable SidedWireConnectionFilter filter) {
+    public static boolean sidedWireCanConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                                              @NotNull HalfLink link, @Nullable SidedWireConnectionFilter filter) {
         BlockPos pos = holder.getPos();
         Direction side = self.getSide();
         BlockPos otherPos = link.other().getPos();
