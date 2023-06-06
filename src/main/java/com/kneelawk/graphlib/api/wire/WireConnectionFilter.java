@@ -14,7 +14,7 @@ import com.kneelawk.graphlib.api.util.HalfLink;
  * connect.
  */
 public interface WireConnectionFilter
-    extends FullWireConnectionFilter, SidedWireConnectionFilter, CenterWireConnectionFilter {
+    extends FullWireConnectionFilter, SidedWireConnectionFilter, CenterWireConnectionFilter, SidedFaceConnectionFilter {
     /**
      * Checks whether this filter allows these two block nodes to connect.
      *
@@ -40,6 +40,12 @@ public interface WireConnectionFilter
     @Override
     default boolean canConnect(@NotNull CenterWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
                                @NotNull Direction onSide, @NotNull HalfLink link) {
+        return accepts(self, link.other().getNode());
+    }
+
+    @Override
+    default boolean canConnect(@NotNull SidedFaceBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                               @NotNull Direction inDirection, @NotNull HalfLink link) {
         return accepts(self, link.other().getNode());
     }
 }

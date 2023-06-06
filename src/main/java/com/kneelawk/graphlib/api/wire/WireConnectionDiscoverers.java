@@ -13,6 +13,7 @@ import net.minecraft.util.math.Direction;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.DirectionUtils;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -102,9 +103,10 @@ public final class WireConnectionDiscoverers {
     }
 
     private static void addFilteredNodes(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
-                                  @Nullable SidedWireConnectionFilter filter, @NotNull LinkKeyFactory keyFactory,
-                                  @NotNull GraphView graphView, @NotNull BlockPos pos, @NotNull List<HalfLink> collector) {
-        for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext();) {
+                                         @Nullable SidedWireConnectionFilter filter, @NotNull LinkKeyFactory keyFactory,
+                                         @NotNull GraphView graphView, @NotNull BlockPos pos,
+                                         @NotNull List<HalfLink> collector) {
+        for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext(); ) {
             NodeHolder<BlockNode> other = iter.next();
             HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
             if (wireCanConnect(self, holder, link, filter)) {
@@ -246,7 +248,7 @@ public final class WireConnectionDiscoverers {
         List<HalfLink> collector = new ArrayList<>();
 
         for (Direction side : Direction.values()) {
-            for (var iter = graphView.getNodesAt(pos.offset(side)).iterator(); iter.hasNext();) {
+            for (var iter = graphView.getNodesAt(pos.offset(side)).iterator(); iter.hasNext(); ) {
                 NodeHolder<BlockNode> other = iter.next();
                 HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
                 if (fullBlockCanConnect(self, holder, link, filter)) {
@@ -351,7 +353,7 @@ public final class WireConnectionDiscoverers {
         List<HalfLink> collector = new ArrayList<>();
 
         // add internal connections
-        for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext();) {
+        for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext(); ) {
             NodeHolder<BlockNode> other = iter.next();
             HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
             if (centerWireCanConnect(self, holder, link, filter)) {
@@ -361,7 +363,7 @@ public final class WireConnectionDiscoverers {
 
         // add external connections
         for (Direction external : Direction.values()) {
-            for (var iter = graphView.getNodesAt(pos.offset(external)).iterator(); iter.hasNext();) {
+            for (var iter = graphView.getNodesAt(pos.offset(external)).iterator(); iter.hasNext(); ) {
                 NodeHolder<BlockNode> other = iter.next();
                 HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
                 if (centerWireCanConnect(self, holder, link, filter)) {
@@ -390,7 +392,7 @@ public final class WireConnectionDiscoverers {
      * Checks if this center-wire node can connect to the given node.
      *
      * @param self   this node.
-     * @param holder the node context for the given node.
+     * @param holder the node holder for the given node.
      * @param link   the link that this node could potentially form.
      * @param filter a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
      * @return <code>true</code> if this node can connect to the given node.
@@ -407,12 +409,107 @@ public final class WireConnectionDiscoverers {
         if (other instanceof CenterWireBlockNode || other instanceof FullWireBlockNode) {
             return posDiffDir != null && (filter == null || filter.canConnect(self, holder, posDiffDir, link)) &&
                 self.canConnect(holder, posDiffDir, link);
-        } else if (other instanceof SidedWireBlockNode otherSided) {
+        } else if (other instanceof SidedWireBlockNode || other instanceof SidedFaceBlockNode) {
+            SidedBlockNode otherSided = (SidedBlockNode) other;
             Direction otherSide = otherSided.getSide();
             return pos.equals(otherPos) && (filter == null || filter.canConnect(self, holder, otherSide, link)) &&
                 self.canConnect(holder, otherSide, link);
         } else {
             // we only know how to handle connections to SidedWireBlockNodes, CenterWireBlockNodes, and FullWireBlockNodes for now
+            return false;
+        }
+    }
+
+    /**
+     * Finds nodes that can connect to this sided-face node.
+     *
+     * @param self   this node.
+     * @param holder the node holder for the given node.
+     * @return a collection of nodes this node can connect to.
+     */
+    public static @NotNull Collection<HalfLink> sidedFaceFindConnections(@NotNull SidedFaceBlockNode self,
+                                                                         @NotNull NodeHolder<BlockNode> holder) {
+        return sidedFaceFindConnections(self, holder, null, EmptyLinkKey.FACTORY);
+    }
+
+    /**
+     * Finds nodes that can connect to this sided-face node.
+     *
+     * @param self   this node.
+     * @param holder the node holder for the given node.
+     * @param filter a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
+     * @return a collection of nodes this node can connect to.
+     */
+    public static @NotNull Collection<HalfLink> sidedFaceFindConnections(@NotNull SidedFaceBlockNode self,
+                                                                         @NotNull NodeHolder<BlockNode> holder,
+                                                                         @Nullable SidedFaceConnectionFilter filter) {
+        return sidedFaceFindConnections(self, holder, filter, EmptyLinkKey.FACTORY);
+    }
+
+    /**
+     * Finds nodes that can connect to this sided-face node.
+     *
+     * @param self       this node.
+     * @param holder     the node holder for the given node.
+     * @param filter     a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
+     * @param keyFactory a link key factory used for creating all the keys for the connections returned.
+     * @return a collection of nodes this node can connect to.
+     */
+    public static @NotNull Collection<HalfLink> sidedFaceFindConnections(@NotNull SidedFaceBlockNode self,
+                                                                         @NotNull NodeHolder<BlockNode> holder,
+                                                                         @Nullable SidedFaceConnectionFilter filter,
+                                                                         @NotNull LinkKeyFactory keyFactory) {
+        GraphView graphView = holder.getGraphWorld();
+        BlockPos pos = holder.getPos();
+        List<HalfLink> collector = new ArrayList<>();
+
+        // all our connections should be in the same block
+        for (var iter = graphView.getNodesAt(pos).iterator(); iter.hasNext(); ) {
+            NodeHolder<BlockNode> other = iter.next();
+            HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
+            if (sidedFaceCanConnect(self, holder, link, filter)) {
+                collector.add(link);
+            }
+        }
+
+        return collector;
+    }
+
+    /**
+     * Checks if this sided-face node can connect to the given node.
+     *
+     * @param self   this node.
+     * @param holder the node holder for the given node.
+     * @param link   the link that this node could potentially form.
+     * @return <code>true</code> if this node can connect to the given node.
+     */
+    public static boolean sidedFaceCanConnect(@NotNull SidedFaceBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                                              @NotNull HalfLink link) {
+        return sidedFaceCanConnect(self, holder, link, null);
+    }
+
+    /**
+     * Checks if this sided-face node can connect to the given node.
+     *
+     * @param self   this node.
+     * @param holder the node holder for the given node.
+     * @param link   the link that this node could potentially form.
+     * @param filter a general connection filter, used to filter connections, or <code>null</code> if no filter is needed.
+     * @return <code>true</code> if this node can connect to the given node.
+     */
+    public static boolean sidedFaceCanConnect(@NotNull SidedFaceBlockNode self, @NotNull NodeHolder<BlockNode> holder,
+                                              @NotNull HalfLink link, @Nullable SidedFaceConnectionFilter filter) {
+        BlockPos pos = holder.getPos();
+        BlockPos otherPos = link.other().getPos();
+        BlockNode other = link.other().getNode();
+
+        Direction side = self.getSide();
+
+        if (other instanceof CenterWireBlockNode) {
+            return pos.equals(otherPos) &&
+                (filter == null || filter.canConnect(self, holder, side.getOpposite(), link)) &&
+                self.canConnect(holder, side.getOpposite(), link);
+        } else {
             return false;
         }
     }
