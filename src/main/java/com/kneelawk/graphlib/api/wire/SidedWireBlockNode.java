@@ -1,5 +1,7 @@
 package com.kneelawk.graphlib.api.wire;
 
+import java.util.Collection;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.Direction;
@@ -27,5 +29,32 @@ public interface SidedWireBlockNode extends SidedBlockNode {
     default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull Direction inDirection,
                                @NotNull WireConnectionType connectionType, @NotNull HalfLink link) {
         return true;
+    }
+
+    /**
+     * Default find connections implementation.
+     * <p>
+     * This makes use of {@link WireConnectionDiscoverers#wireFindConnections(SidedWireBlockNode, NodeHolder)}.
+     *
+     * @param self this node's holder, holding the context of this node.
+     * @return all the connections found through the default implementation.
+     */
+    @Override
+    default @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self) {
+        return WireConnectionDiscoverers.wireFindConnections(this, self);
+    }
+
+    /**
+     * Default can connect implementation.
+     * <p>
+     * This makes use of {@link WireConnectionDiscoverers#wireCanConnect(SidedWireBlockNode, NodeHolder, HalfLink)}.
+     *
+     * @param self  this node's holder, holding the context of this node.
+     * @param other the other node to attempt to connect to.
+     * @return whether this node can connect, as per the default implementation.
+     */
+    @Override
+    default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull HalfLink other) {
+        return WireConnectionDiscoverers.wireCanConnect(this, self, other);
     }
 }

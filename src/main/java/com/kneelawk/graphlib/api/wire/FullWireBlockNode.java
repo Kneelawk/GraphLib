@@ -1,5 +1,7 @@
 package com.kneelawk.graphlib.api.wire;
 
+import java.util.Collection;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,5 +31,32 @@ public interface FullWireBlockNode extends BlockNode {
     default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull Direction onSide,
                                @Nullable Direction wireSide, @NotNull HalfLink link) {
         return true;
+    }
+
+    /**
+     * Default find connections implementation.
+     * <p>
+     * This makes use of {@link WireConnectionDiscoverers#fullBlockFindConnections(FullWireBlockNode, NodeHolder)}.
+     *
+     * @param self this node's holder, holding the context of this node.
+     * @return all the connections found through the default implementation.
+     */
+    @Override
+    default @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self) {
+        return WireConnectionDiscoverers.fullBlockFindConnections(this, self);
+    }
+
+    /**
+     * Default can connect implementation.
+     * <p>
+     * This makes use of {@link WireConnectionDiscoverers#fullBlockCanConnect(FullWireBlockNode, NodeHolder, HalfLink)}.
+     *
+     * @param self  this node's holder, holding the context of this node.
+     * @param other the other node to attempt to connect to.
+     * @return whether this node can connect, as per the default implementation.
+     */
+    @Override
+    default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull HalfLink other) {
+        return WireConnectionDiscoverers.fullBlockCanConnect(this, self, other);
     }
 }
