@@ -14,7 +14,7 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 public class GraphLibFabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
-        GLLog.setupLogging(FabricLoader.getInstance().getGameDir());
+        GLLog.setGameDir(FabricLoader.getInstance().getGameDir());
 
         GLLog.info("Initializing GraphLib...");
 
