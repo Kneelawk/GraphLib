@@ -45,7 +45,7 @@ public interface SidedBlockNode extends BlockNode {
      * @param buf  the buffer to encode this node to.
      */
     @Override
-    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
+    default void toDebugPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(hashCode());
 

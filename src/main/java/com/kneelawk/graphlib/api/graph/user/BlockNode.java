@@ -9,18 +9,12 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
-import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
-import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
-import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
-import com.kneelawk.graphlib.api.wire.FullWireConnectionFilter;
-import com.kneelawk.graphlib.api.wire.SidedWireBlockNode;
-import com.kneelawk.graphlib.api.wire.SidedWireConnectionFilter;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 
 /**
@@ -174,13 +168,13 @@ public interface BlockNode {
      * This method should only be overridden to provide custom data to the client.
      * <p>
      * If custom data is being sent to the client, use
-     * {@link GraphLibClient#registerDecoder(Identifier, Identifier, BlockNodePacketDecoder)}
+     * {@link GraphLibClient#registerDebugDecoder(Identifier, Identifier, BlockNodeDebugPacketDecoder)}
      * to register a decoder for the custom data.
      *
      * @param self this node's holder, holding the context of this node.
      * @param buf  the buffer to encode this node to.
      */
-    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
+    default void toDebugPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(hashCode());
 

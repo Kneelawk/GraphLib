@@ -1,7 +1,33 @@
-package com.kneelawk.graphlib.impl.client.render;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2023 Kneelawk.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+package com.kneelawk.graphlib.impl.client.debug.render;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
@@ -33,22 +59,28 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.api.client.render.RenderUtils;
-import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
-import com.kneelawk.graphlib.api.graph.user.client.SidedClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.debug.DebugBlockNode;
+import com.kneelawk.graphlib.api.graph.user.debug.SidedDebugBlockNode;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
+import com.kneelawk.graphlib.impl.client.debug.graph.DebugBlockGraph;
 import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
 
 public final class DebugRenderer {
+    /**
+     * Map of graph id long to graph for all currently debugging graphs.
+     */
+    public static final Map<Identifier, Long2ObjectMap<DebugBlockGraph>> DEBUG_GRAPHS = new LinkedHashMap<>();
+
     private DebugRenderer() {
     }
 
@@ -115,7 +147,7 @@ public final class DebugRenderer {
     }
 
     private static void render(WorldRenderContext context) {
-        if (GraphLibClientImpl.DEBUG_GRAPHS.isEmpty()) {
+        if (DEBUG_GRAPHS.isEmpty()) {
             return;
         }
 
@@ -169,13 +201,13 @@ public final class DebugRenderer {
     private static void renderGraphs(MatrixStack stack) {
         Map<NPos, NPosData> nodeEndpoints = new HashMap<>();
 
-        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
-            for (ClientBlockGraph graph : universe.values()) {
+        for (Long2ObjectMap<DebugBlockGraph> universe : DEBUG_GRAPHS.values()) {
+            for (DebugBlockGraph graph : universe.values()) {
                 for (var node : graph.graph()) {
-                    ClientBlockNode cbn = node.data().node();
+                    DebugBlockNode cbn = node.data().node();
 
                     NPos pos;
-                    if (cbn instanceof SidedClientBlockNode scbn) {
+                    if (cbn instanceof SidedDebugBlockNode scbn) {
                         pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
                     } else {
                         pos = new NBlockPos(node.data().pos());
@@ -186,21 +218,21 @@ public final class DebugRenderer {
             }
         }
 
-        for (Long2ObjectMap<ClientBlockGraph> universe : GraphLibClientImpl.DEBUG_GRAPHS.values()) {
-            for (ClientBlockGraph graph : universe.values()) {
+        for (Long2ObjectMap<DebugBlockGraph> universe : DEBUG_GRAPHS.values()) {
+            for (DebugBlockGraph graph : universe.values()) {
                 int graphColor = RenderUtils.graphColor(graph.graphId());
                 Object2ObjectMap<Node<ClientBlockNodeHolder, EmptyLinkKey>, Vec3d> endpoints =
                     new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
                 ObjectSet<Link<ClientBlockNodeHolder, EmptyLinkKey>> links = new ObjectLinkedOpenHashSet<>();
 
                 for (var node : graph.graph()) {
-                    ClientBlockNode cbn = node.data().node();
-                    BlockNodeRendererHolder<?> renderer =
-                        GraphLibClientImpl.getRenderer(graph.universeId(), cbn.getRenderId());
+                    DebugBlockNode cbn = node.data().node();
+                    BlockNodeDebugRendererHolder<?> renderer =
+                        GraphLibClientImpl.getDebugRenderer(graph.universeId(), cbn.getRenderId());
                     if (renderer == null) continue;
 
                     NPos pos;
-                    if (cbn instanceof SidedClientBlockNode scbn) {
+                    if (cbn instanceof SidedDebugBlockNode scbn) {
                         pos = new NSidedPos(new SidedPos(node.data().pos(), scbn.getSide()));
                     } else {
                         pos = new NBlockPos(node.data().pos());

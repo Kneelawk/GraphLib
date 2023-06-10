@@ -1,11 +1,11 @@
-package com.kneelawk.graphlib.api.graph.user.client;
+package com.kneelawk.graphlib.api.graph.user.debug;
 
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.client.GraphLibClient;
-import com.kneelawk.graphlib.api.client.render.BlockNodeRenderer;
+import com.kneelawk.graphlib.api.client.render.BlockNodeDebugRenderer;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
@@ -15,10 +15,10 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
  * make sure this interface does not depend on anything strictly client-sided, but that would likely be overkill for
  * most situations.
  */
-public interface ClientBlockNode {
+public interface DebugBlockNode {
     /**
      * Gets the id of the renderer registered with
-     * {@link GraphLibClient#registerRenderer(Identifier, Identifier, Class, BlockNodeRenderer)}.
+     * {@link GraphLibClient#registerDebugRenderer(Identifier, Identifier, Class, BlockNodeDebugRenderer)}.
      *
      * @return the id of the renderer to use to render this block node.
      */

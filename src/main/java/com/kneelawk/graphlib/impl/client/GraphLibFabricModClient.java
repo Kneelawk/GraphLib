@@ -10,8 +10,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.impl.client.render.DebugRenderer;
+import com.kneelawk.graphlib.impl.client.debug.graph.DebugBlockGraph;
+import com.kneelawk.graphlib.impl.client.debug.render.DebugRenderer;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricModClient implements ClientModInitializer {
@@ -29,11 +29,11 @@ public class GraphLibFabricModClient implements ClientModInitializer {
         DebugRenderer.init();
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            GraphLibClientImpl.DEBUG_GRAPHS.clear();
+            DebugRenderer.DEBUG_GRAPHS.clear();
             GraphLibClientImpl.GRAPHS_PER_CHUNK.clear();
         });
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
-            GraphLibClientImpl.DEBUG_GRAPHS.clear();
+            DebugRenderer.DEBUG_GRAPHS.clear();
             GraphLibClientImpl.GRAPHS_PER_CHUNK.clear();
         });
 
@@ -42,9 +42,9 @@ public class GraphLibFabricModClient implements ClientModInitializer {
             long chunkLong = chunk.getPos().toLong();
             loadedChunks.remove(chunkLong);
 
-            Set<ClientBlockGraph> graphs = GraphLibClientImpl.GRAPHS_PER_CHUNK.get(chunkLong);
+            Set<DebugBlockGraph> graphs = GraphLibClientImpl.GRAPHS_PER_CHUNK.get(chunkLong);
             if (graphs != null) {
-                for (ClientBlockGraph graph : graphs) {
+                for (DebugBlockGraph graph : graphs) {
                     boolean anyChunkLoaded = false;
                     for (long graphChunk : graph.chunks()) {
                         if (loadedChunks.contains(graphChunk)) {
@@ -54,11 +54,11 @@ public class GraphLibFabricModClient implements ClientModInitializer {
                     }
 
                     if (!anyChunkLoaded) {
-                        Long2ObjectMap<ClientBlockGraph> universe =
-                            GraphLibClientImpl.DEBUG_GRAPHS.get(graph.universeId());
+                        Long2ObjectMap<DebugBlockGraph> universe =
+                            DebugRenderer.DEBUG_GRAPHS.get(graph.universeId());
                         universe.remove(graph.graphId());
                         if (universe.isEmpty()) {
-                            GraphLibClientImpl.DEBUG_GRAPHS.remove(graph.universeId());
+                            DebugRenderer.DEBUG_GRAPHS.remove(graph.universeId());
                         }
 
                         GraphLibClientImpl.removeGraphChunks(graph);

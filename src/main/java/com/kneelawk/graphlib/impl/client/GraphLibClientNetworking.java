@@ -23,17 +23,18 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 
-import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.api.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.api.graph.user.client.ClientBlockNode;
+import com.kneelawk.graphlib.api.graph.user.debug.DebugBlockNode;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
-import com.kneelawk.graphlib.impl.client.graph.ClientBlockGraph;
-import com.kneelawk.graphlib.impl.client.graph.SimpleClientBlockNode;
-import com.kneelawk.graphlib.impl.client.graph.SimpleClientSidedBlockNode;
+import com.kneelawk.graphlib.impl.client.debug.graph.DebugBlockGraph;
+import com.kneelawk.graphlib.impl.client.debug.graph.SimpleDebugBlockNode;
+import com.kneelawk.graphlib.impl.client.debug.graph.SimpleDebugSidedBlockNode;
+import com.kneelawk.graphlib.impl.client.debug.render.DebugRenderer;
 
 public final class GraphLibClientNetworking {
     private GraphLibClientNetworking() {
@@ -42,15 +43,15 @@ public final class GraphLibClientNetworking {
     private static final Map<Integer, Identifier> idMap =
         Collections.synchronizedMap(new Int2ObjectLinkedOpenHashMap<>());
 
-    public static final BlockNodePacketDecoder DEFAULT_DECODER = buf -> {
+    public static final BlockNodeDebugPacketDecoder DEFAULT_DECODER = buf -> {
         int hashCode = buf.readInt();
         int color = buf.readInt();
 
         byte type = buf.readByte();
 
         return switch (type) {
-            case 0 -> new SimpleClientBlockNode(hashCode, color);
-            case 1 -> new SimpleClientSidedBlockNode(hashCode, color, Direction.byId(buf.readByte()));
+            case 0 -> new SimpleDebugBlockNode(hashCode, color);
+            case 1 -> new SimpleDebugSidedBlockNode(hashCode, color, Direction.byId(buf.readByte()));
             default -> {
                 GLLog.error("Attempted default BlockNode decoding but encountered unknown default id: {}", type);
                 yield null;
@@ -85,7 +86,7 @@ public final class GraphLibClientNetworking {
                     return;
                 }
 
-                ClientBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
+                DebugBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
                 if (debugGraph == null) return;
 
                 client.execute(() -> addBlockGraph(universeId, debugGraph));
@@ -100,16 +101,16 @@ public final class GraphLibClientNetworking {
                 }
 
                 int graphCount = buf.readVarInt();
-                List<ClientBlockGraph> graphs = new ArrayList<>(graphCount);
+                List<DebugBlockGraph> graphs = new ArrayList<>(graphCount);
 
                 for (int i = 0; i < graphCount; i++) {
-                    ClientBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
+                    DebugBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
                     if (debugGraph == null) return;
                     graphs.add(debugGraph);
                 }
 
                 client.execute(() -> {
-                    for (ClientBlockGraph debugGraph : graphs) {
+                    for (DebugBlockGraph debugGraph : graphs) {
                         addBlockGraph(universeId, debugGraph);
                     }
                 });
@@ -126,16 +127,16 @@ public final class GraphLibClientNetworking {
                 long graphId = buf.readLong();
 
                 client.execute(() -> {
-                    Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.get(universeId);
+                    Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.get(universeId);
                     if (universe == null) {
                         GLLog.warn("Received GRAPH_DESTROY for un-tracked universe: {}", universeId);
                         return;
                     }
 
-                    ClientBlockGraph graph = universe.remove(graphId);
+                    DebugBlockGraph graph = universe.remove(graphId);
 
                     if (universe.isEmpty()) {
-                        GraphLibClientImpl.DEBUG_GRAPHS.remove(universeId);
+                        DebugRenderer.DEBUG_GRAPHS.remove(universeId);
                     }
 
                     if (graph != null) {
@@ -154,9 +155,9 @@ public final class GraphLibClientNetworking {
                         return;
                     }
 
-                    Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.remove(universeId);
+                    Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.remove(universeId);
 
-                    if (GraphLibClientImpl.DEBUG_GRAPHS.isEmpty()) {
+                    if (DebugRenderer.DEBUG_GRAPHS.isEmpty()) {
                         GraphLibClientImpl.GRAPHS_PER_CHUNK.clear();
                     } else {
                         if (universe == null) {
@@ -164,7 +165,7 @@ public final class GraphLibClientNetworking {
                             return;
                         }
 
-                        for (ClientBlockGraph graph : universe.values()) {
+                        for (DebugBlockGraph graph : universe.values()) {
                             GraphLibClientImpl.removeGraphChunks(graph);
                         }
                     }
@@ -173,7 +174,7 @@ public final class GraphLibClientNetworking {
     }
 
     @Nullable
-    private static ClientBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
+    private static DebugBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
         Graph<ClientBlockNodeHolder, EmptyLinkKey> graph = new Graph<>();
         List<Node<ClientBlockNodeHolder, EmptyLinkKey>> nodeList = new ArrayList<>();
         LongSet chunks = new LongLinkedOpenHashSet();
@@ -191,12 +192,12 @@ public final class GraphLibClientNetworking {
 
             BlockPos pos = buf.readBlockPos();
 
-            BlockNodePacketDecoder decoder = GraphLibClientImpl.getDecoder(universeId, nodeTypeId);
+            BlockNodeDebugPacketDecoder decoder = GraphLibClientImpl.getDebugDecoder(universeId, nodeTypeId);
             if (decoder == null) {
                 decoder = DEFAULT_DECODER;
             }
 
-            ClientBlockNode data = decoder.fromPacket(buf);
+            DebugBlockNode data = decoder.fromPacket(buf);
             if (data == null) {
                 GLLog.error("Unable to decode BlockNode packet for {}", nodeTypeId);
                 return null;
@@ -229,24 +230,24 @@ public final class GraphLibClientNetworking {
             graph.link(nodeA, nodeB, EmptyLinkKey.INSTANCE);
         }
 
-        return new ClientBlockGraph(universeId, graphId, graph, chunks);
+        return new DebugBlockGraph(universeId, graphId, graph, chunks);
     }
 
-    private static void addBlockGraph(Identifier universeId, ClientBlockGraph debugGraph) {
-        Long2ObjectMap<ClientBlockGraph> universe = GraphLibClientImpl.DEBUG_GRAPHS.get(universeId);
+    private static void addBlockGraph(Identifier universeId, DebugBlockGraph debugGraph) {
+        Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.get(universeId);
         if (universe == null) {
             universe = new Long2ObjectLinkedOpenHashMap<>();
-            GraphLibClientImpl.DEBUG_GRAPHS.put(universeId, universe);
+            DebugRenderer.DEBUG_GRAPHS.put(universeId, universe);
         }
 
-        ClientBlockGraph oldGraph = universe.put(debugGraph.graphId(), debugGraph);
+        DebugBlockGraph oldGraph = universe.put(debugGraph.graphId(), debugGraph);
 
         if (oldGraph != null) {
             GraphLibClientImpl.removeGraphChunks(oldGraph);
         }
 
         for (long chunk : debugGraph.chunks()) {
-            Set<ClientBlockGraph> chunkSet = GraphLibClientImpl.GRAPHS_PER_CHUNK.get(chunk);
+            Set<DebugBlockGraph> chunkSet = GraphLibClientImpl.GRAPHS_PER_CHUNK.get(chunk);
             if (chunkSet == null) {
                 chunkSet = new LinkedHashSet<>();
                 chunkSet.add(debugGraph);
