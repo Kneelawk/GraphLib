@@ -1,8 +1,11 @@
 package com.kneelawk.graphlib.impl.graph;
 
+import java.util.stream.Stream;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 
@@ -27,4 +30,6 @@ public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
      * @return the number of empty graphs removed.
      */
     int removeEmptyGraphs();
+
+    void rebuildIndexChunks(Stream<ChunkSectionPos> sections, Runnable completionCallback);
 }

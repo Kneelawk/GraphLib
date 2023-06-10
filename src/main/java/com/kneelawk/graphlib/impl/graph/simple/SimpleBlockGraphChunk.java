@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.longs.Long2ObjectFunction;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
@@ -286,6 +287,44 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                 if (chunkPos.getMinX() <= pos.getX() && pos.getX() <= chunkPos.getMaxX() &&
                     chunkPos.getMinY() <= pos.getY() && pos.getY() <= chunkPos.getMaxY() &&
                     chunkPos.getMinZ() <= pos.getZ() && pos.getZ() <= chunkPos.getMaxZ()) {
+                    blockNodes.computeIfAbsent(ChunkSectionPos.packLocal(pos),
+                        pos1 -> new Object2LongLinkedOpenHashMap<>()).put(key.node(), graphId);
+                }
+            }
+        }
+    }
+
+    public void rebuild(LongList allGraphs, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
+        markDirty.run();
+
+        if (blockNodes == null) {
+            blockNodes = new Short2ObjectLinkedOpenHashMap<>();
+        }
+
+        graphsInChunk.clear();
+        graphsInPos.clear();
+        blockNodes.clear();
+
+        for (long graphId : allGraphs) {
+            SimpleBlockGraph graph = graphGetter.get(graphId);
+
+            if (graph == null) {
+                GLLog.warn(
+                    "Rebuilding graph index chunk, id {} (which was listed in all graphs) returned a null graph. Perhaps the graph was empty?");
+                continue;
+            }
+
+            for (var iter = graph.getNodes().iterator(); iter.hasNext(); ) {
+                NodeHolder<BlockNode> node = iter.next();
+                NodePos key = node.toNodePos();
+                BlockPos pos = key.pos();
+
+                if (chunkPos.getMinX() <= pos.getX() && pos.getX() <= chunkPos.getMaxX() &&
+                    chunkPos.getMinY() <= pos.getY() && pos.getY() <= chunkPos.getMaxY() &&
+                    chunkPos.getMinZ() <= pos.getZ() && pos.getZ() <= chunkPos.getMaxZ()) {
+                    graphsInChunk.add(graphId);
+                    graphsInPos.computeIfAbsent(ChunkSectionPos.packLocal(pos), s -> new LongLinkedOpenHashSet())
+                        .add(graphId);
                     blockNodes.computeIfAbsent(ChunkSectionPos.packLocal(pos),
                         pos1 -> new Object2LongLinkedOpenHashMap<>()).put(key.node(), graphId);
                 }

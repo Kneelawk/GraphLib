@@ -703,6 +703,22 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         return removed;
     }
 
+    @Override
+    public void rebuildIndexChunks(Stream<ChunkSectionPos> sections, Runnable completionCallback) {
+        LongList allGraphs = getExistingGraphs();
+
+        for (var iter = sections.iterator(); iter.hasNext(); ) {
+            ChunkSectionPos section = iter.next();
+
+            SimpleBlockGraphChunk chunk = chunks.getIfExists(section);
+            if (chunk != null) {
+                chunk.rebuild(allGraphs, this::getGraph);
+            }
+        }
+
+        completionCallback.run();
+    }
+
     // ---- Internal Methods ---- //
 
     /**
