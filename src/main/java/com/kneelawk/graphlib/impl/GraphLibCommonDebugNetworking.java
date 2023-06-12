@@ -41,8 +41,8 @@ import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 
-public final class GraphLibCommonNetworking {
-    private GraphLibCommonNetworking() {
+public final class GraphLibCommonDebugNetworking {
+    private GraphLibCommonDebugNetworking() {
     }
 
     public static final Identifier ID_MAP_BULK_ID = Constants.id("id_map_bulk");
@@ -61,8 +61,8 @@ public final class GraphLibCommonNetworking {
         ServerPlayConnectionEvents.DISCONNECT.register(
             (handler, server) -> debuggingPlayers.removeAll(handler.player.getUuid()));
 
-        GraphLibEvents.GRAPH_CREATED.register(GraphLibCommonNetworking::sendBlockGraph);
-        GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonNetworking::sendBlockGraph);
+        GraphLibEvents.GRAPH_CREATED.register(GraphLibCommonDebugNetworking::sendBlockGraph);
+        GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonDebugNetworking::sendBlockGraph);
         GraphLibEvents.GRAPH_DESTROYED.register((world, graphWorld, id) -> {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
@@ -81,7 +81,7 @@ public final class GraphLibCommonNetworking {
         buf.writeVarInt(getIdentifierInt(world, universe.getId()));
 
         MinecraftServer server = world.getServer();
-        GraphWorld graphWorld = universe.getGraphWorld(world);
+        GraphWorld graphWorld = universe.getServerGraphWorld(world);
         int viewDistance = server.getPlayerManager().getViewDistance();
 
         ChunkSectionPos playerPos = player.getWatchedSection();
@@ -184,7 +184,7 @@ public final class GraphLibCommonNetworking {
 
         buf.writeVarInt(graph.size());
         graph.getNodes().forEachOrdered(node -> {
-            buf.writeVarInt(getIdentifierInt(world, node.getNode().getTypeId()));
+            buf.writeVarInt(getIdentifierInt(world, node.getNode().getType().getId()));
             buf.writeBlockPos(node.getPos());
             node.getNode().toDebugPacket(node, buf);
             indexMap.put(node.toNodePos(), index.getAndIncrement());

@@ -8,6 +8,7 @@ import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 /**
  * Used for creating a new link entity.
  */
+@FunctionalInterface
 public interface LinkEntityFactory {
     /**
      * Creates a new link entity.

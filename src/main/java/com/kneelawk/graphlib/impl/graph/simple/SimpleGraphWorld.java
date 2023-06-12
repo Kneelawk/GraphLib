@@ -40,11 +40,14 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.world.World;
+
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -73,7 +76,7 @@ import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
  * API methods to an interface so that I could have more control over what methods were being called and to open up the
  * possibility of maybe eventually making a cubic-chunks implementation of GraphLib or something.
  */
-public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, GraphWorldImpl {
+public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldImpl, SimpleGraphCollection {
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
@@ -196,7 +199,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         chunks.close();
     }
 
-    // ---- Public Interface Methods ---- //
+    @Override
+    public void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx) {
+        // TODO: chunk pillars
+    }
+// ---- Public Interface Methods ---- //
 
     /**
      * Gets the universe this graph-view belongs to.
@@ -206,6 +213,16 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
     @Override
     public @NotNull GraphUniverse getUniverse() {
         return universe;
+    }
+
+    /**
+     * Gets the block world associated with this graph view.
+     *
+     * @return the block world associated with this graph view.
+     */
+    @Override
+    public @NotNull World getWorld() {
+        return world;
     }
 
     /**
@@ -705,21 +722,14 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
 
     // ---- Internal Methods ---- //
 
-    /**
-     * Marks a graph as dirty and in need of saving.
-     *
-     * @param graphId the id of the graph to mark.
-     */
-    void markDirty(long graphId) {
+    @Override
+    public void markDirty(long graphId) {
         unsavedGraphs.add(graphId);
     }
 
-    /**
-     * Creates a new graph and stores it, assigning it an ID.
-     *
-     * @return the newly-created graph.
-     */
-    @NotNull SimpleBlockGraph createGraph(boolean initializeGraphEntities) {
+    @Override
+    @NotNull
+    public SimpleBlockGraph createGraph(boolean initializeGraphEntities) {
         SimpleBlockGraph graph = new SimpleBlockGraph(this, getNextGraphId(), initializeGraphEntities);
         loadedGraphs.put(graph.getId(), graph);
 
@@ -729,12 +739,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         return graph;
     }
 
-    /**
-     * Deletes a graph and all nodes it contains.
-     *
-     * @param id the ID of the graph to delete.
-     */
-    void destroyGraph(long id) {
+    @Override
+    public void destroyGraph(long id) {
         SimpleBlockGraph graph = getGraph(id);
         if (graph == null) {
             // The graph does not exist.
@@ -748,7 +754,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         GraphLibEvents.GRAPH_DESTROYED.invoker().graphDestroyed(world, this, id);
     }
 
-    void putGraphWithNode(long id, @NotNull NodePos pos) {
+    @Override
+    public void putGraphWithNode(long id, @NotNull NodePos pos) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
         SimpleBlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
         chunk.putGraphWithNode(id, pos, this::getGraph);
@@ -756,7 +763,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         timer.onChunkUse(sectionPos);
     }
 
-    void removeGraphWithNode(long id, @NotNull NodePos pos) {
+    @Override
+    public void removeGraphWithNode(long id, @NotNull NodePos pos) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
@@ -766,7 +774,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
     }
 
-    void removeGraphInPos(long id, @NotNull BlockPos pos) {
+    @Override
+    public void removeGraphInPos(long id, @NotNull BlockPos pos) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
@@ -777,7 +786,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
     }
 
-    void removeGraphInChunk(long id, long pos) {
+    @Override
+    public void removeGraphInChunk(long id, long pos) {
         ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
@@ -787,8 +797,9 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         }
     }
 
-    void removeGraphInPoses(long id, @NotNull Iterable<NodePos> nodes, @NotNull Iterable<BlockPos> poses,
-                            @NotNull LongIterable chunkPoses) {
+    @Override
+    public void removeGraphInPoses(long id, @NotNull Iterable<NodePos> nodes, @NotNull Iterable<BlockPos> poses,
+                                   @NotNull LongIterable chunkPoses) {
         for (NodePos node : nodes) {
             removeGraphWithNode(id, node);
         }
@@ -798,6 +809,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         for (long pos : chunkPoses) {
             removeGraphInChunk(id, pos);
         }
+    }
+
+    @Override
+    public void graphUpdated(SimpleBlockGraph graph) {
+        GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, graph);
     }
 
     // ---- Node Update Methods ---- //
@@ -825,7 +841,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphView, GraphWorld, G
         connectionUpdates.clear();
     }
 
-    void scheduleCallbackUpdate(@NotNull NodeHolder<BlockNode> node, boolean validate) {
+    @Override
+    public void scheduleCallbackUpdate(@NotNull NodeHolder<BlockNode> node, boolean validate) {
         //noinspection ConstantConditions
         if (node == null) {
             GLLog.error("Something tried to schedule an update for a NULL node! This should NEVER happen.",

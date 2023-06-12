@@ -7,6 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
@@ -34,7 +35,7 @@ public interface NodeEntityContext {
      *
      * @return the block world that this node entity exists in.
      */
-    @NotNull ServerWorld getBlockWorld();
+    @NotNull World getBlockWorld();
 
     /**
      * Gets a view of the graph world this node entity exists in.

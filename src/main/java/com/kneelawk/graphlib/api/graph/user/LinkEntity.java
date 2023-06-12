@@ -4,7 +4,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
+
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 
@@ -16,11 +18,11 @@ public interface LinkEntity {
      * Get this link entity's type id.
      * <p>
      * The id returned here must be the same as the one registered with
-     * {@link GraphUniverse#addLinkEntityDecoder(Identifier, LinkEntityDecoder)}.
+     * {@link GraphUniverse#addLinkEntityType(LinkEntityType)}.
      *
      * @return this link entity's type id.
      */
-    @NotNull Identifier getTypeId();
+    @NotNull LinkEntityType getType();
 
     /**
      * Encodes this link entity as an NBT tag.
@@ -28,6 +30,14 @@ public interface LinkEntity {
      * @return this link entity as an NBT tag.
      */
     @Nullable NbtElement toTag();
+
+    /**
+     * Encodes this link entity as a packet for server to client synchronization.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the message context.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Called when this link entity's graph is about to be unloaded.

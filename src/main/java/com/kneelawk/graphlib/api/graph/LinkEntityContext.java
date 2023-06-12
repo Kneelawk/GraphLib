@@ -7,6 +7,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -36,7 +37,7 @@ public interface LinkEntityContext {
      *
      * @return the world of blocks that this link entity exists within.
      */
-    @NotNull ServerWorld getBlockWorld();
+    @NotNull World getBlockWorld();
 
     /**
      * Gets the world of graphs that this link entity exists within.

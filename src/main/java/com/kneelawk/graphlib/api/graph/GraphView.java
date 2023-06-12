@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
@@ -30,6 +31,13 @@ public interface GraphView {
      * @return the universe this belongs to.
      */
     @NotNull GraphUniverse getUniverse();
+
+    /**
+     * Gets the block world associated with this graph view.
+     *
+     * @return the block world associated with this graph view.
+     */
+    @NotNull World getWorld();
 
     /**
      * Gets the nodes in the given block-position.
@@ -135,7 +143,8 @@ public interface GraphView {
     /**
      * Gets the graph with the given ID.
      * <p>
-     * Note: this <b>may</b> involve loading the graph from the filesystem.
+     * Note: this <b>may</b> involve loading the graph from the filesystem, or may return <code>null</code> it that is
+     * not possible.
      *
      * @param id the ID of the graph to get.
      * @return the graph with the given ID.

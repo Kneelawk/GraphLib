@@ -4,6 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.math.ChunkPos;
 
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 
 public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
@@ -27,4 +30,6 @@ public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
      * @return the number of empty graphs removed.
      */
     int removeEmptyGraphs();
+
+    void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx);
 }

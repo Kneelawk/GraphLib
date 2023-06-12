@@ -9,6 +9,9 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
 import com.kneelawk.graphlib.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -35,11 +38,11 @@ public interface BlockNode {
      * Gets this block node's type ID, associated with its decoder.
      * <p>
      * A block node's {@link BlockNodeDecoder} must always be registered with
-     * {@link GraphUniverse#addNodeDecoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
+     * {@link GraphUniverse#addNodeType(BlockNodeType)} under the same ID as returned here.
      *
      * @return the id of this block node.
      */
-    @NotNull Identifier getTypeId();
+    @NotNull BlockNodeType getType();
 
     /**
      * Encodes this block node's data to an NBT element.
@@ -49,6 +52,16 @@ public interface BlockNode {
      * @return a (possibly null) NBT element describing this block node's data.
      */
     @Nullable NbtElement toTag();
+
+    /**
+     * Encodes this block node's data into a packet for server to client synchronization.
+     * <p>
+     * This does not need to write anything if this block node's type is all the data that needs to be sent.
+     *
+     * @param buf the buffer to write this node's data to.
+     * @param ctx the message context, used for writing to caches.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Checks if this block node should be automatically removed.
@@ -179,7 +192,7 @@ public interface BlockNode {
         buf.writeInt(hashCode());
 
         // Get the default color for our node type
-        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getTypeId()));
+        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getType().getId()));
 
         // A 0 byte to distinguish ourselves from SidedBlockNode, because both implementations use the same decoder
         buf.writeByte(0);

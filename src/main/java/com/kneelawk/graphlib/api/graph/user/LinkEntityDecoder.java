@@ -9,6 +9,7 @@ import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 /**
  * Decoder for {@link LinkEntity}s.
  */
+@FunctionalInterface
 public interface LinkEntityDecoder {
     /**
      * Decodes a {@link LinkEntity} from the given tag.

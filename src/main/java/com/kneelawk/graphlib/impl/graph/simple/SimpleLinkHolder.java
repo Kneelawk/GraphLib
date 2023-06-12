@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -15,18 +16,18 @@ import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 
 public class SimpleLinkHolder<K extends LinkKey> implements LinkHolder<K> {
-    private final ServerWorld blockWorld;
-    private final SimpleGraphWorld graphWorld;
+    private final World blockWorld;
+    private final GraphView graphWorld;
     private final Link<SimpleNodeWrapper, K> link;
 
-    public SimpleLinkHolder(ServerWorld blockWorld, SimpleGraphWorld graphWorld, Link<SimpleNodeWrapper, K> link) {
+    public SimpleLinkHolder(World blockWorld, GraphView graphWorld, Link<SimpleNodeWrapper, K> link) {
         this.blockWorld = blockWorld;
         this.graphWorld = graphWorld;
         this.link = link;
     }
 
     @Override
-    public @NotNull ServerWorld getBlockWorld() {
+    public @NotNull World getBlockWorld() {
         return blockWorld;
     }
 

@@ -4,7 +4,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
+
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -18,11 +20,11 @@ public interface LinkKey {
      * Gets the type id of this link key.
      * <p>
      * Note: this is the same type id as is used in registering link key decoders,
-     * {@link com.kneelawk.graphlib.api.graph.GraphUniverse#addLinkKeyDecoder(Identifier, LinkKeyDecoder)}.
+     * {@link com.kneelawk.graphlib.api.graph.GraphUniverse#addLinkKeyType(LinkKeyType)}.
      *
      * @return this link key's type id.
      */
-    @NotNull Identifier getTypeId();
+    @NotNull LinkKeyType getType();
 
     /**
      * Encodes this link key as an NBT tag.
@@ -30,6 +32,14 @@ public interface LinkKey {
      * @return this link key as an NBT tag.
      */
     @Nullable NbtElement toTag();
+
+    /**
+     * Encodes this link key as a packet for server to client synchronization.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the message context.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Checks whether this specific link should have a link entity associated with it.

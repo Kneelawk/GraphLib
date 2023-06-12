@@ -8,6 +8,7 @@ import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 /**
  * Used for creating a new node entity.
  */
+@FunctionalInterface
 public interface NodeEntityFactory {
     /**
      * Creates a new node entity.

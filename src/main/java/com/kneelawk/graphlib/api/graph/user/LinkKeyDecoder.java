@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtElement;
 /**
  * Used for decoding link keys.
  */
+@FunctionalInterface
 public interface LinkKeyDecoder {
     /**
      * Decodes a link key from an NBT tag.

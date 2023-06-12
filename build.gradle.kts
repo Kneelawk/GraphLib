@@ -104,9 +104,11 @@ tasks {
         val minecraft_version: String by project
         val quilt_mappings: String by project
         val jetbrains_annotations_version: String by project
+        val lns_version: String by project
         (options as? StandardJavadocDocletOptions)?.links = listOf(
 //            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
-            "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/"
+            "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/",
+            "https://alexiil.uk/javadoc/libnetworkstack/${lns_version}/"
         )
 
         options.optionFiles(file("javadoc-options.txt"))

@@ -11,6 +11,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -52,7 +53,7 @@ public interface NodeHolder<N extends BlockNode> {
      *
      * @return the world of blocks that this node holder is associated with.
      */
-    ServerWorld getBlockWorld();
+    World getBlockWorld();
 
     /**
      * Gets the world of graphs that this node holder is associated with.

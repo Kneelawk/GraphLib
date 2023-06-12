@@ -87,7 +87,7 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
     public void toNbt(@NotNull NbtCompound nbt) {
         nbt.put("first", first.toNbt());
         nbt.put("second", second.toNbt());
-        nbt.putString("keyType", key.getTypeId().toString());
+        nbt.putString("keyType", key.getType().getId().toString());
         NbtElement keyNbt = key.toTag();
         if (keyNbt != null) {
             nbt.put("key", keyNbt);
@@ -119,7 +119,7 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
         if (second == null) return null;
 
         Identifier typeId = new Identifier(nbt.getString("keyType"));
-        LinkKeyDecoder decoder = universe.getLinkKeyDecoder(typeId);
+        LinkKeyDecoder decoder = universe.getLinkKeyType(typeId);
         if (decoder == null) return null;
         LinkKey key = decoder.decode(nbt.get("key"));
         if (key == null) return null;

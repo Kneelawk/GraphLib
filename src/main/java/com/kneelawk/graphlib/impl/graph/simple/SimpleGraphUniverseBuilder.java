@@ -10,6 +10,7 @@ import com.kneelawk.graphlib.impl.GraphLibImpl;
 
 public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     SaveMode saveMode = SaveMode.UNLOAD;
+    boolean synchronize = false;
 
     @Override
     public @NotNull GraphUniverse build(@NotNull Identifier universeId) {
@@ -20,6 +21,12 @@ public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     @Override
     public GraphUniverse.@NotNull Builder saveMode(@NotNull SaveMode saveMode) {
         this.saveMode = saveMode;
+        return this;
+    }
+
+    @Override
+    public GraphUniverse.@NotNull Builder synchronizeToClient(boolean synchronize) {
+        this.synchronize = synchronize;
         return this;
     }
 }

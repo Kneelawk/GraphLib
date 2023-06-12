@@ -30,14 +30,14 @@ import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
+import com.kneelawk.graphlib.impl.GraphLibCommonDebugNetworking;
 import com.kneelawk.graphlib.impl.client.debug.graph.DebugBlockGraph;
 import com.kneelawk.graphlib.impl.client.debug.graph.SimpleDebugBlockNode;
 import com.kneelawk.graphlib.impl.client.debug.graph.SimpleDebugSidedBlockNode;
 import com.kneelawk.graphlib.impl.client.debug.render.DebugRenderer;
 
-public final class GraphLibClientNetworking {
-    private GraphLibClientNetworking() {
+public final class GraphLibClientDebugNetworking {
+    private GraphLibClientDebugNetworking() {
     }
 
     private static final Map<Integer, Identifier> idMap =
@@ -60,7 +60,7 @@ public final class GraphLibClientNetworking {
     };
 
     public static void init() {
-        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.ID_MAP_BULK_ID,
+        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonDebugNetworking.ID_MAP_BULK_ID,
             (client, handler, buf, responseSender) -> {
                 int size = buf.readVarInt();
 
@@ -70,14 +70,14 @@ public final class GraphLibClientNetworking {
                     idMap.put(index, id);
                 }
             });
-        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.ID_MAP_PUT_ID,
+        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonDebugNetworking.ID_MAP_PUT_ID,
             (client, handler, buf, responseSender) -> {
                 Identifier id = buf.readIdentifier();
                 int index = buf.readVarInt();
                 idMap.put(index, id);
             });
 
-        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.GRAPH_UPDATE_ID,
+        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonDebugNetworking.GRAPH_UPDATE_ID,
             (client, handler, buf, responseSender) -> {
                 int universeInt = buf.readVarInt();
                 Identifier universeId = idMap.get(universeInt);
@@ -91,7 +91,7 @@ public final class GraphLibClientNetworking {
 
                 client.execute(() -> addBlockGraph(universeId, debugGraph));
             });
-        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.GRAPH_UPDATE_BULK_ID,
+        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonDebugNetworking.GRAPH_UPDATE_BULK_ID,
             (client, handler, buf, responseSender) -> {
                 int universeInt = buf.readVarInt();
                 Identifier universeId = idMap.get(universeInt);
@@ -115,7 +115,7 @@ public final class GraphLibClientNetworking {
                     }
                 });
             });
-        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.GRAPH_DESTROY_ID,
+        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonDebugNetworking.GRAPH_DESTROY_ID,
             (client, handler, buf, responseSender) -> {
                 int universeInt = buf.readVarInt();
                 Identifier universeId = idMap.get(universeInt);
@@ -144,7 +144,7 @@ public final class GraphLibClientNetworking {
                     }
                 });
             });
-        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonNetworking.DEBUGGING_STOP_ID,
+        ClientPlayNetworking.registerGlobalReceiver(GraphLibCommonDebugNetworking.DEBUGGING_STOP_ID,
             (client, handler, buf, responseSender) -> {
                 int universeInt = buf.readVarInt();
 

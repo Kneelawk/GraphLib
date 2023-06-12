@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -22,16 +23,16 @@ import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
-    final ServerWorld blockWorld;
-    final SimpleGraphWorld graphWorld;
-    final Node<SimpleNodeWrapper, LinkKey> node;
+    final World blockWorld;
+    final GraphView graphWorld;
+    public final Node<SimpleNodeWrapper, LinkKey> node;
 
     /**
      * @param blockWorld the block world.
      * @param graphWorld the graph world.
      * @param node       treat this as if it were parameterized on <code>&lt;T&gt;</code>.
      */
-    public SimpleNodeHolder(ServerWorld blockWorld, SimpleGraphWorld graphWorld,
+    public SimpleNodeHolder(World blockWorld, GraphView graphWorld,
                             Node<SimpleNodeWrapper, LinkKey> node) {
         this.blockWorld = blockWorld;
         this.graphWorld = graphWorld;
@@ -55,7 +56,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public ServerWorld getBlockWorld() {
+    public World getBlockWorld() {
         return blockWorld;
     }
 

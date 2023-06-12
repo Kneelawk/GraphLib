@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -22,20 +21,25 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.world.SaveMode;
+import com.kneelawk.graphlib.impl.CommonProxy;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
+import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
@@ -43,25 +47,42 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Identifier id;
     private final List<BlockNodeDiscoverer> discoverers = new ArrayList<>();
-    private final Map<Identifier, BlockNodeDecoder> nodeDecoders = new LinkedHashMap<>();
+    private final Map<Identifier, BlockNodeType> nodeTypes = new LinkedHashMap<>();
     private final Object2IntMap<Identifier> typeIndices = new Object2IntLinkedOpenHashMap<>();
-    private final Map<Identifier, NodeEntityDecoder> nodeEntityDecoders = new LinkedHashMap<>();
-    private final Map<Identifier, LinkKeyDecoder> linkKeyDecoders = new LinkedHashMap<>();
-    private final Map<Identifier, LinkEntityDecoder> linkEntityDecoders = new LinkedHashMap<>();
+    private final Map<Identifier, NodeEntityType> nodeEntityTypes = new LinkedHashMap<>();
+    private final Map<Identifier, LinkKeyType> linkKeyTypes = new LinkedHashMap<>();
+    private final Map<Identifier, LinkEntityType> linkEntityTypes = new LinkedHashMap<>();
     private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
     private final Set<CacheCategory<?>> cacheCategories = new ObjectLinkedOpenHashSet<>();
     final SaveMode saveMode;
+    final boolean synchronize;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
         this.id = universeId;
         saveMode = builder.saveMode;
+        synchronize = builder.synchronize;
 
-        linkKeyDecoders.put(EmptyLinkKey.TYPE_ID, EmptyLinkKey.DECODER);
+        addLinkKeyType(EmptyLinkKey.TYPE);
     }
 
     @Override
-    public @NotNull GraphWorldImpl getGraphWorld(@NotNull ServerWorld world) {
+    public @NotNull GraphView getGraphView(@NotNull World world) {
+        return CommonProxy.INSTANCE.getStorage(world).get(id);
+    }
+
+    @Override
+    public @NotNull GraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world) {
         return StorageHelper.getStorage(world).get(id);
+    }
+
+    @Override
+    public @Nullable ClientGraphWorldImpl getClientGraphView() {
+        ClientGraphWorldStorage storage = CommonProxy.INSTANCE.getClientStorage();
+        if (storage == null) {
+            return null;
+        }
+
+        return storage.get(id);
     }
 
     @Override
@@ -97,95 +118,29 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public void addNodeDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder) {
-        nodeDecoders.put(typeId, decoder);
-        typeIndices.put(typeId, typeIndices.size());
+    public void addNodeType(@NotNull BlockNodeType type) {
+        nodeTypes.put(type.getId(), type);
+        typeIndices.put(type.getId(), typeIndices.size());
     }
 
     @Override
-    public void addNodeDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder> @NotNull ... decoders) {
-        for (Pair<Identifier, ? extends BlockNodeDecoder> pair : decoders) {
-            this.nodeDecoders.put(pair.key(), pair.value());
-            typeIndices.put(pair.key(), typeIndices.size());
-        }
+    public void addNodeEntityType(@NotNull NodeEntityType type) {
+        this.nodeEntityTypes.put(type.getId(), type);
     }
 
     @Override
-    public void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders) {
-        this.nodeDecoders.putAll(decoders);
-        for (Identifier id : decoders.keySet()) {
-            typeIndices.put(id, typeIndices.size());
-        }
+    public void addLinkKeyType(@NotNull LinkKeyType type) {
+        this.linkKeyTypes.put(type.getId(), type);
     }
 
     @Override
-    public void addNodeEntityDecoder(@NotNull Identifier typeId, @NotNull NodeEntityDecoder decoder) {
-        this.nodeEntityDecoders.put(typeId, decoder);
-    }
-
-    @Override
-    public void addNodeEntityDecoders(@NotNull Pair<Identifier, ? extends NodeEntityDecoder>... decoders) {
-        for (Pair<Identifier, ? extends NodeEntityDecoder> pair : decoders) {
-            this.nodeEntityDecoders.put(pair.key(), pair.value());
-        }
-    }
-
-    @Override
-    public void addNodeEntityDecoders(@NotNull Map<Identifier, ? extends NodeEntityDecoder> decoders) {
-        this.nodeEntityDecoders.putAll(decoders);
-    }
-
-    @Override
-    public void addLinkKeyDecoder(@NotNull Identifier typeId, @NotNull LinkKeyDecoder decoder) {
-        this.linkKeyDecoders.put(typeId, decoder);
-    }
-
-    @Override
-    public void addLinkKeyDecoders(@NotNull Pair<Identifier, ? extends LinkKeyDecoder> @NotNull ... decoders) {
-        for (Pair<Identifier, ? extends LinkKeyDecoder> pair : decoders) {
-            this.linkKeyDecoders.put(pair.key(), pair.value());
-        }
-    }
-
-    @Override
-    public void addLinkKeyDecoders(@NotNull Map<Identifier, ? extends LinkKeyDecoder> decoders) {
-        this.linkKeyDecoders.putAll(decoders);
-    }
-
-    @Override
-    public void addLinkEntityDecoder(@NotNull Identifier typeId, @NotNull LinkEntityDecoder decoder) {
-        this.linkEntityDecoders.put(typeId, decoder);
-    }
-
-    @Override
-    public void addLinkEntityDecoders(@NotNull Pair<Identifier, ? extends LinkEntityDecoder>... decoders) {
-        for (Pair<Identifier, ? extends LinkEntityDecoder> pair : decoders) {
-            this.linkEntityDecoders.put(pair.key(), pair.value());
-        }
-    }
-
-    @Override
-    public void addLinkEntityDecoders(@NotNull Map<Identifier, ? extends LinkEntityDecoder> decoders) {
-        this.linkEntityDecoders.putAll(decoders);
+    public void addLinkEntityType(@NotNull LinkEntityType type) {
+        this.linkEntityTypes.put(type.getId(), type);
     }
 
     @Override
     public void addGraphEntityType(@NotNull GraphEntityType<?> type) {
-        this.graphEntityTypes.put(type.id(), type);
-    }
-
-    @Override
-    public void addGraphEntityTypes(@NotNull GraphEntityType<?>... types) {
-        for (GraphEntityType<?> type : types) {
-            this.graphEntityTypes.put(type.id(), type);
-        }
-    }
-
-    @Override
-    public void addGraphEntityTypes(@NotNull Iterable<GraphEntityType<?>> types) {
-        for (GraphEntityType<?> type : types) {
-            this.graphEntityTypes.put(type.id(), type);
-        }
+        this.graphEntityTypes.put(type.getId(), type);
     }
 
     @Override
@@ -209,8 +164,18 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
+    public boolean isSynchronizationEnabled() {
+        return synchronize;
+    }
+
+    @Override
     public GraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites) {
         return new SimpleGraphWorld(this, world, path, syncChunkWrites);
+    }
+
+    @Override
+    public ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance) {
+        return new SimpleClientGraphWorld(this, world, loadDistance);
     }
 
     @Override
@@ -221,23 +186,23 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId) {
-        return nodeDecoders.get(typeId);
+    public @Nullable BlockNodeType getNodeType(@NotNull Identifier typeId) {
+        return nodeTypes.get(typeId);
     }
 
     @Override
-    public @Nullable NodeEntityDecoder getNodeEntityDecoder(@NotNull Identifier typeId) {
-        return nodeEntityDecoders.get(typeId);
+    public @Nullable NodeEntityType getNodeEntityType(@NotNull Identifier typeId) {
+        return nodeEntityTypes.get(typeId);
     }
 
     @Override
-    public @Nullable LinkKeyDecoder getLinkKeyDecoder(@NotNull Identifier typeId) {
-        return linkKeyDecoders.get(typeId);
+    public @Nullable LinkKeyType getLinkKeyType(@NotNull Identifier typeId) {
+        return linkKeyTypes.get(typeId);
     }
 
     @Override
-    public @Nullable LinkEntityDecoder getLinkEntityDecoder(@NotNull Identifier typeId) {
-        return linkEntityDecoders.get(typeId);
+    public @Nullable LinkEntityType getLinkEntityType(@NotNull Identifier typeId) {
+        return linkEntityTypes.get(typeId);
     }
 
     @Override

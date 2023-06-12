@@ -18,7 +18,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.impl.Constants;
-import com.kneelawk.graphlib.impl.GraphLibCommonNetworking;
+import com.kneelawk.graphlib.impl.GraphLibCommonDebugNetworking;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
@@ -66,7 +66,7 @@ public class GraphLibCommand {
             true);
 
         ServerWorld world = source.getWorld();
-        universe.value().getGraphWorld(world).updateNodes(BlockPos.stream(from, to));
+        universe.value().getServerGraphWorld(world).updateNodes(BlockPos.stream(from, to));
 
         source.sendFeedback(
             () -> Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
@@ -77,7 +77,7 @@ public class GraphLibCommand {
 
     private static int removeEmptyGraphsCommand(ServerCommandSource source,
                                                 Holder.Reference<GraphUniverseImpl> universe) {
-        int result = universe.value().getGraphWorld(source.getWorld()).removeEmptyGraphs();
+        int result = universe.value().getServerGraphWorld(source.getWorld()).removeEmptyGraphs();
 
         source.sendFeedback(() -> Constants.command("graphlib.removeemptygraphs.success", result), true);
 
@@ -86,13 +86,13 @@ public class GraphLibCommand {
 
     private static int startDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe)
         throws CommandSyntaxException {
-        GraphLibCommonNetworking.startDebuggingPlayer(source.getPlayerOrThrow(), universe.value());
+        GraphLibCommonDebugNetworking.startDebuggingPlayer(source.getPlayerOrThrow(), universe.value());
         return 15;
     }
 
     private static int stopDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe)
         throws CommandSyntaxException {
-        GraphLibCommonNetworking.stopDebuggingPlayer(source.getPlayerOrThrow(), universe.getRegistryKey().getValue());
+        GraphLibCommonDebugNetworking.stopDebuggingPlayer(source.getPlayerOrThrow(), universe.getRegistryKey().getValue());
         return 15;
     }
 

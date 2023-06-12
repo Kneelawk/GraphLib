@@ -7,6 +7,9 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
 
@@ -29,6 +32,14 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      * @return this graph entity as an NBT tag.
      */
     @Nullable NbtElement toTag();
+
+    /**
+     * Encodes this graph entity as a packet for server to client synchronization.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the message context.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Called right before this entity's associated graph is deleted.

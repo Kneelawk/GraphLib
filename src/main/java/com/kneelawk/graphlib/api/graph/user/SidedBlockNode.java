@@ -50,7 +50,7 @@ public interface SidedBlockNode extends BlockNode {
         buf.writeInt(hashCode());
 
         // Class name hash for use in default node coloring
-        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getTypeId()));
+        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getType().getId()));
 
         // A 1 byte to distinguish ourselves from BlockNode, because both implementations use the same decoder
         buf.writeByte(1);

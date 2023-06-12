@@ -11,6 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 
 /**
  * Represents a positioned block node.
@@ -41,7 +42,7 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
         nbt.putInt("x", pos.getX());
         nbt.putInt("y", pos.getY());
         nbt.putInt("z", pos.getZ());
-        nbt.putString("type", node.getTypeId().toString());
+        nbt.putString("type", node.getType().getId().toString());
         NbtElement nodeNbt = node.toTag();
         if (nodeNbt != null) {
             nbt.put("node", nodeNbt);
@@ -69,9 +70,9 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
     public static @Nullable NodePos fromNbt(@NotNull NbtCompound nbt, @NotNull GraphUniverse universe) {
         BlockPos pos = new BlockPos(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
         Identifier typeId = new Identifier(nbt.getString("type"));
-        BlockNodeDecoder decoder = universe.getNodeDecoder(typeId);
-        if (decoder == null) return null;
-        BlockNode node = decoder.decode(nbt.get("node"));
+        BlockNodeType type = universe.getNodeType(typeId);
+        if (type == null) return null;
+        BlockNode node = type.getDecoder().decode(nbt.get("node"));
         if (node == null) return null;
         return new NodePos(pos, node);
     }
