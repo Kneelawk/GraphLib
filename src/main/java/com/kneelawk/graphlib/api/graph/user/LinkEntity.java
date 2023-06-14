@@ -42,10 +42,10 @@ public interface LinkEntity {
     /**
      * Called when this link entity's graph is about to be unloaded.
      */
-    void onUnload();
+    default void onUnload() {}
 
     /**
      * Called when this link entity's block link has been deleted.
      */
-    void onDelete();
+    default void onDelete() {}
 }

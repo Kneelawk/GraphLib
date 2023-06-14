@@ -770,7 +770,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         if (chunk != null) {
             chunk.removeGraphWithNodeUnchecked(pos);
         } else {
-            GLLog.warn("Tried to remove node fom non-existent chunk. Id: {}, chunk: {}, node: {}", id, sectionPos, pos);
+            GLLog.warn("Tried to remove node from non-existent chunk. Id: {}, chunk: {}, node: {}", id, sectionPos, pos);
         }
     }
 

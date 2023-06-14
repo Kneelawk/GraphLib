@@ -25,6 +25,9 @@
 
 package com.kneelawk.graphlib.impl.graph;
 
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
 import com.kneelawk.graphlib.api.graph.GraphView;
 
 public interface ClientGraphWorldImpl extends GraphView {
@@ -33,4 +36,6 @@ public interface ClientGraphWorldImpl extends GraphView {
     void setChunkMapCenter(int x, int z);
 
     void updateLoadDistance(int loadDistance);
+
+    void receiveChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx);
 }

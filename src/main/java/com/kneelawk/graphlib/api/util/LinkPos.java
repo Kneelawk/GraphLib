@@ -12,6 +12,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 
 /**
  * Represents a positioned unique link in a way that can be looked up.
@@ -119,9 +120,9 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
         if (second == null) return null;
 
         Identifier typeId = new Identifier(nbt.getString("keyType"));
-        LinkKeyDecoder decoder = universe.getLinkKeyType(typeId);
-        if (decoder == null) return null;
-        LinkKey key = decoder.decode(nbt.get("key"));
+        LinkKeyType type = universe.getLinkKeyType(typeId);
+        if (type == null) return null;
+        LinkKey key = type.getDecoder().decode(nbt.get("key"));
         if (key == null) return null;
 
         return new LinkPos(first, second, key);

@@ -97,6 +97,14 @@ public interface BlockGraph {
     @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos);
 
     /**
+     * Gets all the nodes in the given chunk section.
+     *
+     * @param pos the position of the chunk section to get all nodes from.
+     * @return a stream of all nodes in the given chunk section.
+     */
+    @NotNull Stream<NodeHolder<BlockNode>> getNodesInChunkSection(ChunkSectionPos pos);
+
+    /**
      * Gets all the nodes in this graph.
      *
      * @return a stream of all the nodes in this graph.

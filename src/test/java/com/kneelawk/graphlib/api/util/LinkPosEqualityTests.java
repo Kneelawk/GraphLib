@@ -22,16 +22,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class LinkPosEqualityTests {
-    private static final BlockNodeType STRING_TYPE = BlockNodeType.of(new Identifier("test", "string"), nbt -> {
+    private static final BlockNodeType STRING_NODE_TYPE = BlockNodeType.of(new Identifier("test", "string"), nbt -> {
         if (nbt instanceof NbtString string)
             return new StringBlockNode(string.asString());
+        return null;
+    });
+
+    private static final LinkKeyType STRING_LINK_TYPE = LinkKeyType.of(new Identifier("test", "string"), nbt -> {
+        if (nbt instanceof NbtString string)
+            return new StringLinkKey(string.asString());
         return null;
     });
 
     private record StringBlockNode(String str) implements BlockNode {
         @Override
         public @NotNull BlockNodeType getType() {
-            return STRING_TYPE;
+            return STRING_NODE_TYPE;
         }
 
         @Override
@@ -56,7 +62,7 @@ public class LinkPosEqualityTests {
     private record StringLinkKey(String str) implements LinkKey {
         @Override
         public @NotNull LinkKeyType getType() {
-            return new Identifier("test", "string");
+            return STRING_LINK_TYPE;
         }
 
         @Override

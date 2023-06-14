@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.World;
 
 public class SimpleClientGraphChunkManager {
@@ -77,7 +78,7 @@ public class SimpleClientGraphChunkManager {
         return null;
     }
 
-    public @Nullable SimpleBlockGraphPillar initPillar(int x, int z) {
+    public @Nullable SimpleBlockGraphPillar getOrCreatePillar(int x, int z) {
         if (!pillars.isInRadius(x, z)) {
             return null;
         } else {
@@ -93,6 +94,28 @@ public class SimpleClientGraphChunkManager {
 
             return pillar;
         }
+    }
+
+    public @Nullable SimpleBlockGraphChunk getIfExists(int chunkX, int chunkY, int chunkZ) {
+        SimpleBlockGraphPillar pillar = getPillar(chunkX, chunkZ);
+        if (pillar == null) return null;
+
+        return pillar.get(chunkY);
+    }
+
+    public @Nullable SimpleBlockGraphChunk getIfExists(ChunkSectionPos pos) {
+        return getIfExists(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public @Nullable SimpleBlockGraphChunk getOrCreate(int chunkX, int chunkY, int chunkZ) {
+        SimpleBlockGraphPillar pillar = getOrCreatePillar(chunkX, chunkZ);
+        if (pillar == null) return null;
+
+        return pillar.getOrCreate(chunkY);
+    }
+
+    public @Nullable SimpleBlockGraphChunk getOrCreate(ChunkSectionPos pos) {
+        return getOrCreate(pos.getX(), pos.getY(), pos.getZ());
     }
 
     public void setPillarMapCenter(int x, int z) {
@@ -128,7 +151,7 @@ public class SimpleClientGraphChunkManager {
         return pillars.loadedPillarCount;
     }
 
-    final class ClientPillarMap {
+    static final class ClientPillarMap {
         final AtomicReferenceArray<@Nullable SimpleBlockGraphPillar> pillars;
         final int radius;
         private final int diameter;
@@ -146,7 +169,7 @@ public class SimpleClientGraphChunkManager {
             return Math.floorMod(chunkZ, diameter) * diameter + Math.floorMod(chunkX, diameter);
         }
 
-        protected void set(int index, @Nullable SimpleBlockGraphPillar pillar) {
+        private void set(int index, @Nullable SimpleBlockGraphPillar pillar) {
             @Nullable SimpleBlockGraphPillar oldPillar = pillars.getAndSet(index, pillar);
             if (oldPillar != null) {
                 loadedPillarCount--;
@@ -157,8 +180,8 @@ public class SimpleClientGraphChunkManager {
             }
         }
 
-        protected SimpleBlockGraphPillar compareAndSet(int index, SimpleBlockGraphPillar expect,
-                                                       SimpleBlockGraphPillar update) {
+        private SimpleBlockGraphPillar compareAndSet(int index, SimpleBlockGraphPillar expect,
+                                                     SimpleBlockGraphPillar update) {
             if (pillars.compareAndSet(index, expect, update) && update == null) {
                 loadedPillarCount--;
             }
