@@ -203,7 +203,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
     public void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx) {
         // TODO: chunk pillars
     }
-// ---- Public Interface Methods ---- //
+
+    // ---- Public Interface Methods ---- //
 
     /**
      * Gets the universe this graph-view belongs to.
