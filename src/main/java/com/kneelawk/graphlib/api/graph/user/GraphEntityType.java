@@ -139,6 +139,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @param decoder       a decoder for decoding graph entities of this type.
      * @param splitter      a splitter for splitting graph entities of this type apart.
      * @param packetDecoder an optional packet decoder for decoding graph entities on the client.
+     * @param <G>           The type of graph entity this type is for.
      * @return a new graph entity type.
      */
     @Contract(value = "_, _, _, _, _ -> new", pure = true)
@@ -150,6 +151,16 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
         return new GraphEntityType<>(id, factory, decoder, splitter, packetDecoder);
     }
 
+    /**
+     * Creates a new graph entity type.
+     *
+     * @param id            the id of the graph entity type.
+     * @param factory       a factory for creating new graph entities of this type.
+     * @param decoder       a decoder for decoding graph entities of this type.
+     * @param splitter      a splitter for splitting graph entities of this type apart.
+     * @param <G>           The type of graph entity this type is for.
+     * @return a new graph entity type.
+     */
     public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
                                                                             @NotNull GraphEntityFactory<G> factory,
                                                                             @NotNull GraphEntityDecoder<G> decoder,
