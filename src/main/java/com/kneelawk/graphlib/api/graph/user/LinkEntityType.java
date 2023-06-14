@@ -30,10 +30,12 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.util.ObjectType;
+
 /**
  * Describes a type of link entity.
  */
-public class LinkEntityType {
+public class LinkEntityType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull LinkEntityDecoder decoder;
     private final @Nullable LinkEntityPacketDecoder packetDecoder;
@@ -50,6 +52,7 @@ public class LinkEntityType {
      *
      * @return this type's id.
      */
+    @Override
     public @NotNull Identifier getId() {
         return id;
     }

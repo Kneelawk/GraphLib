@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -28,11 +27,18 @@ import com.kneelawk.graphlib.api.util.NodePos;
  */
 public interface NodeHolder<N extends BlockNode> {
     /**
+     * Gets the node pos of this node holder, holding only the block position and block node.
+     *
+     * @return the node pos of this node holder.
+     */
+    @NotNull NodePos getPos();
+
+    /**
      * Gets this block node holder's block position.
      *
      * @return the block-position of this block node holder.
      */
-    @NotNull BlockPos getPos();
+    @NotNull BlockPos getBlockPos();
 
     /**
      * Gets the {@link BlockNode} this holder is holding.
@@ -97,13 +103,6 @@ public interface NodeHolder<N extends BlockNode> {
     @NotNull SnapshotNode<N> toSnapshot();
 
     /**
-     * Gets the node pos of this node holder, holding only the block position and block node.
-     *
-     * @return the node pos of this node holder.
-     */
-    @NotNull NodePos toNodePos();
-
-    /**
      * Gets the node entity associated with this node holder, if any.
      *
      * @return the node entity associated with this node holder, if any.
@@ -111,7 +110,7 @@ public interface NodeHolder<N extends BlockNode> {
     default @Nullable NodeEntity getNodeEntity() {
         BlockGraph graph = getGraphWorld().getGraph(getGraphId());
         if (graph == null) return null;
-        return graph.getNodeEntity(toNodePos());
+        return graph.getNodeEntity(getPos());
     }
 
     /**
@@ -137,7 +136,7 @@ public interface NodeHolder<N extends BlockNode> {
      * @return the block state of the block at this node's position.
      */
     default @NotNull BlockState getBlockState() {
-        return getBlockWorld().getBlockState(getPos());
+        return getBlockWorld().getBlockState(getBlockPos());
     }
 
     /**
@@ -146,7 +145,7 @@ public interface NodeHolder<N extends BlockNode> {
      * @return the block entity at this node's position, if any.
      */
     default @Nullable BlockEntity getBlockEntity() {
-        return getBlockWorld().getBlockEntity(getPos());
+        return getBlockWorld().getBlockEntity(getBlockPos());
     }
 
     /**

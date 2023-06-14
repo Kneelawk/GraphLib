@@ -5,11 +5,11 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
  * Context for node entities.
@@ -45,12 +45,21 @@ public interface NodeEntityContext {
     @NotNull GraphView getGraphWorld();
 
     /**
+     * Gets this node entity's position.
+     *
+     * @return the position of this node entity.
+     */
+    default @NotNull NodePos getPos() {
+        return getHolder().getPos();
+    }
+
+    /**
      * Gets the block position of this node entity.
      *
      * @return the block position of thie node entity.
      */
-    default @NotNull BlockPos getPos() {
-        return getHolder().getPos();
+    default @NotNull BlockPos getBlockPos() {
+        return getHolder().getBlockPos();
     }
 
     /**
@@ -77,7 +86,7 @@ public interface NodeEntityContext {
      * @return the block state at this node entity's position.
      */
     default @NotNull BlockState getBlockState() {
-        return getBlockWorld().getBlockState(getPos());
+        return getBlockWorld().getBlockState(getBlockPos());
     }
 
     /**
@@ -86,6 +95,6 @@ public interface NodeEntityContext {
      * @return the block entity at this node entity's position, if any.
      */
     default @Nullable BlockEntity getBlockEntity() {
-        return getBlockWorld().getBlockEntity(getPos());
+        return getBlockWorld().getBlockEntity(getBlockPos());
     }
 }

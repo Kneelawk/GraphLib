@@ -1,4 +1,29 @@
-package com.kneelawk.graphlib.impl;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2023 Kneelawk.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
+package com.kneelawk.graphlib.impl.net;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -40,9 +65,11 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.impl.Constants;
+import com.kneelawk.graphlib.impl.GLLog;
 
-public final class GraphLibCommonDebugNetworking {
-    private GraphLibCommonDebugNetworking() {
+public final class GLDebugNet {
+    private GLDebugNet() {
     }
 
     public static final Identifier ID_MAP_BULK_ID = Constants.id("id_map_bulk");
@@ -61,8 +88,8 @@ public final class GraphLibCommonDebugNetworking {
         ServerPlayConnectionEvents.DISCONNECT.register(
             (handler, server) -> debuggingPlayers.removeAll(handler.player.getUuid()));
 
-        GraphLibEvents.GRAPH_CREATED.register(GraphLibCommonDebugNetworking::sendBlockGraph);
-        GraphLibEvents.GRAPH_UPDATED.register(GraphLibCommonDebugNetworking::sendBlockGraph);
+        GraphLibEvents.GRAPH_CREATED.register(GLDebugNet::sendBlockGraph);
+        GraphLibEvents.GRAPH_UPDATED.register(GLDebugNet::sendBlockGraph);
         GraphLibEvents.GRAPH_DESTROYED.register((world, graphWorld, id) -> {
             PacketByteBuf buf = PacketByteBufs.create();
             buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
@@ -185,10 +212,10 @@ public final class GraphLibCommonDebugNetworking {
         buf.writeVarInt(graph.size());
         graph.getNodes().forEachOrdered(node -> {
             buf.writeVarInt(getIdentifierInt(world, node.getNode().getType().getId()));
-            buf.writeBlockPos(node.getPos());
+            buf.writeBlockPos(node.getBlockPos());
             node.getNode().toDebugPacket(node, buf);
-            indexMap.put(node.toNodePos(), index.getAndIncrement());
-            node.getConnections().stream().map(LinkHolder::toLinkPos).forEach(distinct::add);
+            indexMap.put(node.getPos(), index.getAndIncrement());
+            node.getConnections().stream().map(LinkHolder::getPos).forEach(distinct::add);
         });
 
         PacketByteBuf linkBuf = PacketByteBufs.create();

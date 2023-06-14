@@ -40,7 +40,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull BlockPos getPos() {
+    public @NotNull BlockPos getBlockPos() {
         return node.data().getPos();
     }
 
@@ -94,7 +94,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public @NotNull NodePos toNodePos() {
+    public @NotNull NodePos getPos() {
         return new NodePos(node.data().getPos(), node.data().getNode());
     }
 

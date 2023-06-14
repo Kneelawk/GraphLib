@@ -850,7 +850,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
             return;
         }
 
-        NodePos key = node.toNodePos();
+        NodePos key = node.getPos();
         if (!callbackUpdates.containsKey(key) || !validate) {
             callbackUpdates.put(key, new CallbackUpdate(node, validate));
         }
@@ -912,7 +912,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
     }
 
     private void updateConnectionsImpl(@NotNull NodeHolder<BlockNode> node) {
-        NodePos nodePos = node.toNodePos();
+        NodePos nodePos = node.getPos();
         long nodeGraphId = node.getGraphId();
         SimpleBlockGraph graph = getGraph(nodeGraphId);
 
@@ -924,7 +924,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         // Collect the old node connections
         Map<LinkPos, LinkHolder<LinkKey>> oldConnections = new Object2ObjectLinkedOpenHashMap<>();
         for (LinkHolder<LinkKey> link : node.getConnections()) {
-            oldConnections.put(link.toLinkPos(), link);
+            oldConnections.put(link.getPos(), link);
         }
 
         // Collect the new connections that are wanted by both parties

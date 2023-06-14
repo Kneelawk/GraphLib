@@ -4,17 +4,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 
 /**
  * Mutable data associated with a block node, similar to a BlockEntity.
  */
 public interface NodeEntity {
+    /**
+     * Gets the node entity context this was created with.
+     *
+     * @return this node entity's context.
+     */
+    @NotNull NodeEntityContext getContext();
+
     /**
      * Get this node entity's type id.
      * <p>
@@ -43,10 +50,10 @@ public interface NodeEntity {
     /**
      * Called when this node entity's graph is about to be unloaded.
      */
-    void onUnload();
+    default void onUnload() {}
 
     /**
      * Called when this node entity's block node has been deleted.
      */
-    void onDelete();
+    default void onDelete() {}
 }

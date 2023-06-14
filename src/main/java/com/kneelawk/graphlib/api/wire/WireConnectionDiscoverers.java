@@ -78,7 +78,7 @@ public final class WireConnectionDiscoverers {
                                                                          @Nullable SidedWireConnectionFilter filter,
                                                                          @NotNull LinkKeyFactory keyFactory) {
         GraphView graphView = holder.getGraphWorld();
-        BlockPos pos = holder.getPos();
+        BlockPos pos = holder.getBlockPos();
         Direction side = self.getSide();
         List<HalfLink> collector = new ArrayList<>();
 
@@ -145,9 +145,9 @@ public final class WireConnectionDiscoverers {
      */
     public static boolean sidedWireCanConnect(@NotNull SidedWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
                                               @NotNull HalfLink link, @Nullable SidedWireConnectionFilter filter) {
-        BlockPos pos = holder.getPos();
+        BlockPos pos = holder.getBlockPos();
         Direction side = self.getSide();
-        BlockPos otherPos = link.other().getPos();
+        BlockPos otherPos = link.other().getBlockPos();
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
@@ -244,7 +244,7 @@ public final class WireConnectionDiscoverers {
                                                                          @Nullable FullWireConnectionFilter filter,
                                                                          @NotNull LinkKeyFactory keyFactory) {
         GraphView graphView = holder.getGraphWorld();
-        BlockPos pos = holder.getPos();
+        BlockPos pos = holder.getBlockPos();
         List<HalfLink> collector = new ArrayList<>();
 
         for (Direction side : Direction.values()) {
@@ -284,8 +284,8 @@ public final class WireConnectionDiscoverers {
      */
     public static boolean fullBlockCanConnect(@NotNull FullWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
                                               @NotNull HalfLink link, @Nullable FullWireConnectionFilter filter) {
-        BlockPos pos = holder.getPos();
-        BlockPos otherPos = link.other().getPos();
+        BlockPos pos = holder.getBlockPos();
+        BlockPos otherPos = link.other().getBlockPos();
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
@@ -349,7 +349,7 @@ public final class WireConnectionDiscoverers {
                                                                           @Nullable CenterWireConnectionFilter filter,
                                                                           @NotNull LinkKeyFactory keyFactory) {
         GraphView graphView = holder.getGraphWorld();
-        BlockPos pos = holder.getPos();
+        BlockPos pos = holder.getBlockPos();
         List<HalfLink> collector = new ArrayList<>();
 
         // add internal connections
@@ -399,8 +399,8 @@ public final class WireConnectionDiscoverers {
      */
     public static boolean centerWireCanConnect(@NotNull CenterWireBlockNode self, @NotNull NodeHolder<BlockNode> holder,
                                                @NotNull HalfLink link, @Nullable CenterWireConnectionFilter filter) {
-        BlockPos pos = holder.getPos();
-        BlockPos otherPos = link.other().getPos();
+        BlockPos pos = holder.getBlockPos();
+        BlockPos otherPos = link.other().getBlockPos();
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
@@ -460,7 +460,7 @@ public final class WireConnectionDiscoverers {
                                                                          @Nullable SidedFaceConnectionFilter filter,
                                                                          @NotNull LinkKeyFactory keyFactory) {
         GraphView graphView = holder.getGraphWorld();
-        BlockPos pos = holder.getPos();
+        BlockPos pos = holder.getBlockPos();
         List<HalfLink> collector = new ArrayList<>();
 
         // all our connections should be in the same block
@@ -499,8 +499,8 @@ public final class WireConnectionDiscoverers {
      */
     public static boolean sidedFaceCanConnect(@NotNull SidedFaceBlockNode self, @NotNull NodeHolder<BlockNode> holder,
                                               @NotNull HalfLink link, @Nullable SidedFaceConnectionFilter filter) {
-        BlockPos pos = holder.getPos();
-        BlockPos otherPos = link.other().getPos();
+        BlockPos pos = holder.getBlockPos();
+        BlockPos otherPos = link.other().getBlockPos();
         BlockNode other = link.other().getNode();
 
         Direction side = self.getSide();

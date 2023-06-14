@@ -487,7 +487,7 @@ public class SimpleBlockGraph implements BlockGraph {
             chunks.add(ChunkSectionPos.from(pos).asLong());
             NodeHolder<BlockNode> holder = new SimpleNodeHolder<>(world.getWorld(), world, node);
             nodesInPos.put(pos, holder);
-            nodesToHolders.put(holder.toNodePos(), holder);
+            nodesToHolders.put(holder.getPos(), holder);
         }
     }
 
@@ -543,8 +543,8 @@ public class SimpleBlockGraph implements BlockGraph {
     void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
         // see if removing this node means removing a block-pos or a chunk
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
-        NodePos removedNode = node.toNodePos();
-        BlockPos removedPos = node.getPos();
+        NodePos removedNode = node.getPos();
+        BlockPos removedPos = node.getBlockPos();
         ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
         nodesInPos.remove(removedPos, node);
         nodesToHolders.remove(removedNode);
@@ -599,7 +599,7 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         // remove the associated node entity if any
-        NodeEntity nodeEntity = nodeEntities.remove(node.toNodePos());
+        NodeEntity nodeEntity = nodeEntities.remove(node.getPos());
         if (nodeEntity != null) {
             nodeEntity.onDelete();
         }
@@ -631,7 +631,7 @@ public class SimpleBlockGraph implements BlockGraph {
                                       @NotNull LinkEntityFactory entityFactory) {
         LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.getWorld(), world,
             graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key));
-        LinkPos linkPos = link.toLinkPos();
+        LinkPos linkPos = link.getPos();
 
         LinkEntity linkEntity;
         if (!linkEntities.containsKey(linkPos)) {
@@ -664,7 +664,7 @@ public class SimpleBlockGraph implements BlockGraph {
         boolean linkRemoved =
             graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
 
-        LinkEntity entity = linkEntities.remove(new LinkPos(a.toNodePos(), b.toNodePos(), key));
+        LinkEntity entity = linkEntities.remove(new LinkPos(a.getPos(), b.getPos(), key));
         if (entity != null) {
             entity.onDelete();
         }

@@ -31,10 +31,12 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.util.ObjectType;
+
 /**
  * Describes a type of block node.
  */
-public class BlockNodeType {
+public class BlockNodeType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull BlockNodeDecoder decoder;
     private final @Nullable BlockNodePacketDecoder packetDecoder;
@@ -51,6 +53,7 @@ public class BlockNodeType {
      *
      * @return this type's id.
      */
+    @Override
     public @NotNull Identifier getId() {
         return id;
     }

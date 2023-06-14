@@ -30,10 +30,12 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.util.ObjectType;
+
 /**
  * Describes a type of link key.
  */
-public class LinkKeyType {
+public class LinkKeyType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull LinkKeyDecoder decoder;
     private final @Nullable LinkKeyPacketDecoder packetDecoder;
@@ -50,6 +52,7 @@ public class LinkKeyType {
      *
      * @return this type's id.
      */
+    @Override
     public @NotNull Identifier getId() {
         return id;
     }
@@ -110,8 +113,8 @@ public class LinkKeyType {
     /**
      * Creates a new link key type.
      *
-     * @param id            the id of the type.
-     * @param decoder       the decoder of the type.
+     * @param id      the id of the type.
+     * @param decoder the decoder of the type.
      * @return a new link key type.
      */
     public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder) {

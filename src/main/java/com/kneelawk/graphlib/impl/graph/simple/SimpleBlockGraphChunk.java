@@ -281,7 +281,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
             }
 
             for (NodeHolder<BlockNode> holder : graph.getNodes().toList()) {
-                NodePos key = holder.toNodePos();
+                NodePos key = holder.getPos();
                 BlockPos pos = key.pos();
                 if (chunkPos.getMinX() <= pos.getX() && pos.getX() <= chunkPos.getMaxX() &&
                     chunkPos.getMinY() <= pos.getY() && pos.getY() <= chunkPos.getMaxY() &&

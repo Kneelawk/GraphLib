@@ -8,10 +8,16 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNodePacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
+import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Represents a positioned block node.
@@ -61,6 +67,18 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
     }
 
     /**
+     * Writes this NodePos to a packet.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the packet's message context.
+     */
+    public void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {
+        buf.writeBlockPos(pos);
+        buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), node.getType().getId()));
+        node.toPacket(buf, ctx);
+    }
+
+    /**
      * Decodes a NodePos from an NBT compound.
      *
      * @param nbt      the NBT compound to decode from.
@@ -69,11 +87,60 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
      */
     public static @Nullable NodePos fromNbt(@NotNull NbtCompound nbt, @NotNull GraphUniverse universe) {
         BlockPos pos = new BlockPos(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
+
         Identifier typeId = new Identifier(nbt.getString("type"));
         BlockNodeType type = universe.getNodeType(typeId);
-        if (type == null) return null;
+        if (type == null) {
+            GLLog.warn("Unable to decode unknown block node type id {} in universe {}", typeId, universe.getId());
+            return null;
+        }
+
         BlockNode node = type.getDecoder().decode(nbt.get("node"));
-        if (node == null) return null;
+        if (node == null) {
+            GLLog.warn("Failed to decode block node {}", type.getId());
+            return null;
+        }
+
+        return new NodePos(pos, node);
+    }
+
+    /**
+     * Decodes a NodePos from a packet.
+     *
+     * @param buf      the buffer to read from.
+     * @param ctx      the packet's message context.
+     * @param universe the universe that the block node's decoder is to be retrieved from.
+     * @return a newly decoded NodePos.
+     */
+    public static @Nullable NodePos fromPacket(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx,
+                                               @NotNull GraphUniverse universe) {
+        BlockPos pos = buf.readBlockPos();
+
+        int idInt = buf.readVarUnsignedInt();
+        Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), idInt);
+        if (typeId == null) {
+            GLLog.warn("Unable to decode block node type id from unknown identifier int {}", idInt);
+            return null;
+        }
+
+        BlockNodeType type = universe.getNodeType(typeId);
+        if (type == null) {
+            GLLog.warn("Unable to decode unknown block node type id {} in universe {}", typeId, universe.getId());
+            return null;
+        }
+
+        BlockNodePacketDecoder decoder = type.getPacketDecoder();
+        if (decoder == null) {
+            GLLog.warn("Tried to decode block node {} with no packet decoder.", type.getId());
+            return null;
+        }
+
+        BlockNode node = decoder.decode(buf, ctx);
+        if (node == null) {
+            GLLog.warn("Failed to decode block node {}", type.getId());
+            return null;
+        }
+
         return new NodePos(pos, node);
     }
 }

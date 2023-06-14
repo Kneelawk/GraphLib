@@ -30,10 +30,12 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.util.ObjectType;
+
 /**
  * Describes a type of node entity.
  */
-public class NodeEntityType {
+public class NodeEntityType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull NodeEntityDecoder decoder;
     private final @Nullable NodeEntityPacketDecoder packetDecoder;
@@ -50,6 +52,7 @@ public class NodeEntityType {
      *
      * @return this type's id.
      */
+    @Override
     public @NotNull Identifier getId() {
         return id;
     }

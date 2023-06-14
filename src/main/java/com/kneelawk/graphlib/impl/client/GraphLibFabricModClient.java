@@ -25,7 +25,7 @@ public class GraphLibFabricModClient implements ClientModInitializer {
         GraphLibClientImpl.register();
 
         ClientProxy.init();
-        GraphLibClientDebugNetworking.init();
+        GLClientDebugNet.init();
 
         DebugRenderer.init();
 

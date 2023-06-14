@@ -18,7 +18,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.impl.Constants;
-import com.kneelawk.graphlib.impl.GraphLibCommonDebugNetworking;
+import com.kneelawk.graphlib.impl.net.GLDebugNet;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
@@ -86,13 +86,13 @@ public class GraphLibCommand {
 
     private static int startDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe)
         throws CommandSyntaxException {
-        GraphLibCommonDebugNetworking.startDebuggingPlayer(source.getPlayerOrThrow(), universe.value());
+        GLDebugNet.startDebuggingPlayer(source.getPlayerOrThrow(), universe.value());
         return 15;
     }
 
     private static int stopDebugRender(ServerCommandSource source, Holder.Reference<GraphUniverseImpl> universe)
         throws CommandSyntaxException {
-        GraphLibCommonDebugNetworking.stopDebuggingPlayer(source.getPlayerOrThrow(), universe.getRegistryKey().getValue());
+        GLDebugNet.stopDebuggingPlayer(source.getPlayerOrThrow(), universe.getRegistryKey().getValue());
         return 15;
     }
 

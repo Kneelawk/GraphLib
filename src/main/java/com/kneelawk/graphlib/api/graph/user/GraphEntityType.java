@@ -9,13 +9,14 @@ import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
+import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Holds info about a type of graph entity.
  *
  * @param <G> the type of graph entity this corresponds to.
  */
-public final class GraphEntityType<G extends GraphEntity<G>> {
+public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull GraphEntityFactory<G> factory;
     private final @NotNull GraphEntityDecoder<G> decoder;
@@ -45,6 +46,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> {
      *
      * @return this type's id.
      */
+    @Override
     public @NotNull Identifier getId() {return id;}
 
     /**
