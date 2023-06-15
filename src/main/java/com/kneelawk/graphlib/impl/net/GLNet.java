@@ -27,9 +27,14 @@ package com.kneelawk.graphlib.impl.net;
 
 import java.util.function.Function;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import alexiil.mc.lib.net.ActiveConnection;
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
@@ -43,6 +48,7 @@ import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.api.util.ObjectType;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
@@ -102,4 +108,22 @@ public class GLNet {
                 entityCtx.getPos().toPacket(buffer, ctx);
             }
         };
+
+    public static <T> @Nullable T readType(@NotNull NetByteBuf buf, ActiveConnection conn,
+                                           @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
+                                           @NotNull String typeName, BlockPos blockPos) {
+        int typeIdInt = buf.readVarUnsignedInt();
+        Identifier typeId = GLNet.ID_CACHE.getObj(conn, typeIdInt);
+        if (typeId == null) {
+            GLLog.warn("Unable to decode unknown {} id int: {} @ {}", typeName, typeIdInt, blockPos);
+            return null;
+        }
+
+        T type = typeGetter.apply(typeId);
+        if (type == null) {
+            GLLog.warn("Unable to decode unknown BlockNode id: {} @ {}", typeId, blockPos);
+        }
+
+        return type;
+    }
 }

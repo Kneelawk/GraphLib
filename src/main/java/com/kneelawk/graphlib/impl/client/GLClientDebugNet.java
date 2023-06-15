@@ -214,18 +214,18 @@ public final class GLClientDebugNet {
             int nodeAIndex = buf.readVarInt();
             int nodeBIndex = buf.readVarInt();
 
-            Node<ClientBlockNodeHolder, EmptyLinkKey> nodeA = nodeList.get(nodeAIndex);
-            Node<ClientBlockNodeHolder, EmptyLinkKey> nodeB = nodeList.get(nodeBIndex);
-
-            if (nodeA == null) {
+            if (nodeAIndex < 0 || nodeAIndex >= nodeList.size()) {
                 GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeAIndex);
                 continue;
             }
 
-            if (nodeB == null) {
+            if (nodeBIndex < 0 || nodeBIndex >= nodeList.size()) {
                 GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeBIndex);
                 continue;
             }
+
+            Node<ClientBlockNodeHolder, EmptyLinkKey> nodeA = nodeList.get(nodeAIndex);
+            Node<ClientBlockNodeHolder, EmptyLinkKey> nodeB = nodeList.get(nodeBIndex);
 
             graph.link(nodeA, nodeB, EmptyLinkKey.INSTANCE);
         }
