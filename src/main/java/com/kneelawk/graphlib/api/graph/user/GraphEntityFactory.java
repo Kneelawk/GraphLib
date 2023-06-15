@@ -6,16 +6,14 @@ import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 
 /**
  * Creates new graph entities.
- *
- * @param <G> the type of graph entity this factory creates.
  */
 @FunctionalInterface
-public interface GraphEntityFactory<G extends GraphEntity<G>> {
+public interface GraphEntityFactory {
     /**
      * Creates a new graph entity.
      *
      * @param ctx the graph entity context for this graph entity.
      * @return a newly created graph entity.
      */
-    @NotNull G createNew(@NotNull GraphEntityContext ctx);
+    @NotNull GraphEntity<?> createNew(@NotNull GraphEntityContext ctx);
 }

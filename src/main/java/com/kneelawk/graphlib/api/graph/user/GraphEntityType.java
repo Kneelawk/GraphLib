@@ -18,10 +18,10 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  */
 public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectType {
     private final @NotNull Identifier id;
-    private final @NotNull GraphEntityFactory<G> factory;
-    private final @NotNull GraphEntityDecoder<G> decoder;
+    private final @NotNull GraphEntityFactory factory;
+    private final @NotNull GraphEntityDecoder decoder;
     private final @NotNull GraphEntitySplitter<G> splitter;
-    private final @Nullable GraphEntityPacketDecoder<G> packetDecoder;
+    private final @Nullable GraphEntityPacketDecoder packetDecoder;
 
     /**
      * @param id            the id of the graph entity type.
@@ -30,10 +30,10 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @param splitter      a splitter for splitting graph entities of this type apart.
      * @param packetDecoder an optional packet decoder for decoding graph entities on the client.
      */
-    private GraphEntityType(@NotNull Identifier id, @NotNull GraphEntityFactory<G> factory,
-                            @NotNull GraphEntityDecoder<G> decoder,
+    private GraphEntityType(@NotNull Identifier id, @NotNull GraphEntityFactory factory,
+                            @NotNull GraphEntityDecoder decoder,
                             @NotNull GraphEntitySplitter<G> splitter,
-                            @Nullable GraphEntityPacketDecoder<G> packetDecoder) {
+                            @Nullable GraphEntityPacketDecoder packetDecoder) {
         this.id = id;
         this.factory = factory;
         this.decoder = decoder;
@@ -54,14 +54,14 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      *
      * @return this type's factory.
      */
-    public @NotNull GraphEntityFactory<G> getFactory() {return factory;}
+    public @NotNull GraphEntityFactory getFactory() {return factory;}
 
     /**
      * Gets this type's decoder.
      *
      * @return this type's decoder.
      */
-    public @NotNull GraphEntityDecoder<G> getDecoder() {return decoder;}
+    public @NotNull GraphEntityDecoder getDecoder() {return decoder;}
 
     /**
      * Gets this type's splitter.
@@ -75,7 +75,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      *
      * @return this type's packet decoder.
      */
-    public GraphEntityPacketDecoder<G> getPacketDecoder() {
+    public GraphEntityPacketDecoder getPacketDecoder() {
         return packetDecoder;
     }
 
@@ -103,11 +103,10 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      */
     @ApiStatus.Internal
     @SuppressWarnings("unchecked")
-    public @NotNull GraphEntity<G> splitNew(@NotNull GraphEntity<?> original, @NotNull BlockGraph originalGraph,
+    public @NotNull GraphEntity<?> splitNew(@NotNull GraphEntity<?> original, @NotNull BlockGraph originalGraph,
                                             @NotNull GraphEntityContext ctx) {
         return splitter.splitNew((G) original, originalGraph, ctx);
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -144,26 +143,26 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      */
     @Contract(value = "_, _, _, _, _ -> new", pure = true)
     public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
-                                                                            @NotNull GraphEntityFactory<G> factory,
-                                                                            @NotNull GraphEntityDecoder<G> decoder,
+                                                                            @NotNull GraphEntityFactory factory,
+                                                                            @NotNull GraphEntityDecoder decoder,
                                                                             @NotNull GraphEntitySplitter<G> splitter,
-                                                                            @Nullable GraphEntityPacketDecoder<G> packetDecoder) {
+                                                                            @Nullable GraphEntityPacketDecoder packetDecoder) {
         return new GraphEntityType<>(id, factory, decoder, splitter, packetDecoder);
     }
 
     /**
      * Creates a new graph entity type.
      *
-     * @param id            the id of the graph entity type.
-     * @param factory       a factory for creating new graph entities of this type.
-     * @param decoder       a decoder for decoding graph entities of this type.
-     * @param splitter      a splitter for splitting graph entities of this type apart.
-     * @param <G>           The type of graph entity this type is for.
+     * @param id       the id of the graph entity type.
+     * @param factory  a factory for creating new graph entities of this type.
+     * @param decoder  a decoder for decoding graph entities of this type.
+     * @param splitter a splitter for splitting graph entities of this type apart.
+     * @param <G>      The type of graph entity this type is for.
      * @return a new graph entity type.
      */
     public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
-                                                                            @NotNull GraphEntityFactory<G> factory,
-                                                                            @NotNull GraphEntityDecoder<G> decoder,
+                                                                            @NotNull GraphEntityFactory factory,
+                                                                            @NotNull GraphEntityDecoder decoder,
                                                                             @NotNull GraphEntitySplitter<G> splitter) {
         return new GraphEntityType<>(id, factory, decoder, splitter, null);
     }

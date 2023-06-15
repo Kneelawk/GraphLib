@@ -31,14 +31,17 @@ import net.minecraft.nbt.NbtLong;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
@@ -58,6 +61,7 @@ import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
@@ -291,6 +295,47 @@ public class SimpleBlockGraph implements BlockGraph {
         tag.put("graphEntities", graphEntitiesCom);
 
         return tag;
+    }
+
+    void loadGraphEntitiesFromPacket(NetByteBuf buf, IMsgReadCtx ctx) {
+        // assume that having any graph entities means we've already loaded.
+        if (!graphEntities.isEmpty()) return;
+
+        int entityCount = buf.readVarUnsignedInt();
+        for (int entityIndex = 0; entityIndex < entityCount; entityIndex++) {
+            int typeIdInt = buf.readVarUnsignedInt();
+            Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
+            if (typeId == null) {
+                GLLog.warn("Unable to decode graph entity type id int as id. Int: {}", typeIdInt);
+                break;
+            }
+
+            GraphEntityType<?> type = world.getUniverse().getGraphEntityType(typeId);
+            if (type == null) {
+                GLLog.warn("Received unknown graph entity type id: {}", typeId);
+                break;
+            }
+
+            GraphEntityPacketDecoder decoder = type.getPacketDecoder();
+            if (decoder == null) {
+                GLLog.warn("Received graph entity but type has no packet decoder. Id: {}", typeId);
+                break;
+            }
+
+            GraphEntity<?> entity =
+                decoder.decode(buf, ctx, new SimpleGraphEntityContext(world.getWorld(), world, this));
+            if (entity == null) {
+                GLLog.warn("Failed to decode graph entity. Id: {}", typeId);
+                break;
+            }
+
+            graphEntities.put(type, entity);
+        }
+
+        for (GraphEntityType<?> type : world.getUniverse().getAllGraphEntityTypes()) {
+            graphEntities.computeIfAbsent(type,
+                ty -> ty.getFactory().createNew(new SimpleGraphEntityContext(world.getWorld(), world, this)));
+        }
     }
 
     /**
@@ -909,7 +954,7 @@ public class SimpleBlockGraph implements BlockGraph {
         }
 
         chunks.removeAll(removedChunks);
-        nodeCaches.clear();
+        rebuildCaches();
 
         world.removeGraphInPoses(id, removedNodes, removedPoses, removedChunks);
     }

@@ -119,6 +119,13 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 long graphId = chunkBuf.readVarUnsignedLong();
                 SimpleBlockGraph graph = getOrCreateGraph(graphId);
 
+                // load graph entities if they're not already loaded
+                int graphEntityBufLen = chunkBuf.readVarUnsignedInt();
+                if (graphEntityBufLen > 0) {
+                    NetByteBuf graphEntityBuf = chunkBuf.readBytes(graphEntityBufLen);
+                    graph.loadGraphEntitiesFromPacket(graphEntityBuf, ctx);
+                }
+
                 // TODO: graph reading
             }
         }

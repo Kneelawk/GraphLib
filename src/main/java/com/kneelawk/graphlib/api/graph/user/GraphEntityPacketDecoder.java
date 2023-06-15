@@ -35,11 +35,9 @@ import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 
 /**
  * Used for decoding {@link GraphEntity}s from packets.
- *
- * @param <G> the type of graph entity this packet decoder decodes.
  */
 @FunctionalInterface
-public interface GraphEntityPacketDecoder<G extends GraphEntity<G>> {
+public interface GraphEntityPacketDecoder {
     /**
      * Decodes a {@link GraphEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
      *
@@ -48,5 +46,5 @@ public interface GraphEntityPacketDecoder<G extends GraphEntity<G>> {
      * @param ctx    the entity context for the new graph entity.
      * @return a new graph entity, or <code>null</code> if none could be decoded.
      */
-    @Nullable G decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx, @NotNull GraphEntityContext ctx);
+    @Nullable GraphEntity<?> decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx, @NotNull GraphEntityContext ctx);
 }

@@ -9,11 +9,9 @@ import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 
 /**
  * Decodes a graph entity from an NBT tag.
- *
- * @param <G> the type of graph entity to decode.
  */
 @FunctionalInterface
-public interface GraphEntityDecoder<G extends GraphEntity<G>> {
+public interface GraphEntityDecoder {
     /**
      * Decodes a graph entity from an NBT tag.
      *
@@ -21,5 +19,5 @@ public interface GraphEntityDecoder<G extends GraphEntity<G>> {
      * @param ctx the graph entity context for the new graph entity.
      * @return a newly decoded graph entity, or <code>null</code> if no graph entity could be decoded.
      */
-    @Nullable G decode(@Nullable NbtElement tag, @NotNull GraphEntityContext ctx);
+    @Nullable GraphEntity<?> decode(@Nullable NbtElement tag, @NotNull GraphEntityContext ctx);
 }
