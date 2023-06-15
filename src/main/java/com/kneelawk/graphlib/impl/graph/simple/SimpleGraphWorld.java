@@ -29,6 +29,8 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -68,6 +70,7 @@ import com.kneelawk.graphlib.api.world.UnloadingRegionBasedStorage;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Holds and manages all block graphs for a given world.
@@ -200,8 +203,87 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
     }
 
     @Override
-    public void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx) {
-        // TODO: chunk pillars
+    public void writeChunkPillar(ChunkPos chunkPos, NetByteBuf pillarBuf, IMsgWriteCtx ctx) {
+        // collect graphs to encode
+        Long2ObjectMap<SimpleBlockGraph> toEncode = new Long2ObjectLinkedOpenHashMap<>();
+        for (int chunkY = world.getBottomSectionCoord(); chunkY < world.getTopSectionCoord(); chunkY++) {
+            SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(chunkPos, chunkY));
+            if (chunk != null) {
+                for (long graphId : chunk.getGraphs()) {
+                    SimpleBlockGraph graph = getGraph(graphId);
+                    if (graph != null) {
+                        toEncode.put(graphId, graph);
+                    }
+                }
+            }
+        }
+
+        // write graphs
+        pillarBuf.writeVarUnsignedInt(toEncode.size());
+        for (SimpleBlockGraph graph : toEncode.values()) {
+            NetByteBuf graphBuf = NetByteBuf.buffer();
+
+            // write graph entities if any exist
+            graph.writeGraphEntitiesToPacket(graphBuf, ctx);
+
+            Object2IntMap<NodePos> indexMap = new Object2IntLinkedOpenHashMap<>();
+            Set<LinkPos> distinctLinks = new ObjectLinkedOpenHashSet<>();
+
+            // write nodes using a buffer, so we only count the nodes we actually end up sending
+            NetByteBuf nodesBuf = NetByteBuf.buffer();
+            int nodeCount = 0;
+            for (var iter = graph.getNodes().iterator(); iter.hasNext(); ) {
+                NodeHolder<BlockNode> holder = iter.next();
+                BlockPos blockPos = holder.getBlockPos();
+
+                if (blockPos.getX() < chunkPos.getStartX() || chunkPos.getEndX() < blockPos.getX() ||
+                    blockPos.getZ() < chunkPos.getStartZ() || chunkPos.getEndZ() < blockPos.getZ()) {
+                    continue;
+                }
+
+                // TODO: check universe node sync filter
+
+                BlockNode node = holder.getNode();
+
+                nodesBuf.writeBlockPos(blockPos);
+                GLNet.writeType(nodesBuf, ctx.getConnection(), node.getType().getId());
+                node.toPacket(nodesBuf, ctx);
+
+                // quarantine the node entity because the reader can't validate it
+                NodeEntity entity = holder.getNodeEntity();
+                NetByteBuf entityBuf = NetByteBuf.buffer();
+                if (entity != null) {
+                    GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
+                    entity.toPacket(entityBuf, ctx);
+                }
+                nodesBuf.writeVarUnsignedInt(entityBuf.writerIndex());
+                nodesBuf.writeBytes(entityBuf);
+
+                // put the node into the index map for links to look up
+                indexMap.put(holder.getPos(), nodeCount);
+
+                // collect the links
+                for (LinkHolder<LinkKey> link : holder.getConnections()) {
+                    // TODO: maybe separate these into internal and external links
+                    distinctLinks.add(link.getPos());
+                }
+
+                nodeCount++;
+            }
+            graphBuf.writeVarUnsignedInt(nodeCount);
+            graphBuf.writeBytes(nodesBuf);
+
+            // write links to a buffer too
+            NetByteBuf linksBuf = NetByteBuf.buffer();
+            int linkCount = 0;
+            // TODO: write links
+            graphBuf.writeVarUnsignedInt(linkCount);
+            graphBuf.writeBytes(linksBuf);
+
+            // write graph buf
+            pillarBuf.writeVarUnsignedInt(graphBuf.writerIndex());
+            pillarBuf.writeBytes(pillarBuf);
+        }
     }
 
     // ---- Public Interface Methods ---- //
@@ -771,7 +853,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         if (chunk != null) {
             chunk.removeGraphWithNodeUnchecked(pos);
         } else {
-            GLLog.warn("Tried to remove node from non-existent chunk. Id: {}, chunk: {}, node: {}", id, sectionPos, pos);
+            GLLog.warn("Tried to remove node from non-existent chunk. Id: {}, chunk: {}, node: {}", id, sectionPos,
+                pos);
         }
     }
 

@@ -113,7 +113,7 @@ public class GLNet {
                                            @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
                                            @NotNull String typeName, BlockPos blockPos) {
         int typeIdInt = buf.readVarUnsignedInt();
-        Identifier typeId = GLNet.ID_CACHE.getObj(conn, typeIdInt);
+        Identifier typeId = ID_CACHE.getObj(conn, typeIdInt);
         if (typeId == null) {
             GLLog.warn("Unable to decode unknown {} id int: {} @ {}", typeName, typeIdInt, blockPos);
             return null;
@@ -125,5 +125,9 @@ public class GLNet {
         }
 
         return type;
+    }
+
+    public static void writeType(@NotNull NetByteBuf buf, @NotNull ActiveConnection conn, Identifier typeId) {
+        buf.writeVarUnsignedInt(ID_CACHE.getId(conn, typeId));
     }
 }
