@@ -1,5 +1,6 @@
 package com.kneelawk.graphlib.impl.client;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -45,7 +46,7 @@ public class GraphLibFabricModClient implements ClientModInitializer {
 
             Set<DebugBlockGraph> graphs = GraphLibClientImpl.GRAPHS_PER_CHUNK.get(chunkLong);
             if (graphs != null) {
-                for (DebugBlockGraph graph : graphs) {
+                for (DebugBlockGraph graph : new HashSet<>(graphs)) {
                     boolean anyChunkLoaded = false;
                     for (long graphChunk : graph.chunks()) {
                         if (loadedChunks.contains(graphChunk)) {
