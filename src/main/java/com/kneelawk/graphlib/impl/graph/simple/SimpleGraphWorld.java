@@ -358,7 +358,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
 
             // write graph buf
             pillarBuf.writeVarUnsignedInt(graphBuf.readableBytes());
-            pillarBuf.writeBytes(pillarBuf);
+            pillarBuf.writeBytes(graphBuf);
         }
     }
 
