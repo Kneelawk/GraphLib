@@ -223,11 +223,15 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         for (SimpleBlockGraph graph : toEncode.values()) {
             NetByteBuf graphBuf = NetByteBuf.buffer();
 
+            // write the graph id
+            graphBuf.writeVarUnsignedLong(graph.getId());
+
             // write graph entities if any exist
             graph.writeGraphEntitiesToPacket(graphBuf, ctx);
 
             Object2IntMap<NodePos> indexMap = new Object2IntLinkedOpenHashMap<>();
-            Set<LinkPos> distinctLinks = new ObjectLinkedOpenHashSet<>();
+            Set<LinkPos> internalLinks = new ObjectLinkedOpenHashSet<>();
+            Set<LinkPos> externalLinks = new ObjectLinkedOpenHashSet<>();
 
             // write nodes using a buffer, so we only count the nodes we actually end up sending
             NetByteBuf nodesBuf = NetByteBuf.buffer();
@@ -243,14 +247,10 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
 
                 // TODO: check universe node sync filter
 
-                BlockNode node = holder.getNode();
-
-                nodesBuf.writeBlockPos(blockPos);
-                GLNet.writeType(nodesBuf, ctx.getConnection(), node.getType().getId());
-                node.toPacket(nodesBuf, ctx);
+                holder.getPos().toPacket(nodesBuf, ctx);
 
                 // quarantine the node entity because the reader can't validate it
-                NodeEntity entity = holder.getNodeEntity();
+                NodeEntity entity = graph.getNodeEntity(holder.getPos());
                 NetByteBuf entityBuf = NetByteBuf.buffer();
                 if (entity != null) {
                     GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
@@ -264,8 +264,17 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
 
                 // collect the links
                 for (LinkHolder<LinkKey> link : holder.getConnections()) {
-                    // TODO: maybe separate these into internal and external links
-                    distinctLinks.add(link.getPos());
+                    NodeHolder<BlockNode> other = link.other(holder);
+
+                    // TODO: check universe node sync filter
+
+                    BlockPos otherPos = other.getBlockPos();
+                    if (otherPos.getX() < chunkPos.getStartX() || chunkPos.getEndX() < otherPos.getX() ||
+                        otherPos.getZ() < chunkPos.getStartZ() || chunkPos.getEndZ() < otherPos.getZ()) {
+                        externalLinks.add(link.getPos());
+                    } else {
+                        internalLinks.add(link.getPos());
+                    }
                 }
 
                 nodeCount++;
@@ -273,12 +282,68 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
             graphBuf.writeVarUnsignedInt(nodeCount);
             graphBuf.writeBytes(nodesBuf);
 
-            // write links to a buffer too
-            NetByteBuf linksBuf = NetByteBuf.buffer();
-            int linkCount = 0;
-            // TODO: write links
-            graphBuf.writeVarUnsignedInt(linkCount);
-            graphBuf.writeBytes(linksBuf);
+            // write internal links to a buffer too
+            NetByteBuf iLinksBuf = NetByteBuf.buffer();
+            int iLinkCount = 0;
+            for (LinkPos link : internalLinks) {
+                int nodeAIndex = indexMap.getInt(link.first());
+                int nodeBIndex = indexMap.getInt(link.second());
+
+                if (nodeAIndex < 0 || nodeBIndex < 0) {
+                    GLLog.warn(
+                        "Tried to send an internal link to a node that does not exist within the same chunk. Link: {}",
+                        link);
+                    continue;
+                }
+
+                iLinksBuf.writeVarUnsignedInt(nodeAIndex);
+                iLinksBuf.writeVarUnsignedInt(nodeBIndex);
+
+                LinkKey linkKey = link.key();
+                GLNet.writeType(iLinksBuf, ctx.getConnection(), linkKey.getType().getId());
+                linkKey.toPacket(iLinksBuf, ctx);
+
+                // quarantine the link entity for the same reason as node entities
+                LinkEntity entity = graph.getLinkEntity(link);
+                NetByteBuf entityBuf = NetByteBuf.buffer();
+                if (entity != null) {
+                    GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
+                    entity.toPacket(entityBuf, ctx);
+                }
+                iLinksBuf.writeVarUnsignedInt(entityBuf.writerIndex());
+                iLinksBuf.writeBytes(entityBuf);
+
+                iLinkCount++;
+            }
+            graphBuf.writeVarUnsignedInt(iLinkCount);
+            graphBuf.writeBytes(iLinksBuf);
+
+            // write external links
+            NetByteBuf eLinksBuf = NetByteBuf.buffer();
+            int eLinkCount = 0;
+            for (LinkPos link : externalLinks) {
+                // quarantine each external link, so it can be ignored and not fully decoded if it extends too far
+                NetByteBuf linkBuf = NetByteBuf.buffer();
+
+                link.toPacket(linkBuf, ctx);
+
+                // quarantine link entities
+                LinkEntity entity = graph.getLinkEntity(link);
+                NetByteBuf entityBuf = NetByteBuf.buffer();
+                if (entity != null) {
+                    GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
+                    entity.toPacket(entityBuf, ctx);
+                }
+                linkBuf.writeVarUnsignedInt(entityBuf.writerIndex());
+                linkBuf.writeBytes(entityBuf);
+
+                eLinksBuf.writeVarUnsignedInt(linkBuf.writerIndex());
+                eLinksBuf.writeBytes(linkBuf);
+
+                eLinkCount++;
+            }
+            graphBuf.writeVarUnsignedInt(eLinkCount);
+            graphBuf.writeBytes(eLinksBuf);
 
             // write graph buf
             pillarBuf.writeVarUnsignedInt(graphBuf.writerIndex());

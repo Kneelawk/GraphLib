@@ -55,8 +55,6 @@ import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodePacketDecoder;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityPacketDecoder;
@@ -131,31 +129,17 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
             int nodeCount = graphBuf.readVarUnsignedInt();
             for (int i = 0; i < nodeCount; i++) {
-                BlockPos blockPos = graphBuf.readBlockPos();
-
                 // decode block node
-                BlockNodeType nodeType =
-                    GLNet.readType(graphBuf, ctx.getConnection(), universe::getNodeType, "BlockNode", blockPos);
-                if (nodeType == null) {
+                NodePos nodePos = NodePos.fromPacket(graphBuf, ctx, universe);
+                if (nodePos == null) {
                     // graph is corrupted, just delete it and move on
+                    GLLog.warn("Failed to read block node packet in graph {}", graphId);
                     destroyGraphImpl(graph);
                     continue GRAPH_LOOP;
                 }
 
-                BlockNodePacketDecoder nodeDecoder = nodeType.getPacketDecoder();
-                if (nodeDecoder == null) {
-                    GLLog.error("Unable to decode BlockNode {} @ {} because it has no packet decoder", nodeType.getId(),
-                        blockPos);
-                    destroyGraphImpl(graph);
-                    continue GRAPH_LOOP;
-                }
-
-                BlockNode node = nodeDecoder.decode(graphBuf, ctx);
-                if (node == null) {
-                    GLLog.warn("Failed to decode BlockNode {} @ {}", nodeType.getId(), blockPos);
-                    destroyGraphImpl(graph);
-                    continue GRAPH_LOOP;
-                }
+                BlockNode node = nodePos.node();
+                BlockPos blockPos = nodePos.pos();
 
                 // decode node entity
                 NodeEntityFactory entityFactory = node::createNodeEntity;
@@ -175,6 +159,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                             GLLog.error("Unable to decode NodeEntity {} @ {} because it has no packet decoder",
                                 entityType.getId(), blockPos);
                         }
+                    } else {
+                        GLLog.warn("Failed to decode node entity type");
                     }
                 }
 
@@ -182,12 +168,9 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 nodeList.add(holder);
             }
 
-            // decode links
-            // FIXME: each link must be quarantined because links may involve missing nodes
+            // decode internal links
             int linkCount = graphBuf.readVarUnsignedInt();
             for (int i = 0; i < linkCount; i++) {
-                // FIXME: only decodes links within the chunk
-
                 int nodeAIndex = graphBuf.readVarUnsignedInt();
                 int nodeBIndex = graphBuf.readVarUnsignedInt();
 
@@ -210,6 +193,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                     GLNet.readType(graphBuf, ctx.getConnection(), universe::getLinkKeyType, "LinkKey",
                         nodeA.getBlockPos());
                 if (linkType == null) {
+                    GLLog.warn("Failed to read link type @ {}-{}", nodeA.getBlockPos(), nodeB.getBlockPos());
                     continue GRAPH_LOOP;
                 }
 
@@ -245,10 +229,58 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                             GLLog.error("Unable to decode LinkEntity {} @ {}-{} because it has no packet decoder",
                                 entityType.getId(), nodeA.getBlockPos(), nodeB.getBlockPos());
                         }
+                    } else {
+                        GLLog.warn("Failed to decode internal link entity type");
                     }
                 }
 
                 graph.link(nodeA, nodeB, linkKey, entityFactory);
+            }
+
+            // decode external links
+            int eLinkCount = graphBuf.readVarUnsignedInt();
+            for (int i = 0; i < eLinkCount; i++) {
+                int linkBufLen = graphBuf.readVarUnsignedInt();
+                NetByteBuf linkBuf = graphBuf.readBytes(linkBufLen);
+
+                LinkPos link = LinkPos.fromPacket(linkBuf, ctx, universe);
+                if (link == null) {
+                    GLLog.warn("Failed to read external link pos");
+                    continue;
+                }
+
+                NodeHolder<BlockNode> holderA = graph.getNodeAt(link.first());
+                NodeHolder<BlockNode> holderB = graph.getNodeAt(link.second());
+
+                if (holderA == null || holderB == null) {
+                    // ignore links with missing nodes,
+                    // they'll just happen sometimes because the server will send links to nodes we don't know about
+                    continue;
+                }
+
+                // read quarantined link entity
+                LinkEntityFactory entityFactory = link.key()::createLinkEntity;
+                int entityBufLen = linkBuf.readVarUnsignedInt();
+                if (entityBufLen > 0) {
+                    NetByteBuf entityBuf = linkBuf.readBytes(entityBufLen);
+
+                    LinkEntityType entityType =
+                        GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
+                            holderA.getBlockPos());
+                    if (entityType != null) {
+                        LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
+                        if (entityDecoder != null) {
+                            entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
+                        } else {
+                            GLLog.error("Unable to decode LinkEntity {} @ {} because it has not packet decoder",
+                                entityType.getId(), link);
+                        }
+                    } else {
+                        GLLog.warn("Failed to decode external link entity type");
+                    }
+                }
+
+                graph.link(holderA, holderB, link.key(), entityFactory);
             }
         }
     }

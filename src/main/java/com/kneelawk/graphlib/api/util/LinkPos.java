@@ -8,11 +8,17 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Represents a positioned unique link in a way that can be looked up.
@@ -34,7 +40,8 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
      * @param secondNode the block node at the second end of this link.
      * @param key        the key of this link.
      */
-    public LinkPos(BlockPos firstPos, BlockNode firstNode, BlockPos secondPos, BlockNode secondNode, LinkKey key) {
+    public LinkPos(@NotNull BlockPos firstPos, @NotNull BlockNode firstNode, @NotNull BlockPos secondPos,
+                   @NotNull BlockNode secondNode, @NotNull LinkKey key) {
         this(new NodePos(firstPos, firstNode), new NodePos(secondPos, secondNode), key);
     }
 
@@ -107,6 +114,19 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
     }
 
     /**
+     * Writes this link pos to a packet.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the message context.
+     */
+    public void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {
+        first.toPacket(buf, ctx);
+        second.toPacket(buf, ctx);
+        buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), key.getType().getId()));
+        key.toPacket(buf, ctx);
+    }
+
+    /**
      * Decodes a link pos from an NBT compound.
      *
      * @param nbt      the NBT compound to decode from.
@@ -124,6 +144,59 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
         if (type == null) return null;
         LinkKey key = type.getDecoder().decode(nbt.get("key"));
         if (key == null) return null;
+
+        return new LinkPos(first, second, key);
+    }
+
+    /**
+     * Decodes a link pos from a packet.
+     *
+     * @param buf      the buffer to read from.
+     * @param ctx      the message context.
+     * @param universe the universe containing the decoders that this will use.
+     * @return a newly decoded link pos, or <code>null</code> if decoding failed.
+     */
+    public static @Nullable LinkPos fromPacket(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx,
+                                               @NotNull GraphUniverse universe) {
+        NodePos first = NodePos.fromPacket(buf, ctx, universe);
+        if (first == null) {
+            GLLog.warn("Failed to decode first node pos in link.");
+            return null;
+        }
+
+        NodePos second = NodePos.fromPacket(buf, ctx, universe);
+        if (second == null) {
+            GLLog.warn("Failed to decode second node pos in link starting at {}", first);
+            return null;
+        }
+
+        int idInt = buf.readVarUnsignedInt();
+        Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), idInt);
+        if (typeId == null) {
+            GLLog.warn("Unable to decode link key type id from unknown identifier int {} @ {}-{}", idInt, first,
+                second);
+            return null;
+        }
+
+        LinkKeyType type = universe.getLinkKeyType(typeId);
+        if (type == null) {
+            GLLog.warn("Unable to decode unknown link key type id {} @ {}-{} in universe {}", typeId, first, second,
+                universe.getId());
+            return null;
+        }
+
+        LinkKeyPacketDecoder decoder = type.getPacketDecoder();
+        if (decoder == null) {
+            GLLog.error("Tried to decode link key {} @ {}-{} in universe {} but it has no packet decoder.", typeId,
+                first, second, universe.getId());
+            return null;
+        }
+
+        LinkKey key = decoder.decode(buf, ctx);
+        if (key == null) {
+            GLLog.warn("Failed to decode link key {} @ {}-{}", typeId, first, second);
+            return null;
+        }
 
         return new LinkPos(first, second, key);
     }

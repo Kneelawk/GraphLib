@@ -119,25 +119,27 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
         int idInt = buf.readVarUnsignedInt();
         Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), idInt);
         if (typeId == null) {
-            GLLog.warn("Unable to decode block node type id from unknown identifier int {}", idInt);
+            GLLog.warn("Unable to decode block node type id from unknown identifier int {} @ {}", idInt, pos);
             return null;
         }
 
         BlockNodeType type = universe.getNodeType(typeId);
         if (type == null) {
-            GLLog.warn("Unable to decode unknown block node type id {} in universe {}", typeId, universe.getId());
+            GLLog.warn("Unable to decode unknown block node type id {} @ {} in universe {}", typeId, pos,
+                universe.getId());
             return null;
         }
 
         BlockNodePacketDecoder decoder = type.getPacketDecoder();
         if (decoder == null) {
-            GLLog.warn("Tried to decode block node {} with no packet decoder.", type.getId());
+            GLLog.error("Tried to decode block node {} @ {} in universe {} but it has no packet decoder.", type.getId(),
+                pos, universe.getId());
             return null;
         }
 
         BlockNode node = decoder.decode(buf, ctx);
         if (node == null) {
-            GLLog.warn("Failed to decode block node {}", type.getId());
+            GLLog.warn("Failed to decode block node {} @ {}", type.getId(), pos);
             return null;
         }
 
