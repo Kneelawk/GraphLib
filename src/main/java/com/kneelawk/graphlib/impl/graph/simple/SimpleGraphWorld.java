@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.LinkPos;
@@ -203,6 +205,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void writeChunkPillar(ChunkPos chunkPos, NetByteBuf pillarBuf, IMsgWriteCtx ctx) {
         // collect graphs to encode
         Long2ObjectMap<SimpleBlockGraph> toEncode = new Long2ObjectLinkedOpenHashMap<>();
@@ -236,7 +239,17 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
             // write nodes using a buffer, so we only count the nodes we actually end up sending
             NetByteBuf nodesBuf = NetByteBuf.buffer();
             int nodeCount = 0;
-            for (var iter = graph.getNodes().iterator(); iter.hasNext(); ) {
+
+            // iterate over only the nodes we want to synchronize
+            CacheCategory<BlockNode> nodeFilter = (CacheCategory<BlockNode>) universe.getSyncProfile().getNodeFilter();
+            Iterator<NodeHolder<BlockNode>> iter;
+            if (nodeFilter != null) {
+                iter = graph.getCachedNodes(nodeFilter).iterator();
+            } else {
+                iter = graph.getNodes().iterator();
+            }
+
+            while (iter.hasNext()) {
                 NodeHolder<BlockNode> holder = iter.next();
                 BlockPos blockPos = holder.getBlockPos();
 
@@ -244,8 +257,6 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
                     blockPos.getZ() < chunkPos.getStartZ() || chunkPos.getEndZ() < blockPos.getZ()) {
                     continue;
                 }
-
-                // TODO: check universe node sync filter
 
                 holder.getPos().toPacket(nodesBuf, ctx);
 
@@ -266,7 +277,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
                 for (LinkHolder<LinkKey> link : holder.getConnections()) {
                     NodeHolder<BlockNode> other = link.other(holder);
 
-                    // TODO: check universe node sync filter
+                    if (nodeFilter != null && !nodeFilter.matches(other)) continue;
 
                     BlockPos otherPos = other.getBlockPos();
                     if (otherPos.getX() < chunkPos.getStartX() || chunkPos.getEndX() < otherPos.getX() ||

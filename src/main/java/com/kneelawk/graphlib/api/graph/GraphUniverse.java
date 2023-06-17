@@ -24,6 +24,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
+import com.kneelawk.graphlib.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
@@ -391,6 +392,13 @@ public interface GraphUniverse {
     boolean isSynchronizationEnabled();
 
     /**
+     * Gets this universe's synchronization profile.
+     *
+     * @return this universe's synchronization profile.
+     */
+    @NotNull SyncProfile getSyncProfile();
+
+    /**
      * Creates a new GraphUniverse builder.
      *
      * @return a new builder for building a GraphUniverse.
@@ -428,9 +436,9 @@ public interface GraphUniverse {
         /**
          * Sets whether this graph universe should be synchronized to the client.
          *
-         * @param synchronize whether this graph universe should be synchronized to the client.
+         * @param profile a profile describing whether and how this graph universe should be synchronized to the client.
          * @return this builder for call chaining.
          */
-        @NotNull Builder synchronizeToClient(boolean synchronize);
+        @NotNull Builder synchronizeToClient(SyncProfile profile);
     }
 }

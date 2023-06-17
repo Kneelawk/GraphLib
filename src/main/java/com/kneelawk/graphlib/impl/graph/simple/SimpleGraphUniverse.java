@@ -32,6 +32,7 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
+import com.kneelawk.graphlib.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
@@ -55,12 +56,12 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
     private final Set<CacheCategory<?>> cacheCategories = new ObjectLinkedOpenHashSet<>();
     final SaveMode saveMode;
-    final boolean synchronize;
+    final SyncProfile syncProfile;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
         this.id = universeId;
         saveMode = builder.saveMode;
-        synchronize = builder.synchronize;
+        syncProfile = builder.profile;
 
         addLinkKeyType(EmptyLinkKey.TYPE);
     }
@@ -165,7 +166,12 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
 
     @Override
     public boolean isSynchronizationEnabled() {
-        return synchronize;
+        return syncProfile.isSynchronized();
+    }
+
+    @Override
+    public @NotNull SyncProfile getSyncProfile() {
+        return syncProfile;
     }
 
     @Override

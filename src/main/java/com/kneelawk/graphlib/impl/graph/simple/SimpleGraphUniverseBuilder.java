@@ -5,12 +5,13 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 
 public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     SaveMode saveMode = SaveMode.UNLOAD;
-    boolean synchronize = false;
+    SyncProfile profile;
 
     @Override
     public @NotNull GraphUniverse build(@NotNull Identifier universeId) {
@@ -25,8 +26,8 @@ public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     }
 
     @Override
-    public GraphUniverse.@NotNull Builder synchronizeToClient(boolean synchronize) {
-        this.synchronize = synchronize;
+    public GraphUniverse.@NotNull Builder synchronizeToClient(SyncProfile profile) {
+        this.profile = profile;
         return this;
     }
 }

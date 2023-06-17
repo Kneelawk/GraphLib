@@ -12,6 +12,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.net.GLNet;
@@ -124,8 +125,8 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
 
     public void sendChunkDataPackets(ServerPlayerEntity player, ChunkPos pos) {
         for (GraphWorldImpl world : worlds.values()) {
-            if (world.getUniverse().isSynchronizationEnabled()) {
-                // TODO: check whether universe can synchronize to player
+            GraphUniverse universe = world.getUniverse();
+            if (universe.isSynchronizationEnabled() && universe.getSyncProfile().getPlayerFilter().shouldSync(player)) {
                 try {
                     GLNet.sendChunkDataPacket(world, player, pos);
                 } catch (Exception e) {
