@@ -64,6 +64,10 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
         syncProfile = builder.profile;
 
         addLinkKeyType(EmptyLinkKey.TYPE);
+
+        if (syncProfile.getNodeFilter() != null) {
+            addCacheCategory(syncProfile.getNodeFilter());
+        }
     }
 
     @Override
