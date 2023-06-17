@@ -9,9 +9,12 @@ import net.minecraft.nbt.NbtElement;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
+import alexiil.mc.lib.net.ParentNetIdSingle;
 
+import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Arbitrary data that can be stored in a graph.
@@ -19,6 +22,19 @@ import com.kneelawk.graphlib.api.util.LinkPos;
  * @param <G> this graph entity class.
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
+    /**
+     * LibNetworkStack net parent for graph entities.
+     */
+    @SuppressWarnings("rawtypes")
+    ParentNetIdSingle<GraphEntity> NET_PARENT = GLNet.GRAPH_ENTITY_PARENT;
+
+    /**
+     * Gets the graph entity context this was created with.
+     *
+     * @return this graph entity's context.
+     */
+    @NotNull GraphEntityContext getContext();
+
     /**
      * Gets this graph entity's type.
      *

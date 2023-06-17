@@ -7,13 +7,28 @@ import net.minecraft.nbt.NbtElement;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
+import alexiil.mc.lib.net.ParentNetIdSingle;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.LinkEntityContext;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Mutable data associated with a link, similar to a BlockEntity.
  */
 public interface LinkEntity {
+    /**
+     * LibNetworkStack net parent for link entities.
+     */
+    ParentNetIdSingle<LinkEntity> NET_PARENT = GLNet.LINK_ENTITY_PARENT;
+
+    /**
+     * Gets the link entity context this was created with.
+     *
+     * @return this link entity's context.
+     */
+    @NotNull LinkEntityContext getContext();
+
     /**
      * Get this link entity's type id.
      * <p>

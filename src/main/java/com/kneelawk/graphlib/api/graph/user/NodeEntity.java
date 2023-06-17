@@ -7,14 +7,21 @@ import net.minecraft.nbt.NbtElement;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
+import alexiil.mc.lib.net.ParentNetIdSingle;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Mutable data associated with a block node, similar to a BlockEntity.
  */
 public interface NodeEntity {
+    /**
+     * LibNetworkStack net parent for node entities.
+     */
+    ParentNetIdSingle<NodeEntity> NET_PARENT = GLNet.NODE_ENTITY_PARENT;
+
     /**
      * Gets the node entity context this was created with.
      *

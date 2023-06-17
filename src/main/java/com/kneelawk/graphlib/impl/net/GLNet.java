@@ -37,18 +37,25 @@ import net.minecraft.world.World;
 import alexiil.mc.lib.net.ActiveConnection;
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 import alexiil.mc.lib.net.NetObjectCache;
 import alexiil.mc.lib.net.ParentNetId;
 import alexiil.mc.lib.net.ParentNetIdSingle;
 import alexiil.mc.lib.net.impl.McNetworkStack;
 
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.api.util.ObjectType;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
@@ -109,6 +116,98 @@ public class GLNet {
             }
         };
 
+    public static final ParentNetIdSingle<LinkEntity> LINK_ENTITY_PARENT =
+        new ParentNetIdSingle<>(GRAPH_LIB_ID, LinkEntity.class, "link_entity", -1) {
+            @Override
+            protected LinkEntity readContext(NetByteBuf buffer, IMsgReadCtx ctx) {
+                World world = ctx.getConnection().getPlayer().getWorld();
+
+                int universeIdInt = buffer.readVarUnsignedInt();
+                GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+                if (universe == null) {
+                    GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
+                    return null;
+                }
+
+                LinkPos pos = LinkPos.fromPacket(buffer, ctx, universe);
+                if (pos == null) {
+                    GLLog.warn("Unable to decode link pos");
+                    return null;
+                }
+
+                GraphView view = universe.getGraphView(world);
+                LinkEntity entity = view.getLinkEntity(pos);
+                if (entity == null) {
+                    GLLog.warn("Failed to find link entity @ {} in world {} and universe {}", pos, world,
+                        universe.getId());
+                }
+
+                return entity;
+            }
+
+            @Override
+            protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, LinkEntity value) {
+                LinkEntityContext entityCtx = value.getContext();
+
+                buffer.writeVarUnsignedInt(
+                    UNIVERSE_CACHE.getId(ctx.getConnection(), entityCtx.getGraphWorld().getUniverse()));
+
+                entityCtx.getPos().toPacket(buffer, ctx);
+            }
+        };
+
+    @SuppressWarnings("rawtypes")
+    public static final ParentNetIdSingle<GraphEntity> GRAPH_ENTITY_PARENT =
+        new ParentNetIdSingle<>(GRAPH_LIB_ID, GraphEntity.class, "graph_entity", -1) {
+            @Override
+            protected GraphEntity<?> readContext(NetByteBuf buffer, IMsgReadCtx ctx) throws InvalidInputDataException {
+                World world = ctx.getConnection().getPlayer().getWorld();
+
+                int universeIdInt = buffer.readVarUnsignedInt();
+                GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+                if (universe == null) {
+                    GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
+                    return null;
+                }
+
+                GraphView view = universe.getGraphView(world);
+
+                long graphId = buffer.readVarUnsignedLong();
+                BlockGraph graph = view.getGraph(graphId);
+                if (graph == null) {
+                    GLLog.warn("Unable to find graph for id {} in world {} in universe {}", graphId, world,
+                        universe.getId());
+                    return null;
+                }
+
+                int typeIdInt = buffer.readVarUnsignedInt();
+                Identifier typeId = ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
+                if (typeId == null) {
+                    GLLog.warn("Unable to decode graph entity type id from int {}", typeIdInt);
+                    return null;
+                }
+
+                GraphEntityType<?> type = universe.getGraphEntityType(typeId);
+                if (type == null) {
+                    GLLog.warn("Unable to decode unknown graph entity type {}", typeId);
+                    return null;
+                }
+
+                return graph.getGraphEntity(type);
+            }
+
+            @Override
+            protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, GraphEntity value) {
+                GraphEntityContext entityCtx = value.getContext();
+                buffer.writeVarUnsignedInt(
+                    UNIVERSE_CACHE.getId(ctx.getConnection(), entityCtx.getGraphWorld().getUniverse()));
+
+                buffer.writeVarUnsignedLong(entityCtx.getGraph().getId());
+
+                buffer.writeVarUnsignedInt(ID_CACHE.getId(ctx.getConnection(), value.getType().getId()));
+            }
+        };
+
     public static <T> @Nullable T readType(@NotNull NetByteBuf buf, ActiveConnection conn,
                                            @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
                                            @NotNull String typeName, BlockPos blockPos) {
@@ -121,7 +220,7 @@ public class GLNet {
 
         T type = typeGetter.apply(typeId);
         if (type == null) {
-            GLLog.warn("Unable to decode unknown BlockNode id: {} @ {}", typeId, blockPos);
+            GLLog.warn("Unable to decode unknown {} id: {} @ {}", typeName, typeId, blockPos);
         }
 
         return type;
