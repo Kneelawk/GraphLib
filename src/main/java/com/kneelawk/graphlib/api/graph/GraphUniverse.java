@@ -435,10 +435,12 @@ public interface GraphUniverse {
 
         /**
          * Sets whether this graph universe should be synchronized to the client.
+         * <p>
+         * This is set to {@link SyncProfile#SYNC_NOTHING} by default.
          *
          * @param profile a profile describing whether and how this graph universe should be synchronized to the client.
          * @return this builder for call chaining.
          */
-        @NotNull Builder synchronizeToClient(SyncProfile profile);
+        @NotNull Builder synchronizeToClient(@NotNull SyncProfile profile);
     }
 }

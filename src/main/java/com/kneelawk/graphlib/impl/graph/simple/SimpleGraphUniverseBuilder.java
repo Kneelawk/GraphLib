@@ -11,7 +11,7 @@ import com.kneelawk.graphlib.impl.GraphLibImpl;
 
 public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     SaveMode saveMode = SaveMode.UNLOAD;
-    SyncProfile profile;
+    SyncProfile profile = SyncProfile.SYNC_NOTHING;
 
     @Override
     public @NotNull GraphUniverse build(@NotNull Identifier universeId) {
@@ -26,7 +26,7 @@ public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     }
 
     @Override
-    public GraphUniverse.@NotNull Builder synchronizeToClient(SyncProfile profile) {
+    public GraphUniverse.@NotNull Builder synchronizeToClient(@NotNull SyncProfile profile) {
         this.profile = profile;
         return this;
     }
