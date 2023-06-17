@@ -30,8 +30,10 @@ import java.util.function.Function;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import alexiil.mc.lib.net.ActiveConnection;
@@ -39,9 +41,11 @@ import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
+import alexiil.mc.lib.net.NetIdData;
 import alexiil.mc.lib.net.NetObjectCache;
 import alexiil.mc.lib.net.ParentNetId;
 import alexiil.mc.lib.net.ParentNetIdSingle;
+import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil;
 import alexiil.mc.lib.net.impl.McNetworkStack;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
@@ -59,7 +63,9 @@ import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
+import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
 
 public class GLNet {
     public static final ParentNetId GRAPH_LIB_ID = McNetworkStack.ROOT.child(Constants.MOD_ID);
@@ -228,5 +234,38 @@ public class GLNet {
 
     public static void writeType(@NotNull NetByteBuf buf, @NotNull ActiveConnection conn, Identifier typeId) {
         buf.writeVarUnsignedInt(ID_CACHE.getId(conn, typeId));
+    }
+
+    public static final NetIdData CHUNK_DATA =
+        new NetIdData(GRAPH_LIB_ID, "chunk_data", -1).toClientOnly().setReceiver(GLNet::receiveChunkDataPacket);
+
+    public static void sendChunkDataPacket(GraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
+        ActiveConnection connection = CoreMinecraftNetUtil.getConnection(player);
+        CHUNK_DATA.send(connection, (buffer, ctx) -> {
+            buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), world.getUniverse()));
+            buffer.writeVarInt(pos.x);
+            buffer.writeVarInt(pos.z);
+            world.writeChunkPillar(pos, buffer, ctx);
+        });
+    }
+
+    private static void receiveChunkDataPacket(NetByteBuf buf, IMsgReadCtx ctx) {
+        int universeIdInt = buf.readVarUnsignedInt();
+        GraphUniverseImpl universe = (GraphUniverseImpl) UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+        if (universe == null) {
+            GLLog.warn("Received chunk data packet for unknown universe id int: {}", universeIdInt);
+            return;
+        }
+
+        int chunkX = buf.readVarInt();
+        int chunkZ = buf.readVarInt();
+
+        ClientGraphWorldImpl world = universe.getClientGraphView();
+        if (world == null) {
+            GLLog.warn("Received chunk data packet but the client GraphWorld was null");
+            return;
+        }
+
+        world.receiveChunkPillar(chunkX, chunkZ, buf, ctx);
     }
 }

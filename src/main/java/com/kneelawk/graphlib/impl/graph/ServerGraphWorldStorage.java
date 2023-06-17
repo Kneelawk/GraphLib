@@ -7,12 +7,14 @@ import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable {
     private final Map<Identifier, GraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
@@ -99,14 +101,38 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
 
     public void saveAll(boolean flush) {
         for (GraphWorldImpl world : worlds.values()) {
-            world.saveAll(flush);
+            try {
+                world.saveAll(flush);
+            } catch (Exception e) {
+                GLLog.error("Error saving all chunks in GraphWorld. World: '{}'/{}", serverWorld,
+                    serverWorld.getRegistryKey().getValue(), e);
+            }
         }
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         for (GraphWorldImpl world : worlds.values()) {
-            world.close();
+            try {
+                world.close();
+            } catch (Exception e) {
+                GLLog.error("Error closing GraphWorld. World: '{}'/{}", serverWorld,
+                    serverWorld.getRegistryKey().getValue(), e);
+            }
+        }
+    }
+
+    public void sendChunkDataPackets(ServerPlayerEntity player, ChunkPos pos) {
+        for (GraphWorldImpl world : worlds.values()) {
+            if (world.getUniverse().isSynchronizationEnabled()) {
+                // TODO: check whether universe can synchronize to player
+                try {
+                    GLNet.sendChunkDataPacket(world, player, pos);
+                } catch (Exception e) {
+                    GLLog.error("Error sending GraphWorld chunk packets. World: '{}'/{}, Chunk: {}", serverWorld,
+                        serverWorld.getRegistryKey().getValue(), pos, e);
+                }
+            }
         }
     }
 }

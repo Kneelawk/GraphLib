@@ -256,7 +256,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
                     GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
                     entity.toPacket(entityBuf, ctx);
                 }
-                nodesBuf.writeVarUnsignedInt(entityBuf.writerIndex());
+                nodesBuf.writeVarUnsignedInt(entityBuf.readableBytes());
                 nodesBuf.writeBytes(entityBuf);
 
                 // put the node into the index map for links to look up
@@ -310,7 +310,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
                     GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
                     entity.toPacket(entityBuf, ctx);
                 }
-                iLinksBuf.writeVarUnsignedInt(entityBuf.writerIndex());
+                iLinksBuf.writeVarUnsignedInt(entityBuf.readableBytes());
                 iLinksBuf.writeBytes(entityBuf);
 
                 iLinkCount++;
@@ -334,10 +334,10 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
                     GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
                     entity.toPacket(entityBuf, ctx);
                 }
-                linkBuf.writeVarUnsignedInt(entityBuf.writerIndex());
+                linkBuf.writeVarUnsignedInt(entityBuf.readableBytes());
                 linkBuf.writeBytes(entityBuf);
 
-                eLinksBuf.writeVarUnsignedInt(linkBuf.writerIndex());
+                eLinksBuf.writeVarUnsignedInt(linkBuf.readableBytes());
                 eLinksBuf.writeBytes(linkBuf);
 
                 eLinkCount++;
@@ -346,7 +346,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
             graphBuf.writeBytes(eLinksBuf);
 
             // write graph buf
-            pillarBuf.writeVarUnsignedInt(graphBuf.writerIndex());
+            pillarBuf.writeVarUnsignedInt(graphBuf.readableBytes());
             pillarBuf.writeBytes(pillarBuf);
         }
     }
