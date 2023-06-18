@@ -629,10 +629,12 @@ public class SimpleBlockGraph implements BlockGraph {
 
         world.markDirty(id);
 
+        world.sendNodeAdd(this, graphNode);
+
         return graphNode;
     }
 
-    void destroyNode(@NotNull NodeHolder<BlockNode> holder) {
+    void destroyNode(@NotNull NodeHolder<BlockNode> holder, boolean doSplit) {
         // see if removing this node means removing a block-pos or a chunk
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
         NodePos removedNode = node.getPos();
@@ -716,7 +718,7 @@ public class SimpleBlockGraph implements BlockGraph {
         if (graph.isEmpty()) {
             // This only happens if this graph contained a single node before and that node has now been removed.
             world.destroyGraph(id);
-        } else {
+        } else if (doSplit) {
             // Split leaves both new graphs and this graph in valid states as far as refs go.
             // Also, split is guaranteed not to leave this graph empty.
             split();
@@ -931,6 +933,89 @@ public class SimpleBlockGraph implements BlockGraph {
 
             return List.of();
         }
+    }
+
+    void splitInto(SimpleBlockGraph into, Collection<NodePos> nodes) {
+        // collect the block-nodes, block-poses, and chunks we are no longer a part of
+        Set<Node<SimpleNodeWrapper, LinkKey>> movedNodes = new LinkedHashSet<>();
+        Set<NodePos> removedNodes = new LinkedHashSet<>();
+        Set<BlockPos> removedPoses = new LinkedHashSet<>();
+        LongSet removedChunks = new LongLinkedOpenHashSet();
+
+        for (var nodePos : nodes) {
+            BlockPos pos = nodePos.pos();
+            removedNodes.add(nodePos);
+            removedPoses.add(pos);
+            long sectionPos = ChunkSectionPos.from(pos).asLong();
+            removedChunks.add(sectionPos);
+
+            // the node is in a new graph, so it obviously isn't in our graph anymore
+            NodeHolder<BlockNode> holder = nodesToHolders.remove(nodePos);
+            if (holder != null) {
+                nodesInPos.remove(pos, holder);
+                Set<NodeHolder<BlockNode>> inRemovedChunk = nodesInChunk.get(sectionPos);
+                if (inRemovedChunk != null) {
+                    inRemovedChunk.remove(holder);
+                    if (inRemovedChunk.isEmpty()) nodesInChunk.remove(sectionPos);
+                }
+
+                movedNodes.add(((SimpleNodeHolder<BlockNode>) holder).node);
+            }
+        }
+
+        // Actually move the nodes
+        graph.moveBulkUnchecked(into.graph, movedNodes);
+
+        // we aren't removing the blocks or chunks we still have
+        for (var node : graph) {
+            var data = node.data();
+            removedPoses.remove(data.getPos());
+            removedChunks.remove(ChunkSectionPos.from(data.getPos()).asLong());
+        }
+
+        // do this stuff instead of rebuilding-refs later
+        world.removeGraphInPoses(id, removedNodes, removedPoses, removedChunks);
+        chunks.removeAll(removedChunks);
+        world.markDirty(id);
+
+        // this sets the nodes' graph ids, and sets up the new block-graph's chunks and nodes-in-pos
+        into.rebuildRefs();
+
+        for (var node : into.graph) {
+            NodePos key = new NodePos(node.data().getPos(), node.data().getNode());
+
+            // Add the new graph to the graphs-in-chunks and graphs-in-poses trackers.
+            // I considered trying to group block-poses by chunk to avoid duplicate look-ups, but it didn't look
+            // like it was worth the extra computation.
+            world.putGraphWithNode(into.id, key);
+
+            // make sure to move the node entities over too
+            NodeEntity entity = nodeEntities.remove(key);
+            if (entity != null) {
+                into.nodeEntities.put(key, entity);
+            }
+
+            // make sure to move link entities over too
+            for (var link : node.connections()) {
+                Node<SimpleNodeWrapper, LinkKey> other = link.other(node);
+                LinkPos linkKey =
+                    new LinkPos(key, new NodePos(other.data().getPos(), other.data().getNode()), link.key());
+                LinkEntity linkEntity = linkEntities.remove(linkKey);
+                if (linkEntity != null) {
+                    into.linkEntities.put(linkKey, linkEntity);
+                }
+            }
+        }
+
+        // Split the graph entity
+        for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
+            GraphEntityType<?> type = entry.getKey();
+            into.graphEntities.put(type, type.splitNew(entry.getValue(), this,
+                new SimpleGraphEntityContext(world.getWorld(), world, into)));
+        }
+
+        // we want to rebuild caches after entities have been moved
+        into.rebuildCaches();
     }
 
     void unloadInChunk(int chunkX, int chunkZ) {

@@ -260,15 +260,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
 
                 holder.getPos().toPacket(nodesBuf, ctx);
 
-                // quarantine the node entity because the reader can't validate it
-                NodeEntity entity = graph.getNodeEntity(holder.getPos());
-                NetByteBuf entityBuf = NetByteBuf.buffer();
-                if (entity != null) {
-                    GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
-                    entity.toPacket(entityBuf, ctx);
-                }
-                nodesBuf.writeVarUnsignedInt(entityBuf.readableBytes());
-                nodesBuf.writeBytes(entityBuf);
+                writeNodeEntity(holder, nodesBuf, ctx, graph);
 
                 // put the node into the index map for links to look up
                 indexMap.put(holder.getPos(), nodeCount);
@@ -315,14 +307,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
                 linkKey.toPacket(iLinksBuf, ctx);
 
                 // quarantine the link entity for the same reason as node entities
-                LinkEntity entity = graph.getLinkEntity(link);
-                NetByteBuf entityBuf = NetByteBuf.buffer();
-                if (entity != null) {
-                    GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
-                    entity.toPacket(entityBuf, ctx);
-                }
-                iLinksBuf.writeVarUnsignedInt(entityBuf.readableBytes());
-                iLinksBuf.writeBytes(entityBuf);
+                writeLinkEntity(iLinksBuf, ctx, link, graph);
 
                 iLinkCount++;
             }
@@ -339,14 +324,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
                 link.toPacket(linkBuf, ctx);
 
                 // quarantine link entities
-                LinkEntity entity = graph.getLinkEntity(link);
-                NetByteBuf entityBuf = NetByteBuf.buffer();
-                if (entity != null) {
-                    GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
-                    entity.toPacket(entityBuf, ctx);
-                }
-                linkBuf.writeVarUnsignedInt(entityBuf.readableBytes());
-                linkBuf.writeBytes(entityBuf);
+                writeLinkEntity(linkBuf, ctx, link, graph);
 
                 eLinksBuf.writeVarUnsignedInt(linkBuf.readableBytes());
                 eLinksBuf.writeBytes(linkBuf);
@@ -360,6 +338,41 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
             pillarBuf.writeVarUnsignedInt(graphBuf.readableBytes());
             pillarBuf.writeBytes(graphBuf);
         }
+    }
+
+    private static void writeNodeEntity(NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx,
+                                        BlockGraph graph) {
+        // quarantine the node entity because the reader can't validate it
+        NodeEntity entity = graph.getNodeEntity(node.getPos());
+        NetByteBuf entityBuf = NetByteBuf.buffer();
+        if (entity != null) {
+            GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
+            entity.toPacket(entityBuf, ctx);
+        }
+        buf.writeVarUnsignedInt(entityBuf.readableBytes());
+        buf.writeBytes(entityBuf);
+    }
+
+    public void writeLinkEntity(NetByteBuf buf, IMsgWriteCtx ctx, LinkPos link, SimpleBlockGraph graph) {
+        LinkEntity entity = graph.getLinkEntity(link);
+        NetByteBuf entityBuf = NetByteBuf.buffer();
+        if (entity != null) {
+            GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
+            entity.toPacket(entityBuf, ctx);
+        }
+        buf.writeVarUnsignedInt(entityBuf.readableBytes());
+        buf.writeBytes(entityBuf);
+    }
+
+    @Override
+    public void writeNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx) {
+        node.getPos().toPacket(buf, ctx);
+
+        buf.writeVarUnsignedLong(graph.getId());
+
+        ((SimpleBlockGraph) graph).writeGraphEntitiesToPacket(buf, ctx);
+
+        writeNodeEntity(node, buf, ctx, graph);
     }
 
     // ---- Public Interface Methods ---- //
@@ -572,7 +585,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         if (graph == null) return false;
         NodeHolder<BlockNode> node = graph.getNodeAt(pos);
         if (node == null) return false;
-        graph.destroyNode(node);
+        graph.destroyNode(node, true);
         return true;
     }
 
@@ -976,6 +989,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, graph);
     }
 
+    @Override
+    public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
+        GLNet.sendNodeAdd(graph, node);
+    }
+
     // ---- Node Update Methods ---- //
 
     private void handleNodeUpdates() {
@@ -1031,7 +1049,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         for (NodeHolder<BlockNode> node : toRemove) {
             SimpleBlockGraph graph = getGraph(node.getGraphId());
             if (graph != null) {
-                graph.destroyNode(node);
+                graph.destroyNode(node, true);
             }
         }
     }
@@ -1052,7 +1070,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
             for (var node : graph.getNodesAt(pos).toList()) {
                 BlockNode bn = node.getNode();
                 if (bn.isAutomaticRemoval(node) && !nodes.contains(bn)) {
-                    graph.destroyNode(node);
+                    graph.destroyNode(node, true);
                 }
                 newNodes.remove(bn);
             }

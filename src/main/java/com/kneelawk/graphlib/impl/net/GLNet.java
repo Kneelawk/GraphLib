@@ -25,12 +25,16 @@
 
 package com.kneelawk.graphlib.impl.net;
 
+import java.util.Collection;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -54,10 +58,13 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.Constants;
@@ -68,6 +75,10 @@ import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
 
 public class GLNet {
+    public static void init() {
+        // statically initializes everything here
+    }
+
     public static final ParentNetId GRAPH_LIB_ID = McNetworkStack.ROOT.child(Constants.MOD_ID);
 
     public static final NetObjectCache<GraphUniverse> UNIVERSE_CACHE =
@@ -250,22 +261,65 @@ public class GLNet {
     }
 
     private static void receiveChunkDataPacket(NetByteBuf buf, IMsgReadCtx ctx) {
-        int universeIdInt = buf.readVarUnsignedInt();
-        GraphUniverseImpl universe = (GraphUniverseImpl) UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
-        if (universe == null) {
-            GLLog.warn("Received chunk data packet for unknown universe id int: {}", universeIdInt);
-            return;
-        }
+        ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "chunk data");
+        if (world == null) return;
 
         int chunkX = buf.readVarInt();
         int chunkZ = buf.readVarInt();
 
-        ClientGraphWorldImpl world = universe.getClientGraphView();
-        if (world == null) {
-            GLLog.warn("Received chunk data packet but the client GraphWorld was null");
-            return;
+        world.readChunkPillar(chunkX, chunkZ, buf, ctx);
+    }
+
+    public static final NetIdData NODE_ADD =
+        new NetIdData(GRAPH_LIB_ID, "node_add", -1).toClientOnly().setReceiver(GLNet::receiveNodeAdd);
+
+    public static void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
+        if (!(node.getBlockWorld() instanceof ServerWorld serverWorld))
+            throw new IllegalArgumentException("sendNodeAdd should only be called on the server");
+
+        GraphWorldImpl world = (GraphWorldImpl) node.getGraphWorld();
+        GraphUniverse universe = world.getUniverse();
+        if (!universe.isSynchronizationEnabled()) return;
+
+        SyncProfile sp = universe.getSyncProfile();
+        if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(node)) return;
+
+        Collection<ServerPlayerEntity> watching = PlayerLookup.tracking(serverWorld, node.getBlockPos());
+
+        for (ServerPlayerEntity player : watching) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
+                NODE_ADD.send(conn, (buf, ctx) -> {
+                    buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
+                    world.writeNodeAdd(graph, node, buf, ctx);
+                });
+            }
+        }
+    }
+
+    private static void receiveNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) {
+        ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node add");
+        if (world == null) return;
+
+        world.readNodeAdd(buf, ctx);
+    }
+
+    @Nullable
+    private static ClientGraphWorldImpl readClientGraphWorld(NetByteBuf buf, IMsgReadCtx ctx, String packetName) {
+        int universeIdInt = buf.readVarUnsignedInt();
+        GraphUniverseImpl universe = (GraphUniverseImpl) UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+        if (universe == null) {
+            GLLog.warn("Received {} packet for unknown universe id int: {}", packetName, universeIdInt);
+            ctx.drop("Received " + packetName + " for unknown universe");
+            return null;
         }
 
-        world.receiveChunkPillar(chunkX, chunkZ, buf, ctx);
+        ClientGraphWorldImpl world = universe.getClientGraphView();
+        if (world == null) {
+            GLLog.warn("Received {} packet but the client GraphWorld was null", packetName);
+            ctx.drop("Received " + packetName + " but client GraphWorld was null");
+            return null;
+        }
+        return world;
     }
 }

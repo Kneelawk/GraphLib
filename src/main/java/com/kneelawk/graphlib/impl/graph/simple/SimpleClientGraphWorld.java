@@ -104,7 +104,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void receiveChunkPillar(int chunkX, int chunkZ, NetByteBuf pillarBuf, IMsgReadCtx ctx) {
+    public void readChunkPillar(int chunkX, int chunkZ, NetByteBuf pillarBuf, IMsgReadCtx ctx) {
         SimpleBlockGraphPillar pillar = manager.getOrCreatePillar(chunkX, chunkZ);
         if (pillar == null) {
             GLLog.warn("Received pillar outside current client range at ({}, {})", chunkX, chunkZ);
@@ -142,27 +142,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 BlockPos blockPos = nodePos.pos();
 
                 // decode node entity
-                NodeEntityFactory entityFactory = node::createNodeEntity;
-                // quarantine node entities, because they cannot be validated
-                int entityBufLen = graphBuf.readVarUnsignedInt();
-                if (entityBufLen > 0) {
-                    NetByteBuf entityBuf = graphBuf.readBytes(entityBufLen);
-
-                    NodeEntityType entityType =
-                        GLNet.readType(entityBuf, ctx.getConnection(), universe::getNodeEntityType, "NodeEntity",
-                            blockPos);
-                    if (entityType != null) {
-                        NodeEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-                        if (entityDecoder != null) {
-                            entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
-                        } else {
-                            GLLog.error("Unable to decode NodeEntity {} @ {} because it has no packet decoder",
-                                entityType.getId(), blockPos);
-                        }
-                    } else {
-                        GLLog.warn("Failed to decode node entity type");
-                    }
-                }
+                NodeEntityFactory entityFactory =
+                    readNodeEntity(ctx, graphBuf, node, blockPos);
 
                 NodeHolder<BlockNode> holder = graph.createNode(blockPos, node, entityFactory);
                 nodeList.add(holder);
@@ -212,27 +193,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 }
 
                 // decode link entity
-                LinkEntityFactory entityFactory = linkKey::createLinkEntity;
-                // quarantine link entities for the same reason a node entities
-                int entityBufLen = graphBuf.readVarUnsignedInt();
-                if (entityBufLen > 0) {
-                    NetByteBuf entityBuf = graphBuf.readBytes(entityBufLen);
-
-                    LinkEntityType entityType =
-                        GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
-                            nodeA.getBlockPos());
-                    if (entityType != null) {
-                        LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-                        if (entityDecoder != null) {
-                            entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
-                        } else {
-                            GLLog.error("Unable to decode LinkEntity {} @ {}-{} because it has no packet decoder",
-                                entityType.getId(), nodeA.getBlockPos(), nodeB.getBlockPos());
-                        }
-                    } else {
-                        GLLog.warn("Failed to decode internal link entity type");
-                    }
-                }
+                LinkEntityFactory entityFactory =
+                    readLinkEntity(ctx, graphBuf, nodeA, linkKey, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
 
                 graph.link(nodeA, nodeB, linkKey, entityFactory);
             }
@@ -259,30 +221,97 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 }
 
                 // read quarantined link entity
-                LinkEntityFactory entityFactory = link.key()::createLinkEntity;
-                int entityBufLen = linkBuf.readVarUnsignedInt();
-                if (entityBufLen > 0) {
-                    NetByteBuf entityBuf = linkBuf.readBytes(entityBufLen);
-
-                    LinkEntityType entityType =
-                        GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
-                            holderA.getBlockPos());
-                    if (entityType != null) {
-                        LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-                        if (entityDecoder != null) {
-                            entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
-                        } else {
-                            GLLog.error("Unable to decode LinkEntity {} @ {} because it has not packet decoder",
-                                entityType.getId(), link);
-                        }
-                    } else {
-                        GLLog.warn("Failed to decode external link entity type");
-                    }
-                }
+                LinkEntityFactory entityFactory =
+                    readLinkEntity(ctx, linkBuf, holderA, link.key(), link);
 
                 graph.link(holderA, holderB, link.key(), entityFactory);
             }
         }
+    }
+
+    @NotNull
+    private NodeEntityFactory readNodeEntity(IMsgReadCtx ctx, NetByteBuf graphBuf, BlockNode node,
+                                             BlockPos blockPos) {
+        NodeEntityFactory entityFactory = node::createNodeEntity;
+        // quarantine node entities, because they cannot be validated
+        int entityBufLen = graphBuf.readVarUnsignedInt();
+        if (entityBufLen > 0) {
+            NetByteBuf entityBuf = graphBuf.readBytes(entityBufLen);
+
+            NodeEntityType entityType =
+                GLNet.readType(entityBuf, ctx.getConnection(), universe::getNodeEntityType, "NodeEntity",
+                    blockPos);
+            if (entityType != null) {
+                NodeEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
+                if (entityDecoder != null) {
+                    entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
+                } else {
+                    GLLog.error("Unable to decode NodeEntity {} @ {} because it has no packet decoder",
+                        entityType.getId(), blockPos);
+                }
+            } else {
+                GLLog.warn("Failed to decode node entity type");
+            }
+        }
+        return entityFactory;
+    }
+
+    @NotNull
+    private LinkEntityFactory readLinkEntity(IMsgReadCtx ctx, NetByteBuf graphBuf, NodeHolder<BlockNode> nodeA,
+                                             LinkKey linkKey, LinkPos link) {
+        LinkEntityFactory entityFactory = linkKey::createLinkEntity;
+        // quarantine link entities for the same reason a node entities
+        int entityBufLen = graphBuf.readVarUnsignedInt();
+        if (entityBufLen > 0) {
+            NetByteBuf entityBuf = graphBuf.readBytes(entityBufLen);
+
+            LinkEntityType entityType =
+                GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
+                    nodeA.getBlockPos());
+            if (entityType != null) {
+                LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
+                if (entityDecoder != null) {
+                    entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
+                } else {
+                    GLLog.error("Unable to decode LinkEntity {} @ {} because it has no packet decoder",
+                        entityType.getId(), link);
+                }
+            } else {
+                GLLog.warn("Failed to decode link entity type");
+            }
+        }
+        return entityFactory;
+    }
+
+    @Override
+    public void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) {
+        NodePos pos = NodePos.fromPacket(buf, ctx, universe);
+        if (pos == null) {
+            GLLog.warn("Failed to read node pos in node add packet");
+            ctx.drop("Failed to read node pos in node add packet");
+            return;
+        }
+
+        BlockNode node = pos.node();
+        BlockPos blockPos = pos.pos();
+
+        ChunkPos chunkPos = new ChunkPos(pos.pos());
+        if (!manager.isInRadius(chunkPos.x, chunkPos.z)) {
+            GLLog.warn("Received node add @ {} that is outside client chunk radius", pos);
+            ctx.drop("Received node add outside client chunk radius");
+            return;
+        }
+
+        long graphId = buf.readVarUnsignedLong();
+
+        SimpleBlockGraph graph = getOrCreateGraph(graphId);
+
+        graph.loadGraphEntitiesFromPacket(buf, ctx);
+
+        // decode node entity
+        NodeEntityFactory entityFactory = readNodeEntity(ctx, buf, node, blockPos);
+
+        graph.createNode(blockPos, node, entityFactory);
     }
 
     @Override
@@ -547,4 +576,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void graphUpdated(SimpleBlockGraph graph) {}
+
+    @Override
+    public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {}
 }

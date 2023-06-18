@@ -31,6 +31,7 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
 
 import net.minecraft.util.math.BlockPos;
 
+import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -72,4 +73,6 @@ public interface SimpleGraphCollection extends GraphView {
     void scheduleCallbackUpdate(@NotNull NodeHolder<BlockNode> node, boolean validate);
 
     void graphUpdated(SimpleBlockGraph graph);
+
+    void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node);
 }

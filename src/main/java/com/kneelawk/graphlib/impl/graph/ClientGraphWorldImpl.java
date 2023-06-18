@@ -37,5 +37,7 @@ public interface ClientGraphWorldImpl extends GraphView {
 
     void updateLoadDistance(int loadDistance);
 
-    void receiveChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx);
+    void readChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx);
+
+    void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx);
 }

@@ -78,6 +78,10 @@ public class SimpleClientGraphChunkManager {
         return null;
     }
 
+    public boolean isInRadius(int chunkX, int chunkZ) {
+        return pillars.isInRadius(chunkX, chunkZ);
+    }
+
     public @Nullable SimpleBlockGraphPillar getOrCreatePillar(int x, int z) {
         if (!pillars.isInRadius(x, z)) {
             return null;

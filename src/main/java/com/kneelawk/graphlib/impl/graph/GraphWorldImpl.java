@@ -7,7 +7,10 @@ import net.minecraft.util.math.ChunkPos;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
+import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
 
@@ -32,4 +35,6 @@ public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
     int removeEmptyGraphs();
 
     void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx);
 }

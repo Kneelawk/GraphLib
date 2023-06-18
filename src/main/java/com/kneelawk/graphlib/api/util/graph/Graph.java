@@ -124,7 +124,17 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
         }
     }
 
-    private void moveBulkUnchecked(@NotNull Graph<T, L> into, @NotNull Set<Node<T, L>> nodes) {
+    /**
+     * Moves nodes from this graph into the given graph.
+     * <p>
+     * <b>WARNING: This does not check node connections. Misuse can result in nodes being connected to other nodes that
+     * are not in the same graph. This also does not check if the nodes already existed in the origin or destination
+     * graphs.</b>
+     *
+     * @param into  the graph nodes are being moved into.
+     * @param nodes the nodes to be moved.
+     */
+    public void moveBulkUnchecked(@NotNull Graph<T, L> into, @NotNull Set<Node<T, L>> nodes) {
         this.nodes.removeAll(nodes);
         into.nodes.addAll(nodes);
     }
