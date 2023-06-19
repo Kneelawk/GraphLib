@@ -766,6 +766,8 @@ public class SimpleBlockGraph implements BlockGraph {
 
         world.markDirty(id);
 
+        world.sendLink(this, link);
+
         return link;
     }
 

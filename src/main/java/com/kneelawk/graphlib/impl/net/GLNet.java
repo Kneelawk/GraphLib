@@ -36,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -59,14 +58,17 @@ import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.Constants;
@@ -276,17 +278,16 @@ public class GLNet {
         new NetIdData(GRAPH_LIB_ID, "node_add", -1).toClientOnly().setReceiver(GLNet::receiveNodeAdd);
 
     public static void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
-        if (!(node.getBlockWorld() instanceof ServerWorld serverWorld))
+        if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendNodeAdd should only be called on the logical server");
 
-        ServerGraphWorldImpl world = (ServerGraphWorldImpl) node.getGraphWorld();
         GraphUniverse universe = world.getUniverse();
-        if (!universe.isSynchronizationEnabled()) return;
-
         SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
         if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(node)) return;
 
-        Collection<ServerPlayerEntity> watching = PlayerLookup.tracking(serverWorld, node.getBlockPos());
+        Collection<ServerPlayerEntity> watching = PlayerLookup.tracking(world.getWorld(), node.getBlockPos());
 
         for (ServerPlayerEntity player : watching) {
             if (sp.getPlayerFilter().shouldSync(player)) {
@@ -325,22 +326,22 @@ public class GLNet {
         return world;
     }
 
-    public static final NetIdData GRAPH_MERGE = new NetIdData(GRAPH_LIB_ID, "graph_merge", -1).toClientOnly().setReceiver(GLNet::receiveMerge);
+    public static final NetIdData GRAPH_MERGE =
+        new NetIdData(GRAPH_LIB_ID, "graph_merge", -1).toClientOnly().setReceiver(GLNet::receiveMerge);
 
     public static void sendMerge(BlockGraph into, BlockGraph from) {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendMerge should only be called on the logical server");
 
         GraphUniverse universe = world.getUniverse();
-        if (!universe.isSynchronizationEnabled()) return;
-
         SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
 
         Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
-        for (var iter = into.getChunks().iterator(); iter.hasNext();) {
+        for (var iter = into.getChunks().iterator(); iter.hasNext(); ) {
             sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
         }
-        for (var iter = from.getChunks().iterator(); iter.hasNext();) {
+        for (var iter = from.getChunks().iterator(); iter.hasNext(); ) {
             sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
         }
 
@@ -360,5 +361,42 @@ public class GLNet {
         if (world == null) return;
 
         world.readMerge(buf, ctx);
+    }
+
+    public static final NetIdData NODE_LINK =
+        new NetIdData(GRAPH_LIB_ID, "node_link", -1).toClientOnly().setReceiver(GLNet::receiveLink);
+
+    public static void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {
+        if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
+            throw new IllegalArgumentException("sendLink should only be called on the logical server");
+
+        GraphUniverse universe = world.getUniverse();
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        CacheCategory<?> nodeFilter = sp.getNodeFilter();
+        if (nodeFilter != null && !(nodeFilter.matches(link.getFirst()) && nodeFilter.matches(link.getSecond())))
+            return;
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        sendTo.addAll(PlayerLookup.tracking(world.getWorld(), link.getFirstBlockPos()));
+        sendTo.addAll(PlayerLookup.tracking(world.getWorld(), link.getSecondBlockPos()));
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
+                NODE_LINK.send(conn, (buf, ctx) -> {
+                    buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
+                    world.writeLink(graph, link, buf, ctx);
+                });
+            }
+        }
+    }
+
+    private static void receiveLink(NetByteBuf buf, IMsgReadCtx ctx) {
+        ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node link");
+        if (world == null) return;
+
+        world.readLink(buf, ctx);
     }
 }

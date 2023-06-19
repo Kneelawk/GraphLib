@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.World;
 
@@ -80,6 +81,10 @@ public class SimpleClientGraphChunkManager {
 
     public boolean isInRadius(int chunkX, int chunkZ) {
         return pillars.isInRadius(chunkX, chunkZ);
+    }
+
+    public boolean isInRadius(ChunkPos pos) {
+        return isInRadius(pos.x, pos.z);
     }
 
     public @Nullable SimpleBlockGraphPillar getOrCreatePillar(int x, int z) {

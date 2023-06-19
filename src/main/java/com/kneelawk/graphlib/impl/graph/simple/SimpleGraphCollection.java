@@ -33,8 +33,10 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
 
 public interface SimpleGraphCollection extends GraphView {
@@ -77,4 +79,6 @@ public interface SimpleGraphCollection extends GraphView {
     void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node);
 
     void sendMerge(BlockGraph into, BlockGraph from);
+
+    void sendLink(BlockGraph graph, LinkHolder<LinkKey> link);
 }

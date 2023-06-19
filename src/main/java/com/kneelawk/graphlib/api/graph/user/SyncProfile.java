@@ -34,13 +34,13 @@ import com.kneelawk.graphlib.api.util.CacheCategory;
  * Describes if and how a universe should be synchronized from the server to the client.
  */
 public class SyncProfile {
-    private final boolean synchronize;
+    private final boolean enabled;
     private final @NotNull PlayerSyncFilter playerFilter;
     private final @Nullable CacheCategory<?> nodeFilter;
 
-    private SyncProfile(boolean synchronize, @NotNull PlayerSyncFilter playerFilter,
+    private SyncProfile(boolean enabled, @NotNull PlayerSyncFilter playerFilter,
                         @Nullable CacheCategory<?> nodeFilter) {
-        this.synchronize = synchronize;
+        this.enabled = enabled;
         this.playerFilter = playerFilter;
         this.nodeFilter = nodeFilter;
     }
@@ -50,8 +50,8 @@ public class SyncProfile {
      *
      * @return <code>true</code> if the universe should be synchronized at all.
      */
-    public boolean isSynchronized() {
-        return synchronize;
+    public boolean isEnabled() {
+        return enabled;
     }
 
     /**

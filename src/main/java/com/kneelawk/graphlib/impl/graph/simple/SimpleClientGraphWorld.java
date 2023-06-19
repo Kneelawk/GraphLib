@@ -194,7 +194,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 // decode link entity
                 LinkEntityFactory entityFactory =
-                    readLinkEntity(ctx, graphBuf, nodeA, linkKey, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
+                    readLinkEntity(graphBuf, ctx, nodeA, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
 
                 graph.link(nodeA, nodeB, linkKey, entityFactory);
             }
@@ -222,7 +222,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 // read quarantined link entity
                 LinkEntityFactory entityFactory =
-                    readLinkEntity(ctx, linkBuf, holderA, link.key(), link);
+                    readLinkEntity(linkBuf, ctx, holderA, link);
 
                 graph.link(holderA, holderB, link.key(), entityFactory);
             }
@@ -257,13 +257,13 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @NotNull
-    private LinkEntityFactory readLinkEntity(IMsgReadCtx ctx, NetByteBuf graphBuf, NodeHolder<BlockNode> nodeA,
-                                             LinkKey linkKey, LinkPos link) {
-        LinkEntityFactory entityFactory = linkKey::createLinkEntity;
+    private LinkEntityFactory readLinkEntity(NetByteBuf buf, IMsgReadCtx ctx, NodeHolder<BlockNode> nodeA,
+                                             LinkPos link) {
+        LinkEntityFactory entityFactory = link.key()::createLinkEntity;
         // quarantine link entities for the same reason a node entities
-        int entityBufLen = graphBuf.readVarUnsignedInt();
+        int entityBufLen = buf.readVarUnsignedInt();
         if (entityBufLen > 0) {
-            NetByteBuf entityBuf = graphBuf.readBytes(entityBufLen);
+            NetByteBuf entityBuf = buf.readBytes(entityBufLen);
 
             LinkEntityType entityType =
                 GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
@@ -296,7 +296,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         BlockPos blockPos = pos.pos();
 
         ChunkPos chunkPos = new ChunkPos(pos.pos());
-        if (!manager.isInRadius(chunkPos.x, chunkPos.z)) {
+        if (!manager.isInRadius(chunkPos)) {
             GLLog.warn("Received node add @ {} that is outside client chunk radius", pos);
             ctx.drop("Received node add outside client chunk radius");
             return;
@@ -333,6 +333,36 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         // do the merge
         into.merge(from);
+    }
+
+    @Override
+    public void readLink(NetByteBuf buf, IMsgReadCtx ctx) {
+        long graphId = buf.readVarUnsignedLong();
+        SimpleBlockGraph graph = graphs.get(graphId);
+        if (graph == null) {
+            GLLog.warn("Received link in unknown graph {}", graphId);
+            ctx.drop("Unknown graph");
+            return;
+        }
+
+        LinkPos linkPos = LinkPos.fromPacket(buf, ctx, universe);
+        if (linkPos == null) {
+            GLLog.warn("Unable to decode link pos in link packet");
+            ctx.drop("Unable to decode link pos");
+            return;
+        }
+
+        NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
+        NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
+        if (nodeA == null || nodeB == null) {
+            // unknown nodes means they're outside our range
+            ctx.drop("Link outside range");
+            return;
+        }
+
+        LinkEntityFactory entityFactory = readLinkEntity(buf, ctx, nodeA, linkPos);
+
+        graph.link(nodeA, nodeB, linkPos.key(), entityFactory);
     }
 
     @Override
@@ -603,4 +633,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void sendMerge(BlockGraph into, BlockGraph from) {}
+
+    @Override
+    public void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {}
 }

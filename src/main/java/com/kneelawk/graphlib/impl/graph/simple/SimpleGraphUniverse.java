@@ -169,11 +169,6 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public boolean isSynchronizationEnabled() {
-        return syncProfile.isSynchronized();
-    }
-
-    @Override
     public @NotNull SyncProfile getSyncProfile() {
         return syncProfile;
     }

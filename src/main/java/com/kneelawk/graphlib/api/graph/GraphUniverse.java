@@ -385,13 +385,6 @@ public interface GraphUniverse {
     int getDefaultDebugColor(@NotNull Identifier typeId);
 
     /**
-     * Gets whether this universe should be synchronized to the client.
-     *
-     * @return <code>true</code> if this universe should be synchronized to the client.
-     */
-    boolean isSynchronizationEnabled();
-
-    /**
      * Gets this universe's synchronization profile.
      *
      * @return this universe's synchronization profile.

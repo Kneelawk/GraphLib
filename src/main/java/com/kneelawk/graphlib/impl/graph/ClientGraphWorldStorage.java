@@ -45,7 +45,7 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
         this.clientWorld = clientWorld;
 
         for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSE) {
-            if (universe.isSynchronizationEnabled()) {
+            if (universe.getSyncProfile().isEnabled()) {
                 Identifier universeId = universe.getId();
 
                 worlds.put(universeId, universe.createClientGraphWorld(clientWorld, loadDistance));

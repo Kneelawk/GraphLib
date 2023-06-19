@@ -32,7 +32,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
 
             worlds.put(universeId, universe.createGraphWorld(world, path, syncChunkWrites));
 
-            if (universe.isSynchronizationEnabled()) {
+            if (universe.getSyncProfile().isEnabled()) {
                 synced = true;
             }
         }
@@ -126,7 +126,8 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     public void sendChunkDataPackets(ServerPlayerEntity player, ChunkPos pos) {
         for (ServerGraphWorldImpl world : worlds.values()) {
             GraphUniverse universe = world.getUniverse();
-            if (universe.isSynchronizationEnabled() && universe.getSyncProfile().getPlayerFilter().shouldSync(player)) {
+            if (universe.getSyncProfile().isEnabled() &&
+                universe.getSyncProfile().getPlayerFilter().shouldSync(player)) {
                 try {
                     GLNet.sendChunkDataPacket(world, player, pos);
                 } catch (Exception e) {

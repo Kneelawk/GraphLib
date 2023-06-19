@@ -352,7 +352,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         buf.writeBytes(entityBuf);
     }
 
-    public void writeLinkEntity(NetByteBuf buf, IMsgWriteCtx ctx, LinkPos link, SimpleBlockGraph graph) {
+    public void writeLinkEntity(NetByteBuf buf, IMsgWriteCtx ctx, LinkPos link, BlockGraph graph) {
         LinkEntity entity = graph.getLinkEntity(link);
         NetByteBuf entityBuf = NetByteBuf.buffer();
         if (entity != null) {
@@ -381,6 +381,16 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         buf.writeVarUnsignedLong(into.getId());
 
         ((SimpleBlockGraph) into).writeGraphEntitiesToPacket(buf, ctx);
+    }
+
+    @Override
+    public void writeLink(BlockGraph graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx) {
+        buf.writeVarUnsignedLong(graph.getId());
+
+        LinkPos linkPos = link.getPos();
+        linkPos.toPacket(buf, ctx);
+
+        writeLinkEntity(buf, ctx, linkPos, graph);
     }
 
     // ---- Public Interface Methods ---- //
@@ -1005,6 +1015,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     @Override
     public void sendMerge(BlockGraph into, BlockGraph from) {
         GLNet.sendMerge(into, from);
+    }
+
+    @Override
+    public void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {
+        GLNet.sendLink(graph, link);
     }
 
     // ---- Node Update Methods ---- //

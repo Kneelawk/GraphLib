@@ -42,4 +42,6 @@ public interface ClientGraphWorldImpl extends GraphView {
     void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx);
 
     void readMerge(NetByteBuf buf, IMsgReadCtx ctx);
+
+    void readLink(NetByteBuf buf, IMsgReadCtx ctx);
 }
