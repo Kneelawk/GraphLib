@@ -315,6 +315,27 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
+    public void readMerge(NetByteBuf buf, IMsgReadCtx ctx) {
+        long fromId = buf.readVarUnsignedLong();
+        SimpleBlockGraph from = graphs.get(fromId);
+        if (from == null) {
+            // we don't know the graph being merged from, so we can safely ignore this packet
+            ctx.drop("Unknown from graph");
+            return;
+        }
+
+        long intoId = buf.readVarUnsignedLong();
+        // however, it is possible for a graph we do know about to get merged into one we don't know about yet
+        SimpleBlockGraph into = getOrCreateGraph(intoId);
+
+        // initialize into's graph entities if we haven't already
+        into.loadGraphEntitiesFromPacket(buf, ctx);
+
+        // do the merge
+        into.merge(from);
+    }
+
+    @Override
     public @NotNull GraphUniverse getUniverse() {
         return universe;
     }
@@ -579,4 +600,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {}
+
+    @Override
+    public void sendMerge(BlockGraph into, BlockGraph from) {}
 }

@@ -42,7 +42,7 @@ import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
-import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
@@ -76,7 +76,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull GraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world) {
+    public @NotNull ServerGraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world) {
         return StorageHelper.getStorage(world).get(id);
     }
 
@@ -179,8 +179,8 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public GraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites) {
-        return new SimpleGraphWorld(this, world, path, syncChunkWrites);
+    public ServerGraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites) {
+        return new SimpleServerGraphWorld(this, world, path, syncChunkWrites);
     }
 
     @Override

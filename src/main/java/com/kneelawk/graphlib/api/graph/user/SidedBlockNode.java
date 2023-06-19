@@ -5,10 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Direction;
 
+import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
-import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphWorld;
 
 /**
  * Describes a block node that is positioned on the side of a block.
@@ -20,7 +20,7 @@ public interface SidedBlockNode extends BlockNode {
      * The side of the block this node is positioned at.
      * <p>
      * The value returned here corresponds to what nodes are returned by
-     * {@link SimpleGraphWorld#getNodesAt(SidedPos)}, depending on the side given in the sided block-position. The
+     * {@link GraphView#getNodesAt(SidedPos)}, depending on the side given in the sided block-position. The
      * side returned here also influences the {@link WireConnectionDiscoverers} connection
      * logic.
      * <p>

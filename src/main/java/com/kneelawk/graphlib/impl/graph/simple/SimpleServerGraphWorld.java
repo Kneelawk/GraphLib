@@ -43,7 +43,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
@@ -71,7 +70,7 @@ import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.api.world.UnloadingRegionBasedStorage;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
@@ -81,7 +80,7 @@ import com.kneelawk.graphlib.impl.net.GLNet;
  * API methods to an interface so that I could have more control over what methods were being called and to open up the
  * possibility of maybe eventually making a cubic-chunks implementation of GraphLib or something.
  */
-public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldImpl, SimpleGraphCollection {
+public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, ServerGraphWorldImpl, SimpleGraphCollection {
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
@@ -114,8 +113,8 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
 
     private boolean closed = false;
 
-    public SimpleGraphWorld(SimpleGraphUniverse universe, @NotNull ServerWorld world, @NotNull Path path,
-                            boolean syncChunkWrites) {
+    public SimpleServerGraphWorld(SimpleGraphUniverse universe, @NotNull ServerWorld world, @NotNull Path path,
+                                  boolean syncChunkWrites) {
         this.universe = universe;
         this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
             (compound, pos, markDirty) -> new SimpleBlockGraphChunk(compound, pos, markDirty, universe),
@@ -375,6 +374,15 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
         writeNodeEntity(node, buf, ctx, graph);
     }
 
+    @Override
+    public void writeMerge(BlockGraph into, BlockGraph from, NetByteBuf buf, IMsgWriteCtx ctx) {
+        buf.writeVarUnsignedLong(from.getId());
+
+        buf.writeVarUnsignedLong(into.getId());
+
+        ((SimpleBlockGraph) into).writeGraphEntitiesToPacket(buf, ctx);
+    }
+
     // ---- Public Interface Methods ---- //
 
     /**
@@ -393,7 +401,7 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
      * @return the block world associated with this graph view.
      */
     @Override
-    public @NotNull World getWorld() {
+    public @NotNull ServerWorld getWorld() {
         return world;
     }
 
@@ -992,6 +1000,11 @@ public class SimpleGraphWorld implements AutoCloseable, GraphWorld, GraphWorldIm
     @Override
     public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
         GLNet.sendNodeAdd(graph, node);
+    }
+
+    @Override
+    public void sendMerge(BlockGraph into, BlockGraph from) {
+        GLNet.sendMerge(into, from);
     }
 
     // ---- Node Update Methods ---- //

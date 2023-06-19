@@ -40,4 +40,6 @@ public interface ClientGraphWorldImpl extends GraphView {
     void readChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx);
 
     void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx);
+
+    void readMerge(NetByteBuf buf, IMsgReadCtx ctx);
 }

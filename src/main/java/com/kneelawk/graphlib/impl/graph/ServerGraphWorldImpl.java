@@ -2,6 +2,7 @@ package com.kneelawk.graphlib.impl.graph;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
@@ -12,7 +13,7 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
-public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
+public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
 
     void onWorldChunkLoad(@NotNull ChunkPos pos);
 
@@ -34,7 +35,12 @@ public interface GraphWorldImpl extends GraphWorld, AutoCloseable {
      */
     int removeEmptyGraphs();
 
+    @Override
+    @NotNull ServerWorld getWorld();
+
     void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx);
 
     void writeNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeMerge(BlockGraph into, BlockGraph from, NetByteBuf buf, IMsgWriteCtx ctx);
 }

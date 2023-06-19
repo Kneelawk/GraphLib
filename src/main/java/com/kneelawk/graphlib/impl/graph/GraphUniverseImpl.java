@@ -15,12 +15,12 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 public interface GraphUniverseImpl extends GraphUniverse {
     @Override
-    @NotNull GraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world);
+    @NotNull ServerGraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world);
 
     @Override
     @Nullable ClientGraphWorldImpl getClientGraphView();
 
-    GraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites);
+    ServerGraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites);
 
     ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance);
 

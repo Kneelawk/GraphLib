@@ -33,6 +33,13 @@ public interface BlockGraph {
     long getId();
 
     /**
+     * Gets the graph view that this graph exists within.
+     *
+     * @return the graph view that this graph exists within.
+     */
+    GraphView getGraphView();
+
+    /**
      * Gets all the nodes in this graph in the given block-position.
      *
      * @param pos the block-position to get the nodes in.

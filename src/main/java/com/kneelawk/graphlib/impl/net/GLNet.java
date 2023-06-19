@@ -26,6 +26,8 @@
 package com.kneelawk.graphlib.impl.net;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.NotNull;
@@ -72,7 +74,7 @@ import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
-import com.kneelawk.graphlib.impl.graph.GraphWorldImpl;
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 
 public class GLNet {
     public static void init() {
@@ -250,7 +252,7 @@ public class GLNet {
     public static final NetIdData CHUNK_DATA =
         new NetIdData(GRAPH_LIB_ID, "chunk_data", -1).toClientOnly().setReceiver(GLNet::receiveChunkDataPacket);
 
-    public static void sendChunkDataPacket(GraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
+    public static void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
         ActiveConnection connection = CoreMinecraftNetUtil.getConnection(player);
         CHUNK_DATA.send(connection, (buffer, ctx) -> {
             buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), world.getUniverse()));
@@ -275,9 +277,9 @@ public class GLNet {
 
     public static void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
         if (!(node.getBlockWorld() instanceof ServerWorld serverWorld))
-            throw new IllegalArgumentException("sendNodeAdd should only be called on the server");
+            throw new IllegalArgumentException("sendNodeAdd should only be called on the logical server");
 
-        GraphWorldImpl world = (GraphWorldImpl) node.getGraphWorld();
+        ServerGraphWorldImpl world = (ServerGraphWorldImpl) node.getGraphWorld();
         GraphUniverse universe = world.getUniverse();
         if (!universe.isSynchronizationEnabled()) return;
 
@@ -321,5 +323,42 @@ public class GLNet {
             return null;
         }
         return world;
+    }
+
+    public static final NetIdData GRAPH_MERGE = new NetIdData(GRAPH_LIB_ID, "graph_merge", -1).toClientOnly().setReceiver(GLNet::receiveMerge);
+
+    public static void sendMerge(BlockGraph into, BlockGraph from) {
+        if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
+            throw new IllegalArgumentException("sendMerge should only be called on the logical server");
+
+        GraphUniverse universe = world.getUniverse();
+        if (!universe.isSynchronizationEnabled()) return;
+
+        SyncProfile sp = universe.getSyncProfile();
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        for (var iter = into.getChunks().iterator(); iter.hasNext();) {
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+        }
+        for (var iter = from.getChunks().iterator(); iter.hasNext();) {
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+        }
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
+                GRAPH_MERGE.send(conn, (buf, ctx) -> {
+                    buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
+                    world.writeMerge(into, from, buf, ctx);
+                });
+            }
+        }
+    }
+
+    private static void receiveMerge(NetByteBuf buf, IMsgReadCtx ctx) {
+        ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "graph merge");
+        if (world == null) return;
+
+        world.readMerge(buf, ctx);
     }
 }

@@ -38,6 +38,7 @@ import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -71,7 +72,7 @@ import com.kneelawk.graphlib.impl.net.GLNet;
  * Holds and manages a set of block nodes.
  */
 public class SimpleBlockGraph implements BlockGraph {
-    static @NotNull SimpleBlockGraph fromTag(@NotNull SimpleGraphWorld controller, long id,
+    static @NotNull SimpleBlockGraph fromTag(@NotNull SimpleServerGraphWorld controller, long id,
                                              @NotNull NbtCompound tag) {
         NbtList chunksTag = tag.getList("chunks", NbtElement.LONG_TYPE);
         LongSet chunks = new LongLinkedOpenHashSet();
@@ -370,6 +371,16 @@ public class SimpleBlockGraph implements BlockGraph {
     @Override
     public long getId() {
         return id;
+    }
+
+    /**
+     * Gets the graph view that this graph exists within.
+     *
+     * @return the graph view that this graph exists within.
+     */
+    @Override
+    public GraphView getGraphView() {
+        return world;
     }
 
     /**
@@ -786,6 +797,8 @@ public class SimpleBlockGraph implements BlockGraph {
             // we cannot merge with ourselves
             return;
         }
+
+        world.sendMerge(this, other);
 
         // add our graph to all the positions and chunks the other graph is in
         for (var node : other.graph) {

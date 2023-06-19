@@ -18,7 +18,7 @@ import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.net.GLNet;
 
 public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable {
-    private final Map<Identifier, GraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
+    private final Map<Identifier, ServerGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
     private final ServerWorld serverWorld;
     private final boolean synchronizationRequired;
 
@@ -41,7 +41,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     @Override
-    public @NotNull GraphWorldImpl get(@NotNull Identifier universe) {
+    public @NotNull ServerGraphWorldImpl get(@NotNull Identifier universe) {
         if (!worlds.containsKey(universe)) {
             throw new IllegalStateException(
                 "Attempted to get a graph world for a universe that has not been registered. Make sure to call the universe's register() function in your mod's init. Universe: " +
@@ -56,7 +56,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     public void onWorldChunkLoad(ChunkPos pos) {
-        for (GraphWorldImpl world : worlds.values()) {
+        for (ServerGraphWorldImpl world : worlds.values()) {
             // Prevent worlds from interfering with each other
             try {
                 world.onWorldChunkLoad(pos);
@@ -68,7 +68,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     public void onWorldChunkUnload(ChunkPos pos) {
-        for (GraphWorldImpl world : worlds.values()) {
+        for (ServerGraphWorldImpl world : worlds.values()) {
             try {
                 world.onWorldChunkUnload(pos);
             } catch (Exception e) {
@@ -79,7 +79,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     public void tick() {
-        for (GraphWorldImpl world : worlds.values()) {
+        for (ServerGraphWorldImpl world : worlds.values()) {
             try {
                 world.tick();
             } catch (Exception e) {
@@ -90,7 +90,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     public void saveChunk(ChunkPos pos) {
-        for (GraphWorldImpl world : worlds.values()) {
+        for (ServerGraphWorldImpl world : worlds.values()) {
             try {
                 world.saveChunk(pos);
             } catch (Exception e) {
@@ -101,7 +101,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     public void saveAll(boolean flush) {
-        for (GraphWorldImpl world : worlds.values()) {
+        for (ServerGraphWorldImpl world : worlds.values()) {
             try {
                 world.saveAll(flush);
             } catch (Exception e) {
@@ -113,7 +113,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
 
     @Override
     public void close() {
-        for (GraphWorldImpl world : worlds.values()) {
+        for (ServerGraphWorldImpl world : worlds.values()) {
             try {
                 world.close();
             } catch (Exception e) {
@@ -124,7 +124,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     public void sendChunkDataPackets(ServerPlayerEntity player, ChunkPos pos) {
-        for (GraphWorldImpl world : worlds.values()) {
+        for (ServerGraphWorldImpl world : worlds.values()) {
             GraphUniverse universe = world.getUniverse();
             if (universe.isSynchronizationEnabled() && universe.getSyncProfile().getPlayerFilter().shouldSync(player)) {
                 try {
