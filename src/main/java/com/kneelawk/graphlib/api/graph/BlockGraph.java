@@ -119,6 +119,20 @@ public interface BlockGraph {
     @NotNull Stream<NodeHolder<BlockNode>> getNodes();
 
     /**
+     * Gets all node entities in this graph.
+     *
+     * @return a stream of all node entities in this graph.
+     */
+    @NotNull Stream<NodeEntity> getNodeEntities();
+
+    /**
+     * Gets all link entities in this graph.
+     *
+     * @return a stream of all link entities in this graph.
+     */
+    @NotNull Stream<LinkEntity> getLinkEntities();
+
+    /**
      * Gets all nodes in this graph that match the given cache category.
      *
      * @param category the category of the cache to retrieve.

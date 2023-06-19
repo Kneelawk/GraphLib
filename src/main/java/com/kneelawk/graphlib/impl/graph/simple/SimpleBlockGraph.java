@@ -504,6 +504,26 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     /**
+     * Gets all node entities in this graph.
+     *
+     * @return a stream of all node entities in this graph.
+     */
+    @Override
+    public @NotNull Stream<NodeEntity> getNodeEntities() {
+        return nodeEntities.values().stream();
+    }
+
+    /**
+     * Gets all link entities in this graph.
+     *
+     * @return a stream of all link entities in this graph.
+     */
+    @Override
+    public @NotNull Stream<LinkEntity> getLinkEntities() {
+        return linkEntities.values().stream();
+    }
+
+    /**
      * Gets all nodes in this graph that match the given cache category.
      *
      * @param category the category of the cache to retrieve.
