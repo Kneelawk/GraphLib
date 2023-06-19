@@ -802,7 +802,7 @@ public class SimpleBlockGraph implements BlockGraph {
             return;
         }
 
-        world.sendMerge(this, other);
+        world.sendMerge(other, this);
 
         // add our graph to all the positions and chunks the other graph is in
         for (var node : other.graph) {
@@ -936,6 +936,8 @@ public class SimpleBlockGraph implements BlockGraph {
 
                 // Fire update events for the new graphs
                 world.graphUpdated(bg);
+
+                world.sendSplitInto(this, bg);
             }
 
             rebuildCaches();
@@ -960,15 +962,15 @@ public class SimpleBlockGraph implements BlockGraph {
         LongSet removedChunks = new LongLinkedOpenHashSet();
 
         for (var nodePos : nodes) {
-            BlockPos pos = nodePos.pos();
-            removedNodes.add(nodePos);
-            removedPoses.add(pos);
-            long sectionPos = ChunkSectionPos.from(pos).asLong();
-            removedChunks.add(sectionPos);
-
             // the node is in a new graph, so it obviously isn't in our graph anymore
             NodeHolder<BlockNode> holder = nodesToHolders.remove(nodePos);
             if (holder != null) {
+                BlockPos pos = nodePos.pos();
+                removedNodes.add(nodePos);
+                removedPoses.add(pos);
+                long sectionPos = ChunkSectionPos.from(pos).asLong();
+                removedChunks.add(sectionPos);
+
                 nodesInPos.remove(pos, holder);
                 Set<NodeHolder<BlockNode>> inRemovedChunk = nodesInChunk.get(sectionPos);
                 if (inRemovedChunk != null) {
@@ -979,6 +981,9 @@ public class SimpleBlockGraph implements BlockGraph {
                 movedNodes.add(((SimpleNodeHolder<BlockNode>) holder).node);
             }
         }
+
+        // return if nothing is actually going to be moved
+        if (movedNodes.isEmpty()) return;
 
         // Actually move the nodes
         graph.moveBulkUnchecked(into.graph, movedNodes);

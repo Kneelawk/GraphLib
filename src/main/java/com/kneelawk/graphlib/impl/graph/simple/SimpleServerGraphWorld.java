@@ -375,7 +375,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     @Override
-    public void writeMerge(BlockGraph into, BlockGraph from, NetByteBuf buf, IMsgWriteCtx ctx) {
+    public void writeMerge(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx) {
         buf.writeVarUnsignedLong(from.getId());
 
         buf.writeVarUnsignedLong(into.getId());
@@ -400,6 +400,39 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
         LinkPos linkPos = new LinkPos(a.getPos(), b.getPos(), key);
         linkPos.toPacket(buf, ctx);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void writeSplitInto(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx) {
+        buf.writeVarUnsignedLong(from.getId());
+
+        buf.writeVarUnsignedLong(into.getId());
+
+        ((SimpleBlockGraph) into).writeGraphEntitiesToPacket(buf, ctx);
+
+        // write nodes using a buffer, so we only count the nodes we actually end up sending
+        NetByteBuf nodesBuf = NetByteBuf.buffer();
+        int nodeCount = 0;
+
+        // iterate over only the nodes we want to synchronize
+        CacheCategory<BlockNode> nodeFilter = (CacheCategory<BlockNode>) universe.getSyncProfile().getNodeFilter();
+        Iterator<NodeHolder<BlockNode>> iter;
+        if (nodeFilter != null) {
+            iter = into.getCachedNodes(nodeFilter).iterator();
+        } else {
+            iter = into.getNodes().iterator();
+        }
+
+        while (iter.hasNext()) {
+            NodeHolder<BlockNode> holder = iter.next();
+            holder.getPos().toPacket(nodesBuf, ctx);
+
+            nodeCount++;
+        }
+
+        buf.writeVarUnsignedInt(nodeCount);
+        buf.writeBytes(nodesBuf);
     }
 
     // ---- Public Interface Methods ---- //
@@ -1022,8 +1055,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     @Override
-    public void sendMerge(BlockGraph into, BlockGraph from) {
-        GLNet.sendMerge(into, from);
+    public void sendMerge(BlockGraph from, BlockGraph into) {
+        GLNet.sendMerge(from, into);
     }
 
     @Override
@@ -1034,6 +1067,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     @Override
     public void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
         GLNet.sendUnlink(graph, a, b, key);
+    }
+
+    @Override
+    public void sendSplitInto(BlockGraph from, BlockGraph into) {
+        GLNet.sendSplitInto(from, into);
     }
 
     // ---- Node Update Methods ---- //

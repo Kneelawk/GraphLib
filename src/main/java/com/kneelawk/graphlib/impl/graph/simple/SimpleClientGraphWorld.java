@@ -27,6 +27,7 @@ package com.kneelawk.graphlib.impl.graph.simple;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
@@ -40,6 +41,7 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -394,6 +396,43 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
+    public void readSplitInto(NetByteBuf buf, IMsgReadCtx ctx) {
+        long fromId = buf.readVarUnsignedLong();
+        SimpleBlockGraph from = graphs.get(fromId);
+        if (from == null) {
+            // we don't know the graph being split from, so we can safely ignore this packet
+            ctx.drop("Unknown from graph");
+            return;
+        }
+
+        long intoId = buf.readVarUnsignedLong();
+        // however, the into graph is normally a newly created one
+        SimpleBlockGraph into = getOrCreateGraph(intoId);
+
+        // initialize into's graph entities
+        into.loadGraphEntitiesFromPacket(buf, ctx);
+
+        // load the nodes to be split off
+        Set<NodePos> toSplit = new ObjectLinkedOpenHashSet<>();
+        int nodeCount = buf.readVarUnsignedInt();
+        for (int i = 0; i < nodeCount; i++) {
+            NodePos pos = NodePos.fromPacket(buf, ctx, universe);
+            if (pos == null) {
+                GLLog.warn("Error reading node pos in split packet. Aborting split.");
+                ctx.drop("Error reading node pos");
+                destroyGraphImpl(into);
+                return;
+            }
+
+            toSplit.add(pos);
+        }
+
+        // Split Into only moves nodes from actually knows about, so nodes that are outside the client radius get
+        // discarded.
+        from.splitInto(into, toSplit);
+    }
+
+    @Override
     public @NotNull GraphUniverse getUniverse() {
         return universe;
     }
@@ -660,11 +699,14 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {}
 
     @Override
-    public void sendMerge(BlockGraph into, BlockGraph from) {}
+    public void sendMerge(BlockGraph from, BlockGraph into) {}
 
     @Override
     public void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {}
 
     @Override
     public void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {}
+
+    @Override
+    public void sendSplitInto(BlockGraph from, BlockGraph into) {}
 }

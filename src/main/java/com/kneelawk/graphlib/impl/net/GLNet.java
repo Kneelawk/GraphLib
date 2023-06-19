@@ -329,7 +329,7 @@ public class GLNet {
     public static final NetIdData GRAPH_MERGE =
         new NetIdData(GRAPH_LIB_ID, "graph_merge", -1).toClientOnly().setReceiver(GLNet::receiveMerge);
 
-    public static void sendMerge(BlockGraph into, BlockGraph from) {
+    public static void sendMerge(BlockGraph from, BlockGraph into) {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendMerge should only be called on the logical server");
 
@@ -350,7 +350,7 @@ public class GLNet {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 GRAPH_MERGE.send(conn, (buf, ctx) -> {
                     buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
-                    world.writeMerge(into, from, buf, ctx);
+                    world.writeMerge(from, into, buf, ctx);
                 });
             }
         }
@@ -434,5 +434,42 @@ public class GLNet {
         if (world == null) return;
 
         world.readUnlink(buf, ctx);
+    }
+
+    public static final NetIdData GRAPH_SPLIT =
+        new NetIdData(GRAPH_LIB_ID, "graph_split", -1).toClientOnly().setReceiver(GLNet::receiveSplitInto);
+
+    public static void sendSplitInto(BlockGraph from, BlockGraph into) {
+        if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
+            throw new IllegalArgumentException("sendSplitInto should only be called on the logical server");
+
+        GraphUniverse universe = world.getUniverse();
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        for (var iter = into.getChunks().iterator(); iter.hasNext(); ) {
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+        }
+        for (var iter = from.getChunks().iterator(); iter.hasNext(); ) {
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+        }
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
+                GRAPH_SPLIT.send(conn, (buf, ctx) -> {
+                    buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
+                    world.writeSplitInto(from, into, buf, ctx);
+                });
+            }
+        }
+    }
+
+    private static void receiveSplitInto(NetByteBuf buf, IMsgReadCtx ctx) {
+        ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "graph split");
+        if (world == null) return;
+
+        world.readSplitInto(buf, ctx);
     }
 }

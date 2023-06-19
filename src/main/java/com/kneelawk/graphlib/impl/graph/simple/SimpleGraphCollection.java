@@ -78,9 +78,11 @@ public interface SimpleGraphCollection extends GraphView {
 
     void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node);
 
-    void sendMerge(BlockGraph into, BlockGraph from);
+    void sendMerge(BlockGraph from, BlockGraph into);
 
     void sendLink(BlockGraph graph, LinkHolder<LinkKey> link);
 
     void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key);
+
+    void sendSplitInto(BlockGraph from, BlockGraph into);
 }
