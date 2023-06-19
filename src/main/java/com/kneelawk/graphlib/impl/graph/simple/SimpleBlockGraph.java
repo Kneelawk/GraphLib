@@ -646,6 +646,9 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     void destroyNode(@NotNull NodeHolder<BlockNode> holder, boolean doSplit) {
+        // send the node remove packet before any of the removing has actually happened
+        world.sendNodeRemove(this, holder);
+
         // see if removing this node means removing a block-pos or a chunk
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
         NodePos removedNode = node.getPos();

@@ -52,4 +52,6 @@ public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
                      IMsgWriteCtx ctx);
 
     void writeSplitInto(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx);
 }

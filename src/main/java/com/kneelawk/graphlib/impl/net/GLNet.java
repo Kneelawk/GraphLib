@@ -472,4 +472,36 @@ public class GLNet {
 
         world.readSplitInto(buf, ctx);
     }
+
+    public static final NetIdData NODE_REMOVE = new NetIdData(GRAPH_LIB_ID, "node_remove", -1).toClientOnly().setReceiver(GLNet::receiveNodeRemove);
+
+    public static void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {
+        if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
+            throw new IllegalArgumentException("sendNodeRemove should only be called on the logical server");
+
+        GraphUniverse universe = world.getUniverse();
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(holder)) return;
+
+        Collection<ServerPlayerEntity> watching = PlayerLookup.tracking(world.getWorld(), holder.getBlockPos());
+
+        for (ServerPlayerEntity player : watching) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
+                NODE_REMOVE.send(conn, (buf, ctx) -> {
+                    buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
+                    world.writeNodeRemove(graph, holder, buf, ctx);
+                });
+            }
+        }
+    }
+
+    private static void receiveNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) {
+        ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node remove");
+        if (world == null) return;
+
+        world.readNodeRemove(buf, ctx);
+    }
 }

@@ -433,6 +433,29 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
+    public void readNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) {
+        long graphId = buf.readVarUnsignedLong();
+        SimpleBlockGraph graph = graphs.get(graphId);
+        if (graph == null) {
+            GLLog.warn("Received node remove in unknown graph {}", graphId);
+            ctx.drop("Unknown graph");
+            return;
+        }
+
+        NodePos pos = NodePos.fromPacket(buf, ctx, universe);
+        if (pos == null) {
+            GLLog.warn("Error reading node pos in node remove packet");
+            return;
+        }
+
+        NodeHolder<BlockNode> node = graph.getNodeAt(pos);
+        // ignore removals of nodes we don't know about
+        if (node == null) return;
+
+        graph.destroyNode(node, false);
+    }
+
+    @Override
     public @NotNull GraphUniverse getUniverse() {
         return universe;
     }
@@ -709,4 +732,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void sendSplitInto(BlockGraph from, BlockGraph into) {}
+
+    @Override
+    public void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {}
 }

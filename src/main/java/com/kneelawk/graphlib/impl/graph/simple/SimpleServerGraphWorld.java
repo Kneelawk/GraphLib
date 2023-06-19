@@ -435,6 +435,13 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         buf.writeBytes(nodesBuf);
     }
 
+    @Override
+    public void writeNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx) {
+        buf.writeVarUnsignedLong(graph.getId());
+
+        holder.getPos().toPacket(buf, ctx);
+    }
+
     // ---- Public Interface Methods ---- //
 
     /**
@@ -1072,6 +1079,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     @Override
     public void sendSplitInto(BlockGraph from, BlockGraph into) {
         GLNet.sendSplitInto(from, into);
+    }
+
+    @Override
+    public void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {
+        GLNet.sendNodeRemove(graph, holder);
     }
 
     // ---- Node Update Methods ---- //
