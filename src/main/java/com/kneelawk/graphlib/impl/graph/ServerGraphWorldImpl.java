@@ -47,4 +47,7 @@ public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
     void writeMerge(BlockGraph into, BlockGraph from, NetByteBuf buf, IMsgWriteCtx ctx);
 
     void writeLink(BlockGraph graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key, NetByteBuf buf,
+                     IMsgWriteCtx ctx);
 }

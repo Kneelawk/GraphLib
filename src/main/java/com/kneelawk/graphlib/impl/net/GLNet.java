@@ -399,4 +399,40 @@ public class GLNet {
 
         world.readLink(buf, ctx);
     }
+
+    public static final NetIdData NODE_UNLINK =
+        new NetIdData(GRAPH_LIB_ID, "node_unlink", -1).toClientOnly().setReceiver(GLNet::receiveUnlink);
+
+    public static void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
+        if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
+            throw new IllegalArgumentException("sendUnlink should only be called on the logical server");
+
+        GraphUniverse universe = world.getUniverse();
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        CacheCategory<?> nodeFilter = sp.getNodeFilter();
+        if (nodeFilter != null && !(nodeFilter.matches(a) && nodeFilter.matches(b))) return;
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        sendTo.addAll(PlayerLookup.tracking(world.getWorld(), a.getBlockPos()));
+        sendTo.addAll(PlayerLookup.tracking(world.getWorld(), b.getBlockPos()));
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
+                NODE_UNLINK.send(conn, (buf, ctx) -> {
+                    buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
+                    world.writeUnlink(graph, a, b, key, buf, ctx);
+                });
+            }
+        }
+    }
+
+    private static void receiveUnlink(NetByteBuf buf, IMsgReadCtx ctx) {
+        ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node unlink");
+        if (world == null) return;
+
+        world.readUnlink(buf, ctx);
+    }
 }

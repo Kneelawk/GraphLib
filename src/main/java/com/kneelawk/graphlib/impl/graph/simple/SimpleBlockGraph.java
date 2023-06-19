@@ -772,6 +772,8 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     boolean unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key) {
+        world.sendUnlink(this, a, b, key);
+
         boolean linkRemoved =
             graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
 

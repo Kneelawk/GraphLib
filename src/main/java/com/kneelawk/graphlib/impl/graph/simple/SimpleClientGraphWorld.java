@@ -366,6 +366,34 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
+    public void readUnlink(NetByteBuf buf, IMsgReadCtx ctx) {
+        long graphId = buf.readVarUnsignedLong();
+        SimpleBlockGraph graph = graphs.get(graphId);
+        if (graph == null) {
+            GLLog.warn("Received unlink in unknown graph {}", graphId);
+            ctx.drop("Unknown graph");
+            return;
+        }
+
+        LinkPos linkPos = LinkPos.fromPacket(buf, ctx, universe);
+        if (linkPos == null) {
+            GLLog.warn("Unable to decode link pos in unlink packet");
+            ctx.drop("Unable to decode link pos");
+            return;
+        }
+
+        NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
+        NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
+        if (nodeA == null || nodeB == null) {
+            // unknown nodes means they're outside our range
+            ctx.drop("Link outside range");
+            return;
+        }
+
+        graph.unlink(nodeA, nodeB, linkPos.key());
+    }
+
+    @Override
     public @NotNull GraphUniverse getUniverse() {
         return universe;
     }
@@ -636,4 +664,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {}
+
+    @Override
+    public void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {}
 }
