@@ -116,10 +116,13 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         int graphCount = pillarBuf.readVarUnsignedInt();
 
+        NetByteBuf graphBuf = NetByteBuf.buffer();
+
         GRAPH_LOOP:
         for (int graphIndex = 0; graphIndex < graphCount; graphIndex++) {
+            graphBuf.clear();
             int graphBufLen = pillarBuf.readVarUnsignedInt();
-            NetByteBuf graphBuf = pillarBuf.readBytes(graphBufLen);
+            pillarBuf.readBytes(graphBuf, graphBufLen);
 
             long graphId = graphBuf.readVarUnsignedLong();
             SimpleBlockGraph graph = getOrCreateGraph(graphId);
@@ -130,9 +133,14 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             List<NodeHolder<BlockNode>> nodeList = new ObjectArrayList<>();
 
             int nodeCount = graphBuf.readVarUnsignedInt();
+            int nodesBufLen = graphBuf.readVarUnsignedInt();
+
+            NetByteBuf nodesBuf = NetByteBuf.buffer();
+            graphBuf.readBytes(nodesBuf, nodesBufLen);
+
             for (int i = 0; i < nodeCount; i++) {
                 // decode block node
-                NodePos nodePos = NodePos.fromPacket(graphBuf, ctx, universe);
+                NodePos nodePos = NodePos.fromPacket(nodesBuf, ctx, universe);
                 if (nodePos == null) {
                     // graph is corrupted, just delete it and move on
                     GLLog.warn("Failed to read block node packet in graph {}", graphId);
@@ -145,7 +153,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 // decode node entity
                 NodeEntityFactory entityFactory =
-                    readNodeEntity(ctx, graphBuf, node, blockPos);
+                    readNodeEntity(ctx, nodesBuf, node, blockPos);
 
                 NodeHolder<BlockNode> holder = graph.createNode(blockPos, node, entityFactory);
                 nodeList.add(holder);
@@ -153,9 +161,14 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
             // decode internal links
             int linkCount = graphBuf.readVarUnsignedInt();
+            int linksBufLen = graphBuf.readVarUnsignedInt();
+
+            NetByteBuf linksBuf = NetByteBuf.buffer();
+            graphBuf.readBytes(linksBuf, linksBufLen);
+
             for (int i = 0; i < linkCount; i++) {
-                int nodeAIndex = graphBuf.readVarUnsignedInt();
-                int nodeBIndex = graphBuf.readVarUnsignedInt();
+                int nodeAIndex = linksBuf.readVarUnsignedInt();
+                int nodeBIndex = linksBuf.readVarUnsignedInt();
 
                 if (nodeAIndex < 0 || nodeAIndex >= nodeList.size()) {
                     GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeAIndex);
@@ -173,7 +186,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 // decode link key
                 LinkKeyType linkType =
-                    GLNet.readType(graphBuf, ctx.getConnection(), universe::getLinkKeyType, "LinkKey",
+                    GLNet.readType(linksBuf, ctx.getConnection(), universe::getLinkKeyType, "LinkKey",
                         nodeA.getBlockPos());
                 if (linkType == null) {
                     GLLog.warn("Failed to read link type @ {}-{}", nodeA.getBlockPos(), nodeB.getBlockPos());
@@ -187,7 +200,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                     continue GRAPH_LOOP;
                 }
 
-                LinkKey linkKey = linkDecoder.decode(graphBuf, ctx);
+                LinkKey linkKey = linkDecoder.decode(linksBuf, ctx);
                 if (linkKey == null) {
                     GLLog.warn("Failed to decode LinkKey {} @ {}-{}", linkType.getId(), nodeA.getBlockPos(),
                         nodeB.getBlockPos());
@@ -196,7 +209,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 // decode link entity
                 LinkEntityFactory entityFactory =
-                    readLinkEntity(graphBuf, ctx, nodeA, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
+                    readLinkEntity(linksBuf, ctx, nodeA, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
 
                 graph.link(nodeA, nodeB, linkKey, entityFactory);
             }
@@ -238,7 +251,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         // quarantine node entities, because they cannot be validated
         int entityBufLen = graphBuf.readVarUnsignedInt();
         if (entityBufLen > 0) {
-            NetByteBuf entityBuf = graphBuf.readBytes(entityBufLen);
+            NetByteBuf entityBuf = NetByteBuf.buffer();
+            graphBuf.readBytes(entityBuf, entityBufLen);
 
             NodeEntityType entityType =
                 GLNet.readType(entityBuf, ctx.getConnection(), universe::getNodeEntityType, "NodeEntity",
@@ -265,7 +279,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         // quarantine link entities for the same reason a node entities
         int entityBufLen = buf.readVarUnsignedInt();
         if (entityBufLen > 0) {
-            NetByteBuf entityBuf = buf.readBytes(entityBufLen);
+            NetByteBuf entityBuf = NetByteBuf.buffer();
+            buf.readBytes(entityBuf, entityBufLen);
 
             LinkEntityType entityType =
                 GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",

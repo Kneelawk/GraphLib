@@ -302,7 +302,9 @@ public class SimpleBlockGraph implements BlockGraph {
     void loadGraphEntitiesFromPacket(NetByteBuf graphBuf, IMsgReadCtx ctx) {
         int graphEntityBufLen = graphBuf.readVarUnsignedInt();
         if (graphEntityBufLen <= 0) return;
-        NetByteBuf buf = graphBuf.readBytes(graphEntityBufLen);
+
+        NetByteBuf buf = NetByteBuf.buffer();
+        graphBuf.readBytes(buf, graphEntityBufLen);
 
         if (graphEntities.isEmpty()) {
             // assume that having any graph entities means we've already loaded.
@@ -359,8 +361,10 @@ public class SimpleBlockGraph implements BlockGraph {
             }
         }
 
-        graphBuf.writeVarUnsignedInt(buf.writerIndex());
-        graphBuf.writeBytes(buf);
+        graphBuf.writeVarUnsignedInt(buf.readableBytes());
+        if (buf.readableBytes() > 0) {
+            graphBuf.writeBytes(buf);
+        }
     }
 
     /**
