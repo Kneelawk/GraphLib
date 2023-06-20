@@ -49,6 +49,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.World;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
@@ -106,7 +107,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void readChunkPillar(int chunkX, int chunkZ, NetByteBuf pillarBuf, IMsgReadCtx ctx) {
+    public void readChunkPillar(int chunkX, int chunkZ, NetByteBuf pillarBuf, IMsgReadCtx ctx)
+        throws InvalidInputDataException {
         SimpleBlockGraphPillar pillar = manager.getOrCreatePillar(chunkX, chunkZ);
         if (pillar == null) {
             GLLog.warn("Received pillar outside current client range at ({}, {})", chunkX, chunkZ);
@@ -323,7 +325,9 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         SimpleBlockGraph graph = getOrCreateGraph(graphId);
 
-        graph.loadGraphEntitiesFromPacket(buf, ctx);
+        try {graph.loadGraphEntitiesFromPacket(buf, ctx);} catch (alexiil.mc.lib.net.InvalidInputDataException e) {
+            throw new RuntimeException(e);
+        }
 
         // decode node entity
         NodeEntityFactory entityFactory = readNodeEntity(ctx, buf, node, blockPos);
@@ -346,7 +350,9 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraph into = getOrCreateGraph(intoId);
 
         // initialize into's graph entities if we haven't already
-        into.loadGraphEntitiesFromPacket(buf, ctx);
+        try {into.loadGraphEntitiesFromPacket(buf, ctx);} catch (alexiil.mc.lib.net.InvalidInputDataException e) {
+            throw new RuntimeException(e);
+        }
 
         // do the merge
         into.merge(from);
@@ -425,7 +431,9 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraph into = getOrCreateGraph(intoId);
 
         // initialize into's graph entities
-        into.loadGraphEntitiesFromPacket(buf, ctx);
+        try {into.loadGraphEntitiesFromPacket(buf, ctx);} catch (alexiil.mc.lib.net.InvalidInputDataException e) {
+            throw new RuntimeException(e);
+        }
 
         // load the nodes to be split off
         Set<NodePos> toSplit = new ObjectLinkedOpenHashSet<>();

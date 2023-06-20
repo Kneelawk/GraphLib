@@ -264,7 +264,7 @@ public class GLNet {
         });
     }
 
-    private static void receiveChunkDataPacket(NetByteBuf buf, IMsgReadCtx ctx) {
+    private static void receiveChunkDataPacket(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "chunk data");
         if (world == null) return;
 

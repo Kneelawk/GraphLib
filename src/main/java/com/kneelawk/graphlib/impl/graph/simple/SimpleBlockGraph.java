@@ -35,6 +35,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
@@ -299,71 +300,48 @@ public class SimpleBlockGraph implements BlockGraph {
         return tag;
     }
 
-    void loadGraphEntitiesFromPacket(NetByteBuf graphBuf, IMsgReadCtx ctx) {
-        int graphEntityBufLen = graphBuf.readVarUnsignedInt();
-        if (graphEntityBufLen <= 0) return;
-
-        NetByteBuf buf = NetByteBuf.buffer();
-        graphBuf.readBytes(buf, graphEntityBufLen);
-
-        if (graphEntities.isEmpty()) {
-            // assume that having any graph entities means we've already loaded.
-
-            int entityCount = buf.readVarUnsignedInt();
-            for (int entityIndex = 0; entityIndex < entityCount; entityIndex++) {
-                int typeIdInt = buf.readVarUnsignedInt();
-                Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
-                if (typeId == null) {
-                    GLLog.warn("Unable to decode graph entity type id int as id. Int: {}", typeIdInt);
-                    break;
-                }
-
-                GraphEntityType<?> type = world.getUniverse().getGraphEntityType(typeId);
-                if (type == null) {
-                    GLLog.warn("Received unknown graph entity type id: {}", typeId);
-                    break;
-                }
-
-                GraphEntityPacketDecoder decoder = type.getPacketDecoder();
-                if (decoder == null) {
-                    GLLog.warn("Received graph entity but type has no packet decoder. Id: {}", typeId);
-                    break;
-                }
-
-                GraphEntity<?> entity =
-                    decoder.decode(buf, ctx, new SimpleGraphEntityContext(world.getWorld(), world, this));
-                if (entity == null) {
-                    GLLog.warn("Failed to decode graph entity. Id: {}", typeId);
-                    break;
-                }
-
-                graphEntities.put(type, entity);
+    void loadGraphEntitiesFromPacket(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
+        int entityCount = buf.readVarUnsignedInt();
+        for (int entityIndex = 0; entityIndex < entityCount; entityIndex++) {
+            int typeIdInt = buf.readVarUnsignedInt();
+            Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
+            if (typeId == null) {
+                GLLog.warn("Unable to decode graph entity type id int as id. Int: {}", typeIdInt);
+                throw new InvalidInputDataException(
+                    "Unable to decode graph entity type id int as id. Int: " + typeIdInt);
             }
 
-            for (GraphEntityType<?> type : world.getUniverse().getAllGraphEntityTypes()) {
-                graphEntities.computeIfAbsent(type,
-                    ty -> ty.getFactory().createNew(new SimpleGraphEntityContext(world.getWorld(), world, this)));
+            GraphEntityType<?> type = world.getUniverse().getGraphEntityType(typeId);
+            if (type == null) {
+                GLLog.warn("Received unknown graph entity type id: {}", typeId);
+                throw new InvalidInputDataException("Received unknown graph entity type id: " + typeId);
             }
+
+            GraphEntityPacketDecoder decoder = type.getPacketDecoder();
+            if (decoder == null) {
+                GLLog.warn("Received graph entity but type has no packet decoder. Id: {}", typeId);
+                throw new InvalidInputDataException(
+                    "Received graph entity but type has no packet decoder. Id: " + typeId);
+            }
+
+            GraphEntity<?> entity =
+                decoder.decode(buf, ctx, new SimpleGraphEntityContext(world.getWorld(), world, this));
+
+            graphEntities.put(type, entity);
+        }
+
+        for (GraphEntityType<?> type : world.getUniverse().getAllGraphEntityTypes()) {
+            graphEntities.computeIfAbsent(type,
+                ty -> ty.getFactory().createNew(new SimpleGraphEntityContext(world.getWorld(), world, this)));
         }
     }
 
-    void writeGraphEntitiesToPacket(NetByteBuf graphBuf, IMsgWriteCtx ctx) {
-        NetByteBuf buf = NetByteBuf.buffer();
+    void writeGraphEntitiesToPacket(NetByteBuf buf, IMsgWriteCtx ctx) {
+        buf.writeVarUnsignedInt(graphEntities.size());
+        for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
+            buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), entry.getKey().getId()));
 
-        if (!graphEntities.isEmpty()) {
-            // don't write anything if there's nothing to be written
-
-            buf.writeVarUnsignedInt(graphEntities.size());
-            for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
-                buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), entry.getKey().getId()));
-
-                entry.getValue().toPacket(buf, ctx);
-            }
-        }
-
-        graphBuf.writeVarUnsignedInt(buf.readableBytes());
-        if (buf.readableBytes() > 0) {
-            graphBuf.writeBytes(buf);
+            entry.getValue().toPacket(buf, ctx);
         }
     }
 
