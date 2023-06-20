@@ -328,16 +328,10 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             // write external links
             buf.writeVarUnsignedInt(externalLinks.size());
             for (LinkPos link : externalLinks) {
-                // quarantine each external link, so it can be ignored and not fully decoded if it extends too far
-                NetByteBuf linkBuf = NetByteBuf.buffer();
-
-                link.toPacket(linkBuf, ctx);
+                link.toPacket(buf, ctx);
 
                 // quarantine link entities
-                writeLinkEntity(linkBuf, ctx, link, graph);
-
-                buf.writeVarUnsignedInt(linkBuf.readableBytes());
-                buf.writeBytes(linkBuf);
+                writeLinkEntity(buf, ctx, link, graph);
             }
 
             buf.writeMarker("graph_end");
