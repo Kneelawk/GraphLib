@@ -26,9 +26,9 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 /**
@@ -41,7 +41,8 @@ public interface LinkKeyPacketDecoder {
      *
      * @param buf the buffer to read from.
      * @param ctx the message context.
-     * @return a newly decoded link key, or <code>null</code> if none could be decoded.
+     * @return a newly decoded link key.
+     * @throws InvalidInputDataException if no link key could be decoded.
      */
-    @Nullable LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx);
+    @NotNull LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }

@@ -120,7 +120,6 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         NetByteBuf graphBuf = NetByteBuf.buffer();
 
-        GRAPH_LOOP:
         for (int graphIndex = 0; graphIndex < graphCount; graphIndex++) {
             graphBuf.clear();
             int graphBufLen = pillarBuf.readVarUnsignedInt();
@@ -143,12 +142,6 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             for (int i = 0; i < nodeCount; i++) {
                 // decode block node
                 NodePos nodePos = NodePos.fromPacket(nodesBuf, ctx, universe);
-                if (nodePos == null) {
-                    // graph is corrupted, just delete it and move on
-                    GLLog.warn("Failed to read block node packet in graph {}", graphId);
-                    destroyGraphImpl(graph);
-                    continue GRAPH_LOOP;
-                }
 
                 BlockNode node = nodePos.node();
                 BlockPos blockPos = nodePos.pos();
@@ -173,14 +166,17 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 int nodeBIndex = linksBuf.readVarUnsignedInt();
 
                 if (nodeAIndex < 0 || nodeAIndex >= nodeList.size()) {
-                    GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeAIndex);
-                    // the graph has its nodes at least, so we just stop here and move on to the next graph
-                    continue GRAPH_LOOP;
+                    GLLog.warn("Received packet with invalid links. Node index {} is invalid.", nodeAIndex);
+                    // packet is foo bar
+                    throw new InvalidInputDataException(
+                        "Received packet with invalid links. Node index " + nodeAIndex + " is invalid.");
                 }
 
                 if (nodeBIndex < 0 || nodeBIndex >= nodeList.size()) {
-                    GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeBIndex);
-                    continue GRAPH_LOOP;
+                    GLLog.warn("Received packet with invalid links. Node index {} is invalid.", nodeBIndex);
+                    // packet is foo bar
+                    throw new InvalidInputDataException(
+                        "Received packet with invalid links. Node index " + nodeBIndex + " is invalid.");
                 }
 
                 NodeHolder<BlockNode> nodeA = nodeList.get(nodeAIndex);
@@ -190,24 +186,17 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 LinkKeyType linkType =
                     GLNet.readType(linksBuf, ctx.getConnection(), universe::getLinkKeyType, "LinkKey",
                         nodeA.getBlockPos());
-                if (linkType == null) {
-                    GLLog.warn("Failed to read link type @ {}-{}", nodeA.getBlockPos(), nodeB.getBlockPos());
-                    continue GRAPH_LOOP;
-                }
 
                 LinkKeyPacketDecoder linkDecoder = linkType.getPacketDecoder();
                 if (linkDecoder == null) {
                     GLLog.error("Unable to decode LinkKey {} @ {}-{} because it has no packet decoder",
                         linkType.getId(), nodeA.getBlockPos(), nodeB.getBlockPos());
-                    continue GRAPH_LOOP;
+                    throw new InvalidInputDataException(
+                        "Unable to decode LinkKey " + linkType.getId() + " @ " + nodeA.getBlockPos() + "-" +
+                            nodeB.getBlockPos() + " because it has no packet decoder");
                 }
 
                 LinkKey linkKey = linkDecoder.decode(linksBuf, ctx);
-                if (linkKey == null) {
-                    GLLog.warn("Failed to decode LinkKey {} @ {}-{}", linkType.getId(), nodeA.getBlockPos(),
-                        nodeB.getBlockPos());
-                    continue GRAPH_LOOP;
-                }
 
                 // decode link entity
                 LinkEntityFactory entityFactory =
@@ -223,10 +212,6 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 NetByteBuf linkBuf = graphBuf.readBytes(linkBufLen);
 
                 LinkPos link = LinkPos.fromPacket(linkBuf, ctx, universe);
-                if (link == null) {
-                    GLLog.warn("Failed to read external link pos");
-                    continue;
-                }
 
                 NodeHolder<BlockNode> holderA = graph.getNodeAt(link.first());
                 NodeHolder<BlockNode> holderB = graph.getNodeAt(link.second());
@@ -248,7 +233,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @NotNull
     private NodeEntityFactory readNodeEntity(IMsgReadCtx ctx, NetByteBuf graphBuf, BlockNode node,
-                                             BlockPos blockPos) {
+                                             BlockPos blockPos) throws InvalidInputDataException {
         NodeEntityFactory entityFactory = node::createNodeEntity;
         // quarantine node entities, because they cannot be validated
         int entityBufLen = graphBuf.readVarUnsignedInt();
@@ -259,16 +244,15 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             NodeEntityType entityType =
                 GLNet.readType(entityBuf, ctx.getConnection(), universe::getNodeEntityType, "NodeEntity",
                     blockPos);
-            if (entityType != null) {
-                NodeEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-                if (entityDecoder != null) {
-                    entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
-                } else {
-                    GLLog.error("Unable to decode NodeEntity {} @ {} because it has no packet decoder",
-                        entityType.getId(), blockPos);
-                }
+            NodeEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
+            if (entityDecoder != null) {
+                entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
             } else {
-                GLLog.warn("Failed to decode node entity type");
+                GLLog.error("Unable to decode NodeEntity {} @ {} because it has no packet decoder",
+                    entityType.getId(), blockPos);
+                throw new InvalidInputDataException(
+                    "Unable to decode NodeEntity " + entityType.getId() + " @ " + blockPos +
+                        " because it has no packet decoder");
             }
         }
         return entityFactory;
@@ -276,7 +260,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @NotNull
     private LinkEntityFactory readLinkEntity(NetByteBuf buf, IMsgReadCtx ctx, NodeHolder<BlockNode> nodeA,
-                                             LinkPos link) {
+                                             LinkPos link) throws InvalidInputDataException {
         LinkEntityFactory entityFactory = link.key()::createLinkEntity;
         // quarantine link entities for the same reason a node entities
         int entityBufLen = buf.readVarUnsignedInt();
@@ -287,29 +271,22 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             LinkEntityType entityType =
                 GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
                     nodeA.getBlockPos());
-            if (entityType != null) {
-                LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-                if (entityDecoder != null) {
-                    entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
-                } else {
-                    GLLog.error("Unable to decode LinkEntity {} @ {} because it has no packet decoder",
-                        entityType.getId(), link);
-                }
+            LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
+            if (entityDecoder != null) {
+                entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
             } else {
-                GLLog.warn("Failed to decode link entity type");
+                GLLog.error("Unable to decode LinkEntity {} @ {} because it has no packet decoder",
+                    entityType.getId(), link);
+                throw new InvalidInputDataException("Unable to decode LinkEntity " + entityType.getId() + " @ " + link +
+                    " because it has no packet decoder");
             }
         }
         return entityFactory;
     }
 
     @Override
-    public void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) {
+    public void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         NodePos pos = NodePos.fromPacket(buf, ctx, universe);
-        if (pos == null) {
-            GLLog.warn("Failed to read node pos in node add packet");
-            ctx.drop("Failed to read node pos in node add packet");
-            return;
-        }
 
         BlockNode node = pos.node();
         BlockPos blockPos = pos.pos();
@@ -325,9 +302,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         SimpleBlockGraph graph = getOrCreateGraph(graphId);
 
-        try {graph.loadGraphEntitiesFromPacket(buf, ctx);} catch (alexiil.mc.lib.net.InvalidInputDataException e) {
-            throw new RuntimeException(e);
-        }
+        graph.loadGraphEntitiesFromPacket(buf, ctx);
 
         // decode node entity
         NodeEntityFactory entityFactory = readNodeEntity(ctx, buf, node, blockPos);
@@ -336,7 +311,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void readMerge(NetByteBuf buf, IMsgReadCtx ctx) {
+    public void readMerge(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         long fromId = buf.readVarUnsignedLong();
         SimpleBlockGraph from = graphs.get(fromId);
         if (from == null) {
@@ -350,16 +325,14 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraph into = getOrCreateGraph(intoId);
 
         // initialize into's graph entities if we haven't already
-        try {into.loadGraphEntitiesFromPacket(buf, ctx);} catch (alexiil.mc.lib.net.InvalidInputDataException e) {
-            throw new RuntimeException(e);
-        }
+        into.loadGraphEntitiesFromPacket(buf, ctx);
 
         // do the merge
         into.merge(from);
     }
 
     @Override
-    public void readLink(NetByteBuf buf, IMsgReadCtx ctx) {
+    public void readLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         long graphId = buf.readVarUnsignedLong();
         SimpleBlockGraph graph = graphs.get(graphId);
         if (graph == null) {
@@ -369,11 +342,6 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         }
 
         LinkPos linkPos = LinkPos.fromPacket(buf, ctx, universe);
-        if (linkPos == null) {
-            GLLog.warn("Unable to decode link pos in link packet");
-            ctx.drop("Unable to decode link pos");
-            return;
-        }
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
@@ -389,7 +357,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void readUnlink(NetByteBuf buf, IMsgReadCtx ctx) {
+    public void readUnlink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         long graphId = buf.readVarUnsignedLong();
         SimpleBlockGraph graph = graphs.get(graphId);
         if (graph == null) {
@@ -399,11 +367,6 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         }
 
         LinkPos linkPos = LinkPos.fromPacket(buf, ctx, universe);
-        if (linkPos == null) {
-            GLLog.warn("Unable to decode link pos in unlink packet");
-            ctx.drop("Unable to decode link pos");
-            return;
-        }
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
@@ -417,7 +380,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void readSplitInto(NetByteBuf buf, IMsgReadCtx ctx) {
+    public void readSplitInto(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         long fromId = buf.readVarUnsignedLong();
         SimpleBlockGraph from = graphs.get(fromId);
         if (from == null) {
@@ -431,21 +394,13 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraph into = getOrCreateGraph(intoId);
 
         // initialize into's graph entities
-        try {into.loadGraphEntitiesFromPacket(buf, ctx);} catch (alexiil.mc.lib.net.InvalidInputDataException e) {
-            throw new RuntimeException(e);
-        }
+        into.loadGraphEntitiesFromPacket(buf, ctx);
 
         // load the nodes to be split off
         Set<NodePos> toSplit = new ObjectLinkedOpenHashSet<>();
         int nodeCount = buf.readVarUnsignedInt();
         for (int i = 0; i < nodeCount; i++) {
             NodePos pos = NodePos.fromPacket(buf, ctx, universe);
-            if (pos == null) {
-                GLLog.warn("Error reading node pos in split packet. Aborting split.");
-                ctx.drop("Error reading node pos");
-                destroyGraphImpl(into);
-                return;
-            }
 
             toSplit.add(pos);
         }
@@ -456,7 +411,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void readNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) {
+    public void readNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         long graphId = buf.readVarUnsignedLong();
         SimpleBlockGraph graph = graphs.get(graphId);
         if (graph == null) {
@@ -466,10 +421,6 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         }
 
         NodePos pos = NodePos.fromPacket(buf, ctx, universe);
-        if (pos == null) {
-            GLLog.warn("Error reading node pos in node remove packet");
-            return;
-        }
 
         NodeHolder<BlockNode> node = graph.getNodeAt(pos);
         // ignore removals of nodes we don't know about

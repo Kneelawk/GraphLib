@@ -100,21 +100,18 @@ public class GLNet {
     public static final ParentNetIdSingle<NodeEntity> NODE_ENTITY_PARENT =
         new ParentNetIdSingle<>(GRAPH_LIB_ID, NodeEntity.class, "node_entity", -1) {
             @Override
-            protected NodeEntity readContext(NetByteBuf buffer, IMsgReadCtx ctx) {
+            protected NodeEntity readContext(NetByteBuf buffer, IMsgReadCtx ctx) throws InvalidInputDataException {
                 World world = ctx.getConnection().getPlayer().getWorld();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
                 GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
                 if (universe == null) {
                     GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
-                    return null;
+                    throw new InvalidInputDataException(
+                        "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
                 NodePos pos = NodePos.fromPacket(buffer, ctx, universe);
-                if (pos == null) {
-                    GLLog.warn("Unable to decode node pos");
-                    return null;
-                }
 
                 GraphView view = universe.getGraphView(world);
                 NodeEntity entity = view.getNodeEntity(pos);
@@ -140,21 +137,18 @@ public class GLNet {
     public static final ParentNetIdSingle<LinkEntity> LINK_ENTITY_PARENT =
         new ParentNetIdSingle<>(GRAPH_LIB_ID, LinkEntity.class, "link_entity", -1) {
             @Override
-            protected LinkEntity readContext(NetByteBuf buffer, IMsgReadCtx ctx) {
+            protected LinkEntity readContext(NetByteBuf buffer, IMsgReadCtx ctx) throws InvalidInputDataException {
                 World world = ctx.getConnection().getPlayer().getWorld();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
                 GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
                 if (universe == null) {
                     GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
-                    return null;
+                    throw new InvalidInputDataException(
+                        "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
                 LinkPos pos = LinkPos.fromPacket(buffer, ctx, universe);
-                if (pos == null) {
-                    GLLog.warn("Unable to decode link pos");
-                    return null;
-                }
 
                 GraphView view = universe.getGraphView(world);
                 LinkEntity entity = view.getLinkEntity(pos);
@@ -188,7 +182,8 @@ public class GLNet {
                 GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
                 if (universe == null) {
                     GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
-                    return null;
+                    throw new InvalidInputDataException(
+                        "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
                 GraphView view = universe.getGraphView(world);
@@ -205,13 +200,13 @@ public class GLNet {
                 Identifier typeId = ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
                 if (typeId == null) {
                     GLLog.warn("Unable to decode graph entity type id from int {}", typeIdInt);
-                    return null;
+                    throw new InvalidInputDataException("Unable to decode graph entity type id from int " + typeIdInt);
                 }
 
                 GraphEntityType<?> type = universe.getGraphEntityType(typeId);
                 if (type == null) {
-                    GLLog.warn("Unable to decode unknown graph entity type {}", typeId);
-                    return null;
+                    GLLog.warn("Encountered unknown graph entity type {}", typeId);
+                    throw new InvalidInputDataException("Encountered unknown graph entity type " + typeId);
                 }
 
                 return graph.getGraphEntity(type);
@@ -229,19 +224,22 @@ public class GLNet {
             }
         };
 
-    public static <T> @Nullable T readType(@NotNull NetByteBuf buf, ActiveConnection conn,
-                                           @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
-                                           @NotNull String typeName, BlockPos blockPos) {
+    public static <T> @NotNull T readType(@NotNull NetByteBuf buf, ActiveConnection conn,
+                                                    @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
+                                                    @NotNull String typeName, BlockPos blockPos)
+        throws InvalidInputDataException {
         int typeIdInt = buf.readVarUnsignedInt();
         Identifier typeId = ID_CACHE.getObj(conn, typeIdInt);
         if (typeId == null) {
             GLLog.warn("Unable to decode unknown {} id int: {} @ {}", typeName, typeIdInt, blockPos);
-            return null;
+            throw new InvalidInputDataException(
+                "Unable to decode unknown " + typeName + " id int: " + typeIdInt + " @ " + blockPos);
         }
 
         T type = typeGetter.apply(typeId);
         if (type == null) {
             GLLog.warn("Unable to decode unknown {} id: {} @ {}", typeName, typeId, blockPos);
+            throw new InvalidInputDataException("Unable to decode unknown " + typeName + " id: " + typeId + " @ " + blockPos);
         }
 
         return type;
@@ -300,7 +298,7 @@ public class GLNet {
         }
     }
 
-    private static void receiveNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) {
+    private static void receiveNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node add");
         if (world == null) return;
 
@@ -356,7 +354,7 @@ public class GLNet {
         }
     }
 
-    private static void receiveMerge(NetByteBuf buf, IMsgReadCtx ctx) {
+    private static void receiveMerge(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "graph merge");
         if (world == null) return;
 
@@ -393,7 +391,7 @@ public class GLNet {
         }
     }
 
-    private static void receiveLink(NetByteBuf buf, IMsgReadCtx ctx) {
+    private static void receiveLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node link");
         if (world == null) return;
 
@@ -429,7 +427,7 @@ public class GLNet {
         }
     }
 
-    private static void receiveUnlink(NetByteBuf buf, IMsgReadCtx ctx) {
+    private static void receiveUnlink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node unlink");
         if (world == null) return;
 
@@ -466,14 +464,15 @@ public class GLNet {
         }
     }
 
-    private static void receiveSplitInto(NetByteBuf buf, IMsgReadCtx ctx) {
+    private static void receiveSplitInto(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "graph split");
         if (world == null) return;
 
         world.readSplitInto(buf, ctx);
     }
 
-    public static final NetIdData NODE_REMOVE = new NetIdData(GRAPH_LIB_ID, "node_remove", -1).toClientOnly().setReceiver(GLNet::receiveNodeRemove);
+    public static final NetIdData NODE_REMOVE =
+        new NetIdData(GRAPH_LIB_ID, "node_remove", -1).toClientOnly().setReceiver(GLNet::receiveNodeRemove);
 
     public static void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
@@ -498,7 +497,7 @@ public class GLNet {
         }
     }
 
-    private static void receiveNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) {
+    private static void receiveNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         ClientGraphWorldImpl world = readClientGraphWorld(buf, ctx, "node remove");
         if (world == null) return;
 
