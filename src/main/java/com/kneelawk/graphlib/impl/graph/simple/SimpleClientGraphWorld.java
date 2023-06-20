@@ -107,7 +107,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void readChunkPillar(int chunkX, int chunkZ, NetByteBuf pillarBuf, IMsgReadCtx ctx)
+    public void readChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx)
         throws InvalidInputDataException {
         SimpleBlockGraphPillar pillar = manager.getOrCreatePillar(chunkX, chunkZ);
         if (pillar == null) {
@@ -116,28 +116,25 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             return;
         }
 
-        int graphCount = pillarBuf.readVarUnsignedInt();
-
-        NetByteBuf graphBuf = NetByteBuf.buffer();
-
+        int graphCount = buf.readVarUnsignedInt();
         for (int graphIndex = 0; graphIndex < graphCount; graphIndex++) {
-            graphBuf.clear();
-            int graphBufLen = pillarBuf.readVarUnsignedInt();
-            pillarBuf.readBytes(graphBuf, graphBufLen);
+            buf.readMarker("graph_start");
 
-            long graphId = graphBuf.readVarUnsignedLong();
+            long graphId = buf.readVarUnsignedLong();
             SimpleBlockGraph graph = getOrCreateGraph(graphId);
 
             // load graph entities if any exist
-            graph.loadGraphEntitiesFromPacket(graphBuf, ctx);
+            graph.loadGraphEntitiesFromPacket(buf, ctx);
 
             List<NodeHolder<BlockNode>> nodeList = new ObjectArrayList<>();
 
-            int nodeCount = graphBuf.readVarUnsignedInt();
-            int nodesBufLen = graphBuf.readVarUnsignedInt();
+            buf.readMarker("nodes_start");
+
+            int nodeCount = buf.readVarUnsignedInt();
+            int nodesBufLen = buf.readVarUnsignedInt();
 
             NetByteBuf nodesBuf = NetByteBuf.buffer();
-            graphBuf.readBytes(nodesBuf, nodesBufLen);
+            buf.readBytes(nodesBuf, nodesBufLen);
 
             for (int i = 0; i < nodeCount; i++) {
                 // decode block node
@@ -154,12 +151,14 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 nodeList.add(holder);
             }
 
+            buf.readMarker("i_links_start");
+
             // decode internal links
-            int linkCount = graphBuf.readVarUnsignedInt();
-            int linksBufLen = graphBuf.readVarUnsignedInt();
+            int linkCount = buf.readVarUnsignedInt();
+            int linksBufLen = buf.readVarUnsignedInt();
 
             NetByteBuf linksBuf = NetByteBuf.buffer();
-            graphBuf.readBytes(linksBuf, linksBufLen);
+            buf.readBytes(linksBuf, linksBufLen);
 
             for (int i = 0; i < linkCount; i++) {
                 int nodeAIndex = linksBuf.readVarUnsignedInt();
@@ -205,11 +204,14 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 graph.link(nodeA, nodeB, linkKey, entityFactory);
             }
 
+            buf.readMarker("e_links_start");
+
             // decode external links
-            int eLinkCount = graphBuf.readVarUnsignedInt();
+            int eLinkCount = buf.readVarUnsignedInt();
             for (int i = 0; i < eLinkCount; i++) {
-                int linkBufLen = graphBuf.readVarUnsignedInt();
-                NetByteBuf linkBuf = graphBuf.readBytes(linkBufLen);
+                int linkBufLen = buf.readVarUnsignedInt();
+                NetByteBuf linkBuf = NetByteBuf.buffer();
+                buf.readBytes(linkBuf, linkBufLen);
 
                 LinkPos link = LinkPos.fromPacket(linkBuf, ctx, universe);
 
@@ -228,6 +230,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 graph.link(holderA, holderB, link.key(), entityFactory);
             }
+
+            buf.readMarker("graph_end");
         }
     }
 

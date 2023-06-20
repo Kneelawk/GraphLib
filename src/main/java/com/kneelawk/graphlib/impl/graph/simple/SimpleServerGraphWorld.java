@@ -206,7 +206,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     @Override
     @SuppressWarnings("unchecked")
-    public void writeChunkPillar(ChunkPos chunkPos, NetByteBuf pillarBuf, IMsgWriteCtx ctx) {
+    public void writeChunkPillar(ChunkPos chunkPos, NetByteBuf buf, IMsgWriteCtx ctx) {
         // collect graphs to encode
         Long2ObjectMap<SimpleBlockGraph> toEncode = new Long2ObjectLinkedOpenHashMap<>();
         for (int chunkY = world.getBottomSectionCoord(); chunkY < world.getTopSectionCoord(); chunkY++) {
@@ -222,16 +222,17 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         // write graphs
-        pillarBuf.writeVarUnsignedInt(toEncode.size());
+        buf.writeVarUnsignedInt(toEncode.size());
         for (SimpleBlockGraph graph : toEncode.values()) {
-
-            NetByteBuf graphBuf = NetByteBuf.buffer();
+            buf.writeMarker("graph_start");
 
             // write the graph id
-            graphBuf.writeVarUnsignedLong(graph.getId());
+            buf.writeVarUnsignedLong(graph.getId());
 
             // write graph entities if any exist
-            graph.writeGraphEntitiesToPacket(graphBuf, ctx);
+            graph.writeGraphEntitiesToPacket(buf, ctx);
+
+            buf.writeMarker("nodes_start");
 
             Object2IntMap<NodePos> indexMap = new Object2IntLinkedOpenHashMap<>();
             indexMap.defaultReturnValue(-1);
@@ -284,10 +285,12 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
                 nodeCount++;
             }
-            graphBuf.writeVarUnsignedInt(nodeCount);
+            buf.writeVarUnsignedInt(nodeCount);
             // write bytecount so we can separate the buffers on the client, so partial bytes line up
-            graphBuf.writeVarUnsignedInt(nodesBuf.readableBytes());
-            graphBuf.writeBytes(nodesBuf);
+            buf.writeVarUnsignedInt(nodesBuf.readableBytes());
+            buf.writeBytes(nodesBuf);
+
+            buf.writeMarker("i_links_start");
 
             // write internal links to a buffer too
             NetByteBuf iLinksBuf = NetByteBuf.buffer();
@@ -315,13 +318,15 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
                 iLinkCount++;
             }
-            graphBuf.writeVarUnsignedInt(iLinkCount);
+            buf.writeVarUnsignedInt(iLinkCount);
             // write bytecount so we can separate the buffers on the client, so partial bytes line up
-            graphBuf.writeVarUnsignedInt(iLinksBuf.readableBytes());
-            graphBuf.writeBytes(iLinksBuf);
+            buf.writeVarUnsignedInt(iLinksBuf.readableBytes());
+            buf.writeBytes(iLinksBuf);
+
+            buf.writeMarker("e_links_start");
 
             // write external links
-            graphBuf.writeVarUnsignedInt(externalLinks.size());
+            buf.writeVarUnsignedInt(externalLinks.size());
             for (LinkPos link : externalLinks) {
                 // quarantine each external link, so it can be ignored and not fully decoded if it extends too far
                 NetByteBuf linkBuf = NetByteBuf.buffer();
@@ -331,13 +336,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 // quarantine link entities
                 writeLinkEntity(linkBuf, ctx, link, graph);
 
-                graphBuf.writeVarUnsignedInt(linkBuf.readableBytes());
-                graphBuf.writeBytes(linkBuf);
+                buf.writeVarUnsignedInt(linkBuf.readableBytes());
+                buf.writeBytes(linkBuf);
             }
 
-            // write graph buf
-            pillarBuf.writeVarUnsignedInt(graphBuf.readableBytes());
-            pillarBuf.writeBytes(graphBuf);
+            buf.writeMarker("graph_end");
         }
     }
 
