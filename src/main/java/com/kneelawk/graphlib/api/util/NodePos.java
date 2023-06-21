@@ -112,6 +112,7 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
      * @param ctx      the packet's message context.
      * @param universe the universe that the block node's decoder is to be retrieved from.
      * @return a newly decoded NodePos.
+     * @throws InvalidInputDataException if there was an error while decoding the node pos.
      */
     public static @NotNull NodePos fromPacket(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx,
                                               @NotNull GraphUniverse universe) throws InvalidInputDataException {
@@ -121,7 +122,8 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
         Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), idInt);
         if (typeId == null) {
             GLLog.warn("Unable to decode block node type id from unknown identifier int {} @ {}", idInt, pos);
-            throw new InvalidInputDataException("Unable to decode block node type id from unknown identifier int " + idInt + " @ " + pos);
+            throw new InvalidInputDataException(
+                "Unable to decode block node type id from unknown identifier int " + idInt + " @ " + pos);
         }
 
         BlockNodeType type = universe.getNodeType(typeId);
