@@ -222,7 +222,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         // write graphs
         buf.writeVarUnsignedInt(toEncode.size());
         for (SimpleBlockGraph graph : toEncode.values()) {
-            buf.writeMarker("graph_start");
+            buf.writeMarker("gs");
 
             // write the graph id
             buf.writeVarUnsignedLong(graph.getId());
@@ -230,7 +230,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             // write graph entities if any exist
             graph.writeGraphEntitiesToPacket(buf, ctx);
 
-            buf.writeMarker("nodes_start");
+            buf.writeMarker("n");
 
             Object2IntMap<NodePos> indexMap = new Object2IntLinkedOpenHashMap<>();
             indexMap.defaultReturnValue(-1);
@@ -286,7 +286,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             }
             buf.setInt(nodeCountIndex, nodeCount);
 
-            buf.writeMarker("i_links_start");
+            buf.writeMarker("il");
 
             // save internal links count index too
             int iLinkCountIndex = buf.writerIndex();
@@ -317,7 +317,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             }
             buf.setInt(iLinkCountIndex, iLinkCount);
 
-            buf.writeMarker("e_links_start");
+            buf.writeMarker("el");
 
             // write external links
             buf.writeVarUnsignedInt(externalLinks.size());
@@ -328,7 +328,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 writeLinkEntity(buf, ctx, link, graph);
             }
 
-            buf.writeMarker("graph_end");
+            buf.writeMarker("ge");
         }
     }
 

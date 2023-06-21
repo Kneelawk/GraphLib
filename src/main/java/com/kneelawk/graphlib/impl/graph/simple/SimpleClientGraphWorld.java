@@ -116,7 +116,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         int graphCount = buf.readVarUnsignedInt();
         for (int graphIndex = 0; graphIndex < graphCount; graphIndex++) {
-            buf.readMarker("graph_start");
+            buf.readMarker("gs");
 
             long graphId = buf.readVarUnsignedLong();
             SimpleBlockGraph graph = getOrCreateGraph(graphId);
@@ -126,7 +126,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
             List<NodeHolder<BlockNode>> nodeList = new ObjectArrayList<>();
 
-            buf.readMarker("nodes_start");
+            buf.readMarker("n");
 
             int nodeCount = buf.readInt();
             for (int i = 0; i < nodeCount; i++) {
@@ -142,7 +142,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 nodeList.add(holder);
             }
 
-            buf.readMarker("i_links_start");
+            buf.readMarker("il");
 
             // decode internal links
             int linkCount = buf.readInt();
@@ -189,7 +189,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 graph.link(nodeA, nodeB, linkKey, entity);
             }
 
-            buf.readMarker("e_links_start");
+            buf.readMarker("el");
 
             // decode external links
             int eLinkCount = buf.readVarUnsignedInt();
@@ -209,7 +209,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 }
             }
 
-            buf.readMarker("graph_end");
+            buf.readMarker("ge");
         }
     }
 
