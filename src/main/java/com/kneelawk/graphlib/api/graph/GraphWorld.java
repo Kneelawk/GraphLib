@@ -8,9 +8,9 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -28,20 +28,20 @@ public interface GraphWorld extends GraphView {
      * @return the node created.
      */
     default @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull BlockPos pos, @NotNull BlockNode node) {
-        return addBlockNode(pos, node, node::createNodeEntity);
+        return addBlockNode(pos, node, null);
     }
 
     /**
      * Adds a block node and optional node entity at the given position.
      *
-     * @param pos           the block position of block node to be added.
-     * @param node          the node to be added.
-     * @param entityFactory a factory for potentially creating the node's entity.
+     * @param pos    the block position of block node to be added.
+     * @param node   the node to be added.
+     * @param entity the node's entity, if any.
      * @return the node created.
      */
     default @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull BlockPos pos, @NotNull BlockNode node,
-                                                        @NotNull NodeEntityFactory entityFactory) {
-        return addBlockNode(new NodePos(pos, node), entityFactory);
+                                                        @Nullable NodeEntity entity) {
+        return addBlockNode(new NodePos(pos, node), entity);
     }
 
     /**
@@ -51,17 +51,17 @@ public interface GraphWorld extends GraphView {
      * @return the node created.
      */
     default @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos) {
-        return addBlockNode(pos, pos.node()::createNodeEntity);
+        return addBlockNode(pos, null);
     }
 
     /**
      * Adds a block node and optional node entity at the given position.
      *
-     * @param pos           the position and block node to be added.
-     * @param entityFactory a factory for potentially creating the node's entity.
+     * @param pos    the position and block node to be added.
+     * @param entity the node's entity, if any.
      * @return the node created.
      */
-    @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @NotNull NodeEntityFactory entityFactory);
+    @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @Nullable NodeEntity entity);
 
     /**
      * Removes a block node at a position.
@@ -86,29 +86,14 @@ public interface GraphWorld extends GraphView {
      * Connects two nodes to each other.
      * <p>
      * Note: in order for manually connected links to not be removed when the connected nodes are updated,
-     * {@link LinkKey#isAutomaticRemoval(LinkContext)} should return <code>false</code> for the given key.
+     * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
      *
      * @param a the first node to be connected.
      * @param b the second node to be connected.
      * @return the link created, or <code>null</code> if no link could be created.
      */
     default @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b) {
-        return connectNodes(a, b, EmptyLinkKey.INSTANCE, EmptyLinkKey.INSTANCE::createLinkEntity);
-    }
-
-    /**
-     * Connects two nodes to each other.
-     * <p>
-     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
-     * {@link LinkKey#isAutomaticRemoval(LinkContext)} should return <code>false</code> for the given key.
-     *
-     * @param a   the first node to be connected.
-     * @param b   the second node to be connected.
-     * @param key the key of the connection.
-     * @return the link created, or <code>null</code> if no link could be created.
-     */
-    default @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key) {
-        return connectNodes(a, b, key, key::createLinkEntity);
+        return connectNodes(a, b, EmptyLinkKey.INSTANCE, null);
     }
 
     /**
@@ -117,14 +102,29 @@ public interface GraphWorld extends GraphView {
      * Note: in order for manually connected links to not be removed when the connected nodes are updated,
      * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
      *
-     * @param a             the first node to be connected.
-     * @param b             the second node to be connected.
-     * @param key           the key of the connection.
-     * @param entityFactory a factory for potentially creating the link's entity.
+     * @param a   the first node to be connected.
+     * @param b   the second node to be connected.
+     * @param key the key of the connection.
+     * @return the link created, or <code>null</code> if no link could be created.
+     */
+    default @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key) {
+        return connectNodes(a, b, key, null);
+    }
+
+    /**
+     * Connects two nodes to each other.
+     * <p>
+     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
+     * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
+     *
+     * @param a      the first node to be connected.
+     * @param b      the second node to be connected.
+     * @param key    the key of the connection.
+     * @param entity the link's entity, if any.
      * @return the link created, or <code>null</code> if no link could be created.
      */
     @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
-                                               @NotNull LinkEntityFactory entityFactory);
+                                               @Nullable LinkEntity entity);
 
     /**
      * Disconnects two nodes from each other.

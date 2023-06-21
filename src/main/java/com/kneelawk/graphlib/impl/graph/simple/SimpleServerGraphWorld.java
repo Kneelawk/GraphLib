@@ -56,10 +56,8 @@ import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
@@ -206,7 +204,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     @Override
     @SuppressWarnings("unchecked")
-    public void writeChunkPillar(ChunkPos chunkPos, NetByteBuf pillarBuf, IMsgWriteCtx ctx) {
+    public void writeChunkPillar(ChunkPos chunkPos, NetByteBuf buf, IMsgWriteCtx ctx) {
         // collect graphs to encode
         Long2ObjectMap<SimpleBlockGraph> toEncode = new Long2ObjectLinkedOpenHashMap<>();
         for (int chunkY = world.getBottomSectionCoord(); chunkY < world.getTopSectionCoord(); chunkY++) {
@@ -222,25 +220,22 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         // write graphs
-        pillarBuf.writeVarUnsignedInt(toEncode.size());
+        buf.writeVarUnsignedInt(toEncode.size());
         for (SimpleBlockGraph graph : toEncode.values()) {
-
-            NetByteBuf graphBuf = NetByteBuf.buffer();
+            buf.writeMarker("gs");
 
             // write the graph id
-            graphBuf.writeVarUnsignedLong(graph.getId());
+            buf.writeVarUnsignedLong(graph.getId());
 
             // write graph entities if any exist
-            graph.writeGraphEntitiesToPacket(graphBuf, ctx);
+            graph.writeGraphEntitiesToPacket(buf, ctx);
+
+            buf.writeMarker("n");
 
             Object2IntMap<NodePos> indexMap = new Object2IntLinkedOpenHashMap<>();
             indexMap.defaultReturnValue(-1);
             Set<LinkPos> internalLinks = new ObjectLinkedOpenHashSet<>();
             Set<LinkPos> externalLinks = new ObjectLinkedOpenHashSet<>();
-
-            // write nodes using a buffer, so we only count the nodes we actually end up sending
-            NetByteBuf nodesBuf = NetByteBuf.buffer();
-            int nodeCount = 0;
 
             // iterate over only the nodes we want to synchronize
             CacheCategory<BlockNode> nodeFilter = (CacheCategory<BlockNode>) universe.getSyncProfile().getNodeFilter();
@@ -251,6 +246,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 iter = graph.getNodes().iterator();
             }
 
+            // save an index before everything where we'll write nodeCount once we're done
+            int nodeCountIndex = buf.writerIndex();
+            buf.writeInt(0);
+
+            int nodeCount = 0;
             while (iter.hasNext()) {
                 NodeHolder<BlockNode> holder = iter.next();
                 BlockPos blockPos = holder.getBlockPos();
@@ -260,9 +260,9 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                     continue;
                 }
 
-                holder.getPos().toPacket(nodesBuf, ctx);
+                holder.getPos().toPacket(buf, ctx);
 
-                writeNodeEntity(holder, nodesBuf, ctx, graph);
+                writeNodeEntity(holder, buf, ctx, graph);
 
                 // put the node into the index map for links to look up
                 indexMap.put(holder.getPos(), nodeCount);
@@ -284,13 +284,13 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
                 nodeCount++;
             }
-            graphBuf.writeVarUnsignedInt(nodeCount);
-            // write bytecount so we can separate the buffers on the client, so partial bytes line up
-            graphBuf.writeVarUnsignedInt(nodesBuf.readableBytes());
-            graphBuf.writeBytes(nodesBuf);
+            buf.setInt(nodeCountIndex, nodeCount);
 
-            // write internal links to a buffer too
-            NetByteBuf iLinksBuf = NetByteBuf.buffer();
+            buf.writeMarker("il");
+
+            // save internal links count index too
+            int iLinkCountIndex = buf.writerIndex();
+            buf.writeInt(0);
             int iLinkCount = 0;
             for (LinkPos link : internalLinks) {
                 int nodeAIndex = indexMap.getInt(link.first());
@@ -303,71 +303,55 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                     continue;
                 }
 
-                iLinksBuf.writeVarUnsignedInt(nodeAIndex);
-                iLinksBuf.writeVarUnsignedInt(nodeBIndex);
+                buf.writeVarUnsignedInt(nodeAIndex);
+                buf.writeVarUnsignedInt(nodeBIndex);
 
                 LinkKey linkKey = link.key();
-                GLNet.writeType(iLinksBuf, ctx.getConnection(), linkKey.getType().getId());
-                linkKey.toPacket(iLinksBuf, ctx);
+                GLNet.writeType(buf, ctx.getConnection(), linkKey.getType().getId());
+                linkKey.toPacket(buf, ctx);
 
                 // quarantine the link entity for the same reason as node entities
-                writeLinkEntity(iLinksBuf, ctx, link, graph);
+                writeLinkEntity(buf, ctx, link, graph);
 
                 iLinkCount++;
             }
-            graphBuf.writeVarUnsignedInt(iLinkCount);
-            // write bytecount so we can separate the buffers on the client, so partial bytes line up
-            graphBuf.writeVarUnsignedInt(iLinksBuf.readableBytes());
-            graphBuf.writeBytes(iLinksBuf);
+            buf.setInt(iLinkCountIndex, iLinkCount);
+
+            buf.writeMarker("el");
 
             // write external links
-            graphBuf.writeVarUnsignedInt(externalLinks.size());
+            buf.writeVarUnsignedInt(externalLinks.size());
             for (LinkPos link : externalLinks) {
-                // quarantine each external link, so it can be ignored and not fully decoded if it extends too far
-                NetByteBuf linkBuf = NetByteBuf.buffer();
-
-                link.toPacket(linkBuf, ctx);
+                link.toPacket(buf, ctx);
 
                 // quarantine link entities
-                writeLinkEntity(linkBuf, ctx, link, graph);
-
-                graphBuf.writeVarUnsignedInt(linkBuf.readableBytes());
-                graphBuf.writeBytes(linkBuf);
+                writeLinkEntity(buf, ctx, link, graph);
             }
 
-            // write graph buf
-            pillarBuf.writeVarUnsignedInt(graphBuf.readableBytes());
-            pillarBuf.writeBytes(graphBuf);
+            buf.writeMarker("ge");
         }
     }
 
     private static void writeNodeEntity(NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx,
                                         BlockGraph graph) {
-        // quarantine the node entity because the reader can't validate it
         NodeEntity entity = graph.getNodeEntity(node.getPos());
-        NetByteBuf entityBuf = NetByteBuf.buffer();
         if (entity != null) {
-            GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
-            entity.toPacket(entityBuf, ctx);
-        }
-
-        buf.writeVarUnsignedInt(entityBuf.readableBytes());
-        if (entityBuf.readableBytes() > 0) {
-            buf.writeBytes(entityBuf);
+            buf.writeBoolean(true);
+            GLNet.writeType(buf, ctx.getConnection(), entity.getType().getId());
+            entity.toPacket(buf, ctx);
+        } else {
+            buf.writeBoolean(false);
         }
     }
 
     public static void writeLinkEntity(NetByteBuf buf, IMsgWriteCtx ctx, LinkPos link, BlockGraph graph) {
         LinkEntity entity = graph.getLinkEntity(link);
-        NetByteBuf entityBuf = NetByteBuf.buffer();
         if (entity != null) {
-            GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
-            entity.toPacket(entityBuf, ctx);
-        }
-
-        buf.writeVarUnsignedInt(entityBuf.readableBytes());
-        if (entityBuf.readableBytes() > 0) {
-            buf.writeBytes(entityBuf);
+            buf.writeBoolean(true);
+            GLNet.writeType(buf, ctx.getConnection(), entity.getType().getId());
+            entity.toPacket(buf, ctx);
+        } else {
+            buf.writeBoolean(false);
         }
     }
 
@@ -632,14 +616,14 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     /**
      * Adds a block node and optional node entity at the given position.
      *
-     * @param pos           the position and block node to be added.
-     * @param entityFactory a factory for potentially creating the node's entity.
+     * @param pos    the position and block node to be added.
+     * @param entity the node's entity, if any.
      * @return the node created.
      */
     @Override
-    public @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @NotNull NodeEntityFactory entityFactory) {
+    public @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @Nullable NodeEntity entity) {
         SimpleBlockGraph graph = createGraph(true);
-        NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entityFactory);
+        NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entity);
         updateConnectionsImpl(node);
         return node;
     }
@@ -666,15 +650,15 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      * Note: in order for manually connected links to not be removed when the connected nodes are updated,
      * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
      *
-     * @param a             the first node to be connected.
-     * @param b             the second node to be connected.
-     * @param key           the key of the connection.
-     * @param entityFactory a factory for potentially creating the link's entity.
+     * @param a      the first node to be connected.
+     * @param b      the second node to be connected.
+     * @param key    the key of the connection.
+     * @param entity the link's entity, if any.
      * @return the link created, or <code>null</code> if no link could be created.
      */
     @Override
     public @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
-                                                      @NotNull LinkEntityFactory entityFactory) {
+                                                      @Nullable LinkEntity entity) {
         SimpleBlockGraphChunk aChunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
         SimpleBlockGraphChunk bChunk = chunks.getIfExists(ChunkSectionPos.from(b.pos()));
 
@@ -715,7 +699,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                     return null;
                 }
 
-                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entityFactory);
+                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entity);
 
                 // send updated event
                 GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
@@ -1180,7 +1164,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             }
 
             SimpleBlockGraph newGraph = createGraph(true);
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, bn::createNodeEntity);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, null);
             updateConnectionsImpl(node);
         }
     }
@@ -1260,7 +1244,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 }
             }
 
-            mergedGraph.link(node, link.other(), link.key(), link.key()::createLinkEntity);
+            mergedGraph.link(node, link.other(), link.key(), null);
         }
 
         for (var link : removedConnections) {

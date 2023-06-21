@@ -26,6 +26,7 @@
 package com.kneelawk.graphlib.impl.graph;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -37,17 +38,17 @@ public interface ClientGraphWorldImpl extends GraphView {
 
     void updateLoadDistance(int loadDistance);
 
-    void readChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx);
+    void readChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 
-    void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx);
+    void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 
-    void readMerge(NetByteBuf buf, IMsgReadCtx ctx);
+    void readMerge(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 
-    void readLink(NetByteBuf buf, IMsgReadCtx ctx);
+    void readLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 
-    void readUnlink(NetByteBuf buf, IMsgReadCtx ctx);
+    void readUnlink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 
-    void readSplitInto(NetByteBuf buf, IMsgReadCtx ctx);
+    void readSplitInto(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 
-    void readNodeRemove(NetByteBuf buf, IMsgReadCtx ctx);
+    void readNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 }

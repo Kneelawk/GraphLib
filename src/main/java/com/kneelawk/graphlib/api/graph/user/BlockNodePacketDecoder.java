@@ -26,10 +26,10 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 /**
@@ -45,6 +45,7 @@ public interface BlockNodePacketDecoder {
      * @param buf the buffer to decode from.
      * @param ctx the message context, used for reading from caches.
      * @return the decoded block node.
+     * @throws InvalidInputDataException if a block node could not be decoded.
      */
-    @Nullable BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx);
+    @NotNull BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }

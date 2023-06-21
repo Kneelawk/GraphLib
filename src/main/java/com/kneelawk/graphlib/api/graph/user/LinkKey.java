@@ -8,9 +8,9 @@ import net.minecraft.nbt.NbtElement;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
+import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
  * The data stored in a link between nodes.
@@ -43,6 +43,11 @@ public interface LinkKey {
 
     /**
      * Checks whether this specific link should have a link entity associated with it.
+     * <p>
+     * Note: if this returns <code>true</code> and
+     * {@link com.kneelawk.graphlib.api.graph.GraphWorld#connectNodes(NodePos, NodePos, LinkKey, LinkEntity)} is called
+     * with a <code>null</code> link entity, then {@link #createLinkEntity(LinkHolder)} is called to create a new link
+     * entity.
      *
      * @param holder the link holder for this link.
      * @return <code>true</code> if this link should have a link entity associated with it.
@@ -54,10 +59,10 @@ public interface LinkKey {
     /**
      * Creates a new link entity that will be associated with this link.
      *
-     * @param ctx the link entity context for the new link entity.
+     * @param holder the link holder for this link.
      * @return a newly created link entity, or <code>null</code> if a link entity could not be created.
      */
-    default @Nullable LinkEntity createLinkEntity(@NotNull LinkEntityContext ctx) {
+    default @Nullable LinkEntity createLinkEntity(@NotNull LinkHolder<LinkKey> holder) {
         return null;
     }
 
