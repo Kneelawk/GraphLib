@@ -131,22 +131,17 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
             buf.readMarker("nodes_start");
 
-            int nodeCount = buf.readVarUnsignedInt();
-            int nodesBufLen = buf.readVarUnsignedInt();
-
-            NetByteBuf nodesBuf = NetByteBuf.buffer();
-            buf.readBytes(nodesBuf, nodesBufLen);
-
+            int nodeCount = buf.readInt();
             for (int i = 0; i < nodeCount; i++) {
                 // decode block node
-                NodePos nodePos = NodePos.fromPacket(nodesBuf, ctx, universe);
+                NodePos nodePos = NodePos.fromPacket(buf, ctx, universe);
 
                 BlockNode node = nodePos.node();
                 BlockPos blockPos = nodePos.pos();
 
                 // decode node entity
                 NodeEntityFactory entityFactory =
-                    readNodeEntity(ctx, nodesBuf, node, blockPos);
+                    readNodeEntity(ctx, buf, node, blockPos);
 
                 NodeHolder<BlockNode> holder = graph.createNode(blockPos, node, entityFactory);
                 nodeList.add(holder);
@@ -155,15 +150,10 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             buf.readMarker("i_links_start");
 
             // decode internal links
-            int linkCount = buf.readVarUnsignedInt();
-            int linksBufLen = buf.readVarUnsignedInt();
-
-            NetByteBuf linksBuf = NetByteBuf.buffer();
-            buf.readBytes(linksBuf, linksBufLen);
-
+            int linkCount = buf.readInt();
             for (int i = 0; i < linkCount; i++) {
-                int nodeAIndex = linksBuf.readVarUnsignedInt();
-                int nodeBIndex = linksBuf.readVarUnsignedInt();
+                int nodeAIndex = buf.readVarUnsignedInt();
+                int nodeBIndex = buf.readVarUnsignedInt();
 
                 if (nodeAIndex < 0 || nodeAIndex >= nodeList.size()) {
                     GLLog.warn("Received packet with invalid links. Node index {} is invalid.", nodeAIndex);
@@ -184,7 +174,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 // decode link key
                 LinkKeyType linkType =
-                    GLNet.readType(linksBuf, ctx.getConnection(), universe::getLinkKeyType, "LinkKey",
+                    GLNet.readType(buf, ctx.getConnection(), universe::getLinkKeyType, "LinkKey",
                         nodeA.getBlockPos());
 
                 LinkKeyPacketDecoder linkDecoder = linkType.getPacketDecoder();
@@ -196,11 +186,11 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                             nodeB.getBlockPos() + " because it has no packet decoder");
                 }
 
-                LinkKey linkKey = linkDecoder.decode(linksBuf, ctx);
+                LinkKey linkKey = linkDecoder.decode(buf, ctx);
 
                 // decode link entity
                 LinkEntityFactory entityFactory =
-                    readLinkEntity(linksBuf, ctx, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
+                    readLinkEntity(buf, ctx, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
 
                 graph.link(nodeA, nodeB, linkKey, entityFactory);
             }

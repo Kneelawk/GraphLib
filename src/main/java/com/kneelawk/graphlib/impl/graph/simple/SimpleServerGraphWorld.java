@@ -239,10 +239,6 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             Set<LinkPos> internalLinks = new ObjectLinkedOpenHashSet<>();
             Set<LinkPos> externalLinks = new ObjectLinkedOpenHashSet<>();
 
-            // write nodes using a buffer, so we only count the nodes we actually end up sending
-            NetByteBuf nodesBuf = NetByteBuf.buffer();
-            int nodeCount = 0;
-
             // iterate over only the nodes we want to synchronize
             CacheCategory<BlockNode> nodeFilter = (CacheCategory<BlockNode>) universe.getSyncProfile().getNodeFilter();
             Iterator<NodeHolder<BlockNode>> iter;
@@ -252,6 +248,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 iter = graph.getNodes().iterator();
             }
 
+            // save an index before everything where we'll write nodeCount once we're done
+            int nodeCountIndex = buf.writerIndex();
+            buf.writeInt(0);
+
+            int nodeCount = 0;
             while (iter.hasNext()) {
                 NodeHolder<BlockNode> holder = iter.next();
                 BlockPos blockPos = holder.getBlockPos();
@@ -261,9 +262,9 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                     continue;
                 }
 
-                holder.getPos().toPacket(nodesBuf, ctx);
+                holder.getPos().toPacket(buf, ctx);
 
-                writeNodeEntity(holder, nodesBuf, ctx, graph);
+                writeNodeEntity(holder, buf, ctx, graph);
 
                 // put the node into the index map for links to look up
                 indexMap.put(holder.getPos(), nodeCount);
@@ -285,15 +286,13 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
                 nodeCount++;
             }
-            buf.writeVarUnsignedInt(nodeCount);
-            // write bytecount so we can separate the buffers on the client, so partial bytes line up
-            buf.writeVarUnsignedInt(nodesBuf.readableBytes());
-            buf.writeBytes(nodesBuf);
+            buf.setInt(nodeCountIndex, nodeCount);
 
             buf.writeMarker("i_links_start");
 
-            // write internal links to a buffer too
-            NetByteBuf iLinksBuf = NetByteBuf.buffer();
+            // save internal links count index too
+            int iLinkCountIndex = buf.writerIndex();
+            buf.writeInt(0);
             int iLinkCount = 0;
             for (LinkPos link : internalLinks) {
                 int nodeAIndex = indexMap.getInt(link.first());
@@ -306,22 +305,19 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                     continue;
                 }
 
-                iLinksBuf.writeVarUnsignedInt(nodeAIndex);
-                iLinksBuf.writeVarUnsignedInt(nodeBIndex);
+                buf.writeVarUnsignedInt(nodeAIndex);
+                buf.writeVarUnsignedInt(nodeBIndex);
 
                 LinkKey linkKey = link.key();
-                GLNet.writeType(iLinksBuf, ctx.getConnection(), linkKey.getType().getId());
-                linkKey.toPacket(iLinksBuf, ctx);
+                GLNet.writeType(buf, ctx.getConnection(), linkKey.getType().getId());
+                linkKey.toPacket(buf, ctx);
 
                 // quarantine the link entity for the same reason as node entities
-                writeLinkEntity(iLinksBuf, ctx, link, graph);
+                writeLinkEntity(buf, ctx, link, graph);
 
                 iLinkCount++;
             }
-            buf.writeVarUnsignedInt(iLinkCount);
-            // write bytecount so we can separate the buffers on the client, so partial bytes line up
-            buf.writeVarUnsignedInt(iLinksBuf.readableBytes());
-            buf.writeBytes(iLinksBuf);
+            buf.setInt(iLinkCountIndex, iLinkCount);
 
             buf.writeMarker("e_links_start");
 
