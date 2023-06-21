@@ -25,7 +25,6 @@
 
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -60,14 +59,12 @@ import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
@@ -136,14 +133,12 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 // decode block node
                 NodePos nodePos = NodePos.fromPacket(buf, ctx, universe);
 
-                BlockNode node = nodePos.node();
                 BlockPos blockPos = nodePos.pos();
 
                 // decode node entity
-                NodeEntityFactory entityFactory =
-                    readNodeEntity(ctx, buf, node, blockPos);
+                NodeEntity entity = readNodeEntity(ctx, buf, blockPos);
 
-                NodeHolder<BlockNode> holder = graph.createNode(blockPos, node, entityFactory);
+                NodeHolder<BlockNode> holder = graph.createNode(blockPos, nodePos.node(), entity);
                 nodeList.add(holder);
             }
 
@@ -189,20 +184,15 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 LinkKey linkKey = linkDecoder.decode(buf, ctx);
 
                 // decode link entity
-                LinkEntityFactory entityFactory =
-                    readLinkEntity(buf, ctx, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
+                LinkEntity entity = readLinkEntity(buf, ctx, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
 
-                graph.link(nodeA, nodeB, linkKey, entityFactory);
+                graph.link(nodeA, nodeB, linkKey, entity);
             }
 
             buf.readMarker("e_links_start");
 
             // decode external links
-            record ELink(@Nullable NodeHolder<BlockNode> holderA, @Nullable NodeHolder<BlockNode> holderB, LinkKey key,
-                         LinkEntityFactory entityFactory) {}
-
             int eLinkCount = buf.readVarUnsignedInt();
-            List<ELink> eLinks = new ArrayList<>(eLinkCount);
             for (int i = 0; i < eLinkCount; i++) {
                 LinkPos link = LinkPos.fromPacket(buf, ctx, universe);
 
@@ -210,76 +200,58 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 NodeHolder<BlockNode> holderB = graph.getNodeAt(link.second());
 
                 // read quarantined link entity
-                LinkEntityFactory entityFactory = readLinkEntity(buf, ctx, link);
+                LinkEntity entity = readLinkEntity(buf, ctx, link);
 
-                eLinks.add(new ELink(holderA, holderB, link.key(), entityFactory));
-            }
-
-            for (ELink link : eLinks) {
-                if (link.holderA == null || link.holderB == null) {
+                if (holderA != null && holderB != null) {
                     // ignore links with missing nodes,
                     // they'll just happen sometimes because the server will send links to nodes we don't know about
-                    continue;
+                    graph.link(holderA, holderB, link.key(), entity);
                 }
-
-                graph.link(link.holderA, link.holderB, link.key, link.entityFactory);
             }
 
             buf.readMarker("graph_end");
         }
     }
 
-    @NotNull
-    private NodeEntityFactory readNodeEntity(IMsgReadCtx ctx, NetByteBuf graphBuf, BlockNode node,
-                                             BlockPos blockPos) throws InvalidInputDataException {
-        NodeEntityFactory entityFactory = node::createNodeEntity;
-        // quarantine node entities, because they cannot be validated
-        int entityBufLen = graphBuf.readVarUnsignedInt();
-        if (entityBufLen > 0) {
-            NetByteBuf entityBuf = NetByteBuf.buffer();
-            graphBuf.readBytes(entityBuf, entityBufLen);
-
+    private @Nullable NodeEntity readNodeEntity(IMsgReadCtx ctx, NetByteBuf buf, BlockPos blockPos)
+        throws InvalidInputDataException {
+        NodeEntity entity = null;
+        if (buf.readBoolean()) {
             NodeEntityType entityType =
-                GLNet.readType(entityBuf, ctx.getConnection(), universe::getNodeEntityType, "NodeEntity",
+                GLNet.readType(buf, ctx.getConnection(), universe::getNodeEntityType, "NodeEntity",
                     blockPos);
             NodeEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-            if (entityDecoder != null) {
-                entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
-            } else {
+            if (entityDecoder == null) {
                 GLLog.error("Unable to decode NodeEntity {} @ {} because it has no packet decoder",
                     entityType.getId(), blockPos);
                 throw new InvalidInputDataException(
                     "Unable to decode NodeEntity " + entityType.getId() + " @ " + blockPos +
                         " because it has no packet decoder");
             }
+
+            entity = entityDecoder.decode(buf, ctx);
         }
-        return entityFactory;
+        return entity;
     }
 
-    @NotNull
-    private LinkEntityFactory readLinkEntity(NetByteBuf buf, IMsgReadCtx ctx, LinkPos link)
+    private @Nullable LinkEntity readLinkEntity(NetByteBuf buf, IMsgReadCtx ctx, LinkPos link)
         throws InvalidInputDataException {
-        LinkEntityFactory entityFactory = link.key()::createLinkEntity;
-        // quarantine link entities for the same reason a node entities
-        int entityBufLen = buf.readVarUnsignedInt();
-        if (entityBufLen > 0) {
-            NetByteBuf entityBuf = NetByteBuf.buffer();
-            buf.readBytes(entityBuf, entityBufLen);
-
+        LinkEntity entity = null;
+        if (buf.readBoolean()) {
             LinkEntityType entityType =
-                GLNet.readType(entityBuf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
+                GLNet.readType(buf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
                     link.first().pos());
             LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-            if (entityDecoder != null) {
-                entityFactory = entityCtx -> entityDecoder.decode(entityBuf, ctx, entityCtx);
-            } else {
+            if (entityDecoder == null) {
                 GLLog.error("Unable to decode LinkEntity {} @ {} because it has no packet decoder",
                     entityType.getId(), link);
                 throw new InvalidInputDataException("Unable to decode LinkEntity " + entityType.getId() + " @ " + link +
                     " because it has no packet decoder");
             }
+
+            entity = entityDecoder.decode(buf, ctx);
         }
-        return entityFactory;
+        return entity;
     }
 
     @Override
@@ -303,9 +275,9 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         graph.loadGraphEntitiesFromPacket(buf, ctx);
 
         // decode node entity
-        NodeEntityFactory entityFactory = readNodeEntity(ctx, buf, node, blockPos);
+        NodeEntity entity = readNodeEntity(ctx, buf, blockPos);
 
-        graph.createNode(blockPos, node, entityFactory);
+        graph.createNode(blockPos, node, entity);
     }
 
     @Override
@@ -349,9 +321,9 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             return;
         }
 
-        LinkEntityFactory entityFactory = readLinkEntity(buf, ctx, linkPos);
+        LinkEntity entity = readLinkEntity(buf, ctx, linkPos);
 
-        graph.link(nodeA, nodeB, linkPos.key(), entityFactory);
+        graph.link(nodeA, nodeB, linkPos.key(), entity);
     }
 
     @Override

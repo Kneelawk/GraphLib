@@ -26,12 +26,10 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
-
-import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 
 /**
  * Used for decoding {@link NodeEntity}s from packets.
@@ -43,8 +41,8 @@ public interface NodeEntityPacketDecoder {
      *
      * @param buf    the buffer to read from.
      * @param msgCtx the message context.
-     * @param ctx    the new node entity's context.
-     * @return a newly decoded node entity, or <code>null</code> if decoding failed.
+     * @return a newly decoded node entity.
+     * @throws InvalidInputDataException if a node entity could not be decoded.
      */
-    @Nullable NodeEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx, @NotNull NodeEntityContext ctx);
+    @NotNull NodeEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }

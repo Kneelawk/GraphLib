@@ -56,10 +56,8 @@ import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityFactory;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.ChunkSectionUnloadTimer;
@@ -336,31 +334,24 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     private static void writeNodeEntity(NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx,
                                         BlockGraph graph) {
-        // quarantine the node entity because the reader can't validate it
         NodeEntity entity = graph.getNodeEntity(node.getPos());
-        NetByteBuf entityBuf = NetByteBuf.buffer();
         if (entity != null) {
-            GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
-            entity.toPacket(entityBuf, ctx);
-        }
-
-        buf.writeVarUnsignedInt(entityBuf.readableBytes());
-        if (entityBuf.readableBytes() > 0) {
-            buf.writeBytes(entityBuf);
+            buf.writeBoolean(true);
+            GLNet.writeType(buf, ctx.getConnection(), entity.getType().getId());
+            entity.toPacket(buf, ctx);
+        } else {
+            buf.writeBoolean(false);
         }
     }
 
     public static void writeLinkEntity(NetByteBuf buf, IMsgWriteCtx ctx, LinkPos link, BlockGraph graph) {
         LinkEntity entity = graph.getLinkEntity(link);
-        NetByteBuf entityBuf = NetByteBuf.buffer();
         if (entity != null) {
-            GLNet.writeType(entityBuf, ctx.getConnection(), entity.getType().getId());
-            entity.toPacket(entityBuf, ctx);
-        }
-
-        buf.writeVarUnsignedInt(entityBuf.readableBytes());
-        if (entityBuf.readableBytes() > 0) {
-            buf.writeBytes(entityBuf);
+            buf.writeBoolean(true);
+            GLNet.writeType(buf, ctx.getConnection(), entity.getType().getId());
+            entity.toPacket(buf, ctx);
+        } else {
+            buf.writeBoolean(false);
         }
     }
 
@@ -625,14 +616,14 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     /**
      * Adds a block node and optional node entity at the given position.
      *
-     * @param pos           the position and block node to be added.
-     * @param entityFactory a factory for potentially creating the node's entity.
+     * @param pos    the position and block node to be added.
+     * @param entity the node's entity, if any.
      * @return the node created.
      */
     @Override
-    public @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @NotNull NodeEntityFactory entityFactory) {
+    public @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @Nullable NodeEntity entity) {
         SimpleBlockGraph graph = createGraph(true);
-        NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entityFactory);
+        NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entity);
         updateConnectionsImpl(node);
         return node;
     }
@@ -659,15 +650,15 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      * Note: in order for manually connected links to not be removed when the connected nodes are updated,
      * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
      *
-     * @param a             the first node to be connected.
-     * @param b             the second node to be connected.
-     * @param key           the key of the connection.
-     * @param entityFactory a factory for potentially creating the link's entity.
+     * @param a      the first node to be connected.
+     * @param b      the second node to be connected.
+     * @param key    the key of the connection.
+     * @param entity the link's entity, if any.
      * @return the link created, or <code>null</code> if no link could be created.
      */
     @Override
     public @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
-                                                      @NotNull LinkEntityFactory entityFactory) {
+                                                      @Nullable LinkEntity entity) {
         SimpleBlockGraphChunk aChunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
         SimpleBlockGraphChunk bChunk = chunks.getIfExists(ChunkSectionPos.from(b.pos()));
 
@@ -708,7 +699,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                     return null;
                 }
 
-                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entityFactory);
+                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entity);
 
                 // send updated event
                 GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
@@ -1173,7 +1164,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             }
 
             SimpleBlockGraph newGraph = createGraph(true);
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, bn::createNodeEntity);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, null);
             updateConnectionsImpl(node);
         }
     }
@@ -1253,7 +1244,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 }
             }
 
-            mergedGraph.link(node, link.other(), link.key(), link.key()::createLinkEntity);
+            mergedGraph.link(node, link.other(), link.key(), null);
         }
 
         for (var link : removedConnections) {

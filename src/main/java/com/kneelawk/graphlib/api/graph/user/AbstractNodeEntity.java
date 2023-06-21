@@ -26,23 +26,33 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.InvalidInputDataException;
-import alexiil.mc.lib.net.NetByteBuf;
+import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 
 /**
- * Used for decoding {@link LinkEntity}s from packets.
+ * Abstract node entity class that handles context for you.
  */
-@FunctionalInterface
-public interface LinkEntityPacketDecoder {
+public abstract class AbstractNodeEntity implements NodeEntity {
     /**
-     * Decodes a {@link LinkEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
-     *
-     * @param buf    the buffer to read from.
-     * @param msgCtx the message context.
-     * @return a newly decoded link entity.
-     * @throws InvalidInputDataException if a link entity could not be decoded.
+     * Nullable context access.
      */
-    @NotNull LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
+    protected @Nullable NodeEntityContext ctx;
+
+    /**
+     * Constructs this node entity.
+     */
+    public AbstractNodeEntity() {
+    }
+
+    @Override
+    public void onInit(@NotNull NodeEntityContext ctx) {
+        this.ctx = ctx;
+    }
+
+    @Override
+    public @NotNull NodeEntityContext getContext() {
+        if (ctx == null) throw new IllegalStateException("This NodeEntity has not been initialized yet");
+        return ctx;
+    }
 }

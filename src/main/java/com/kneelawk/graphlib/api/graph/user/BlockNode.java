@@ -15,9 +15,9 @@ import alexiil.mc.lib.net.NetByteBuf;
 import com.kneelawk.graphlib.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 
 /**
@@ -78,6 +78,10 @@ public interface BlockNode {
 
     /**
      * Checks whether this specific node should have a node entity associated with it.
+     * <p>
+     * Note: if this returns <code>true</code> and
+     * {@link com.kneelawk.graphlib.api.graph.GraphWorld#addBlockNode(NodePos, NodeEntity)} is called with a
+     * <code>null</code> node entity, then {@link #createNodeEntity(NodeHolder)} is called to create a new node entity.
      *
      * @param self this node's holder, holding the context of this node.
      * @return <code>true</code> if this node should have a node entity associated with it.
@@ -89,10 +93,10 @@ public interface BlockNode {
     /**
      * Creates a new node entity that will be associated with this node.
      *
-     * @param entityCtx the new entity's context.
+     * @param self this node's holder, holding the context of this node.
      * @return a newly created node entity, or <code>null</code> if an entity could not be created.
      */
-    default @Nullable NodeEntity createNodeEntity(@NotNull NodeEntityContext entityCtx) {
+    default @Nullable NodeEntity createNodeEntity(@NotNull NodeHolder<BlockNode> self) {
         return null;
     }
 

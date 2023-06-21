@@ -20,7 +20,14 @@ public interface LinkEntity {
     /**
      * LibNetworkStack net parent for link entities.
      */
-    ParentNetIdSingle<LinkEntity> NET_PARENT = GLNet.LINK_ENTITY_PARENT;
+    @NotNull ParentNetIdSingle<LinkEntity> NET_PARENT = GLNet.LINK_ENTITY_PARENT;
+
+    /**
+     * Called when this link entity is initialized in a graph, to give this its context.
+     *
+     * @param ctx this link entity's context.
+     */
+    void onInit(@NotNull LinkEntityContext ctx);
 
     /**
      * Gets the link entity context this was created with.
@@ -63,4 +70,10 @@ public interface LinkEntity {
      * Called when this link entity's block link has been deleted.
      */
     default void onDelete() {}
+
+    /**
+     * Called when this entity has been created, but it is discovered that another instance of this entity has already
+     * been created previously and that this instance should be discarded.
+     */
+    default void onDiscard() {}
 }

@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
@@ -98,14 +97,14 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      *
      * @param original      the original graph entity.
      * @param originalGraph the graph the original graph entity is associated with.
-     * @param ctx           the graph context for the new graph entity.
+     * @param newGraph      the graph of the new graph entity.
      * @return a newly split off graph entity.
      */
     @ApiStatus.Internal
     @SuppressWarnings("unchecked")
     public @NotNull GraphEntity<?> splitNew(@NotNull GraphEntity<?> original, @NotNull BlockGraph originalGraph,
-                                            @NotNull GraphEntityContext ctx) {
-        return splitter.splitNew((G) original, originalGraph, ctx);
+                                            @NotNull BlockGraph newGraph) {
+        return splitter.splitNew((G) original, originalGraph, newGraph);
     }
 
     @Override

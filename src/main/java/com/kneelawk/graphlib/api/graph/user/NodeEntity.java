@@ -20,7 +20,14 @@ public interface NodeEntity {
     /**
      * LibNetworkStack net parent for node entities.
      */
-    ParentNetIdSingle<NodeEntity> NET_PARENT = GLNet.NODE_ENTITY_PARENT;
+    @NotNull ParentNetIdSingle<NodeEntity> NET_PARENT = GLNet.NODE_ENTITY_PARENT;
+
+    /**
+     * Called when this node entity is initialized in a graph, to give this its context.
+     *
+     * @param ctx this node entity's context.
+     */
+    void onInit(@NotNull NodeEntityContext ctx);
 
     /**
      * Gets the node entity context this was created with.
@@ -63,4 +70,10 @@ public interface NodeEntity {
      * Called when this node entity's block node has been deleted.
      */
     default void onDelete() {}
+
+    /**
+     * Called when this entity has been created, but it is discovered that another instance of this entity has already
+     * been created previously and that this instance should be discarded.
+     */
+    default void onDiscard() {}
 }
