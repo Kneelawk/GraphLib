@@ -33,6 +33,13 @@ public interface BlockGraph {
     long getId();
 
     /**
+     * Gets the graph view that this graph exists within.
+     *
+     * @return the graph view that this graph exists within.
+     */
+    GraphView getGraphView();
+
+    /**
      * Gets all the nodes in this graph in the given block-position.
      *
      * @param pos the block-position to get the nodes in.
@@ -97,11 +104,33 @@ public interface BlockGraph {
     @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos);
 
     /**
+     * Gets all the nodes in the given chunk section.
+     *
+     * @param pos the position of the chunk section to get all nodes from.
+     * @return a stream of all nodes in the given chunk section.
+     */
+    @NotNull Stream<NodeHolder<BlockNode>> getNodesInChunkSection(ChunkSectionPos pos);
+
+    /**
      * Gets all the nodes in this graph.
      *
      * @return a stream of all the nodes in this graph.
      */
     @NotNull Stream<NodeHolder<BlockNode>> getNodes();
+
+    /**
+     * Gets all node entities in this graph.
+     *
+     * @return a stream of all node entities in this graph.
+     */
+    @NotNull Stream<NodeEntity> getNodeEntities();
+
+    /**
+     * Gets all link entities in this graph.
+     *
+     * @return a stream of all link entities in this graph.
+     */
+    @NotNull Stream<LinkEntity> getLinkEntities();
 
     /**
      * Gets all nodes in this graph that match the given cache category.

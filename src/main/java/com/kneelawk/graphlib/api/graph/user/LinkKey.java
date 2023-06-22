@@ -4,11 +4,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.graph.LinkEntityContext;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
+import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
  * The data stored in a link between nodes.
@@ -18,11 +20,11 @@ public interface LinkKey {
      * Gets the type id of this link key.
      * <p>
      * Note: this is the same type id as is used in registering link key decoders,
-     * {@link com.kneelawk.graphlib.api.graph.GraphUniverse#addLinkKeyDecoder(Identifier, LinkKeyDecoder)}.
+     * {@link com.kneelawk.graphlib.api.graph.GraphUniverse#addLinkKeyType(LinkKeyType)}.
      *
      * @return this link key's type id.
      */
-    @NotNull Identifier getTypeId();
+    @NotNull LinkKeyType getType();
 
     /**
      * Encodes this link key as an NBT tag.
@@ -32,7 +34,20 @@ public interface LinkKey {
     @Nullable NbtElement toTag();
 
     /**
+     * Encodes this link key as a packet for server to client synchronization.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the message context.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
+
+    /**
      * Checks whether this specific link should have a link entity associated with it.
+     * <p>
+     * Note: if this returns <code>true</code> and
+     * {@link com.kneelawk.graphlib.api.graph.GraphWorld#connectNodes(NodePos, NodePos, LinkKey, LinkEntity)} is called
+     * with a <code>null</code> link entity, then {@link #createLinkEntity(LinkHolder)} is called to create a new link
+     * entity.
      *
      * @param holder the link holder for this link.
      * @return <code>true</code> if this link should have a link entity associated with it.
@@ -44,10 +59,10 @@ public interface LinkKey {
     /**
      * Creates a new link entity that will be associated with this link.
      *
-     * @param ctx the link entity context for the new link entity.
+     * @param holder the link holder for this link.
      * @return a newly created link entity, or <code>null</code> if a link entity could not be created.
      */
-    default @Nullable LinkEntity createLinkEntity(@NotNull LinkEntityContext ctx) {
+    default @Nullable LinkEntity createLinkEntity(@NotNull LinkHolder<LinkKey> holder) {
         return null;
     }
 

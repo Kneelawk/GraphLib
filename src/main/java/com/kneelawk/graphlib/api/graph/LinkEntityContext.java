@@ -5,12 +5,13 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.util.LinkPos;
 
 /**
  * Context for link entities.
@@ -36,7 +37,7 @@ public interface LinkEntityContext {
      *
      * @return the world of blocks that this link entity exists within.
      */
-    @NotNull ServerWorld getBlockWorld();
+    @NotNull World getBlockWorld();
 
     /**
      * Gets the world of graphs that this link entity exists within.
@@ -73,12 +74,21 @@ public interface LinkEntityContext {
     }
 
     /**
+     * Gets the position of this link.
+     *
+     * @return this link's position.
+     */
+    default LinkPos getPos() {
+        return getHolder().getPos();
+    }
+
+    /**
      * Gets the block position of the first node in this link entity's link.
      *
      * @return the block position of the first node in this link entity's link.
      */
     default @NotNull BlockPos getFirstBlockPos() {
-        return getHolder().getFirst().getPos();
+        return getHolder().getFirst().getBlockPos();
     }
 
     /**
@@ -87,7 +97,7 @@ public interface LinkEntityContext {
      * @return the block position of the second node in the link entity's link.
      */
     default @NotNull BlockPos getSecondBlockPos() {
-        return getHolder().getSecond().getPos();
+        return getHolder().getSecond().getBlockPos();
     }
 
     /**
@@ -152,7 +162,7 @@ public interface LinkEntityContext {
     default @Nullable NodeEntity getFirstNodeEntity() {
         BlockGraph graph = getGraphWorld().getGraph(getHolder().getFirst().getGraphId());
         if (graph != null) {
-            return graph.getNodeEntity(getHolder().getFirst().toNodePos());
+            return graph.getNodeEntity(getHolder().getFirst().getPos());
         }
         return null;
     }
@@ -180,7 +190,7 @@ public interface LinkEntityContext {
     default @Nullable NodeEntity getSecondNodeEntity() {
         BlockGraph graph = getGraphWorld().getGraph(getHolder().getSecond().getGraphId());
         if (graph != null) {
-            return graph.getNodeEntity(getHolder().getSecond().toNodePos());
+            return graph.getNodeEntity(getHolder().getSecond().getPos());
         }
         return null;
     }

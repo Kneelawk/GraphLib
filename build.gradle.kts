@@ -32,6 +32,7 @@ loom {
 repositories {
     mavenCentral()
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
+    maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
 }
 
 dependencies {
@@ -52,6 +53,14 @@ dependencies {
     val fapi_version: String by project
     modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
+
+    // LibNetworkStack
+    val lns_version: String by project
+    modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version") {
+        exclude(group = "net.fabricmc")
+        exclude(group = "net.fabricmd.fabric-api")
+    }
+    include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
 
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.
@@ -95,9 +104,11 @@ tasks {
         val minecraft_version: String by project
         val quilt_mappings: String by project
         val jetbrains_annotations_version: String by project
+        val lns_version: String by project
         (options as? StandardJavadocDocletOptions)?.links = listOf(
 //            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
-            "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/"
+            "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/",
+            "https://alexiil.uk/javadoc/libnetworkstack/${lns_version}/"
         )
 
         options.optionFiles(file("javadoc-options.txt"))

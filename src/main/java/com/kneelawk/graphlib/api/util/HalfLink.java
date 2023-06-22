@@ -29,6 +29,6 @@ public record HalfLink(LinkKey key, NodeHolder<BlockNode> other) {
      * @return a link pos containing both the given node and this half link.
      */
     public LinkPos toLinkPos(NodePos perspective) {
-        return new LinkPos(perspective, other.toNodePos(), key);
+        return new LinkPos(perspective, other.getPos(), key);
     }
 }

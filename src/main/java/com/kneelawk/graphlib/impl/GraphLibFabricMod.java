@@ -7,8 +7,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.loader.api.FabricLoader;
 
-import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.impl.net.GLDebugNet;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricMod implements ModInitializer {
@@ -20,7 +22,8 @@ public class GraphLibFabricMod implements ModInitializer {
 
         GraphLibImpl.register();
 
-        GraphLibCommonNetworking.init();
+        GLNet.init();
+        GLDebugNet.init();
 
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, context, environment) -> GraphLibImpl.registerCommands(dispatcher, context));
@@ -35,7 +38,7 @@ public class GraphLibFabricMod implements ModInitializer {
         });
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
             try {
-                GraphWorldStorage storage = StorageHelper.getStorage(world);
+                ServerGraphWorldStorage storage = StorageHelper.getStorage(world);
                 storage.saveChunk(chunk.getPos());
                 storage.onWorldChunkUnload(chunk.getPos());
             } catch (Exception e) {

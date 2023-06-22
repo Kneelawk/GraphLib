@@ -1,27 +1,30 @@
 package com.kneelawk.graphlib.api.graph;
 
 import java.util.Collection;
-import java.util.Map;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import it.unimi.dsi.fastutil.Pair;
-
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
+import com.kneelawk.graphlib.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
@@ -32,13 +35,33 @@ import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
  * <b>Note: GraphUniverses must be registered with the {@link #register()} method in order to work properly.</b>
  */
 public interface GraphUniverse {
+
+    /**
+     * Gets the {@link GraphView} for the given {@link World}.
+     * <p>
+     * This works on both the logical server and the logical client, unlike
+     * {@link #getServerGraphWorld(ServerWorld)} which only works on the logical server.
+     *
+     * @param world the world to get the graph view associated with.
+     * @return the graph view associated with the given world.
+     */
+    @NotNull GraphView getGraphView(@NotNull World world);
+
     /**
      * Gets the {@link GraphWorld} for the given {@link ServerWorld}.
      *
-     * @param world the world whose BlockGraphController is to be obtained.
+     * @param world the world whose graph world is to be obtained.
      * @return the GraphWorld of the given world.
      */
-    @NotNull GraphWorld getGraphWorld(@NotNull ServerWorld world);
+    @NotNull GraphWorld getServerGraphWorld(@NotNull ServerWorld world);
+
+    /**
+     * Gets the {@link GraphView} of this client, if this is indeed a physical client.
+     *
+     * @return the graph view of this client, if this is indeed a physical client, or <code>null</code> if this is a
+     * physical server.
+     */
+    @Nullable GraphView getClientGraphView();
 
     /**
      * Gets the unique id of this universe.
@@ -86,32 +109,39 @@ public interface GraphUniverse {
      * Registers a {@link BlockNodeDecoder} for the given block node type id.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated block
-     * node's {@link BlockNode#getTypeId()}.
+     * node's {@link BlockNode#getType()}.
      *
-     * @param typeId  the type id of the block node the decoder is being registered for.
-     * @param decoder the block node decoder responsible for decoding the associated type of block node.
+     * @param type the block node type to register.
      */
-    void addNodeDecoder(@NotNull Identifier typeId, @NotNull BlockNodeDecoder decoder);
+    void addNodeType(@NotNull BlockNodeType type);
 
     /**
      * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated block
-     * node's {@link BlockNode#getTypeId()}.
+     * node's {@link BlockNode#getType()}.
      *
-     * @param decoders the set of block node decoders to be registered.
+     * @param types the set of block node types to be registered.
      */
-    void addNodeDecoders(@NotNull Pair<Identifier, ? extends BlockNodeDecoder>... decoders);
+    default void addNodeTypes(@NotNull BlockNodeType... types) {
+        for (BlockNodeType type : types) {
+            addNodeType(type);
+        }
+    }
 
     /**
      * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated block
-     * node's {@link BlockNode#getTypeId()}.
+     * node's {@link BlockNode#getType()}.
      *
-     * @param decoders the set of block node decoders to be registered.
+     * @param types the set of block node types to be registered.
      */
-    void addNodeDecoders(@NotNull Map<Identifier, ? extends BlockNodeDecoder> decoders);
+    default void addNodeTypes(@NotNull Iterable<BlockNodeType> types) {
+        for (BlockNodeType type : types) {
+            addNodeType(type);
+        }
+    }
 
     /**
      * Gets the block node decoder for the given type id.
@@ -119,38 +149,45 @@ public interface GraphUniverse {
      * @param typeId the type id of the block node decoder.
      * @return the block node decoder for the given type id.
      */
-    @Nullable BlockNodeDecoder getNodeDecoder(@NotNull Identifier typeId);
+    @Nullable BlockNodeType getNodeType(@NotNull Identifier typeId);
 
     /**
      * Registers a {@link NodeEntityDecoder} for the given node entity type id.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated node
-     * entity's {@link NodeEntity#getTypeId()}.
+     * entity's {@link NodeEntity#getType()}.
      *
-     * @param typeId  the type id of the node entity the decoder is being registered for.
-     * @param decoder the node entity decoder responsible for decoding the associated type of node entity.
+     * @param type the node entity type to register.
      */
-    void addNodeEntityDecoder(@NotNull Identifier typeId, @NotNull NodeEntityDecoder decoder);
+    void addNodeEntityType(@NotNull NodeEntityType type);
 
     /**
      * Registers a set of {@link NodeEntityDecoder} with associated node entity type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated node
-     * entity's {@link NodeEntity#getTypeId()}.
+     * entity's {@link NodeEntity#getType()}.
      *
-     * @param decoders the set of node entity decoders to be registered.
+     * @param types the set of node entity types to be registered.
      */
-    void addNodeEntityDecoders(@NotNull Pair<Identifier, ? extends NodeEntityDecoder>... decoders);
+    default void addNodeEntityTypes(@NotNull NodeEntityType... types) {
+        for (NodeEntityType type : types) {
+            addNodeEntityType(type);
+        }
+    }
 
     /**
      * Registers a set of {@link NodeEntityDecoder} with associated node entity type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated node
-     * entity's {@link NodeEntity#getTypeId()}.
+     * entity's {@link NodeEntity#getType()}.
      *
-     * @param decoders the set of node entity decoders to be registered.
+     * @param types the set of node entity types to be registered.
      */
-    void addNodeEntityDecoders(@NotNull Map<Identifier, ? extends NodeEntityDecoder> decoders);
+    default void addNodeEntityTypes(@NotNull Iterable<NodeEntityType> types) {
+        for (NodeEntityType type : types) {
+            addNodeEntityType(type);
+        }
+    }
 
     /**
      * Gets the node entity decoder for the given type id.
@@ -158,38 +195,45 @@ public interface GraphUniverse {
      * @param typeId the type id of the node entity decoder.
      * @return the node entity decoder for the given type id.
      */
-    @Nullable NodeEntityDecoder getNodeEntityDecoder(@NotNull Identifier typeId);
+    @Nullable NodeEntityType getNodeEntityType(@NotNull Identifier typeId);
 
     /**
      * Registers a {@link LinkKeyDecoder} for the given link type id.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated link key's
-     * {@link LinkKey#getTypeId()}.
+     * {@link LinkKey#getType()}.
      *
-     * @param typeId  the type id of the link key the decoder is being registered for.
-     * @param decoder the link key decoder responsible for decoding the associated type of link key.
+     * @param type the link key type to register.
      */
-    void addLinkKeyDecoder(@NotNull Identifier typeId, @NotNull LinkKeyDecoder decoder);
+    void addLinkKeyType(@NotNull LinkKeyType type);
 
     /**
      * Registers a set of {@link LinkKeyDecoder}s with associated link key type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link key's
-     * {@link LinkKey#getTypeId()}.
+     * {@link LinkKey#getType()}.
      *
-     * @param decoders the set of link key decoders to be registered.
+     * @param types the set of link key types to be registered.
      */
-    void addLinkKeyDecoders(@NotNull Pair<Identifier, ? extends LinkKeyDecoder>... decoders);
+    default void addLinkKeyTypes(@NotNull LinkKeyType... types) {
+        for (LinkKeyType type : types) {
+            addLinkKeyType(type);
+        }
+    }
 
     /**
      * Registers a set of {@link LinkKeyDecoder}s with associated link key type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link key's
-     * {@link LinkKey#getTypeId()}.
+     * {@link LinkKey#getType()}.
      *
-     * @param decoders the set of link key decoders to be registered.
+     * @param types the set of link key types to be registered.
      */
-    void addLinkKeyDecoders(@NotNull Map<Identifier, ? extends LinkKeyDecoder> decoders);
+    default void addLinkKeyTypes(@NotNull Iterable<LinkKeyType> types) {
+        for (LinkKeyType type : types) {
+            addLinkKeyType(type);
+        }
+    }
 
     /**
      * Gets the link key decoder for the given type id.
@@ -197,38 +241,45 @@ public interface GraphUniverse {
      * @param typeId the type id of the link key decoder.
      * @return the link key decoder for the given type id.
      */
-    @Nullable LinkKeyDecoder getLinkKeyDecoder(@NotNull Identifier typeId);
+    @Nullable LinkKeyType getLinkKeyType(@NotNull Identifier typeId);
 
     /**
      * Registers a {@link LinkEntityDecoder} for the given link type id.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated link
-     * entity's {@link LinkEntity#getTypeId()}.
+     * entity's {@link LinkEntity#getType()}.
      *
-     * @param typeId  the type id of the link entity the decoder is being registered for.
-     * @param decoder the link entity decoder responsible for decoding the associated type of link entity.
+     * @param type the type of link entity to register.
      */
-    void addLinkEntityDecoder(@NotNull Identifier typeId, @NotNull LinkEntityDecoder decoder);
+    void addLinkEntityType(@NotNull LinkEntityType type);
 
     /**
      * Registers a set of {@link LinkEntityDecoder}s with associated link entity type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link
-     * entity's {@link LinkEntity#getTypeId()}.
+     * entity's {@link LinkEntity#getType()}.
      *
-     * @param decoders the set of link entity decoders to be registered.
+     * @param types the set of link entity types to be registered.
      */
-    void addLinkEntityDecoders(@NotNull Pair<Identifier, ? extends LinkEntityDecoder>... decoders);
+    default void addLinkEntityTypes(@NotNull LinkEntityType... types) {
+        for (LinkEntityType type : types) {
+            addLinkEntityType(type);
+        }
+    }
 
     /**
      * Registers a set of {@link LinkEntityDecoder}s with associated link entity type ids.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link
-     * entity's {@link LinkEntity#getTypeId()}.
+     * entity's {@link LinkEntity#getType()}.
      *
-     * @param decoders the set of link entity decoders to be registered.
+     * @param types the set of link entity types to be registered.
      */
-    void addLinkEntityDecoders(@NotNull Map<Identifier, ? extends LinkEntityDecoder> decoders);
+    default void addLinkEntityTypes(@NotNull Iterable<LinkEntityType> types) {
+        for (LinkEntityType type : types) {
+            addLinkEntityType(type);
+        }
+    }
 
     /**
      * Gets the link entity decoder for the given type id.
@@ -236,7 +287,7 @@ public interface GraphUniverse {
      * @param typeId the type id of the link entity decoder.
      * @return the link entity decoder for the given type id.
      */
-    @Nullable LinkEntityDecoder getLinkEntityDecoder(@NotNull Identifier typeId);
+    @Nullable LinkEntityType getLinkEntityType(@NotNull Identifier typeId);
 
     /**
      * Registers a {@link GraphEntityType}.
@@ -250,14 +301,22 @@ public interface GraphUniverse {
      *
      * @param types the graph entity types to be registered.
      */
-    void addGraphEntityTypes(@NotNull GraphEntityType<?>... types);
+    default void addGraphEntityTypes(@NotNull GraphEntityType<?>... types) {
+        for (GraphEntityType<?> type : types) {
+            addGraphEntityType(type);
+        }
+    }
 
     /**
      * Registers a set of {@link GraphEntityType}s.
      *
      * @param types the graph entity types to be registered.
      */
-    void addGraphEntityTypes(@NotNull Iterable<GraphEntityType<?>> types);
+    default void addGraphEntityTypes(@NotNull Iterable<GraphEntityType<?>> types) {
+        for (GraphEntityType<?> type : types) {
+            addGraphEntityType(type);
+        }
+    }
 
     /**
      * Gets the graph entity type for the given type id.
@@ -326,6 +385,13 @@ public interface GraphUniverse {
     int getDefaultDebugColor(@NotNull Identifier typeId);
 
     /**
+     * Gets this universe's synchronization profile.
+     *
+     * @return this universe's synchronization profile.
+     */
+    @NotNull SyncProfile getSyncProfile();
+
+    /**
      * Creates a new GraphUniverse builder.
      *
      * @return a new builder for building a GraphUniverse.
@@ -359,5 +425,17 @@ public interface GraphUniverse {
          * @return this builder for call chaining.
          */
         @NotNull Builder saveMode(@NotNull SaveMode saveMode);
+
+        /**
+         * Sets whether this graph universe should be synchronized to the client.
+         * <p>
+         * This is set to {@link SyncProfile#SYNC_NOTHING} by default.
+         * <p>
+         * The {@link CacheCategory} in the given sync profile will be automatically registered on universe creation.
+         *
+         * @param profile a profile describing whether and how this graph universe should be synchronized to the client.
+         * @return this builder for call chaining.
+         */
+        @NotNull Builder synchronizeToClient(@NotNull SyncProfile profile);
     }
 }

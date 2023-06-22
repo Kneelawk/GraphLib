@@ -7,8 +7,14 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+import alexiil.mc.lib.net.ParentNetIdSingle;
+
+import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Arbitrary data that can be stored in a graph.
@@ -16,6 +22,26 @@ import com.kneelawk.graphlib.api.util.LinkPos;
  * @param <G> this graph entity class.
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
+    /**
+     * LibNetworkStack net parent for graph entities.
+     */
+    @SuppressWarnings("rawtypes")
+    @NotNull ParentNetIdSingle<GraphEntity> NET_PARENT = GLNet.GRAPH_ENTITY_PARENT;
+
+    /**
+     * Called when the graph entity is initialized in a graph, to give this its context.
+     *
+     * @param ctx this graph entity's context.
+     */
+    void onInit(@NotNull GraphEntityContext ctx);
+
+    /**
+     * Gets the graph entity context this was created with.
+     *
+     * @return this graph entity's context.
+     */
+    @NotNull GraphEntityContext getContext();
+
     /**
      * Gets this graph entity's type.
      *
@@ -31,6 +57,14 @@ public interface GraphEntity<G extends GraphEntity<G>> {
     @Nullable NbtElement toTag();
 
     /**
+     * Encodes this graph entity as a packet for server to client synchronization.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the message context.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
+
+    /**
      * Called right before this entity's associated graph is deleted.
      */
     default void onDestroy() {}
@@ -41,6 +75,12 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      * Note: This cannot cancel graph unloading, however, any changes made here will be saved.
      */
     default void onUnload() {}
+
+    /**
+     * Called when this entity has been created, but it is discovered that another instance of this entity has already
+     * been created previously and that this instance should be discarded.
+     */
+    default void onDiscard() {}
 
     /**
      * Called when a new node is added to the graph.

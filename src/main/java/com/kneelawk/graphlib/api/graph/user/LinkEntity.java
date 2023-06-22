@@ -4,23 +4,47 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
+
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+import alexiil.mc.lib.net.ParentNetIdSingle;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.LinkEntityContext;
+import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Mutable data associated with a link, similar to a BlockEntity.
  */
 public interface LinkEntity {
     /**
+     * LibNetworkStack net parent for link entities.
+     */
+    @NotNull ParentNetIdSingle<LinkEntity> NET_PARENT = GLNet.LINK_ENTITY_PARENT;
+
+    /**
+     * Called when this link entity is initialized in a graph, to give this its context.
+     *
+     * @param ctx this link entity's context.
+     */
+    void onInit(@NotNull LinkEntityContext ctx);
+
+    /**
+     * Gets the link entity context this was created with.
+     *
+     * @return this link entity's context.
+     */
+    @NotNull LinkEntityContext getContext();
+
+    /**
      * Get this link entity's type id.
      * <p>
      * The id returned here must be the same as the one registered with
-     * {@link GraphUniverse#addLinkEntityDecoder(Identifier, LinkEntityDecoder)}.
+     * {@link GraphUniverse#addLinkEntityType(LinkEntityType)}.
      *
      * @return this link entity's type id.
      */
-    @NotNull Identifier getTypeId();
+    @NotNull LinkEntityType getType();
 
     /**
      * Encodes this link entity as an NBT tag.
@@ -30,12 +54,26 @@ public interface LinkEntity {
     @Nullable NbtElement toTag();
 
     /**
+     * Encodes this link entity as a packet for server to client synchronization.
+     *
+     * @param buf the buffer to write to.
+     * @param ctx the message context.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
+
+    /**
      * Called when this link entity's graph is about to be unloaded.
      */
-    void onUnload();
+    default void onUnload() {}
 
     /**
      * Called when this link entity's block link has been deleted.
      */
-    void onDelete();
+    default void onDelete() {}
+
+    /**
+     * Called when this entity has been created, but it is discovered that another instance of this entity has already
+     * been created previously and that this instance should be discarded.
+     */
+    default void onDiscard() {}
 }

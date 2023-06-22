@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtElement;
 /**
  * Used for decoding a {@link BlockNode} from an NBT element.
  */
+@FunctionalInterface
 public interface BlockNodeDecoder {
     /**
      * Decodes a {@link BlockNode} from an NBT element.

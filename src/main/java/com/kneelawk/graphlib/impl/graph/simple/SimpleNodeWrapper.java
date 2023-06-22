@@ -15,6 +15,7 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
@@ -42,7 +43,7 @@ public final class SimpleNodeWrapper {
             tag.put("node", nodeTag);
         }
 
-        tag.putString("type", node.getTypeId().toString());
+        tag.putString("type", node.getType().getId().toString());
 
         return tag;
     }
@@ -53,15 +54,15 @@ public final class SimpleNodeWrapper {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
         Identifier typeId = new Identifier(tag.getString("type"));
-        BlockNodeDecoder decoder = universe.getNodeDecoder(typeId);
+        BlockNodeType type = universe.getNodeType(typeId);
 
-        if (decoder == null) {
+        if (type == null) {
             GLLog.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);
             return null;
         }
 
         NbtElement nodeTag = tag.get("node");
-        BlockNode node = decoder.decode(nodeTag);
+        BlockNode node = type.getDecoder().decode(nodeTag);
 
         if (node == null) {
             GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);

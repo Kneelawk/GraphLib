@@ -25,7 +25,7 @@ import net.minecraft.util.math.ChunkSectionPos;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.world.StorageChunk;
 import com.kneelawk.graphlib.impl.GLLog;
@@ -67,15 +67,15 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                     BlockPos keyPos = pos.add(chunkPos.getMinX(), chunkPos.getMinY(), chunkPos.getMinZ());
 
                     Identifier typeId = new Identifier(keyCom.getString("type"));
-                    BlockNodeDecoder decoder = universe.getNodeDecoder(typeId);
+                    BlockNodeType type = universe.getNodeType(typeId);
 
-                    if (decoder == null) {
+                    if (type == null) {
                         GLLog.error("Chunk tried to load unknown NodeKey type: {} @ {}.", typeId, keyPos);
                         continue;
                     }
 
                     NbtElement dataTag = keyCom.get("data");
-                    BlockNode data = decoder.decode(dataTag);
+                    BlockNode data = type.getDecoder().decode(dataTag);
 
                     if (blockNodes == null) {
                         blockNodes = new Short2ObjectLinkedOpenHashMap<>();
@@ -144,7 +144,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                         keyCom.put("data", data);
                     }
 
-                    keyCom.putString("type", entry.getKey().getTypeId().toString());
+                    keyCom.putString("type", entry.getKey().getType().getId().toString());
 
                     nodes.add(keyCom);
                 }
@@ -281,7 +281,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
             }
 
             for (NodeHolder<BlockNode> holder : graph.getNodes().toList()) {
-                NodePos key = holder.toNodePos();
+                NodePos key = holder.getPos();
                 BlockPos pos = key.pos();
                 if (chunkPos.getMinX() <= pos.getX() && pos.getX() <= chunkPos.getMaxX() &&
                     chunkPos.getMinY() <= pos.getY() && pos.getY() <= chunkPos.getMaxY() &&

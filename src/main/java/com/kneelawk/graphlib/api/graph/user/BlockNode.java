@@ -9,18 +9,15 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.client.BlockNodePacketDecoder;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
+
+import com.kneelawk.graphlib.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
-import com.kneelawk.graphlib.api.wire.CenterWireBlockNode;
-import com.kneelawk.graphlib.api.wire.CenterWireConnectionFilter;
-import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
-import com.kneelawk.graphlib.api.wire.FullWireConnectionFilter;
-import com.kneelawk.graphlib.api.wire.SidedWireBlockNode;
-import com.kneelawk.graphlib.api.wire.SidedWireConnectionFilter;
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 
 /**
@@ -41,11 +38,11 @@ public interface BlockNode {
      * Gets this block node's type ID, associated with its decoder.
      * <p>
      * A block node's {@link BlockNodeDecoder} must always be registered with
-     * {@link GraphUniverse#addNodeDecoder(Identifier, BlockNodeDecoder)} under the same ID as returned here.
+     * {@link GraphUniverse#addNodeType(BlockNodeType)} under the same ID as returned here.
      *
      * @return the id of this block node.
      */
-    @NotNull Identifier getTypeId();
+    @NotNull BlockNodeType getType();
 
     /**
      * Encodes this block node's data to an NBT element.
@@ -55,6 +52,16 @@ public interface BlockNode {
      * @return a (possibly null) NBT element describing this block node's data.
      */
     @Nullable NbtElement toTag();
+
+    /**
+     * Encodes this block node's data into a packet for server to client synchronization.
+     * <p>
+     * This does not need to write anything if this block node's type is all the data that needs to be sent.
+     *
+     * @param buf the buffer to write this node's data to.
+     * @param ctx the message context, used for writing to caches.
+     */
+    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Checks if this block node should be automatically removed.
@@ -71,6 +78,10 @@ public interface BlockNode {
 
     /**
      * Checks whether this specific node should have a node entity associated with it.
+     * <p>
+     * Note: if this returns <code>true</code> and
+     * {@link com.kneelawk.graphlib.api.graph.GraphWorld#addBlockNode(NodePos, NodeEntity)} is called with a
+     * <code>null</code> node entity, then {@link #createNodeEntity(NodeHolder)} is called to create a new node entity.
      *
      * @param self this node's holder, holding the context of this node.
      * @return <code>true</code> if this node should have a node entity associated with it.
@@ -82,10 +93,10 @@ public interface BlockNode {
     /**
      * Creates a new node entity that will be associated with this node.
      *
-     * @param entityCtx the new entity's context.
+     * @param self this node's holder, holding the context of this node.
      * @return a newly created node entity, or <code>null</code> if an entity could not be created.
      */
-    default @Nullable NodeEntity createNodeEntity(@NotNull NodeEntityContext entityCtx) {
+    default @Nullable NodeEntity createNodeEntity(@NotNull NodeHolder<BlockNode> self) {
         return null;
     }
 
@@ -174,18 +185,18 @@ public interface BlockNode {
      * This method should only be overridden to provide custom data to the client.
      * <p>
      * If custom data is being sent to the client, use
-     * {@link GraphLibClient#registerDecoder(Identifier, Identifier, BlockNodePacketDecoder)}
+     * {@link GraphLibClient#registerDebugDecoder(Identifier, Identifier, BlockNodeDebugPacketDecoder)}
      * to register a decoder for the custom data.
      *
      * @param self this node's holder, holding the context of this node.
      * @param buf  the buffer to encode this node to.
      */
-    default void toPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
+    default void toDebugPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
         // This keeps otherwise identical-looking client-side nodes separate.
         buf.writeInt(hashCode());
 
         // Get the default color for our node type
-        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getTypeId()));
+        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getType().getId()));
 
         // A 0 byte to distinguish ourselves from SidedBlockNode, because both implementations use the same decoder
         buf.writeByte(0);

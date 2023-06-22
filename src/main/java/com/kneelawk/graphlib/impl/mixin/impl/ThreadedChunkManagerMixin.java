@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.impl.mixin.impl;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.datafixers.DataFixer;
 
+import net.minecraft.network.packet.s2c.play.ChunkDataS2CPacket;
 import net.minecraft.server.WorldGenerationProgressListener;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.server.world.ThreadedChunkManager;
 import net.minecraft.structure.StructureTemplateManager;
@@ -22,12 +25,13 @@ import net.minecraft.util.thread.ThreadExecutor;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.ChunkStatusChangeListener;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.storage.WorldSaveStorage;
 
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.GraphWorldStorageAccess;
 
 @Mixin(ThreadedChunkManager.class)
@@ -37,7 +41,7 @@ public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
     ServerWorld world;
 
     @Unique
-    private GraphWorldStorage storage;
+    private ServerGraphWorldStorage storage;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onCreate(
@@ -56,7 +60,7 @@ public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
         boolean syncChunkWrites,
         CallbackInfo ci
     ) {
-        storage = new GraphWorldStorage(world,
+        storage = new ServerGraphWorldStorage(world,
             session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME), syncChunkWrites);
     }
 
@@ -70,8 +74,14 @@ public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
         }
     }
 
+    @Inject(method = "sendChunkDataPackets", at = @At("RETURN"))
+    private void onSendChunkDataPackets(ServerPlayerEntity player, MutableObject<ChunkDataS2CPacket> mutableObject,
+                                        WorldChunk chunk, CallbackInfo ci) {
+        storage.sendChunkDataPackets(player, chunk.getPos());
+    }
+
     @Override
-    public @NotNull GraphWorldStorage graphlib_getGraphWorldStorage() {
+    public @NotNull ServerGraphWorldStorage graphlib_getGraphWorldStorage() {
         return storage;
     }
 }

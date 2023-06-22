@@ -55,6 +55,11 @@ repositories {
         url 'https://kneelawk.com/maven/'
         name 'Kneelawk Maven'
     }
+    maven {
+        // For LibNetworkStack, which GraphLib depends on
+        url 'https://maven.alexiil.uk/'
+        name 'AlexIIL Maven'
+    }
 }
 
 dependencies {

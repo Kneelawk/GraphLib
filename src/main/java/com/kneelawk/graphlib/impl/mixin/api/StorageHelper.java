@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.storage.StorageIoWorker;
 
-import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.impl.StorageIoWorkerAccessor;
 
 public class StorageHelper {
@@ -16,7 +16,7 @@ public class StorageHelper {
         return StorageIoWorkerAccessor.create(path, syncChunkWrites, name);
     }
 
-    public static @NotNull GraphWorldStorage getStorage(@NotNull ServerWorld world) {
+    public static @NotNull ServerGraphWorldStorage getStorage(@NotNull ServerWorld world) {
         return ((GraphWorldStorageAccess) world.getChunkManager().delegate).graphlib_getGraphWorldStorage();
     }
 }

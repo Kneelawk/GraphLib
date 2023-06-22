@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
@@ -29,7 +29,7 @@ public interface LinkHolder<K extends LinkKey> {
      *
      * @return the world of blocks that this link is associated with.
      */
-    @NotNull ServerWorld getBlockWorld();
+    @NotNull World getBlockWorld();
 
     /**
      * Gets the world of graphs that this link is associated with.
@@ -92,7 +92,7 @@ public interface LinkHolder<K extends LinkKey> {
      */
     default @NotNull NodeHolder<BlockNode> other(@NotNull NodePos node) {
         NodeHolder<BlockNode> first = getFirst();
-        if (Objects.equals(first.toNodePos(), node)) {
+        if (Objects.equals(first.getPos(), node)) {
             return getSecond();
         } else {
             return first;
@@ -109,12 +109,21 @@ public interface LinkHolder<K extends LinkKey> {
     }
 
     /**
+     * Gets the link pos of this link, holding only node-positions and link key.
+     *
+     * @return the link pos of this link holder.
+     */
+    default @NotNull LinkPos getPos() {
+        return new LinkPos(getFirst().getPos(), getSecond().getPos(), getKey());
+    }
+
+    /**
      * Gets the block position of the first node in this link.
      *
      * @return the block position of the first node in this link.
      */
     default @NotNull BlockPos getFirstBlockPos() {
-        return getFirst().getPos();
+        return getFirst().getBlockPos();
     }
 
     /**
@@ -123,7 +132,7 @@ public interface LinkHolder<K extends LinkKey> {
      * @return the block position of the second node in this link.
      */
     default @NotNull BlockPos getSecondBlockPos() {
-        return getSecond().getPos();
+        return getSecond().getBlockPos();
     }
 
     /**
@@ -188,7 +197,7 @@ public interface LinkHolder<K extends LinkKey> {
     default @Nullable NodeEntity getFirstNodeEntity() {
         BlockGraph graph = getGraphWorld().getGraph(getFirst().getGraphId());
         if (graph != null) {
-            return graph.getNodeEntity(getFirst().toNodePos());
+            return graph.getNodeEntity(getFirst().getPos());
         }
         return null;
     }
@@ -216,7 +225,7 @@ public interface LinkHolder<K extends LinkKey> {
     default @Nullable NodeEntity getSecondNodeEntity() {
         BlockGraph graph = getGraphWorld().getGraph(getSecond().getGraphId());
         if (graph != null) {
-            return graph.getNodeEntity(getSecond().toNodePos());
+            return graph.getNodeEntity(getSecond().getPos());
         }
         return null;
     }
@@ -244,7 +253,7 @@ public interface LinkHolder<K extends LinkKey> {
     default @Nullable LinkEntity getLinkEntity() {
         BlockGraph graph = getGraphWorld().getGraph(getFirst().getGraphId());
         if (graph != null) {
-            return graph.getLinkEntity(toLinkPos());
+            return graph.getLinkEntity(getPos());
         }
         return null;
     }
@@ -272,14 +281,5 @@ public interface LinkHolder<K extends LinkKey> {
      */
     default @NotNull HalfLink toHalfLink(@NotNull NodeHolder<BlockNode> perspective) {
         return new HalfLink(getKey(), other(perspective));
-    }
-
-    /**
-     * Gets the link pos of this link, holding only node-positions and link key.
-     *
-     * @return the link pos of this link holder.
-     */
-    default @NotNull LinkPos toLinkPos() {
-        return new LinkPos(getFirst().toNodePos(), getSecond().toNodePos(), getKey());
     }
 }

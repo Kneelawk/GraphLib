@@ -14,16 +14,30 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class LinkPosEqualityTests {
+    private static final BlockNodeType STRING_NODE_TYPE = BlockNodeType.of(new Identifier("test", "string"), nbt -> {
+        if (nbt instanceof NbtString string)
+            return new StringBlockNode(string.asString());
+        return null;
+    });
+
+    private static final LinkKeyType STRING_LINK_TYPE = LinkKeyType.of(new Identifier("test", "string"), nbt -> {
+        if (nbt instanceof NbtString string)
+            return new StringLinkKey(string.asString());
+        return null;
+    });
+
     private record StringBlockNode(String str) implements BlockNode {
         @Override
-        public @NotNull Identifier getTypeId() {
-            return new Identifier("test", "string");
+        public @NotNull BlockNodeType getType() {
+            return STRING_NODE_TYPE;
         }
 
         @Override
@@ -47,8 +61,8 @@ public class LinkPosEqualityTests {
 
     private record StringLinkKey(String str) implements LinkKey {
         @Override
-        public @NotNull Identifier getTypeId() {
-            return new Identifier("test", "string");
+        public @NotNull LinkKeyType getType() {
+            return STRING_LINK_TYPE;
         }
 
         @Override
