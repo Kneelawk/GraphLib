@@ -174,6 +174,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      *
      * @param id       the id of the new type.
      * @param supplier a supplier for the new type.
+     * @param <G>      The type of graph entity this type is for.
      * @return a new graph entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
