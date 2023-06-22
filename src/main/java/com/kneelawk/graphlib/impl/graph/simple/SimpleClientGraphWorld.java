@@ -199,13 +199,18 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 NodeHolder<BlockNode> holderA = graph.getNodeAt(link.first());
                 NodeHolder<BlockNode> holderB = graph.getNodeAt(link.second());
 
-                // read quarantined link entity
+                // read link entity
                 LinkEntity entity = readLinkEntity(buf, ctx, link);
 
                 if (holderA != null && holderB != null) {
                     // ignore links with missing nodes,
                     // they'll just happen sometimes because the server will send links to nodes we don't know about
                     graph.link(holderA, holderB, link.key(), entity);
+                } else {
+                    if (entity != null) {
+                        // We don't actually need this link, so we're discarding its entity.
+                        entity.onDiscard();
+                    }
                 }
             }
 
