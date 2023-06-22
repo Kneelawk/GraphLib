@@ -57,7 +57,7 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
     public @NotNull ClientGraphWorldImpl get(@NotNull Identifier universeId) {
         if (!worlds.containsKey(universeId)) {
             throw new IllegalStateException(
-                "Attempted to get a graph world for a universe that has not been registered. Make sure to call the universe's register() function in your mod's init. Universe: " +
+                "Attempted to get a client graph world for a universe that has not been synchronized. Make sure your universe builder's synchronizeToClient(...) is called with something that allows synchronization. Universe: " +
                     universeId);
         }
 
@@ -80,8 +80,8 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
             try {
                 impl.setChunkMapCenter(x, z);
             } catch (Exception e) {
-                GLLog.error("Error setting center chunk in client GraphWorld. World: '{}'/{}, Chunk: ({}, {})", clientWorld,
-                    clientWorld.getRegistryKey().getValue(), x, z, e);
+                GLLog.error("Error setting center chunk in client GraphWorld. World: '{}'/{}, Chunk: ({}, {})",
+                    clientWorld, clientWorld.getRegistryKey().getValue(), x, z, e);
             }
         }
     }
@@ -91,8 +91,8 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
             try {
                 impl.updateLoadDistance(loadDistance);
             } catch (Exception | OutOfMemoryError e) {
-                GLLog.error("Error setting load distance in client GraphWorld. World: '{}'/{}, Load distance: {}", clientWorld,
-                    clientWorld.getRegistryKey().getValue(), loadDistance, e);
+                GLLog.error("Error setting load distance in client GraphWorld. World: '{}'/{}, Load distance: {}",
+                    clientWorld, clientWorld.getRegistryKey().getValue(), loadDistance, e);
             }
         }
     }
