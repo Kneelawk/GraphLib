@@ -123,6 +123,12 @@ tasks {
             setDependsOn(listOf("genSourcesWithQuiltflower"))
         }
     }
+
+    // make builds reproducible
+    withType<AbstractArchiveTask>().configureEach {
+        isPreserveFileTimestamps = false
+        isReproducibleFileOrder = true
+    }
 }
 
 publishing {
