@@ -25,6 +25,8 @@
 
 package com.kneelawk.graphlib.api.graph.user;
 
+import java.util.function.Supplier;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -122,5 +124,17 @@ public class BlockNodeType implements ObjectType {
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder) {
         return new BlockNodeType(id, decoder, null);
+    }
+
+    /**
+     * Creates a new block node type that just invokes a supplier.
+     *
+     * @param id       the id of the new type.
+     * @param supplier a supplier for the new type.
+     * @return a new block node type.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull Supplier<BlockNode> supplier) {
+        return new BlockNodeType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
     }
 }

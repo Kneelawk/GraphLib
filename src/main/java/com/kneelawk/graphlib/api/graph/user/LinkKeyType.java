@@ -25,6 +25,9 @@
 
 package com.kneelawk.graphlib.api.graph.user;
 
+import java.util.function.Supplier;
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,6 +108,7 @@ public class LinkKeyType implements ObjectType {
      * @param packetDecoder the packet decoder of the type.
      * @return a new link key type.
      */
+    @Contract(value = "_, _, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder,
                                           @Nullable LinkKeyPacketDecoder packetDecoder) {
         return new LinkKeyType(id, decoder, packetDecoder);
@@ -117,7 +121,20 @@ public class LinkKeyType implements ObjectType {
      * @param decoder the decoder of the type.
      * @return a new link key type.
      */
+    @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder) {
         return new LinkKeyType(id, decoder, null);
+    }
+
+    /**
+     * Creates a new link key type that just invokes a supplier.
+     *
+     * @param id       the id of the new type.
+     * @param supplier a supplier for the new type.
+     * @return a new link key type.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull Supplier<LinkKey> supplier) {
+        return new LinkKeyType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
     }
 }

@@ -25,6 +25,9 @@
 
 package com.kneelawk.graphlib.api.graph.user;
 
+import java.util.function.Supplier;
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,6 +108,7 @@ public class NodeEntityType implements ObjectType {
      * @param packetDecoder the packet decoder for the new node entity type.
      * @return a new node entity type.
      */
+    @Contract(value = "_, _, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder,
                                              @Nullable NodeEntityPacketDecoder packetDecoder) {
         return new NodeEntityType(id, decoder, packetDecoder);
@@ -117,7 +121,20 @@ public class NodeEntityType implements ObjectType {
      * @param decoder the decoder for the new node entity type.
      * @return a new node entity type.
      */
+    @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder) {
         return new NodeEntityType(id, decoder, null);
+    }
+
+    /**
+     * Creates a new node entity type that just invokes a supplier.
+     *
+     * @param id       the id of the new type.
+     * @param supplier a supplier for the new type.
+     * @return a new node entity type.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull Supplier<NodeEntity> supplier) {
+        return new NodeEntityType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
     }
 }

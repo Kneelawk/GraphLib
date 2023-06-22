@@ -1,5 +1,7 @@
 package com.kneelawk.graphlib.api.graph.user;
 
+import java.util.function.Supplier;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -159,10 +161,25 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @param <G>      The type of graph entity this type is for.
      * @return a new graph entity type.
      */
+    @Contract(value = "_, _, _, _ -> new", pure = true)
     public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
                                                                             @NotNull GraphEntityFactory factory,
                                                                             @NotNull GraphEntityDecoder decoder,
                                                                             @NotNull GraphEntitySplitter<G> splitter) {
         return new GraphEntityType<>(id, factory, decoder, splitter, null);
+    }
+
+    /**
+     * Creates a new graph entity type that just invokes a supplier.
+     *
+     * @param id       the id of the new type.
+     * @param supplier a supplier for the new type.
+     * @return a new graph entity type.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
+                                                                            @NotNull Supplier<GraphEntity<G>> supplier) {
+        return new GraphEntityType<>(id, supplier::get, tag -> supplier.get(),
+            (original, originalGraph, newGraph) -> supplier.get(), (buf, msgCtx) -> supplier.get());
     }
 }

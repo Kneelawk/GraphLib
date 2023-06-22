@@ -25,6 +25,9 @@
 
 package com.kneelawk.graphlib.api.graph.user;
 
+import java.util.function.Supplier;
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,6 +108,7 @@ public class LinkEntityType implements ObjectType {
      * @param packetDecoder the packet decoder for the new type.
      * @return a new link entity type.
      */
+    @Contract(value = "_, _, _ -> new", pure = true)
     public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder,
                                              @Nullable LinkEntityPacketDecoder packetDecoder) {
         return new LinkEntityType(id, decoder, packetDecoder);
@@ -117,7 +121,20 @@ public class LinkEntityType implements ObjectType {
      * @param decoder the decoder for the new type.
      * @return a new link entity type.
      */
+    @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder) {
         return new LinkEntityType(id, decoder, null);
+    }
+
+    /**
+     * Creates a new link entity type that just invokes a supplier.
+     *
+     * @param id       the id of the new type.
+     * @param supplier a supplier for the new type.
+     * @return a new link entity type.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull Supplier<LinkEntity> supplier) {
+        return new LinkEntityType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
     }
 }
