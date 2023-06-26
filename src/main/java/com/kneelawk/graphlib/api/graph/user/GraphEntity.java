@@ -83,7 +83,10 @@ public interface GraphEntity<G extends GraphEntity<G>> {
     default void onDiscard() {}
 
     /**
-     * Called when a new node is added to the graph.
+     * Called when a new node is created in this graph.
+     * <p>
+     * Note: often adding a new node to this graph will first involve creating a new graph for that node and then
+     * merging that graph into this one.
      *
      * @param node       the new node added to the graph.
      * @param nodeEntity the node's entity, if any.
