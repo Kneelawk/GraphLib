@@ -33,6 +33,9 @@ repositories {
     mavenCentral()
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
     maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
+    maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
+
+    mavenLocal()
 }
 
 dependencies {
@@ -56,11 +59,13 @@ dependencies {
 
     // LibNetworkStack
     val lns_version: String by project
-    modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version") {
-        exclude(group = "net.fabricmc")
-        exclude(group = "net.fabricmd.fabric-api")
-    }
+    modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version")
     include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+
+    // KModLib Overlay
+    val kml_version: String by project
+    modImplementation("com.kneelawk:kmodlib-overlay:$kml_version")
+    include("com.kneelawk:kmodlib-overlay:$kml_version")
 
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.

@@ -32,10 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
 
-import org.jetbrains.annotations.Nullable;
-
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -43,21 +40,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import org.joml.Matrix4f;
-
-import com.mojang.blaze3d.framebuffer.Framebuffer;
-import com.mojang.blaze3d.framebuffer.SimpleFramebuffer;
-import com.mojang.blaze3d.glfw.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -74,6 +63,7 @@ import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
 import com.kneelawk.graphlib.impl.client.debug.graph.DebugBlockGraph;
 import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
+import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 
 public final class DebugRenderer {
     /**
@@ -83,11 +73,6 @@ public final class DebugRenderer {
 
     private DebugRenderer() {
     }
-
-    private static @Nullable Framebuffer framebuffer = null;
-    private static final Object2ObjectMap<RenderLayer, BufferBuilder> layerMap = new Object2ObjectLinkedOpenHashMap<>();
-    private static final VertexConsumerProvider.Immediate immediate =
-        VertexConsumerProvider.immediate(layerMap, new BufferBuilder(256));
 
     private sealed interface NPos {}
 
@@ -101,8 +86,10 @@ public final class DebugRenderer {
     }
 
     static {
-        layerMap.put(Layers.DEBUG_LINES, new BufferBuilder(Layers.DEBUG_LINES.getExpectedBufferSize()));
-        layerMap.put(Layers.DEBUG_QUADS, new BufferBuilder(Layers.DEBUG_QUADS.getExpectedBufferSize()));
+        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_LINES,
+            new BufferBuilder(Layers.DEBUG_LINES.getExpectedBufferSize()));
+        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_QUADS,
+            new BufferBuilder(Layers.DEBUG_QUADS.getExpectedBufferSize()));
     }
 
     public static final class Layers extends RenderPhase {
@@ -143,36 +130,13 @@ public final class DebugRenderer {
     }
 
     public static void init() {
-        WorldRenderEvents.LAST.register(DebugRenderer::render);
+        RenderToOverlay.EVENT.register(DebugRenderer::render);
     }
 
     private static void render(WorldRenderContext context) {
         if (DEBUG_GRAPHS.isEmpty()) {
             return;
         }
-
-        MinecraftClient client = MinecraftClient.getInstance();
-        Window window = client.getWindow();
-        if (framebuffer == null) {
-            framebuffer = new SimpleFramebuffer(window.getFramebufferWidth(), window.getFramebufferHeight(), true,
-                MinecraftClient.IS_SYSTEM_MAC);
-            framebuffer.setClearColor(0f, 0f, 0f, 0f);
-        }
-
-        if (window.getFramebufferWidth() != framebuffer.textureWidth ||
-            window.getFramebufferHeight() != framebuffer.textureHeight) {
-            framebuffer.resize(window.getFramebufferWidth(), window.getFramebufferHeight(),
-                MinecraftClient.IS_SYSTEM_MAC);
-        }
-
-        framebuffer.clear(MinecraftClient.IS_SYSTEM_MAC);
-
-        MatrixStack mv = RenderSystem.getModelViewStack();
-        mv.push();
-        mv.loadIdentity();
-        RenderSystem.applyModelViewMatrix();
-
-        framebuffer.beginWrite(false);
 
         Vec3d camPos = context.camera().getPos();
         MatrixStack stack = context.matrixStack();
@@ -182,20 +146,6 @@ public final class DebugRenderer {
         renderGraphs(stack);
 
         stack.pop();
-
-        immediate.draw();
-
-        client.getFramebuffer().beginWrite(false);
-
-        mv.pop();
-        RenderSystem.applyModelViewMatrix();
-
-        // Framebuffer.draw() messes with the projection matrix, so we're keeping a backup.
-        Matrix4f projBackup = RenderSystem.getProjectionMatrix();
-        RenderSystem.enableBlend();
-        framebuffer.draw(window.getFramebufferWidth(), window.getFramebufferHeight(), false);
-        RenderSystem.disableBlend();
-        RenderSystem.setProjectionMatrix(projBackup, RenderSystem.getVertexSorting());
     }
 
     private static void renderGraphs(MatrixStack stack) {
@@ -252,14 +202,14 @@ public final class DebugRenderer {
                     stack.push();
                     stack.translate(origin.getX(), origin.getY(), origin.getZ());
 
-                    renderer.render(cbn, node, immediate, stack, graph, endpoint, graphColor);
+                    renderer.render(cbn, node, RenderToOverlay.CONSUMERS, stack, graph, endpoint, graphColor);
 
                     stack.pop();
 
                     links.addAll(node.connections());
                 }
 
-                VertexConsumer consumer = immediate.getBuffer(Layers.DEBUG_LINES);
+                VertexConsumer consumer = RenderToOverlay.CONSUMERS.getBuffer(Layers.DEBUG_LINES);
 
                 for (var link : links) {
                     var nodeA = link.first();
