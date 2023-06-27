@@ -1,14 +1,16 @@
 package com.kneelawk.graphlib.impl.command;
 
+import java.util.Locale;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 
 import net.minecraft.command.CommandBuildContext;
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.registry.Holder;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
@@ -38,6 +40,12 @@ public class GraphLibCommand {
             .requires(source -> source.hasPermissionLevel(2))
             .then(literal("list").executes(context -> listUniverses(context.getSource())))
             .then(argument("universe", IdentifierArgumentType.identifier())
+                .suggests((context, builder) -> {
+                    String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
+                    CommandSource.forEachMatching(GraphLibImpl.UNIVERSE.getKeys(), remaining, RegistryKey::getValue,
+                        id -> builder.suggest(id.getValue().toString()));
+                    return builder.buildFuture();
+                })
                 .then(literal("updateblocks")
                     .then(argument("from", BlockPosArgumentType.blockPos())
                         .then(argument("to", BlockPosArgumentType.blockPos())
