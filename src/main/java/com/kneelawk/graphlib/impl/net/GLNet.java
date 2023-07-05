@@ -77,6 +77,7 @@ import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
+import com.kneelawk.graphlib.impl.util.ClassUtils;
 
 public class GLNet {
     public static void init() {
@@ -116,7 +117,7 @@ public class GLNet {
                 GraphView view = universe.getSidedGraphView(world);
                 if (view == null) {
                     throw new IllegalStateException(
-                        "Player's world was neither client nor server, but was " + world.getClass() +
+                        "Player's world was neither client nor server, but was " + ClassUtils.classOf(world) +
                             ". Unable to decode node entity packet.");
                 }
 
@@ -159,7 +160,7 @@ public class GLNet {
                 GraphView view = universe.getSidedGraphView(world);
                 if (view == null) {
                     throw new IllegalStateException(
-                        "Player's world was neither client nor server, but was " + world.getClass() +
+                        "Player's world was neither client nor server, but was " + ClassUtils.classOf(world) +
                             ". Unable to decode link entity packet.");
                 }
 
@@ -201,7 +202,7 @@ public class GLNet {
                 GraphView view = universe.getSidedGraphView(world);
                 if (view == null) {
                     throw new IllegalStateException(
-                        "Player's world was neither client nor server, but was " + world.getClass() +
+                        "Player's world was neither client nor server, but was " + ClassUtils.classOf(world) +
                             ". Unable to decode graph entity packet.");
                 }
 

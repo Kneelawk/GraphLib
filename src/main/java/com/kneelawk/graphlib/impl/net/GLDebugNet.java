@@ -67,6 +67,7 @@ import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.util.ClassUtils;
 
 public final class GLDebugNet {
     private GLDebugNet() {
@@ -102,7 +103,7 @@ public final class GLDebugNet {
     public static void startDebuggingPlayer(ServerPlayerEntity player, GraphUniverse universe) {
         if (!(player.getWorld() instanceof ServerWorld world)) {
             GLLog.warn("Tried to start debugging a player with a world that was neither client nor server, but was {}",
-                player.getWorld());
+                ClassUtils.classOf(player.getWorld()));
             return;
         }
 
@@ -150,7 +151,7 @@ public final class GLDebugNet {
     public static void stopDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
         if (!(player.getWorld() instanceof ServerWorld world)) {
             GLLog.warn("Tried to stop debugging a player with a world that was neither client nor server, but was {}",
-                player.getWorld());
+                ClassUtils.classOf(player.getWorld()));
             return;
         }
 
