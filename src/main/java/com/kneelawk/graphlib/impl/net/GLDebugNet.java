@@ -100,9 +100,14 @@ public final class GLDebugNet {
     }
 
     public static void startDebuggingPlayer(ServerPlayerEntity player, GraphUniverse universe) {
+        if (!(player.getWorld() instanceof ServerWorld world)) {
+            GLLog.warn("Tried to start debugging a player with a world that was neither client nor server, but was {}",
+                player.getWorld());
+            return;
+        }
+
         sendIdMap(player);
         debuggingPlayers.put(player.getUuid(), universe.getId());
-        ServerWorld world = (ServerWorld) player.getWorld();
 
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(getIdentifierInt(world, universe.getId()));
@@ -143,8 +148,14 @@ public final class GLDebugNet {
     }
 
     public static void stopDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
+        if (!(player.getWorld() instanceof ServerWorld world)) {
+            GLLog.warn("Tried to stop debugging a player with a world that was neither client nor server, but was {}",
+                player.getWorld());
+            return;
+        }
+
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt((ServerWorld) player.getWorld(), universe));
+        buf.writeVarInt(getIdentifierInt(world, universe));
 
         ServerPlayNetworking.send(player, DEBUGGING_STOP_ID, buf);
 

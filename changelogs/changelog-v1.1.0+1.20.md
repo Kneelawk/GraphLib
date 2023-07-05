@@ -4,3 +4,4 @@ Changes:
   nor a `ServerWorld`.
 * Deprecated `GraphUniverse.getGraphView(...)` because it will crash when given a `World` that is neither
   a `ClientWorld` nor a `ServerWorld`.
+* Caught some other `World` to `ServerWorld` casts.
