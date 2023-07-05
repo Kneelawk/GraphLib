@@ -42,6 +42,7 @@ public class CommonProxy {
         return null;
     }
 
+    @Deprecated
     public @NotNull GraphWorldStorage getStorage(@NotNull World world) {
         if (world instanceof ServerWorld serverWorld) {
             return StorageHelper.getStorage(serverWorld);
@@ -52,6 +53,14 @@ public class CommonProxy {
     }
 
     public @Nullable ClientGraphWorldStorage getClientStorage() {
+        return null;
+    }
+
+    public @Nullable GraphWorldStorage getSidedStorage(@NotNull World world) {
+        if (world instanceof ServerWorld serverWorld) {
+            return StorageHelper.getStorage(serverWorld);
+        }
+
         return null;
     }
 }

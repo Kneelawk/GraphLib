@@ -55,6 +55,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
+    @Deprecated
     public @NotNull GraphWorldStorage getStorage(@NotNull World world) {
         if (world instanceof ServerWorld serverWorld) {
             return StorageHelper.getStorage(serverWorld);
@@ -65,6 +66,19 @@ public class ClientProxy extends CommonProxy {
 
         throw new IllegalArgumentException(
             "PHYSICAL CLIENT: World must be a ClientWorld or a ServerWorld, but was: " + world.getClass());
+    }
+
+    @Override
+    public @Nullable GraphWorldStorage getSidedStorage(@NotNull World world) {
+        // Turns out it is more common than you might think for a world to be neither a ServerWorld nor a ClientWorld.
+        if (world instanceof ServerWorld serverWorld) {
+            return StorageHelper.getStorage(serverWorld);
+        }
+        if (world instanceof ClientWorld clientWorld) {
+            return ClientStorageHelper.getStorage(clientWorld);
+        }
+
+        return null;
     }
 
     @Override

@@ -113,7 +113,13 @@ public class GLNet {
 
                 NodePos pos = NodePos.fromPacket(buffer, ctx, universe);
 
-                GraphView view = universe.getGraphView(world);
+                GraphView view = universe.getSidedGraphView(world);
+                if (view == null) {
+                    throw new IllegalStateException(
+                        "Player's world was neither client nor server, but was " + world.getClass() +
+                            ". Unable to decode node entity packet.");
+                }
+
                 NodeEntity entity = view.getNodeEntity(pos);
                 if (entity == null) {
                     GLLog.warn("Failed to find node entity @ {} in world {} and universe {}", pos, world,
@@ -150,7 +156,13 @@ public class GLNet {
 
                 LinkPos pos = LinkPos.fromPacket(buffer, ctx, universe);
 
-                GraphView view = universe.getGraphView(world);
+                GraphView view = universe.getSidedGraphView(world);
+                if (view == null) {
+                    throw new IllegalStateException(
+                        "Player's world was neither client nor server, but was " + world.getClass() +
+                            ". Unable to decode link entity packet.");
+                }
+
                 LinkEntity entity = view.getLinkEntity(pos);
                 if (entity == null) {
                     GLLog.warn("Failed to find link entity @ {} in world {} and universe {}", pos, world,
@@ -186,7 +198,12 @@ public class GLNet {
                         "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
-                GraphView view = universe.getGraphView(world);
+                GraphView view = universe.getSidedGraphView(world);
+                if (view == null) {
+                    throw new IllegalStateException(
+                        "Player's world was neither client nor server, but was " + world.getClass() +
+                            ". Unable to decode graph entity packet.");
+                }
 
                 long graphId = buffer.readVarUnsignedLong();
                 BlockGraph graph = view.getGraph(graphId);
@@ -225,8 +242,8 @@ public class GLNet {
         };
 
     public static <T> @NotNull T readType(@NotNull NetByteBuf buf, ActiveConnection conn,
-                                                    @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
-                                                    @NotNull String typeName, BlockPos blockPos)
+                                          @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
+                                          @NotNull String typeName, BlockPos blockPos)
         throws InvalidInputDataException {
         int typeIdInt = buf.readVarUnsignedInt();
         Identifier typeId = ID_CACHE.getObj(conn, typeIdInt);
@@ -239,7 +256,8 @@ public class GLNet {
         T type = typeGetter.apply(typeId);
         if (type == null) {
             GLLog.warn("Unable to decode unknown {} id: {} @ {}", typeName, typeId, blockPos);
-            throw new InvalidInputDataException("Unable to decode unknown " + typeName + " id: " + typeId + " @ " + blockPos);
+            throw new InvalidInputDataException(
+                "Unable to decode unknown " + typeName + " id: " + typeId + " @ " + blockPos);
         }
 
         return type;

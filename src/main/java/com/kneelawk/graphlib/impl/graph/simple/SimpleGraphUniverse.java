@@ -42,6 +42,7 @@ import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
+import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
@@ -71,8 +72,17 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
+    @Deprecated
     public @NotNull GraphView getGraphView(@NotNull World world) {
         return CommonProxy.INSTANCE.getStorage(world).get(id);
+    }
+
+    @Override
+    public @Nullable GraphView getSidedGraphView(@NotNull World world) {
+        GraphWorldStorage storage = CommonProxy.INSTANCE.getSidedStorage(world);
+        if (storage == null) return null;
+
+        return storage.get(id);
     }
 
     @Override
