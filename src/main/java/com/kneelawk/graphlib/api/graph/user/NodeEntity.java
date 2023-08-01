@@ -62,6 +62,20 @@ public interface NodeEntity {
     default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
+     * Called after this node entity has been initialized if it was just newly added instead of just being loaded.
+     * <p>
+     * Client-side, this means that the new entity addition was observed by the client.
+     */
+    default void onAdded() {}
+
+    /**
+     * Called after this node entity has been initialized if it was just loaded instead of being newly added.
+     * <p>
+     * Client-side, this means that the entity was simply received as part of a bulk chunk read.
+     */
+    default void onLoaded() {}
+
+    /**
      * Called when this node entity's graph is about to be unloaded.
      */
     default void onUnload() {}

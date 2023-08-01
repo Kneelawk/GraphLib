@@ -103,7 +103,7 @@ public class SimpleBlockGraph implements BlockGraph {
                     }
                 }
 
-                nodes.add(graph.createNode(node.getPos(), node.getNode(), entity));
+                nodes.add(graph.createNode(node.getPos(), node.getNode(), entity, false));
             } else {
                 // keep the gap so other nodes' links don't get messed up
                 nodes.add(null);
@@ -141,7 +141,7 @@ public class SimpleBlockGraph implements BlockGraph {
                     }
                 }
 
-                graph.link(first, second, key, entity);
+                graph.link(first, second, key, entity, false);
             }
         }
 
@@ -612,7 +612,7 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
-                                                    @Nullable NodeEntity entity) {
+                                                    @Nullable NodeEntity entity, boolean newlyAdded) {
         BlockPos pos = blockPos.toImmutable();
         NodePos nodePos = new NodePos(pos, node);
 
@@ -659,6 +659,12 @@ public class SimpleBlockGraph implements BlockGraph {
 
         if (initialize) {
             nodeEntity.onInit(new SimpleNodeEntityContext(graphNode, world.getWorld(), world));
+
+            if (newlyAdded) {
+                nodeEntity.onAdded();
+            } else {
+                nodeEntity.onLoaded();
+            }
         }
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
@@ -767,7 +773,7 @@ public class SimpleBlockGraph implements BlockGraph {
     }
 
     @NotNull LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
-                                      @Nullable LinkEntity entity) {
+                                      @Nullable LinkEntity entity, boolean newlyAdded) {
         LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.getWorld(), world,
             graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key));
         LinkPos linkPos = link.getPos();
@@ -805,6 +811,12 @@ public class SimpleBlockGraph implements BlockGraph {
 
         if (initialize) {
             linkEntity.onInit(new SimpleLinkEntityContext(link, world.getWorld(), world));
+
+            if (newlyAdded) {
+                linkEntity.onAdded();
+            } else {
+                linkEntity.onLoaded();
+            }
         }
 
         for (GraphEntity<?> graphEntity : graphEntities.values()) {

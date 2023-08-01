@@ -138,7 +138,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 // decode node entity
                 NodeEntity entity = readNodeEntity(ctx, buf, blockPos);
 
-                NodeHolder<BlockNode> holder = graph.createNode(blockPos, nodePos.node(), entity);
+                NodeHolder<BlockNode> holder = graph.createNode(blockPos, nodePos.node(), entity, false);
                 nodeList.add(holder);
             }
 
@@ -186,7 +186,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 // decode link entity
                 LinkEntity entity = readLinkEntity(buf, ctx, new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
 
-                graph.link(nodeA, nodeB, linkKey, entity);
+                graph.link(nodeA, nodeB, linkKey, entity, false);
             }
 
             buf.readMarker("el");
@@ -205,7 +205,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                 if (holderA != null && holderB != null) {
                     // ignore links with missing nodes,
                     // they'll just happen sometimes because the server will send links to nodes we don't know about
-                    graph.link(holderA, holderB, link.key(), entity);
+                    graph.link(holderA, holderB, link.key(), entity, false);
                 } else {
                     if (entity != null) {
                         // We don't actually need this link, so we're discarding its entity.
@@ -282,7 +282,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         // decode node entity
         NodeEntity entity = readNodeEntity(ctx, buf, blockPos);
 
-        graph.createNode(blockPos, node, entity);
+        graph.createNode(blockPos, node, entity, true);
     }
 
     @Override
@@ -328,7 +328,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         LinkEntity entity = readLinkEntity(buf, ctx, linkPos);
 
-        graph.link(nodeA, nodeB, linkPos.key(), entity);
+        graph.link(nodeA, nodeB, linkPos.key(), entity, true);
     }
 
     @Override

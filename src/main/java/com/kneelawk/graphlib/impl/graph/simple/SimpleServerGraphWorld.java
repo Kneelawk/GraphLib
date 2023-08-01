@@ -623,7 +623,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     @Override
     public @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @Nullable NodeEntity entity) {
         SimpleBlockGraph graph = createGraph(true);
-        NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entity);
+        NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entity, true);
         updateConnectionsImpl(node);
         return node;
     }
@@ -699,7 +699,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                     return null;
                 }
 
-                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entity);
+                LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entity, true);
 
                 // send updated event
                 GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
@@ -1164,7 +1164,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             }
 
             SimpleBlockGraph newGraph = createGraph(true);
-            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, null);
+            NodeHolder<BlockNode> node = newGraph.createNode(pos, bn, null, true);
             updateConnectionsImpl(node);
         }
     }
@@ -1244,7 +1244,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 }
             }
 
-            mergedGraph.link(node, link.other(), link.key(), null);
+            mergedGraph.link(node, link.other(), link.key(), null, true);
         }
 
         for (var link : removedConnections) {
