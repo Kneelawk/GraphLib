@@ -186,7 +186,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
     private CompletableFuture<Void> loadChunkPillar(@NotNull ChunkPos chunkPos) {
         if (!loadedChunks.containsKey(chunkPos.toLong())) {
             // try and load the pillar
-            return worker.readChunkData(chunkPos).thenAccept(root -> {
+            return worker.readChunkData(chunkPos).thenAcceptAsync(root -> {
                 try {
                     if (root.isPresent()) {
                         timer.onChunkUse(chunkPos);
@@ -199,7 +199,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
                 } catch (Exception e) {
                     GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
                 }
-            });
+            }, world.getServer());
         }
         return CompletableFuture.completedFuture(null);
     }
