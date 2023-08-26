@@ -188,13 +188,16 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
             // try and load the pillar
             return worker.readChunkData(chunkPos).thenAcceptAsync(root -> {
                 try {
-                    if (root.isPresent()) {
-                        timer.onChunkUse(chunkPos);
-                        Int2ObjectMap<R> pillar = new Int2ObjectOpenHashMap<>();
-                        loadChunkPillar(chunkPos, pillar, root.get());
-                    } else {
-                        timer.onChunkUse(chunkPos);
-                        loadedChunks.put(chunkPos.toLong(), new Int2ObjectOpenHashMap<>());
+                    // double check that the chunk hasn't already been loaded
+                    if (!loadedChunks.containsKey(chunkPos.toLong())) {
+                        if (root.isPresent()) {
+                            timer.onChunkUse(chunkPos);
+                            Int2ObjectMap<R> pillar = new Int2ObjectOpenHashMap<>();
+                            loadChunkPillar(chunkPos, pillar, root.get());
+                        } else {
+                            timer.onChunkUse(chunkPos);
+                            loadedChunks.put(chunkPos.toLong(), new Int2ObjectOpenHashMap<>());
+                        }
                     }
                 } catch (Exception e) {
                     GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
