@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.api.world;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -182,23 +183,28 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
         }
     }
 
-    private void loadChunkPillar(@NotNull ChunkPos chunkPos) {
+    private CompletableFuture<Void> loadChunkPillar(@NotNull ChunkPos chunkPos) {
         if (!loadedChunks.containsKey(chunkPos.toLong())) {
             // try and load the pillar
-            try {
-                Optional<NbtCompound> root = worker.readChunkData(chunkPos).join();
-                if (root.isPresent()) {
-                    timer.onChunkUse(chunkPos);
-                    Int2ObjectMap<R> pillar = new Int2ObjectOpenHashMap<>();
-                    loadChunkPillar(chunkPos, pillar, root.get());
-                } else {
-                    timer.onChunkUse(chunkPos);
-                    loadedChunks.put(chunkPos.toLong(), new Int2ObjectOpenHashMap<>());
+            return worker.readChunkData(chunkPos).thenAcceptAsync(root -> {
+                try {
+                    // double check that the chunk hasn't already been loaded
+                    if (!loadedChunks.containsKey(chunkPos.toLong())) {
+                        if (root.isPresent()) {
+                            timer.onChunkUse(chunkPos);
+                            Int2ObjectMap<R> pillar = new Int2ObjectOpenHashMap<>();
+                            loadChunkPillar(chunkPos, pillar, root.get());
+                        } else {
+                            timer.onChunkUse(chunkPos);
+                            loadedChunks.put(chunkPos.toLong(), new Int2ObjectOpenHashMap<>());
+                        }
+                    }
+                } catch (Exception e) {
+                    GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
                 }
-            } catch (Exception e) {
-                GLLog.error("Error loading chunk pillar {}.", chunkPos, e);
-            }
+            }, world.getServer());
         }
+        return CompletableFuture.completedFuture(null);
     }
 
     private void loadChunkPillar(@NotNull ChunkPos chunkPos, @NotNull Int2ObjectMap<R> pillar,
