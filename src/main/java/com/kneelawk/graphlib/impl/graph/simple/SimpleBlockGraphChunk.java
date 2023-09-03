@@ -155,6 +155,16 @@ public class SimpleBlockGraphChunk implements StorageChunk {
         nbt.put("inPos", inPosList);
     }
 
+    public void clear() {
+        graphsInPos.clear();
+        graphsInChunk.clear();
+        if (blockNodes == null) {
+            blockNodes = new Short2ObjectLinkedOpenHashMap<>();
+        } else {
+            blockNodes.clear();
+        }
+    }
+
     public void putGraphWithNode(long id, @NotNull NodePos key, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
         markDirty.run();
 

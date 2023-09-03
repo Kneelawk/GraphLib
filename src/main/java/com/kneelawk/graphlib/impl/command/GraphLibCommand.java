@@ -1,5 +1,6 @@
 package com.kneelawk.graphlib.impl.command;
 
+import java.util.List;
 import java.util.Locale;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -22,10 +23,12 @@ import net.minecraft.text.Texts;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
+import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
 import com.kneelawk.graphlib.impl.net.GLDebugNet;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -59,6 +62,16 @@ public class GraphLibCommand {
                 .then(literal("removeemptygraphs")
                     .executes(context -> removeEmptyGraphsCommand(context.getSource(),
                         IdentifierArgumentType.getIdentifier(context, "universe")))
+                )
+                .then(literal("rebuildchunks")
+                    .then(argument("from", BlockPosArgumentType.blockPos())
+                        .then(argument("to", BlockPosArgumentType.blockPos())
+                            .executes(context -> rebuildChunks(context.getSource(),
+                                IdentifierArgumentType.getIdentifier(context, "universe"),
+                                BlockPosArgumentType.getBlockPos(context, "from"),
+                                BlockPosArgumentType.getBlockPos(context, "to")))
+                        )
+                    )
                 )
                 .then(literal("debugrender")
                     .then(literal("start")
@@ -118,6 +131,56 @@ public class GraphLibCommand {
         source.sendFeedback(() -> Constants.command("graphlib.removeemptygraphs.success", result), true);
 
         return result;
+    }
+
+    private static int rebuildChunks(ServerCommandSource source, Identifier universeId, BlockPos from, BlockPos to)
+        throws CommandSyntaxException {
+        ServerWorld world = source.getWorld();
+
+        GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
+        if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
+
+        ChunkSectionPos fromSection = ChunkSectionPos.from(from);
+        ChunkSectionPos toSection = ChunkSectionPos.from(to);
+
+        List<ChunkSectionPos> toRebuild =
+            ChunkSectionPos.stream(fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(),
+                toSection.getY(), toSection.getZ()).toList();
+
+        universe.getServerGraphWorld(world).rebuildChunks(toRebuild, new RebuildChunksListener() {
+            @Override
+            public void onAlreadyRunning(double progress, int graphCount, int chunkCount) {
+                source.sendFeedback(
+                    () -> Constants.command("graphlib.rebuildchunks.alreadyrunning", progress, universeId, graphCount,
+                        fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(),
+                        toSection.getZ(), chunkCount), false);
+            }
+
+            @Override
+            public void onBegin(int graphCount, int chunkCount) {
+                source.sendFeedback(
+                    () -> Constants.command("graphlib.rebuildchunks.begin", universeId, graphCount, fromSection.getX(),
+                        fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(), toSection.getZ(),
+                        chunkCount), true);
+            }
+
+            @Override
+            public void onProgress(double progress, int graphCount, int chunkCount) {
+                source.sendFeedback(
+                    () -> Constants.command("graphlib.rebuildchunks.progress", progress, universeId, graphCount,
+                        fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(),
+                        toSection.getZ(), chunkCount), true);
+            }
+
+            @Override
+            public void onComplete(int graphCount, int chunkCount) {
+                source.sendFeedback(() -> Constants.command("graphlib.rebuildchunks.complete", universeId, graphCount,
+                    fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(),
+                    toSection.getZ(), chunkCount), true);
+            }
+        });
+
+        return toRebuild.size();
     }
 
     private static int startDebugRender(ServerCommandSource source, Identifier universeId)

@@ -1,5 +1,9 @@
 {
   "command.graphlib.graphlib.updateblocks.starting": "Updating GraphLib block-nodes from %s to %s... This could cause some lag.",
   "command.graphlib.graphlib.updateblocks.success": "Finished updating GraphLib block-nodes from %s to %s.",
-  "command.graphlib.graphlib.removeemptygraphs.success": "Removed %d empty graphs."
+  "command.graphlib.graphlib.removeemptygraphs.success": "Removed %d empty graphs.",
+  "command.graphlib.graphlib.rebuildchunks.begin": "Rebuilding %s chunks with %d graphs over section (%d, %d, %d) to section (%d, %d, %d) (%d chunks).",
+  "command.graphlib.graphlib.rebuildchunks.progress": "%s%% complete. Rebuilding %s chunks with %d graphs over section (%d, %d, %d) to section (%d, %d, %d) (%d chunks).",
+  "command.graphlib.graphlib.rebuildchunks.complete": "Finished rebuilding %s chunks with %d graphs over section (%d, %d, %d) to section (%d, %d, %d) (%d chunks).",
+  "command.graphlib.graphlib.rebuildchunks.alreadyrunning": "Chunk rebuild already running. %s%% complete. Rebuilding %s chunks with %d graphs over section (%d, %d, %d) to section (%d, %d, %d) (%d chunks)."
 }
