@@ -980,19 +980,26 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             }
 
             LongSortedSet existingGraphs = getExistingGraphs();
+            if (existingGraphs.isEmpty()) {
+                listener.onComplete(0, chunksToRebuild.size());
+                return;
+            }
+
+            long finalGraph = existingGraphs.lastLong();
 
             listener.onBegin(existingGraphs.size(), chunksToRebuild.size());
 
             long lastGraph = rebuildSomeGraphs(existingGraphs, chunksToRebuild);
 
-            if (lastGraph == existingGraphs.firstLong()) {
+            if (lastGraph == finalGraph) {
                 listener.onComplete(existingGraphs.size(), chunksToRebuild.size());
             } else {
-                rebuildState = new ChunkRebuildState(chunksToRebuild, listener, existingGraphs.lastLong(), lastGraph,
-                    existingGraphs.size());
+                rebuildState =
+                    new ChunkRebuildState(chunksToRebuild, listener, finalGraph, lastGraph + 1,
+                        existingGraphs.size());
             }
         } else {
-            double progress = 1.0 - (((double) rebuildState.lastGraph) / ((double) rebuildState.firstGraph));
+            double progress = (((double) rebuildState.nextGraph) / ((double) rebuildState.finalGraph));
 
             rebuildState.listener.onAlreadyRunning(progress, rebuildState.approximateGraphCount,
                 rebuildState.toRebuild.size());
@@ -1316,19 +1323,25 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         if (rebuildState != null) {
             LongSortedSet existingGraphs = getExistingGraphs();
             rebuildState.approximateGraphCount = existingGraphs.size();
+            rebuildState.finalGraph = existingGraphs.lastLong();
 
-            LongSortedSet nextGraphs = existingGraphs.headSet(rebuildState.lastGraph);
+            LongSortedSet nextGraphs = existingGraphs.tailSet(rebuildState.nextGraph);
+            if (nextGraphs.isEmpty()) {
+                rebuildState.listener.onComplete(existingGraphs.size(), rebuildState.toRebuild.size());
+                rebuildState = null;
+                return;
+            }
 
             long lastGraph = rebuildSomeGraphs(nextGraphs, rebuildState.toRebuild);
 
-            if (lastGraph == nextGraphs.firstLong()) {
+            if (lastGraph == nextGraphs.lastLong()) {
                 rebuildState.listener.onComplete(existingGraphs.size(), rebuildState.toRebuild.size());
                 rebuildState = null;
             } else {
-                rebuildState.lastGraph = lastGraph;
+                rebuildState.nextGraph = lastGraph + 1L;
 
                 if (++rebuildState.ticksSinceLastProgressReport >= 20) {
-                    double progress = 1.0 - (((double) lastGraph) / ((double) rebuildState.firstGraph));
+                    double progress = (((double) lastGraph) / ((double) rebuildState.finalGraph));
 
                     rebuildState.listener.onProgress(progress, rebuildState.approximateGraphCount,
                         rebuildState.toRebuild.size());
@@ -1342,8 +1355,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         int rebuiltCount = 0;
         long rebuild = graphIds.firstLong();
 
-        while (rebuiltCount < MAX_GRAPHS_REBUILT_PER_TICK && iter.hasPrevious()) {
-            rebuild = iter.previousLong();
+        while (rebuiltCount < MAX_GRAPHS_REBUILT_PER_TICK && iter.hasNext()) {
+            rebuild = iter.nextLong();
 
             reAddGraphToChunks(rebuild, chunks);
 
@@ -1363,7 +1376,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     private void reAddGraphToChunks(long graphId, LongSet chunkPoses) {
         SimpleBlockGraph graph = loadedGraphs.get(graphId);
-        
+
         if (graph == null) {
             graph = readGraph(graphId);
         }
@@ -1647,8 +1660,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     private void logRebuildChunksSuggestion(BlockPos affected) {
-        GLLog.info("Use the command '/graphlib {} rebuildchunks {} {} {} {} {} {}' in the {} dimension to fix the issue.", universe.getId(), affected.getX(),
-            affected.getY(), affected.getZ(), affected.getX(), affected.getY(), affected.getZ(), world.getRegistryKey().getValue());
+        GLLog.info(
+            "Use the command '/graphlib {} rebuildchunks {} {} {} {} {} {}' in the {} dimension to fix the issue.",
+            universe.getId(), affected.getX(),
+            affected.getY(), affected.getZ(), affected.getX(), affected.getY(), affected.getZ(),
+            world.getRegistryKey().getValue());
     }
 
     private sealed interface UpdatePos {}
@@ -1662,17 +1678,17 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     private static class ChunkRebuildState {
         final LongSet toRebuild;
         final RebuildChunksListener listener;
-        final long firstGraph;
-        long lastGraph;
+        long finalGraph;
+        long nextGraph;
         int approximateGraphCount;
         int ticksSinceLastProgressReport = 0;
 
-        ChunkRebuildState(LongSet toRebuild, RebuildChunksListener listener, long firstGraph,
-                          long lastGraph, int approximateGraphCount) {
+        ChunkRebuildState(LongSet toRebuild, RebuildChunksListener listener, long finalGraph,
+                          long nextGraph, int approximateGraphCount) {
             this.toRebuild = toRebuild;
             this.listener = listener;
-            this.firstGraph = firstGraph;
-            this.lastGraph = lastGraph;
+            this.finalGraph = finalGraph;
+            this.nextGraph = nextGraph;
             this.approximateGraphCount = approximateGraphCount;
         }
     }
