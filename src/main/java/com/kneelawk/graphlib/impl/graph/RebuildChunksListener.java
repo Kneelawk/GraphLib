@@ -25,7 +25,12 @@
 
 package com.kneelawk.graphlib.impl.graph;
 
-public interface RebuildChunksCallbacks {
-    // Note to self:
-    // Rebuilding chunks should apply graphs in reverse-id order.
+public interface RebuildChunksListener {
+    void onAlreadyRunning(double progress, int graphCount, int chunkCount);
+
+    void onBegin(int graphCount, int chunkCount);
+
+    void onProgress(double progress, int graphCount, int chunkCount);
+
+    void onComplete(int graphCount, int chunkCount);
 }

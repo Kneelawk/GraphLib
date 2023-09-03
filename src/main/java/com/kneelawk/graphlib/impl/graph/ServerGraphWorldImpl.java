@@ -1,9 +1,12 @@
 package com.kneelawk.graphlib.impl.graph;
 
+import java.util.List;
+
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.ChunkSectionPos;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
@@ -36,6 +39,14 @@ public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
      * @return the number of empty graphs removed.
      */
     int removeEmptyGraphs();
+
+    /**
+     * Starts a chunk rebuilding task.
+     *
+     * @param toRebuild the chunks to rebuild.
+     * @param listener  progress and completion listeners.
+     */
+    void rebuildChunks(List<ChunkSectionPos> toRebuild, RebuildChunksListener listener);
 
     @Override
     @NotNull ServerWorld getWorld();
