@@ -45,6 +45,15 @@ machines.
 Sometimes a server crash can cause a block-graph to get saved without any block-nodes in it. These empty graphs can
 clutter up your save file. This command removes these empty graphs.
 
+### `/graphlib <universe> rebuildchunks <from> <to>`
+
+Sometimes a server crash can cause only graphs or only chunk-indexes to be saved but not the other, meaning that the
+index used to look up which graphs are in which positions could be out of date. This command rebuilds that index for the
+given chunks.
+
+**Note: the command arguments `<from>` and `<to>` are block-positions, not chunk positions. Running this command for one
+block in a 16x16x16 chunk section should fix the entire chunk section.**
+
 ## Depending on GraphLib
 
 GraphLib can be added to a gradle project's dependencies like such:
