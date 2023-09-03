@@ -1197,6 +1197,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNode> nodes) {
         Set<BlockNode> newNodes = new LinkedHashSet<>(nodes);
+        Set<BlockNode> existingNodes = new LinkedHashSet<>();
 
         for (long graphId : getAllGraphIdsAt(pos).toArray()) {
             SimpleBlockGraph graph = getGraph(graphId);
@@ -1211,8 +1212,12 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 BlockNode bn = node.getNode();
                 if (bn.isAutomaticRemoval(node) && !nodes.contains(bn)) {
                     graph.destroyNode(node, true);
+                } else if (existingNodes.contains(bn)) {
+                    GLLog.warn("Duplicate nodes {} found at {}. Removing...", bn, pos);
+                    graph.destroyNode(node, true);
                 }
                 newNodes.remove(bn);
+                existingNodes.add(bn);
             }
         }
 
