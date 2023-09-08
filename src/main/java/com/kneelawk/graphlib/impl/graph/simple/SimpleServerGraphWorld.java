@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.PrimitiveIterator;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -1197,9 +1198,16 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     private void onNodesChanged(@NotNull BlockPos pos, @NotNull Set<BlockNode> nodes) {
         Set<BlockNode> newNodes = new LinkedHashSet<>(nodes);
-        Set<BlockNode> existingNodes = new LinkedHashSet<>();
 
-        for (long graphId : getAllGraphIdsAt(pos).toArray()) {
+        // Used for detecting duplicate nodes as part of different graphs
+        Set<BlockNode> distinctNodes = new LinkedHashSet<>();
+
+        // Collect all existing nodes before we remove them.
+        // Make sure to get the graph associated with each node *when* it is being removed,
+        // otherwise it may be in a new graph, having split off its original graph when a different node was removed.
+        List<NodeHolder<BlockNode>> nodesPresent = new ArrayList<>();
+        for (PrimitiveIterator.OfLong graphIdIter = getAllGraphIdsAt(pos).iterator(); graphIdIter.hasNext(); ) {
+            long graphId = graphIdIter.nextLong();
             SimpleBlockGraph graph = getGraph(graphId);
             if (graph == null) {
                 GLLog.warn("Encountered invalid graph in position when detecting node changes. Id: {}, pos: {}",
@@ -1208,19 +1216,30 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 continue;
             }
 
-            for (var node : graph.getNodesAt(pos).toList()) {
-                BlockNode bn = node.getNode();
-                if (bn.isAutomaticRemoval(node) && !nodes.contains(bn)) {
-                    graph.destroyNode(node, true);
-                } else if (existingNodes.contains(bn)) {
-                    GLLog.warn("Duplicate nodes {} found at {}. Removing...", bn, pos);
-                    graph.destroyNode(node, true);
-                }
-                newNodes.remove(bn);
-                existingNodes.add(bn);
-            }
+            graph.getNodesAt(pos).forEach(nodesPresent::add);
         }
 
+        // Iterate over each existing node and remove it if necessary
+        for (NodeHolder<BlockNode> node : nodesPresent) {
+            SimpleBlockGraph graph = getGraph(node.getGraphId());
+            if (graph == null) {
+                GLLog.warn("Encountered node {} associated with graph id {} that does not exist!", node.getPos(),
+                    node.getGraphId());
+                continue;
+            }
+
+            BlockNode bn = node.getNode();
+            if (bn.isAutomaticRemoval(node) && !nodes.contains(bn)) {
+                graph.destroyNode(node, true);
+            } else if (distinctNodes.contains(bn)) {
+                GLLog.warn("Duplicate nodes {} found at {}. Removing...", bn, pos);
+                graph.destroyNode(node, true);
+            }
+            newNodes.remove(bn);
+            distinctNodes.add(bn);
+        }
+
+        // Add the new nodes and update their connections
         for (BlockNode bn : newNodes) {
             if (bn == null) {
                 GLLog.warn("Something tried to add a null BlockNode! Ignoring... Pos: {}", pos,
