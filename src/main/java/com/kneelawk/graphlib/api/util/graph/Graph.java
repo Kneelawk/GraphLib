@@ -165,6 +165,16 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
     }
 
     /**
+     * Links the two nodes in a link object.
+     *
+     * @param newLink the link object describing the link to be created.
+     * @return <code>true</code> the two nodes were not previously linked already, <code>false</code> otherwise.
+     */
+    public boolean link(@NotNull Link<T, L> newLink) {
+        return newLink.first().onLink(newLink) & newLink.second().onLink(newLink);
+    }
+
+    /**
      * Unlinks two nodes.
      * <p>
      * Note: this tries unlinking in both directions, so node order is not an issue.
@@ -177,6 +187,18 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
     public boolean unlink(@NotNull Node<T, L> a, @NotNull Node<T, L> b, @NotNull L linkKey) {
         Link<T, L> link1 = new Link<>(a, b, linkKey);
         return a.onUnlink(link1) & b.onUnlink(link1);
+    }
+
+    /**
+     * Unlinks the two nodes in a link object.
+     * <p>
+     * Note: this tries unlinking in both directions, so node order is not an issue.
+     *
+     * @param link the link object describing the link to be removed.
+     * @return <code>true</code> if a link was removed from both nodes, <code>false</code> otherwise.
+     */
+    public boolean unlink(@NotNull Link<T, L> link) {
+        return link.first().onUnlink(link) & link.second().onUnlink(link);
     }
 
     /**

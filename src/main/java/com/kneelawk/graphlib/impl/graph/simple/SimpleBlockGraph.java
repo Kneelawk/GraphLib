@@ -616,6 +616,13 @@ public class SimpleBlockGraph implements BlockGraph {
         BlockPos pos = blockPos.toImmutable();
         NodePos nodePos = new NodePos(pos, node);
 
+        // Handle duplicate createNode calls (sometimes happens, especially on client when receiving chunks)
+        if (nodesToHolders.containsKey(nodePos)) {
+            if (entity != null) entity.onDiscard();
+            return (SimpleNodeHolder<BlockNode>) nodesToHolders.get(nodePos);
+        }
+
+        // Actually create the node entity
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(world.getWorld(), world,
             graph.add(new SimpleNodeWrapper(pos, node, id)));
 
@@ -774,8 +781,16 @@ public class SimpleBlockGraph implements BlockGraph {
 
     @NotNull LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
                                       @Nullable LinkEntity entity, boolean newlyAdded) {
-        LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.getWorld(), world,
-            graph.link(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key));
+        Link<SimpleNodeWrapper, LinkKey> rawLink = new Link<>(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
+        LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.getWorld(), world, rawLink);
+        boolean unique = graph.link(rawLink);
+
+        // Handle duplicate link calls (can happen sometimes, especially on client)
+        if (!unique) {
+            if (entity != null) entity.onDiscard();
+            return link;
+        }
+
         LinkPos linkPos = link.getPos();
 
         // Get the proper node entity and determine whether it needs to be initialized
