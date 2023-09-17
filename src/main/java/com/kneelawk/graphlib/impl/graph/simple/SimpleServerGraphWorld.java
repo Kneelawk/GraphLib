@@ -634,6 +634,20 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @Nullable NodeEntity entity) {
+        // Check for duplicates
+        SimpleBlockGraph existingGraph = getGraphForNode(pos);
+        if (existingGraph != null) {
+            NodeHolder<BlockNode> existingHolder = existingGraph.getNodeAt(pos);
+            if (existingHolder != null) {
+                if (entity != null) entity.onDiscard();
+                return existingHolder;
+            } else {
+                GLLog.warn("Chunk has reference to node {} but the referenced graph does not have that node!", pos);
+                logRebuildChunksSuggestion(pos.pos());
+            }
+        }
+
+        // Create the new node in a new graph and then connect it up because we don't know what graph to add it to yet
         SimpleBlockGraph graph = createGraph(true);
         NodeHolder<BlockNode> node = graph.createNode(pos.pos(), pos.node(), entity, true);
         updateConnectionsImpl(node);
