@@ -74,12 +74,6 @@ public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
         }
     }
 
-    @Inject(method = "sendChunkDataPackets", at = @At("RETURN"))
-    private void onSendChunkDataPackets(ServerPlayerEntity player, MutableObject<ChunkDataS2CPacket> mutableObject,
-                                        WorldChunk chunk, CallbackInfo ci) {
-        storage.sendChunkDataPackets(player, chunk.getPos());
-    }
-
     @Override
     public @NotNull ServerGraphWorldStorage graphlib_getGraphWorldStorage() {
         return storage;

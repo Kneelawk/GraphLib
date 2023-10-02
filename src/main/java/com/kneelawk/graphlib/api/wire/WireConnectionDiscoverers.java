@@ -151,7 +151,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.method_50026(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.fromXYZ(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (other instanceof SidedWireBlockNode otherSidedNode) {
             Direction otherSide = otherSidedNode.getSide();
@@ -175,7 +175,7 @@ public final class WireConnectionDiscoverers {
             BlockPos under = pos.offset(side);
             BlockPos underPosDiff = otherPos.subtract(under);
             Direction underPosDiffDir =
-                Direction.method_50026(underPosDiff.getX(), underPosDiff.getY(), underPosDiff.getZ());
+                Direction.fromXYZ(underPosDiff.getX(), underPosDiff.getY(), underPosDiff.getZ());
 
             if (underPosDiffDir != null) {
                 return !underPosDiffDir.getAxis().equals(side.getAxis()) &&
@@ -289,7 +289,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.method_50026(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.fromXYZ(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (posDiffDir == null) {
             return false;
@@ -404,7 +404,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.method_50026(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.fromXYZ(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (other instanceof CenterWireBlockNode || other instanceof FullWireBlockNode) {
             return posDiffDir != null && (filter == null || filter.canConnect(self, holder, posDiffDir, link)) &&

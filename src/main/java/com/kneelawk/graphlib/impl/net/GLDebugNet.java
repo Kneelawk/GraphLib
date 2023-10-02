@@ -126,8 +126,7 @@ public final class GLDebugNet {
         LongSet graphIds = new LongLinkedOpenHashSet();
         for (int z = minZ; z <= maxZ; z++) {
             for (int x = minX; x <= maxX; x++) {
-                if (ThreadedChunkManager.isWithinDistance(x, z, playerPos.getSectionX(), playerPos.getSectionZ(),
-                    viewDistance)) {
+                if (player.method_52372().method_52356(x, z)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
                     graphWorld.getAllGraphIdsInChunk(pos).forEach(graphIds::add);
