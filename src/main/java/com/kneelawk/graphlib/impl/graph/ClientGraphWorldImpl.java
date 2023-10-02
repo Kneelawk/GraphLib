@@ -25,6 +25,8 @@
 
 package com.kneelawk.graphlib.impl.graph;
 
+import net.minecraft.util.math.ChunkPos;
+
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
@@ -32,7 +34,7 @@ import alexiil.mc.lib.net.NetByteBuf;
 import com.kneelawk.graphlib.api.graph.GraphView;
 
 public interface ClientGraphWorldImpl extends GraphView {
-    void unload(int chunkX, int chunkZ);
+    void unload(ChunkPos pos);
 
     void setChunkMapCenter(int x, int z);
 

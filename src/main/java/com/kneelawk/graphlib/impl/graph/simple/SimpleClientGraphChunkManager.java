@@ -57,11 +57,11 @@ public class SimpleClientGraphChunkManager {
         }
     }
 
-    public void unload(int chunkX, int chunkZ) {
-        if (pillars.isInRadius(chunkX, chunkZ)) {
-            int i = pillars.getIndex(chunkX, chunkZ);
+    public void unload(ChunkPos pos) {
+        if (pillars.isInRadius(pos.x, pos.z)) {
+            int i = pillars.getIndex(pos.x, pos.z);
             SimpleBlockGraphPillar pillar = pillars.getPillar(i);
-            if (positionEquals(pillar, chunkX, chunkZ)) {
+            if (positionEquals(pillar, pos.x, pos.z)) {
                 unloadListener.onPillarUnload(pillar);
                 pillars.compareAndSet(i, pillar, null);
             }

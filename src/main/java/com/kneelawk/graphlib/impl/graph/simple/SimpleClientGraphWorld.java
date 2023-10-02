@@ -90,8 +90,8 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void unload(int chunkX, int chunkZ) {
-        manager.unload(chunkX, chunkZ);
+    public void unload(ChunkPos pos) {
+        manager.unload(pos);
     }
 
     @Override

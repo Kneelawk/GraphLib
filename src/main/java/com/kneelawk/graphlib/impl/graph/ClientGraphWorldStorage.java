@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.impl.GLLog;
@@ -64,13 +65,13 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
         return worlds.get(universeId);
     }
 
-    public void unload(int chunkX, int chunkZ) {
+    public void unload(ChunkPos pos) {
         for (ClientGraphWorldImpl impl : worlds.values()) {
             try {
-                impl.unload(chunkX, chunkZ);
+                impl.unload(pos);
             } catch (Exception e) {
-                GLLog.error("Error unloading chunk in client GraphWorld. World: '{}'/{}, Chunk: ({}, {})", clientWorld,
-                    clientWorld.getRegistryKey().getValue(), chunkX, chunkZ, e);
+                GLLog.error("Error unloading chunk in client GraphWorld. World: '{}'/{}, Chunk: {}", clientWorld,
+                    clientWorld.getRegistryKey().getValue(), pos, e);
             }
         }
     }

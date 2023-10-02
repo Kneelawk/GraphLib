@@ -33,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.math.ChunkPos;
 
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.ClientGraphWorldStorageAccess;
@@ -48,8 +49,8 @@ public class ClientChunkManagerMixin implements ClientGraphWorldStorageAccess {
     }
 
     @Inject(method = "unload", at = @At("RETURN"))
-    private void onUnload(int chunkX, int chunkZ, CallbackInfo ci) {
-        storage.unload(chunkX, chunkZ);
+    private void onUnload(ChunkPos pos, CallbackInfo ci) {
+        storage.unload(pos);
     }
 
     @Inject(method = "setChunkMapCenter", at = @At("RETURN"))
