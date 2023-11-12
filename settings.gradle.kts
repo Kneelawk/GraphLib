@@ -21,3 +21,4 @@ rootProject.name = "graphlib"
 include("core")
 include("debugrender")
 include("net")
+include("example")
