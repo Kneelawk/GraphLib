@@ -17,3 +17,7 @@ pluginManagement {
 }
 
 rootProject.name = "graphlib"
+
+include("core")
+include("debugrender")
+include("net")

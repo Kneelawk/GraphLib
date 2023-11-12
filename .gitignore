@@ -4,8 +4,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### Quilt Loom ###
+### Loom ###
 /run/
+/*/run/
 
 ### IntelliJ IDEA ###
 /.idea/
@@ -14,6 +15,7 @@ build/
 *.ipr
 out/
 /logs/
+/*/logs/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
