@@ -16,6 +16,11 @@
   "icon": "assets/graphlib_net/icon-128.png",
   "environment": "*",
   "entrypoints": {
+    "main": [
+      {
+        "value": "com.kneelawk.graphlib.net.impl.GraphLibNetFabricMod"
+      }
+    ]
   },
   "mixins": [],
   "depends": {

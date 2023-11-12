@@ -51,10 +51,8 @@ dependencies {
     modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
-    // LibNetworkStack
-    val lns_version: String by project
-    modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version")
-    include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+    // GraphLib Core
+    implementation(project(":core", configuration = "namedElements"))
 
     // KModLib Overlay
     val kml_version: String by project
@@ -98,7 +96,7 @@ tasks {
     }
 
     javadoc {
-        exclude("com/kneelawk/graphlib/impl")
+        exclude("com/kneelawk/graphlib/debugrender/impl")
 
         val minecraft_version: String by project
         val quilt_mappings: String by project

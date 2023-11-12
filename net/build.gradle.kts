@@ -51,15 +51,13 @@ dependencies {
     modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
+    // GraphLib Core
+    implementation(project(":core", configuration = "namedElements"))
+
     // LibNetworkStack
     val lns_version: String by project
     modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version")
     include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
-
-    // KModLib Overlay
-    val kml_version: String by project
-    modImplementation("com.kneelawk:kmodlib-overlay:$kml_version")
-    include("com.kneelawk:kmodlib-overlay:$kml_version")
 
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.
@@ -98,7 +96,7 @@ tasks {
     }
 
     javadoc {
-        exclude("com/kneelawk/graphlib/impl")
+        exclude("com/kneelawk/graphlib/net/impl")
 
         val minecraft_version: String by project
         val quilt_mappings: String by project

@@ -16,6 +16,11 @@
   "icon": "assets/graphlib_example/icon-128.png",
   "environment": "*",
   "entrypoints": {
+    "main": [
+      {
+        "value": "com.kneelawk.graphlib.example.GraphLibExampleMod"
+      }
+    ]
   },
   "mixins": [ ],
   "depends": {
