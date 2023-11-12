@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.net.impl;
+package com.kneelawk.graphlib.syncing.impl;
 
-public class GraphLibNetImpl {
+public class GraphLibSyncingImpl {
 }

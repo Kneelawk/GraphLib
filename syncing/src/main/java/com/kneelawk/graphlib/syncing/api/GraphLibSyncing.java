@@ -23,9 +23,11 @@
  *
  */
 
-package com.kneelawk.graphlib.net.impl.graph;
+package com.kneelawk.graphlib.syncing.api;
 
-import com.kneelawk.graphlib.net.api.graph.SyncedUniverse;
-
-public interface SyncedUniverseImpl extends SyncedUniverse {
+/**
+ * Graph Lib Synchronization public API. This class contains static methods and fields for interacting with GraphLib's
+ * Synchronization API.
+ */
+public class GraphLibSyncing {
 }

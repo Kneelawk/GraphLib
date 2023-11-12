@@ -23,9 +23,9 @@
  *
  */
 
-package com.kneelawk.graphlib.net.impl.graph.simple;
+package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
-import com.kneelawk.graphlib.net.impl.graph.SyncedUniverseImpl;
+import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 
 public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     @Override

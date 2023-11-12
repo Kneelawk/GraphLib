@@ -31,7 +31,7 @@ import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.SyncProfile;
-import com.kneelawk.graphlib.net.api.graph.SyncedUniverse;
+import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 
 public class GraphLibExampleMod implements ModInitializer {
     public static final String MOD_ID = "graphlib_example";

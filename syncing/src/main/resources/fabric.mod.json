@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "graphlib_net",
+  "id": "graphlib_syncing",
   "version": "${version}",
-  "name": "Graph Lib Net",
+  "name": "Graph Lib Syncing",
   "description": "Server to client synchronization of graphs for client-side rendering.",
   "authors": [
     "Kneelawk"
@@ -13,12 +13,12 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/graphlib_net/icon-128.png",
+  "icon": "assets/graphlib_syncing/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.graphlib.net.impl.GraphLibNetFabricMod"
+        "value": "com.kneelawk.graphlib.syncing.impl.GraphLibSyncingFabricMod"
       }
     ]
   },

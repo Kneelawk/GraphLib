@@ -23,13 +23,13 @@
  *
  */
 
-package com.kneelawk.graphlib.net.impl;
+package com.kneelawk.graphlib.syncing.impl;
 
 import net.fabricmc.api.ModInitializer;
 
 import com.kneelawk.graphlib.impl.GLLog;
 
-public class GraphLibNetFabricMod implements ModInitializer {
+public class GraphLibSyncingFabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
         GLLog.info("Initializing GraphLibNet...");

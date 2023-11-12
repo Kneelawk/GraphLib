@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.net.api.graph;
+package com.kneelawk.graphlib.syncing.api.graph;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.net.impl;
+package com.kneelawk.graphlib.syncing.impl;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;

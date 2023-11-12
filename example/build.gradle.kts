@@ -66,8 +66,8 @@ dependencies {
     include(project(":core", configuration = "namedElements"))
     implementation(project(":debugrender", configuration = "namedElements"))
     include(project(":debugrender", configuration = "namedElements"))
-    implementation(project(":net", configuration = "namedElements"))
-    include(project(":net", configuration = "namedElements"))
+    implementation(project(":syncing", configuration = "namedElements"))
+    include(project(":syncing", configuration = "namedElements"))
 
     // LibNetworkStack
     val lns_version: String by project
