@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "graphlib_debugrender",
+  "version": "${version}",
+  "name": "Graph Lib Debug Render",
+  "description": "Client-side rendering of graphs for debugging server-side graphs.",
+  "authors": [
+    "Kneelawk"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Kneelawk/GraphLib",
+    "issues": "https://github.com/Kneelawk/GraphLib/issues",
+    "sources": "https://github.com/Kneelawk/GraphLib"
+  },
+  "license": "MIT",
+  "icon": "assets/graphlib_debugrender/icon-128.png",
+  "environment": "*",
+  "entrypoints": {
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.13.0",
+    "fabric": "*",
+    "minecraft": ">=1.20.2 <1.21-",
+    "java": ">=17"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [ "library" ],
+      "parent": "graphlib"
+    }
+  }
+}

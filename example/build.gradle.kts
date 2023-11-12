@@ -1,28 +1,3 @@
-/*
- * MIT License
- *
- * Copyright (c) 2023 Kneelawk.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- */
-
 plugins {
     `maven-publish`
     id("fabric-loom")
@@ -46,6 +21,15 @@ java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("gra
 
 loom {
 //    accessWidenerPath.set(file("src/main/resources/graphlib.accesswidener"))
+    runs {
+        named("client") {
+            ideConfigGenerated(true)
+            programArgs("--width", "1280", "--height", "720")
+        }
+        named("server") {
+            ideConfigGenerated(true)
+        }
+    }
 }
 
 repositories {
@@ -53,6 +37,7 @@ repositories {
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
     maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
     maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
+    maven("https://maven.terraformersmc.com/releases/") { name = "TerraformersMC" }
 
     mavenLocal()
 }
@@ -76,15 +61,25 @@ dependencies {
     modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
+    // GraphLib
+    implementation(project(":core", configuration = "namedElements"))
+    include(project(":core", configuration = "namedElements"))
+    implementation(project(":debugrender", configuration = "namedElements"))
+    include(project(":debugrender", configuration = "namedElements"))
+    implementation(project(":net", configuration = "namedElements"))
+    include(project(":net", configuration = "namedElements"))
+
     // LibNetworkStack
     val lns_version: String by project
-    modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version")
-    include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+    modLocalRuntime("alexiil.mc.lib:libnetworkstack-base:$lns_version")
 
     // KModLib Overlay
     val kml_version: String by project
-    modImplementation("com.kneelawk:kmodlib-overlay:$kml_version")
-    include("com.kneelawk:kmodlib-overlay:$kml_version")
+    modLocalRuntime("com.kneelawk:kmodlib-overlay:$kml_version")
+
+    // Mod Menu
+    val mod_menu_version: String by project
+    modLocalRuntime("com.terraformersmc:modmenu:$mod_menu_version")
 
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.

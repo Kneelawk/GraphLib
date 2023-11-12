@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "graphlib_net",
+  "version": "${version}",
+  "name": "Graph Lib Net",
+  "description": "Server to client synchronization of graphs for client-side rendering.",
+  "authors": [
+    "Kneelawk"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Kneelawk/GraphLib",
+    "issues": "https://github.com/Kneelawk/GraphLib/issues",
+    "sources": "https://github.com/Kneelawk/GraphLib"
+  },
+  "license": "MIT",
+  "icon": "assets/graphlib_net/icon-128.png",
+  "environment": "*",
+  "entrypoints": {
+  },
+  "mixins": [],
+  "depends": {
+    "fabricloader": ">=0.13.0",
+    "fabric": "*",
+    "minecraft": ">=1.20.2 <1.21-",
+    "java": ">=17"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [ "library" ],
+      "parent": "graphlib"
+    }
+  }
+}
