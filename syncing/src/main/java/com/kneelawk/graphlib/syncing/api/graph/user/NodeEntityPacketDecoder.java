@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.api.graph.user;
+package com.kneelawk.graphlib.syncing.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -31,18 +31,20 @@ import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+
 /**
- * Used for decoding {@link LinkEntity}s from packets.
+ * Used for decoding {@link NodeEntity}s from packets.
  */
 @FunctionalInterface
-public interface LinkEntityPacketDecoder {
+public interface NodeEntityPacketDecoder {
     /**
-     * Decodes a {@link LinkEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+     * Decodes a {@link NodeEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
      *
      * @param buf    the buffer to read from.
      * @param msgCtx the message context.
-     * @return a newly decoded link entity.
-     * @throws InvalidInputDataException if a link entity could not be decoded.
+     * @return a newly decoded node entity.
+     * @throws InvalidInputDataException if a node entity could not be decoded.
      */
-    @NotNull LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
+    @NotNull NodeEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }

@@ -54,16 +54,6 @@ public interface BlockNode {
     @Nullable NbtElement toTag();
 
     /**
-     * Encodes this block node's data into a packet for server to client synchronization.
-     * <p>
-     * This does not need to write anything if this block node's type is all the data that needs to be sent.
-     *
-     * @param buf the buffer to write this node's data to.
-     * @param ctx the message context, used for writing to caches.
-     */
-    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
-
-    /**
      * Checks if this block node should be automatically removed.
      * <p>
      * Automatic removal is performed if a {@link BlockNodeDiscoverer} stops discovering the given node at the given

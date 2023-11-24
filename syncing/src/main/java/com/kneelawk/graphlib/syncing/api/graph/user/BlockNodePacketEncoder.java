@@ -23,30 +23,31 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.api;
+package com.kneelawk.graphlib.syncing.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.Identifier;
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
-import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
- * Graph Lib Synchronization public API. This class contains static methods and fields for interacting with GraphLib's
- * Synchronization API.
+ * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
+ *
+ * @param <N> the type of block node this encoder encodes.
  */
-public class GraphLibSyncing {
+@FunctionalInterface
+public interface BlockNodePacketEncoder<N extends BlockNode> {
     /**
-     * Gets a registered {@link SyncedUniverse} by its id.
+     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
+     * <p>
+     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
      *
-     * @param id the id of the universe to look up.
-     * @return the universe with the given id.
+     * @param node the node to encode.
+     * @param buf  the buffer to write to.
+     * @param ctx  the message write context.
      */
-    public static SyncedUniverse getUniverse(@NotNull Identifier id) {
-        SyncedUniverse universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(id);
-        if (universe == null) throw new IllegalArgumentException("No synced universe exists with name " + id);
-
-        return universe;
-    }
+    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
 }

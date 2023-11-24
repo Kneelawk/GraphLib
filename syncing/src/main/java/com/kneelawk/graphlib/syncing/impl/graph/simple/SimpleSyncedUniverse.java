@@ -25,11 +25,70 @@
 
 package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.util.Identifier;
+
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
+import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketEncoder;
+import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
+import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 
 public class SimpleSyncedUniverse implements SyncedUniverseImpl {
+    private final GraphUniverse universe;
+    private final SyncProfile syncProfile;
+
+    private final Map<BlockNodeType, BlockNodeSyncing> nodeSyncing = new HashMap<>();
+
+    public SimpleSyncedUniverse(SimpleSyncedUniverseBuilder builder, @NotNull GraphUniverse universe) {
+        this.universe = universe;
+        syncProfile = builder.profile;
+    }
+
+    @Override
+    public @NotNull Identifier getId() {
+        return universe.getId();
+    }
+
+    @Override
+    public @NotNull GraphUniverse getUniverse() {
+        return universe;
+    }
+
+    @Override
+    public void addNodeSyncing(@NotNull BlockNodeType type, @Nullable BlockNodePacketEncoder<?> encoder,
+                               @NotNull BlockNodePacketDecoder decoder) {
+        nodeSyncing.put(type, new BlockNodeSyncing(encoder, decoder));
+    }
+
+    @Override
+    public boolean hasNodeSyncing(@NotNull BlockNodeType type) {
+        return nodeSyncing.containsKey(type);
+    }
+
+    @Override
+    public @NotNull BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type) {
+        BlockNodeSyncing syncing = nodeSyncing.get(type);
+        if (syncing == null)
+            throw new IllegalStateException("Attempting to sync unregistered node type: " + type.getId());
+        return syncing;
+    }
+
     @Override
     public void register() {
+        GraphLibSyncingImpl.register(this);
+    }
 
+    @Override
+    public @NotNull SyncProfile getSyncProfile() {
+        return syncProfile;
     }
 }

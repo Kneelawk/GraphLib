@@ -29,10 +29,13 @@ import net.fabricmc.api.ModInitializer;
 
 import com.kneelawk.graphlib.impl.GLLog;
 
+@SuppressWarnings("unused")
 public class GraphLibSyncingFabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
         GLLog.info("Initializing GraphLibNet...");
+
+        GraphLibSyncingImpl.register();
 
         GLNet.init();
 

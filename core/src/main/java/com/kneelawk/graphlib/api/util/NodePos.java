@@ -68,18 +68,6 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
     }
 
     /**
-     * Writes this NodePos to a packet.
-     *
-     * @param buf the buffer to write to.
-     * @param ctx the packet's message context.
-     */
-    public void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {
-        buf.writeBlockPos(pos);
-        buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), node.getType().getId()));
-        node.toPacket(buf, ctx);
-    }
-
-    /**
      * Decodes a NodePos from an NBT compound.
      *
      * @param nbt      the NBT compound to decode from.
@@ -101,50 +89,6 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
             GLLog.warn("Failed to decode block node {}", type.getId());
             return null;
         }
-
-        return new NodePos(pos, node);
-    }
-
-    /**
-     * Decodes a NodePos from a packet.
-     *
-     * @param buf      the buffer to read from.
-     * @param ctx      the packet's message context.
-     * @param universe the universe that the block node's decoder is to be retrieved from.
-     * @return a newly decoded NodePos.
-     * @throws InvalidInputDataException if there was an error while decoding the node pos.
-     */
-    public static @NotNull NodePos fromPacket(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx,
-                                              @NotNull GraphUniverse universe) throws InvalidInputDataException {
-        BlockPos pos = buf.readBlockPos();
-
-        int idInt = buf.readVarUnsignedInt();
-        Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), idInt);
-        if (typeId == null) {
-            GLLog.warn("Unable to decode block node type id from unknown identifier int {} @ {}", idInt, pos);
-            throw new InvalidInputDataException(
-                "Unable to decode block node type id from unknown identifier int " + idInt + " @ " + pos);
-        }
-
-        BlockNodeType type = universe.getNodeType(typeId);
-        if (type == null) {
-            GLLog.warn("Unable to decode unknown block node type id {} @ {} in universe {}", typeId, pos,
-                universe.getId());
-            throw new InvalidInputDataException(
-                "Unable to decode unknown block node type id " + typeId + " @ " + pos + " in universe " +
-                    universe.getId());
-        }
-
-        BlockNodePacketDecoder decoder = type.getPacketDecoder();
-        if (decoder == null) {
-            GLLog.error("Tried to decode block node {} @ {} in universe {} but it has no packet decoder.", type.getId(),
-                pos, universe.getId());
-            throw new InvalidInputDataException(
-                "Tried to decode block node " + type.getId() + " @ " + pos + " in universe " + universe.getId() +
-                    " but it has no packet decoder.");
-        }
-
-        BlockNode node = decoder.decode(buf, ctx);
 
         return new NodePos(pos, node);
     }

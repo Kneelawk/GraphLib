@@ -41,13 +41,10 @@ import com.kneelawk.graphlib.api.util.ObjectType;
 public class BlockNodeType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull BlockNodeDecoder decoder;
-    private final @Nullable BlockNodePacketDecoder packetDecoder;
 
-    private BlockNodeType(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder,
-                          @Nullable BlockNodePacketDecoder packetDecoder) {
+    private BlockNodeType(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
-        this.packetDecoder = packetDecoder;
     }
 
     /**
@@ -67,15 +64,6 @@ public class BlockNodeType implements ObjectType {
      */
     public @NotNull BlockNodeDecoder getDecoder() {
         return decoder;
-    }
-
-    /**
-     * Gets this type's packet decoder.
-     *
-     * @return this type's packet decoder.
-     */
-    public @Nullable BlockNodePacketDecoder getPacketDecoder() {
-        return packetDecoder;
     }
 
     @Override
@@ -101,20 +89,6 @@ public class BlockNodeType implements ObjectType {
     }
 
     /**
-     * Creates a new block node type.
-     *
-     * @param id            the id of the new type.
-     * @param decoder       the decoder for the new type.
-     * @param packetDecoder the packet decoder for the new type.
-     * @return a new block node type.
-     */
-    @Contract(value = "_, _, _ -> new", pure = true)
-    public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder,
-                                            @Nullable BlockNodePacketDecoder packetDecoder) {
-        return new BlockNodeType(id, decoder, packetDecoder);
-    }
-
-    /**
      * Creates a new block node type, without packet decoder.
      *
      * @param id      the id of the new type.
@@ -123,7 +97,7 @@ public class BlockNodeType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder) {
-        return new BlockNodeType(id, decoder, null);
+        return new BlockNodeType(id, decoder);
     }
 
     /**
@@ -135,6 +109,6 @@ public class BlockNodeType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull Supplier<BlockNode> supplier) {
-        return new BlockNodeType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
+        return new BlockNodeType(id, nbt -> supplier.get());
     }
 }

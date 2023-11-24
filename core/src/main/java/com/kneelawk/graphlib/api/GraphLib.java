@@ -39,7 +39,7 @@ public final class GraphLib {
      * @param universeId the id of the universe to look up.
      * @return the universe with the given id.
      */
-    public static @NotNull GraphUniverse getUniverse(Identifier universeId) {
+    public static @NotNull GraphUniverse getUniverse(@NotNull Identifier universeId) {
         GraphUniverseImpl graphUniverse = GraphLibImpl.UNIVERSE.get(universeId);
         if (graphUniverse == null) {
             throw new IllegalArgumentException("No universe exists with the name " + universeId);

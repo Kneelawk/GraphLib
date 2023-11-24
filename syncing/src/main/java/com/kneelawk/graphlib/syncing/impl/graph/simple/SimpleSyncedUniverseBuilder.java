@@ -23,26 +23,25 @@
  *
  */
 
-package com.kneelawk.graphlib.api.graph.user;
+package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
 import org.jetbrains.annotations.NotNull;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.InvalidInputDataException;
-import alexiil.mc.lib.net.NetByteBuf;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 
-/**
- * Used for decoding {@link NodeEntity}s from packets.
- */
-@FunctionalInterface
-public interface NodeEntityPacketDecoder {
-    /**
-     * Decodes a {@link NodeEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
-     *
-     * @param buf    the buffer to read from.
-     * @param msgCtx the message context.
-     * @return a newly decoded node entity.
-     * @throws InvalidInputDataException if a node entity could not be decoded.
-     */
-    @NotNull NodeEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
+public class SimpleSyncedUniverseBuilder implements SyncedUniverse.Builder {
+    SyncProfile profile = SyncProfile.SYNC_EVERYTHING;
+
+    @Override
+    public @NotNull SyncedUniverse build(@NotNull GraphUniverse universe) {
+        return new SimpleSyncedUniverse(this, universe);
+    }
+
+    @Override
+    public SyncedUniverse.@NotNull Builder synchronizeToClient(@NotNull SyncProfile profile) {
+        this.profile = profile;
+        return this;
+    }
 }

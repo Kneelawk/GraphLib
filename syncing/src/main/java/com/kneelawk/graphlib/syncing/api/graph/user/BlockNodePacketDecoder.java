@@ -23,26 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.api.graph.user;
+package com.kneelawk.graphlib.syncing.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+
 /**
- * Used for decoding {@link GraphEntity}s from packets.
+ * Used for decoding a {@link BlockNode} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
  */
 @FunctionalInterface
-public interface GraphEntityPacketDecoder {
+public interface BlockNodePacketDecoder {
     /**
-     * Decodes a {@link GraphEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+     * Decodes a {@link BlockNode} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+     * <p>
+     * The data read should be the same data written by
+     * {@link BlockNodePacketEncoder#encode(BlockNode, NetByteBuf, IMsgWriteCtx)}.
      *
-     * @param buf    the buffer to read from.
-     * @param msgCtx the message context.
-     * @return a new graph entity.
-     * @throws InvalidInputDataException if a graph entity could not be read.
+     * @param buf the buffer to decode from.
+     * @param ctx the message context, used for reading from caches.
+     * @return the decoded block node.
+     * @throws InvalidInputDataException if a block node could not be decoded.
      */
-    @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
+    @NotNull BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }

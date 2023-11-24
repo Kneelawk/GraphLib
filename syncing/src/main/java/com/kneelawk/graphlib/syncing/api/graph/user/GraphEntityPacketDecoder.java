@@ -23,30 +23,28 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.api;
+package com.kneelawk.graphlib.syncing.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.Identifier;
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
+import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
-import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 
 /**
- * Graph Lib Synchronization public API. This class contains static methods and fields for interacting with GraphLib's
- * Synchronization API.
+ * Used for decoding {@link GraphEntity}s from packets.
  */
-public class GraphLibSyncing {
+@FunctionalInterface
+public interface GraphEntityPacketDecoder {
     /**
-     * Gets a registered {@link SyncedUniverse} by its id.
+     * Decodes a {@link GraphEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
      *
-     * @param id the id of the universe to look up.
-     * @return the universe with the given id.
+     * @param buf    the buffer to read from.
+     * @param msgCtx the message context.
+     * @return a new graph entity.
+     * @throws InvalidInputDataException if a graph entity could not be read.
      */
-    public static SyncedUniverse getUniverse(@NotNull Identifier id) {
-        SyncedUniverse universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(id);
-        if (universe == null) throw new IllegalArgumentException("No synced universe exists with name " + id);
-
-        return universe;
-    }
+    @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }

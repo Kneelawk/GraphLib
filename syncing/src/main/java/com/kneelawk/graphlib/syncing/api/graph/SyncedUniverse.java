@@ -25,16 +25,70 @@
 
 package com.kneelawk.graphlib.syncing.api.graph;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
+import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketDecoder;
+import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketEncoder;
+import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
+import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.impl.graph.simple.SimpleSyncedUniverseBuilder;
 
 /**
  * Manages server to client synchronization of a {@link GraphUniverse}
  */
 public interface SyncedUniverse {
+    /**
+     * Gets the unique id of this universe.
+     *
+     * @return this universe's unique id.
+     */
+    @NotNull Identifier getId();
+
+    /**
+     * Gets the graph universe that this handler synchronizes.
+     *
+     * @return the universe associated with this synchronization handler.
+     */
+    @NotNull GraphUniverse getUniverse();
+
+    /**
+     * Registers an encoder and decoder for the given block node type.
+     * <p>
+     * Note: if all the data that needs to be sent is the node's type, then the encoder can be {@code null} and the
+     * decoder should just return an instance of the {@link BlockNode} without doing any decoding.
+     *
+     * @param type    the type of block node to associate the encoder and decoder with.
+     * @param encoder the encoder for the block node, or optionally {@code null}.
+     * @param decoder the decoder for the block node.
+     */
+    void addNodeSyncing(@NotNull BlockNodeType type, @Nullable BlockNodePacketEncoder<?> encoder,
+                        @NotNull BlockNodePacketDecoder decoder);
+
+    /**
+     * Gets whether the given block node type has had encoders and decoders registered with this universe.
+     *
+     * @param type the type of block node to check.
+     * @return {@code true} if this universe contains syncing for the given block node type.
+     */
+    boolean hasNodeSyncing(@NotNull BlockNodeType type);
+
+    /**
+     * Gets the encoder and decoder for the given block node type.
+     *
+     * @param type the type of block node to get the syncing for.
+     * @return the syncing for the given block node type.
+     */
+    @NotNull BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type);
+
+
 
     /**
      * Registers this synchronization handler so that it can be found by its universe's id.
@@ -44,13 +98,20 @@ public interface SyncedUniverse {
     void register();
 
     /**
+     * Gets this universe's synchronization profile.
+     *
+     * @return this universe's synchronization profile.
+     */
+    @NotNull SyncProfile getSyncProfile();
+
+    /**
      * Creates a new SyncedUniverse builder.
      *
      * @return a new builder for building a SyncedUniverse.
      */
+    @Contract(value = "-> new", pure = true)
     static @NotNull Builder builder() {
-        // TODO
-        throw new AssertionError("Not yet implemented");
+        return new SimpleSyncedUniverseBuilder();
     }
 
     interface Builder {
@@ -68,7 +129,7 @@ public interface SyncedUniverse {
         /**
          * Sets whether this graph universe should be synchronized to the client.
          * <p>
-         * This is set to {@link SyncProfile#SYNC_NOTHING} by default.
+         * This is set to {@link SyncProfile#SYNC_EVERYTHING} by default.
          * <p>
          * The {@link CacheCategory} in the given sync profile will be automatically registered on universe creation.
          *

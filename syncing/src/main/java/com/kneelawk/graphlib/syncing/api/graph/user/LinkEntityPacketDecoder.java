@@ -23,19 +23,28 @@
  *
  */
 
-package com.kneelawk.graphlib.api.graph.user;
+package com.kneelawk.graphlib.syncing.api.graph.user;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.NotNull;
+
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
+import alexiil.mc.lib.net.NetByteBuf;
+
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 
 /**
- * Determines which players the server should synchronize graphs to.
+ * Used for decoding {@link LinkEntity}s from packets.
  */
-public interface PlayerSyncFilter {
+@FunctionalInterface
+public interface LinkEntityPacketDecoder {
     /**
-     * Determines whether the server should synchronize graphs to the given player.
+     * Decodes a {@link LinkEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
      *
-     * @param player the player to potentially synchronize graphs to.
-     * @return <code>true</code> if graphs should be synchronized to the given player.
+     * @param buf    the buffer to read from.
+     * @param msgCtx the message context.
+     * @return a newly decoded link entity.
+     * @throws InvalidInputDataException if a link entity could not be decoded.
      */
-    boolean shouldSync(ServerPlayerEntity player);
+    @NotNull LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }

@@ -23,29 +23,28 @@
  *
  */
 
-package com.kneelawk.graphlib.api.graph.user;
+package com.kneelawk.graphlib.syncing.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+
 /**
- * Used for decoding a {@link BlockNode} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+ * Used for decoding a {@link LinkKey} from a packet.
  */
 @FunctionalInterface
-public interface BlockNodePacketDecoder {
+public interface LinkKeyPacketDecoder {
     /**
-     * Decodes a {@link BlockNode} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
-     * <p>
-     * The data read should be the same data written by {@link BlockNode#toPacket(NetByteBuf, IMsgWriteCtx)}.
+     * Decodes a {@link LinkKey} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
      *
-     * @param buf the buffer to decode from.
-     * @param ctx the message context, used for reading from caches.
-     * @return the decoded block node.
-     * @throws InvalidInputDataException if a block node could not be decoded.
+     * @param buf the buffer to read from.
+     * @param ctx the message context.
+     * @return a newly decoded link key.
+     * @throws InvalidInputDataException if no link key could be decoded.
      */
-    @NotNull BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
+    @NotNull LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }
