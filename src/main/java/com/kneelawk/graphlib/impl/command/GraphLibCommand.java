@@ -40,7 +40,7 @@ public class GraphLibCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandBuildContext buildContext) {
         dispatcher.register(literal("graphlib")
-            .requires(source -> source.hasPermissionLevel(2))
+            .requires(source -> source.hasPermission(2))
             .then(literal("list").executes(context -> listUniverses(context.getSource())))
             .then(argument("universe", IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {

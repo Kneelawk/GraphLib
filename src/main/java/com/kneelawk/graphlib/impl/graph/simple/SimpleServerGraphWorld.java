@@ -20,6 +20,8 @@ import java.util.regex.Pattern;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+import net.minecraft.nbt.NbtTagSizeTracker;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -1597,7 +1599,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         try (InputStream is = Files.newInputStream(graphFile)) {
-            NbtCompound root = NbtIo.readCompressed(is);
+            NbtCompound root = NbtIo.method_10629(is, NbtTagSizeTracker.method_53898());
             NbtCompound data = root.getCompound("data");
             SimpleBlockGraph graph = SimpleBlockGraph.fromTag(this, id, data);
             if (graph.isEmpty()) {
@@ -1660,7 +1662,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     private void loadState() {
         if (Files.exists(stateFile)) {
             try (InputStream is = Files.newInputStream(stateFile)) {
-                NbtCompound root = NbtIo.readCompressed(is);
+                NbtCompound root = NbtIo.method_10629(is, NbtTagSizeTracker.method_53898());
                 NbtCompound data = root.getCompound("data");
                 prevGraphId = data.getLong("prevGraphId");
             } catch (Exception e) {
