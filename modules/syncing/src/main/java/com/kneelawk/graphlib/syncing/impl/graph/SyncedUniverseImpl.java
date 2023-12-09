@@ -25,7 +25,12 @@
 
 package com.kneelawk.graphlib.syncing.impl.graph;
 
+import org.jetbrains.annotations.Nullable;
+
+import com.kneelawk.graphlib.impl.graph.listener.UniverseListener;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 
-public interface SyncedUniverseImpl extends SyncedUniverse {
+public interface SyncedUniverseImpl extends SyncedUniverse, UniverseListener {
+    @Override
+    @Nullable ClientGraphWorldImpl getClientGraphView();
 }

@@ -29,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 
@@ -48,5 +50,25 @@ public class GraphLibSyncing {
         if (universe == null) throw new IllegalArgumentException("No synced universe exists with name " + id);
 
         return universe;
+    }
+
+    /**
+     * Gets a registered {@link SyncedUniverse} by the universe it's associated with.
+     *
+     * @param universe the universe associated with the synced universe to look up.
+     * @return the synced universe associated with the given universe.
+     */
+    public static SyncedUniverse getUniverse(@NotNull GraphUniverse universe) {
+        return getUniverse(universe.getId());
+    }
+
+    /**
+     * Gets a registered {@link SyncedUniverse} for a world in the universe the synced universe is associated with.
+     *
+     * @param view the world within the universe associated with the synced universe to look up.
+     * @return the synced universe associated with the universe that the given view is within.
+     */
+    public static SyncedUniverse getUniverse(@NotNull GraphView view) {
+        return getUniverse(view.getUniverse().getId());
     }
 }

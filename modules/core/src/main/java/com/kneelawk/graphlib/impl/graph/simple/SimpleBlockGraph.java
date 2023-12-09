@@ -611,8 +611,9 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
-                                                    @Nullable NodeEntity entity, boolean newlyAdded) {
+    @NotNull
+    public SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
+                                                  @Nullable NodeEntity entity, boolean newlyAdded) {
         BlockPos pos = blockPos.toImmutable();
         NodePos nodePos = new NodePos(pos, node);
 
@@ -779,8 +780,9 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
-                                      @Nullable LinkEntity entity, boolean newlyAdded) {
+    @NotNull
+    public LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
+                                    @Nullable LinkEntity entity, boolean newlyAdded) {
         Link<SimpleNodeWrapper, LinkKey> rawLink = new Link<>(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
         LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.getWorld(), world, rawLink);
         boolean unique = graph.link(rawLink);

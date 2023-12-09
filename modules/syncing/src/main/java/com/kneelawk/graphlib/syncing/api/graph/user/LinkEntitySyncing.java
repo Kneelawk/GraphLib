@@ -29,35 +29,44 @@ import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 
 /**
- * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
+ * Holds a link entity encoder and decoder.
  *
- * @param <N> the type of block node this encoder encodes.
+ * @param encoder the encoder.
+ * @param decoder the decoder.
  */
-@FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
+public record LinkEntitySyncing(@NotNull LinkEntityPacketEncoder<?> encoder, @NotNull LinkEntityPacketDecoder decoder) {
     /**
-     * Returns a no-op encoder.
+     * Encodes a link entity.
+     * <p>
+     * <b>Note: this does not write the link entity's type id. That must be written separately.</b>
+     * <p>
+     * <b>Note: the link entity being encoded must be of the type that the encoder expects.</b>
      *
-     * @param <T> the type of block node to encode.
-     * @return a no-op encoder.
+     * @param node the link entity to encode.
+     * @param buf  the buffer to encode to.
+     * @param ctx  the message context.
      */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noop() {
-        return (node, buf, ctx) -> {};
+    @SuppressWarnings("unchecked")
+    public void encode(@NotNull LinkEntity node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {
+        ((LinkEntityPacketEncoder<LinkEntity>) encoder).encode(node, buf, ctx);
     }
 
     /**
-     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
-     * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
+     * Decodes a link entity.
      *
-     * @param node the node to encode.
-     * @param buf  the buffer to write to.
-     * @param ctx  the message write context.
+     * @param buf the buffer to decode from.
+     * @param ctx the message context.
+     * @return a newly decoded link entity.
+     * @throws InvalidInputDataException if the buffer contained invalid data.
      */
-    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
+    public @NotNull LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx)
+        throws InvalidInputDataException {
+        return decoder.decode(buf, ctx);
+    }
 }

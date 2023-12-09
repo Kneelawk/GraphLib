@@ -23,73 +23,44 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.client;
+package com.kneelawk.graphlib.syncing.impl;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 
-import com.kneelawk.graphlib.impl.CommonProxy;
-import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
-import com.kneelawk.graphlib.impl.mixin.api.ClientStorageHelper;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
-@Environment(EnvType.CLIENT)
-public class ClientProxy extends CommonProxy {
-    static void init() {
-        INSTANCE = new ClientProxy();
-    }
+public class CommonProxy {
+    public static CommonProxy INSTANCE = new CommonProxy();
 
-    @Override
     public @Nullable World getClientWorld() {
-        return MinecraftClient.getInstance().world;
+        return null;
     }
 
-    @Override
     @Deprecated
     public @NotNull GraphWorldStorage getStorage(@NotNull World world) {
         if (world instanceof ServerWorld serverWorld) {
             return StorageHelper.getStorage(serverWorld);
         }
-        if (world instanceof ClientWorld clientWorld) {
-            return ClientStorageHelper.getStorage(clientWorld);
-        }
 
         throw new IllegalArgumentException(
-            "PHYSICAL CLIENT: World must be a ClientWorld or a ServerWorld, but was: " + world.getClass());
+            "PHYSICAL SERVER: World must be a ServerWorld, but was: " + world.getClass());
     }
 
-    @Override
-    public @Nullable GraphWorldStorage getSidedStorage(@NotNull World world) {
-        // Turns out it is more common than you might think for a world to be neither a ServerWorld nor a ClientWorld.
-        if (world instanceof ServerWorld serverWorld) {
-            return StorageHelper.getStorage(serverWorld);
-        }
-        if (world instanceof ClientWorld clientWorld) {
-            return ClientStorageHelper.getStorage(clientWorld);
-        }
-
+    public @Nullable ClientGraphWorldStorage getClientStorage() {
         return null;
     }
 
-    @Override
-    public @Nullable ClientGraphWorldStorage getClientStorage() {
-        ClientWorld world = MinecraftClient.getInstance().world;
-        if (world == null) {
-            GLLog.warn("Attempted to get client storage before the client had loaded a world.",
-                new RuntimeException("Stack Trace"));
-            return null;
+    public @Nullable GraphWorldStorage getSidedStorage(@NotNull World world) {
+        if (world instanceof ServerWorld serverWorld) {
+            return StorageHelper.getStorage(serverWorld);
         }
 
-        return ClientStorageHelper.getStorage(world);
+        return null;
     }
 }

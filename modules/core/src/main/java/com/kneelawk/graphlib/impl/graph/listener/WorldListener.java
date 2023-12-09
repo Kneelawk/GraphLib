@@ -23,22 +23,24 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl;
+package com.kneelawk.graphlib.impl.graph.listener;
 
-import net.fabricmc.api.ModInitializer;
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 
-import com.kneelawk.graphlib.impl.GLLog;
+public interface WorldListener {
+    void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node);
 
-@SuppressWarnings("unused")
-public class GraphLibSyncingFabricMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLibSyncing...");
+    void sendMerge(BlockGraph from, BlockGraph into);
 
-        GraphLibSyncingImpl.register();
+    void sendLink(BlockGraph graph, LinkHolder<LinkKey> link);
 
-        GLNet.init();
+    void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key);
 
-        GLLog.info("GraphLibSyncing Initialized.");
-    }
+    void sendSplitInto(BlockGraph from, BlockGraph into);
+
+    void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder);
 }

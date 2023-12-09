@@ -5,18 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import alexiil.mc.lib.net.IMsgWriteCtx;
-import alexiil.mc.lib.net.NetByteBuf;
-
-import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.LinkHolder;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
 
 public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
 
@@ -51,18 +45,5 @@ public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
     @Override
     @NotNull ServerWorld getWorld();
 
-    void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx);
-
-    void writeNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx);
-
-    void writeMerge(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx);
-
-    void writeLink(BlockGraph graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx);
-
-    void writeUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key, NetByteBuf buf,
-                     IMsgWriteCtx ctx);
-
-    void writeSplitInto(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx);
-
-    void writeNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx);
+    WorldListener getListener(Identifier id);
 }

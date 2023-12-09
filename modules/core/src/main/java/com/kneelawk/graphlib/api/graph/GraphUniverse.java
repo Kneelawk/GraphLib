@@ -36,45 +36,12 @@ import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 public interface GraphUniverse {
 
     /**
-     * Gets the {@link GraphView} for the given {@link World}.
-     * <p>
-     * This works on both the logical server and the logical client, unlike
-     * {@link #getServerGraphWorld(ServerWorld)} which only works on the logical server.
-     *
-     * @param world the world to get the graph view associated with.
-     * @return the graph view associated with the given world.
-     * @deprecated this method does not account for {@link World}s that are neither a {@code ClientWorld} nor a
-     * {@link ServerWorld}, and will throw an error if one is encountered. Use {@link #getSidedGraphView(World)} instead.
-     */
-    @Deprecated
-    @NotNull GraphView getGraphView(@NotNull World world);
-
-    /**
-     * Gets the {@link GraphView} for the given {@link World}.
-     * <p>
-     * This works on both the logical server and the logical client, unlike
-     * {@link #getServerGraphWorld(ServerWorld)} which only works on the logical server.
-     *
-     * @param world the world to get the graph view associated with.
-     * @return the graph view associated with the given world.
-     */
-    @Nullable GraphView getSidedGraphView(@NotNull World world);
-
-    /**
      * Gets the {@link GraphWorld} for the given {@link ServerWorld}.
      *
      * @param world the world whose graph world is to be obtained.
      * @return the GraphWorld of the given world.
      */
     @NotNull GraphWorld getServerGraphWorld(@NotNull ServerWorld world);
-
-    /**
-     * Gets the {@link GraphView} of this client, if this is indeed a physical client.
-     *
-     * @return the graph view of this client, if this is indeed a physical client, or <code>null</code> if this is a
-     * physical server.
-     */
-    @Nullable GraphView getClientGraphView();
 
     /**
      * Gets the unique id of this universe.

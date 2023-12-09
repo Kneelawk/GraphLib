@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -19,6 +20,13 @@ import com.kneelawk.graphlib.api.util.SidedPos;
  * Holds and manages all block graphs for a given world.
  */
 public interface GraphWorld extends GraphView {
+    /**
+     * Gets the server world associated with this graph world.
+     *
+     * @return the server world associated with this graph world.
+     */
+    @Override
+    @NotNull ServerWorld getWorld();
 
     /**
      * Adds a block node and optional node entity at the given position.

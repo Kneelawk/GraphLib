@@ -20,6 +20,11 @@
       {
         "value": "com.kneelawk.graphlib.syncing.impl.GraphLibSyncingFabricMod"
       }
+    ],
+    "client": [
+      {
+        "value": "com.kneelawk.graphlib.syncing.impl.client.GraphLibSyncingFabricModClient"
+      }
     ]
   },
   "mixins": [],

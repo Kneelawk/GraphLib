@@ -23,41 +23,34 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.api.graph.user;
+package com.kneelawk.graphlib.syncing.impl.graph;
 
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.math.ChunkPos;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.GraphView;
 
-/**
- * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
- *
- * @param <N> the type of block node this encoder encodes.
- */
-@FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of block node to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noop() {
-        return (node, buf, ctx) -> {};
-    }
+public interface ClientGraphWorldImpl extends GraphView {
+    void unload(ChunkPos pos);
 
-    /**
-     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
-     * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
-     *
-     * @param node the node to encode.
-     * @param buf  the buffer to write to.
-     * @param ctx  the message write context.
-     */
-    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
+    void setChunkMapCenter(int x, int z);
+
+    void updateLoadDistance(int loadDistance);
+
+    void readChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
+
+    void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
+
+    void readMerge(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
+
+    void readLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
+
+    void readUnlink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
+
+    void readSplitInto(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
+
+    void readNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
 }

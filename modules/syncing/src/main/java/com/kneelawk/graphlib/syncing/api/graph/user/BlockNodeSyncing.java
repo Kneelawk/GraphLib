@@ -41,7 +41,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
  * @param encoder the encoder.
  * @param decoder the decoder.
  */
-public record BlockNodeSyncing(@Nullable BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
+public record BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
     /**
      * Encodes a block node.
      * <p>
@@ -55,7 +55,7 @@ public record BlockNodeSyncing(@Nullable BlockNodePacketEncoder<?> encoder, @Not
      */
     @SuppressWarnings("unchecked")
     public void encode(@NotNull BlockNode node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {
-        if (encoder != null) ((BlockNodePacketEncoder<BlockNode>) encoder).encode(node, buf, ctx);
+        ((BlockNodePacketEncoder<BlockNode>) encoder).encode(node, buf, ctx);
     }
 
     /**

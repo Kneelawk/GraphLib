@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.graph.simple;
+package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
@@ -33,6 +33,9 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.World;
+
+import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphChunk;
+import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphPillar;
 
 public class SimpleClientGraphChunkManager {
     volatile ClientPillarMap pillars;

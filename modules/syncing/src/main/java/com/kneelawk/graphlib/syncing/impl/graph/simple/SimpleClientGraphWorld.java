@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.graph.simple;
+package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
 import java.util.List;
 import java.util.Objects;
@@ -72,17 +72,24 @@ import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
+import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraph;
+import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphChunk;
+import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphPillar;
+import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphCollection;
 import com.kneelawk.graphlib.impl.net.GLNet;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketDecoder;
+import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
+import com.kneelawk.graphlib.syncing.impl.GLNet;
 
 public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, SimpleGraphCollection {
-    private final SimpleGraphUniverse universe;
+    private final SimpleSyncedUniverse universe;
     final World world;
 
     private final SimpleClientGraphChunkManager manager;
     private final Long2ObjectMap<SimpleBlockGraph> graphs = new Long2ObjectLinkedOpenHashMap<>();
 
-    public SimpleClientGraphWorld(SimpleGraphUniverse universe, World world, int loadDistance) {
+    public SimpleClientGraphWorld(SimpleSyncedUniverse universe, World world, int loadDistance) {
         this.universe = universe;
         this.world = world;
 
@@ -131,7 +138,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             int nodeCount = buf.readInt();
             for (int i = 0; i < nodeCount; i++) {
                 // decode block node
-                NodePos nodePos = NodePos.fromPacket(buf, ctx, universe);
+                NodePos nodePos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
 
                 BlockPos blockPos = nodePos.pos();
 
@@ -169,7 +176,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
                 // decode link key
                 LinkKeyType linkType =
-                    GLNet.readType(buf, ctx.getConnection(), universe::getLinkKeyType, "LinkKey",
+                    GLNet.readType(buf, ctx.getConnection(), universe.getUniverse()::getLinkKeyType, "LinkKey",
                         nodeA.getBlockPos());
 
                 LinkKeyPacketDecoder linkDecoder = linkType.getPacketDecoder();

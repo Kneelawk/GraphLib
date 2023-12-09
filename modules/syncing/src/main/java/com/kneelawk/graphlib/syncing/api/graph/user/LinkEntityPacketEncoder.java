@@ -31,33 +31,33 @@ import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 
 /**
- * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
+ * Used for encoding a {@link LinkEntity} to a {@link NetByteBuf}.
  *
- * @param <N> the type of block node this encoder encodes.
+ * @param <L> the type of link entity this encoder encodes.
  */
 @FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
+public interface LinkEntityPacketEncoder<L extends LinkEntity> {
     /**
      * Returns a no-op encoder.
      *
-     * @param <T> the type of block node to encode.
+     * @param <T> the type of link entity to encode.
      * @return a no-op encoder.
      */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noop() {
-        return (node, buf, ctx) -> {};
+    static <T extends LinkEntity> LinkEntityPacketEncoder<T> noop() {
+        return (link, buf, ctx) -> {};
     }
 
     /**
-     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
+     * Encodes a {@link LinkEntity} to a {@link NetByteBuf}.
      * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
+     * The data will be decoded by {@link LinkEntityPacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
      *
-     * @param node the node to encode.
+     * @param link the link entity to be encoded.
      * @param buf  the buffer to write to.
-     * @param ctx  the message write context.
+     * @param ctx  the message context.
      */
-    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
+    void encode(@NotNull L link, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
 }

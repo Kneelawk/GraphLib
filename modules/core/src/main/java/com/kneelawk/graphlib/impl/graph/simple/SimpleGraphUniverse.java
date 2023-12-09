@@ -24,7 +24,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -40,10 +39,9 @@ import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.CommonProxy;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
-import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
+import com.kneelawk.graphlib.impl.graph.listener.UniverseListener;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
@@ -56,6 +54,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Map<Identifier, LinkEntityType> linkEntityTypes = new LinkedHashMap<>();
     private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
     private final Set<CacheCategory<?>> cacheCategories = new ObjectLinkedOpenHashSet<>();
+    final Map<Identifier, UniverseListener> listeners = new LinkedHashMap<>();
     final SaveMode saveMode;
     final SyncProfile syncProfile;
 
@@ -72,32 +71,8 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    @Deprecated
-    public @NotNull GraphView getGraphView(@NotNull World world) {
-        return CommonProxy.INSTANCE.getStorage(world).get(id);
-    }
-
-    @Override
-    public @Nullable GraphView getSidedGraphView(@NotNull World world) {
-        GraphWorldStorage storage = CommonProxy.INSTANCE.getSidedStorage(world);
-        if (storage == null) return null;
-
-        return storage.get(id);
-    }
-
-    @Override
     public @NotNull ServerGraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world) {
         return StorageHelper.getStorage(world).get(id);
-    }
-
-    @Override
-    public @Nullable ClientGraphWorldImpl getClientGraphView() {
-        ClientGraphWorldStorage storage = CommonProxy.INSTANCE.getClientStorage();
-        if (storage == null) {
-            return null;
-        }
-
-        return storage.get(id);
     }
 
     @Override
@@ -191,6 +166,11 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     @Override
     public ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance) {
         return new SimpleClientGraphWorld(this, world, loadDistance);
+    }
+
+    @Override
+    public void addListener(Identifier key, UniverseListener listener) {
+        listeners.put(key, listener);
     }
 
     @Override

@@ -29,35 +29,45 @@ import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 
 /**
- * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
+ * Holds a graph entity encoder and decoder.
  *
- * @param <N> the type of block node this encoder encodes.
+ * @param encoder the encoder.
+ * @param decoder the decoder.
  */
-@FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
+public record GraphEntitySyncing<G extends GraphEntity<G>>(@NotNull GraphEntityPacketEncoder<G> encoder,
+                                                           @NotNull GraphEntityPacketDecoder decoder) {
     /**
-     * Returns a no-op encoder.
+     * Encodes a graph entity.
+     * <p>
+     * <b>Note: this does not write the graph entity's type id. That must be written separately.</b>
+     * <p>
+     * <b>Note: the graph entity being encoded must be of the type that the encoder expects.</b>
      *
-     * @param <T> the type of block node to encode.
-     * @return a no-op encoder.
+     * @param node the graph entity to encode.
+     * @param buf  the buffer to encode to.
+     * @param ctx  the message context.
      */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noop() {
-        return (node, buf, ctx) -> {};
+    @SuppressWarnings("unchecked")
+    public void encode(@NotNull GraphEntity<?> node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {
+        encoder.encode((G) node, buf, ctx);
     }
 
     /**
-     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
-     * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
+     * Decodes a graph entity.
      *
-     * @param node the node to encode.
-     * @param buf  the buffer to write to.
-     * @param ctx  the message write context.
+     * @param buf the buffer to decode from.
+     * @param ctx the message context.
+     * @return a newly decoded graph entity.
+     * @throws InvalidInputDataException if the buffer contained invalid data.
      */
-    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
+    public @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx)
+        throws InvalidInputDataException {
+        return decoder.decode(buf, ctx);
+    }
 }

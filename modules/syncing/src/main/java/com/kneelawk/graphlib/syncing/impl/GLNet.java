@@ -67,17 +67,20 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.GraphLibImpl;
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.util.ClassUtils;
+import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
+import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
+import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
+import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
+import com.kneelawk.graphlib.syncing.impl.graph.WorldEncoder;
 
 public class GLNet {
     public static void init() {
@@ -86,10 +89,10 @@ public class GLNet {
 
     public static final ParentNetId GRAPH_LIB_ID = McNetworkStack.ROOT.child(Constants.MOD_ID);
 
-    public static final NetObjectCache<GraphUniverse> UNIVERSE_CACHE =
+    public static final NetObjectCache<SyncedUniverse> UNIVERSE_CACHE =
         NetObjectCache.createMappedIdentifier(GRAPH_LIB_ID.child("universe_cache"),
-            GraphUniverse::getId, id -> {
-                GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(id);
+            SyncedUniverse::getId, id -> {
+                SyncedUniverseImpl universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(id);
                 if (universe == null) {
                     GLLog.warn("Unable to decode unknown universe {}", id);
                 }
@@ -105,14 +108,14 @@ public class GLNet {
                 World world = ctx.getConnection().getPlayer().getWorld();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
-                GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+                SyncedUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
                 if (universe == null) {
                     GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
                     throw new InvalidInputDataException(
                         "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
-                NodePos pos = NodePos.fromPacket(buffer, ctx, universe);
+                NodePos pos = PacketEncodingUtil.decodeNodePos(buffer, ctx, universe);
 
                 GraphView view = universe.getSidedGraphView(world);
                 if (view == null) {
@@ -133,11 +136,11 @@ public class GLNet {
             @Override
             protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, NodeEntity value) {
                 NodeEntityContext entityCtx = value.getContext();
+                SyncedUniverse universe = GraphLibSyncing.getUniverse(entityCtx.getGraphWorld());
 
-                buffer.writeVarUnsignedInt(
-                    UNIVERSE_CACHE.getId(ctx.getConnection(), entityCtx.getGraphWorld().getUniverse()));
+                buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
 
-                entityCtx.getPos().toPacket(buffer, ctx);
+                PacketEncodingUtil.encodeNodePos(entityCtx.getPos(), buffer, ctx, universe);
             }
         };
 
@@ -148,14 +151,14 @@ public class GLNet {
                 World world = ctx.getConnection().getPlayer().getWorld();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
-                GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+                SyncedUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
                 if (universe == null) {
                     GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
                     throw new InvalidInputDataException(
                         "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
-                LinkPos pos = LinkPos.fromPacket(buffer, ctx, universe);
+                LinkPos pos = PacketEncodingUtil.decodeLinkPos(buffer, ctx, universe);
 
                 GraphView view = universe.getSidedGraphView(world);
                 if (view == null) {
@@ -176,11 +179,11 @@ public class GLNet {
             @Override
             protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, LinkEntity value) {
                 LinkEntityContext entityCtx = value.getContext();
+                SyncedUniverse universe = GraphLibSyncing.getUniverse(entityCtx.getGraphWorld());
 
-                buffer.writeVarUnsignedInt(
-                    UNIVERSE_CACHE.getId(ctx.getConnection(), entityCtx.getGraphWorld().getUniverse()));
+                buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
 
-                entityCtx.getPos().toPacket(buffer, ctx);
+                PacketEncodingUtil.encodeLinkPos(entityCtx.getPos(), buffer, ctx, universe);
             }
         };
 
@@ -192,7 +195,7 @@ public class GLNet {
                 World world = ctx.getConnection().getPlayer().getWorld();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
-                GraphUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+                SyncedUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
                 if (universe == null) {
                     GLLog.warn("Unable to decode universe from unknown universe id int {}", universeIdInt);
                     throw new InvalidInputDataException(
@@ -221,7 +224,7 @@ public class GLNet {
                     throw new InvalidInputDataException("Unable to decode graph entity type id from int " + typeIdInt);
                 }
 
-                GraphEntityType<?> type = universe.getGraphEntityType(typeId);
+                GraphEntityType<?> type = universe.getUniverse().getGraphEntityType(typeId);
                 if (type == null) {
                     GLLog.warn("Encountered unknown graph entity type {}", typeId);
                     throw new InvalidInputDataException("Encountered unknown graph entity type " + typeId);
@@ -233,8 +236,9 @@ public class GLNet {
             @Override
             protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, GraphEntity value) {
                 GraphEntityContext entityCtx = value.getContext();
-                buffer.writeVarUnsignedInt(
-                    UNIVERSE_CACHE.getId(ctx.getConnection(), entityCtx.getGraphWorld().getUniverse()));
+                SyncedUniverse universe = GraphLibSyncing.getUniverse(entityCtx.getGraphWorld());
+
+                buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
 
                 buffer.writeVarUnsignedLong(entityCtx.getGraph().getId());
 
@@ -271,7 +275,7 @@ public class GLNet {
     public static final NetIdData CHUNK_DATA =
         new NetIdData(GRAPH_LIB_ID, "chunk_data", -1).toClientOnly().setReceiver(GLNet::receiveChunkDataPacket);
 
-    public static void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
+    public static void sendChunkDataPacket(WorldEncoder world, ServerPlayerEntity player, ChunkPos pos) {
         ActiveConnection connection = CoreMinecraftNetUtil.getConnection(player);
         CHUNK_DATA.send(connection, (buffer, ctx) -> {
             buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), world.getUniverse()));
@@ -298,7 +302,9 @@ public class GLNet {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendNodeAdd should only be called on the logical server");
 
-        GraphUniverse universe = world.getUniverse();
+        WorldEncoder encoder = GraphLibSyncingImpl.getEncoder(world);
+
+        SyncedUniverse universe = encoder.getUniverse();
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -311,7 +317,7 @@ public class GLNet {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_ADD.send(conn, (buf, ctx) -> {
                     buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
-                    world.writeNodeAdd(graph, node, buf, ctx);
+                    encoder.writeNodeAdd(graph, node, buf, ctx);
                 });
             }
         }
@@ -327,7 +333,7 @@ public class GLNet {
     @Nullable
     private static ClientGraphWorldImpl readClientGraphWorld(NetByteBuf buf, IMsgReadCtx ctx, String packetName) {
         int universeIdInt = buf.readVarUnsignedInt();
-        GraphUniverseImpl universe = (GraphUniverseImpl) UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
+        SyncedUniverseImpl universe = (SyncedUniverseImpl) UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
         if (universe == null) {
             GLLog.warn("Received {} packet for unknown universe id int: {}", packetName, universeIdInt);
             ctx.drop("Received " + packetName + " for unknown universe");
@@ -350,7 +356,9 @@ public class GLNet {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendMerge should only be called on the logical server");
 
-        GraphUniverse universe = world.getUniverse();
+        WorldEncoder encoder = GraphLibSyncingImpl.getEncoder(world);
+
+        SyncedUniverse universe = encoder.getUniverse();
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -367,7 +375,7 @@ public class GLNet {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 GRAPH_MERGE.send(conn, (buf, ctx) -> {
                     buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
-                    world.writeMerge(from, into, buf, ctx);
+                    encoder.writeMerge(from, into, buf, ctx);
                 });
             }
         }
@@ -387,7 +395,9 @@ public class GLNet {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendLink should only be called on the logical server");
 
-        GraphUniverse universe = world.getUniverse();
+        WorldEncoder encoder = GraphLibSyncingImpl.getEncoder(world);
+
+        SyncedUniverse universe = encoder.getUniverse();
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -404,7 +414,7 @@ public class GLNet {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_LINK.send(conn, (buf, ctx) -> {
                     buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
-                    world.writeLink(graph, link, buf, ctx);
+                    encoder.writeLink(graph, link, buf, ctx);
                 });
             }
         }
@@ -424,7 +434,9 @@ public class GLNet {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendUnlink should only be called on the logical server");
 
-        GraphUniverse universe = world.getUniverse();
+        WorldEncoder encoder = GraphLibSyncingImpl.getEncoder(world);
+
+        SyncedUniverse universe = encoder.getUniverse();
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -440,7 +452,7 @@ public class GLNet {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_UNLINK.send(conn, (buf, ctx) -> {
                     buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
-                    world.writeUnlink(graph, a, b, key, buf, ctx);
+                    encoder.writeUnlink(graph, a, b, key, buf, ctx);
                 });
             }
         }
@@ -460,7 +472,9 @@ public class GLNet {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendSplitInto should only be called on the logical server");
 
-        GraphUniverse universe = world.getUniverse();
+        WorldEncoder encoder = GraphLibSyncingImpl.getEncoder(world);
+
+        SyncedUniverse universe = encoder.getUniverse();
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -477,7 +491,7 @@ public class GLNet {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 GRAPH_SPLIT.send(conn, (buf, ctx) -> {
                     buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
-                    world.writeSplitInto(from, into, buf, ctx);
+                    encoder.writeSplitInto(from, into, buf, ctx);
                 });
             }
         }
@@ -497,7 +511,9 @@ public class GLNet {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendNodeRemove should only be called on the logical server");
 
-        GraphUniverse universe = world.getUniverse();
+        WorldEncoder encoder = GraphLibSyncingImpl.getEncoder(world);
+
+        SyncedUniverse universe = encoder.getUniverse();
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -510,7 +526,7 @@ public class GLNet {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_REMOVE.send(conn, (buf, ctx) -> {
                     buf.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
-                    world.writeNodeRemove(graph, holder, buf, ctx);
+                    encoder.writeNodeRemove(graph, holder, buf, ctx);
                 });
             }
         }

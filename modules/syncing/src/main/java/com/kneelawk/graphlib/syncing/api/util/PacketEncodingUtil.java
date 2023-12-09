@@ -37,10 +37,14 @@ import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.impl.GLNet;
 
 /**
@@ -106,5 +110,69 @@ public class PacketEncodingUtil {
         BlockNode node = syncing.decode(buf, ctx);
 
         return new NodePos(pos, node);
+    }
+
+    /**
+     * Writes this link pos to a packet.
+     *
+     * @param linkPos  the link-pos to be encoded.
+     * @param buf      the buffer to write to.
+     * @param ctx      the message context.
+     * @param universe the universe that the link-pos's link key is associated with.
+     */
+    public static void encodeLinkPos(@NotNull LinkPos linkPos, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx,
+                              @NotNull SyncedUniverse universe) {
+        encodeNodePos(linkPos.first(), buf, ctx, universe);
+        encodeNodePos(linkPos.second(), buf, ctx, universe);
+        buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), linkPos.key().getType().getId()));
+        universe.getLinkKeySyncing(linkPos.key().getType()).encode(linkPos.key(), buf, ctx);
+    }
+
+    /**
+     * Decodes a link pos from a packet.
+     *
+     * @param buf      the buffer to read from.
+     * @param ctx      the message context.
+     * @param universe the universe containing the decoders that this will use.
+     * @return a newly decoded link pos, or <code>null</code> if decoding failed.
+     * @throws InvalidInputDataException if there was an error while decoding the link pos.
+     */
+    public static @NotNull LinkPos decodeLinkPos(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx,
+                                                 @NotNull SyncedUniverse universe) throws InvalidInputDataException {
+        NodePos first = decodeNodePos(buf, ctx, universe);
+
+        NodePos second = decodeNodePos(buf, ctx, universe);
+
+        int idInt = buf.readVarUnsignedInt();
+        Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), idInt);
+        if (typeId == null) {
+            GLLog.warn("Unable to decode link key type id from unknown identifier int {} @ {}-{}", idInt, first,
+                second);
+            throw new InvalidInputDataException(
+                "Unable to decode link key type id from unknown identifier int " + idInt + " @ " + first + "-" +
+                    second);
+        }
+
+        LinkKeyType type = universe.getUniverse().getLinkKeyType(typeId);
+        if (type == null) {
+            GLLog.warn("Unable to decode unknown link key type id {} @ {}-{} in universe {}", typeId, first, second,
+                universe.getId());
+            throw new InvalidInputDataException(
+                "Unable to decode unknown link key type id " + typeId + " @ " + first + "-" + second + " in universe " +
+                    universe.getId());
+        }
+
+        if (universe.hasLinkKeySyncing(type)) {
+            GLLog.error("Tried to decode link key {} @ {}-{} in universe {} but it has no packet decoder.", typeId,
+                first, second, universe.getId());
+            throw new InvalidInputDataException(
+                "Tried to decode link key " + typeId + " @ " + first + "-" + second + " in universe " +
+                    universe.getId() + " but it has no packet decoder.");
+        }
+        LinkKeySyncing decoder = universe.getLinkKeySyncing(type);
+
+        LinkKey key = decoder.decode(buf, ctx);
+
+        return new LinkPos(first, second, key);
     }
 }

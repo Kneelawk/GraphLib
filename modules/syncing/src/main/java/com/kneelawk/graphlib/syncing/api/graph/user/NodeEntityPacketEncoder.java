@@ -23,44 +23,41 @@
  *
  */
 
-package com.kneelawk.graphlib.impl;
+package com.kneelawk.graphlib.syncing.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
-import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
-import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 
-public class CommonProxy {
-    public static CommonProxy INSTANCE = new CommonProxy();
-
-    public @Nullable World getClientWorld() {
-        return null;
+/**
+ * Used for encoding a {@link NodeEntity} to a {@link NetByteBuf}.
+ *
+ * @param <N> the type of node entity this encoder encodes.
+ */
+@FunctionalInterface
+public interface NodeEntityPacketEncoder<N extends NodeEntity> {
+    /**
+     * Returns a no-op encoder.
+     *
+     * @param <T> the type of node entity to encode.
+     * @return a no-op encoder.
+     */
+    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noop() {
+        return (entity, buf, ctx) -> {};
     }
 
-    @Deprecated
-    public @NotNull GraphWorldStorage getStorage(@NotNull World world) {
-        if (world instanceof ServerWorld serverWorld) {
-            return StorageHelper.getStorage(serverWorld);
-        }
-
-        throw new IllegalArgumentException(
-            "PHYSICAL SERVER: World must be a ServerWorld, but was: " + world.getClass());
-    }
-
-    public @Nullable ClientGraphWorldStorage getClientStorage() {
-        return null;
-    }
-
-    public @Nullable GraphWorldStorage getSidedStorage(@NotNull World world) {
-        if (world instanceof ServerWorld serverWorld) {
-            return StorageHelper.getStorage(serverWorld);
-        }
-
-        return null;
-    }
+    /**
+     * Encodes a {@link NodeEntity} to a {@link NetByteBuf}.
+     * <p>
+     * The data will be decoded by {@link NodeEntityPacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
+     *
+     * @param entity the entity to be encoded.
+     * @param buf    the buffer to write to.
+     * @param ctx    the message context.
+     */
+    void encode(@NotNull N entity, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
 }

@@ -23,34 +23,12 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.graph;
+package com.kneelawk.graphlib.impl.graph.listener;
 
-import net.minecraft.util.math.ChunkPos;
+import org.jetbrains.annotations.NotNull;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.InvalidInputDataException;
-import alexiil.mc.lib.net.NetByteBuf;
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 
-import com.kneelawk.graphlib.api.graph.GraphView;
-
-public interface ClientGraphWorldImpl extends GraphView {
-    void unload(ChunkPos pos);
-
-    void setChunkMapCenter(int x, int z);
-
-    void updateLoadDistance(int loadDistance);
-
-    void readChunkPillar(int chunkX, int chunkZ, NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
-
-    void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
-
-    void readMerge(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
-
-    void readLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
-
-    void readUnlink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
-
-    void readSplitInto(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
-
-    void readNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException;
+public interface UniverseListener {
+    @NotNull WorldListener createWorldListener(ServerGraphWorldImpl world);
 }

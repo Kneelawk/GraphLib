@@ -23,41 +23,16 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.api.graph.user;
+package com.kneelawk.graphlib.syncing.impl;
 
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.Identifier;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.IMsgWriteCtx;
-import alexiil.mc.lib.net.NetByteBuf;
+public class SyncedConstants {
+    public static final String MOD_ID = "graphlib_syncing";
 
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+    public static final Identifier LISTENER_KEY = id("synchronizer");
 
-/**
- * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
- *
- * @param <N> the type of block node this encoder encodes.
- */
-@FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of block node to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noop() {
-        return (node, buf, ctx) -> {};
+    public static Identifier id(String path) {
+        return new Identifier(MOD_ID, path);
     }
-
-    /**
-     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
-     * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
-     *
-     * @param node the node to encode.
-     * @param buf  the buffer to write to.
-     * @param ctx  the message write context.
-     */
-    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
 }

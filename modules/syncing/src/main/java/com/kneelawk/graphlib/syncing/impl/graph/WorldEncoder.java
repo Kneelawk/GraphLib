@@ -23,41 +23,35 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.api.graph.user;
+package com.kneelawk.graphlib.syncing.impl.graph;
 
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.math.ChunkPos;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
 
-/**
- * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
- *
- * @param <N> the type of block node this encoder encodes.
- */
-@FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of block node to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noop() {
-        return (node, buf, ctx) -> {};
-    }
+public interface WorldEncoder extends WorldListener {
+    SyncedUniverseImpl getUniverse();
 
-    /**
-     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
-     * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
-     *
-     * @param node the node to encode.
-     * @param buf  the buffer to write to.
-     * @param ctx  the message write context.
-     */
-    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
+    void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeMerge(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeLink(BlockGraph graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key, NetByteBuf buf,
+                     IMsgWriteCtx ctx);
+
+    void writeSplitInto(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx);
+
+    void writeNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx);
 }
