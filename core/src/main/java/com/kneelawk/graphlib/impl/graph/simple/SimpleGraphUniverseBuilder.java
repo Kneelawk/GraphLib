@@ -13,7 +13,6 @@ public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
 
     @Override
     public @NotNull GraphUniverse build(@NotNull Identifier universeId) {
-        GraphLibImpl.preBuild(universeId, this);
         return new SimpleGraphUniverse(universeId, this);
     }
 

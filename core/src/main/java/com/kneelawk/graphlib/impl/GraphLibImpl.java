@@ -14,13 +14,10 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
-import com.kneelawk.graphlib.impl.graph.UniverseModifierRegistryImpl;
 
 public final class GraphLibImpl {
     private GraphLibImpl() {
     }
-
-    private static final UniverseModifierRegistryImpl UNIVERSE_MODIFIER_REGISTRY = UniverseModifierRegistryImpl.setup();
 
     private static final Identifier UNIVERSE_IDENTIFIER = Constants.id("universe");
     public static final RegistryKey<Registry<GraphUniverseImpl>> UNIVERSE_KEY =
@@ -40,9 +37,5 @@ public final class GraphLibImpl {
 
     public static void register(GraphUniverseImpl universe) {
         Registry.register(UNIVERSE, universe.getId(), universe);
-    }
-
-    public static void preBuild(Identifier universeId, GraphUniverse.Builder builder) {
-        UNIVERSE_MODIFIER_REGISTRY.preBuild(universeId, builder);
     }
 }
