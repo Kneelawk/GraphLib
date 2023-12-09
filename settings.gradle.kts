@@ -18,7 +18,17 @@ pluginManagement {
 
 rootProject.name = "graphlib"
 
-include("core")
-include("debugrender")
-include("syncing")
-include("example")
+fun module(name: String) {
+    include(name)
+    project(":$name").projectDir = File(rootDir, "modules/$name")
+}
+
+fun example(name: String) {
+    include(name)
+    project(":$name").projectDir = File(rootDir, "examples/$name")
+}
+
+module("core")
+module("debugrender")
+module("syncing")
+example("example")
