@@ -6,11 +6,9 @@
     "defaultRequire": 1
   },
   "client": [
-    "ClientChunkManagerMixin",
     "RenderLayerAccessor"
   ],
   "mixins": [
-    "ServerChunkSenderMixin",
     "StorageIoWorkerAccessor",
     "ThreadedChunkManagerMixin"
   ]

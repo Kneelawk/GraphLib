@@ -5,23 +5,13 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
-import alexiil.mc.lib.net.IMsgWriteCtx;
-import alexiil.mc.lib.net.NetByteBuf;
-import alexiil.mc.lib.net.ParentNetIdSingle;
-
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
-import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Mutable data associated with a link, similar to a BlockEntity.
  */
 public interface LinkEntity {
-    /**
-     * LibNetworkStack net parent for link entities.
-     */
-    @NotNull ParentNetIdSingle<LinkEntity> NET_PARENT = GLNet.LINK_ENTITY_PARENT;
-
     /**
      * Called when this link entity is initialized in a graph, to give this its context.
      *
@@ -52,14 +42,6 @@ public interface LinkEntity {
      * @return this link entity as an NBT tag.
      */
     @Nullable NbtElement toTag();
-
-    /**
-     * Encodes this link entity as a packet for server to client synchronization.
-     *
-     * @param buf the buffer to write to.
-     * @param ctx the message context.
-     */
-    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Called after this link entity has been initialized if it was just newly added instead of just being loaded.

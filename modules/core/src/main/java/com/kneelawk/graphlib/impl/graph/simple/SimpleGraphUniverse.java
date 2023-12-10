@@ -164,11 +164,6 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance) {
-        return new SimpleClientGraphWorld(this, world, loadDistance);
-    }
-
-    @Override
     public void addListener(Identifier key, UniverseListener listener) {
         listeners.put(key, listener);
     }

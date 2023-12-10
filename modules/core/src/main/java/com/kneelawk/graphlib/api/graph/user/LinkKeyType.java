@@ -41,13 +41,10 @@ import com.kneelawk.graphlib.api.util.ObjectType;
 public class LinkKeyType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull LinkKeyDecoder decoder;
-    private final @Nullable LinkKeyPacketDecoder packetDecoder;
 
-    private LinkKeyType(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder,
-                        @Nullable LinkKeyPacketDecoder packetDecoder) {
+    private LinkKeyType(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
-        this.packetDecoder = packetDecoder;
     }
 
     /**
@@ -67,15 +64,6 @@ public class LinkKeyType implements ObjectType {
      */
     public @NotNull LinkKeyDecoder getDecoder() {
         return decoder;
-    }
-
-    /**
-     * Gets this type's packet decoder.
-     *
-     * @return this type's packet decoder.
-     */
-    public @Nullable LinkKeyPacketDecoder getPacketDecoder() {
-        return packetDecoder;
     }
 
     @Override
@@ -103,27 +91,13 @@ public class LinkKeyType implements ObjectType {
     /**
      * Creates a new link key type.
      *
-     * @param id            the id of the type.
-     * @param decoder       the decoder of the type.
-     * @param packetDecoder the packet decoder of the type.
-     * @return a new link key type.
-     */
-    @Contract(value = "_, _, _ -> new", pure = true)
-    public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder,
-                                          @Nullable LinkKeyPacketDecoder packetDecoder) {
-        return new LinkKeyType(id, decoder, packetDecoder);
-    }
-
-    /**
-     * Creates a new link key type.
-     *
      * @param id      the id of the type.
      * @param decoder the decoder of the type.
      * @return a new link key type.
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder) {
-        return new LinkKeyType(id, decoder, null);
+        return new LinkKeyType(id, decoder);
     }
 
     /**
@@ -135,6 +109,6 @@ public class LinkKeyType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull Supplier<LinkKey> supplier) {
-        return new LinkKeyType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
+        return new LinkKeyType(id, nbt -> supplier.get());
     }
 }

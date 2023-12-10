@@ -20,8 +20,6 @@ public interface GraphUniverseImpl extends GraphUniverse {
 
     ServerGraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites);
 
-    ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance);
-
     void addListener(Identifier key, UniverseListener listener);
 
     @NotNull Set<BlockNode> discoverNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);

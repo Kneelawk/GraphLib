@@ -23,10 +23,10 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.mixin.api;
+package com.kneelawk.graphlib.syncing.impl.mixin.api;
 
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 
 public interface ClientGraphWorldStorageAccess {
-    ClientGraphWorldStorage graphlib_getClientGraphWorldStorage();
+    ClientGraphWorldStorage graphlib_syncing_getClientGraphWorldStorage();
 }

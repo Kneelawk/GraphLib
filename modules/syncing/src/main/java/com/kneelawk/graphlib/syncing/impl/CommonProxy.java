@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 

@@ -7,14 +7,9 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
-import alexiil.mc.lib.net.IMsgWriteCtx;
-import alexiil.mc.lib.net.NetByteBuf;
-import alexiil.mc.lib.net.ParentNetIdSingle;
-
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
-import com.kneelawk.graphlib.impl.net.GLNet;
 
 /**
  * Arbitrary data that can be stored in a graph.
@@ -22,12 +17,6 @@ import com.kneelawk.graphlib.impl.net.GLNet;
  * @param <G> this graph entity class.
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
-    /**
-     * LibNetworkStack net parent for graph entities.
-     */
-    @SuppressWarnings("rawtypes")
-    @NotNull ParentNetIdSingle<GraphEntity> NET_PARENT = GLNet.GRAPH_ENTITY_PARENT;
-
     /**
      * Called when the graph entity is initialized in a graph, to give this its context.
      *
@@ -55,14 +44,6 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      * @return this graph entity as an NBT tag.
      */
     @Nullable NbtElement toTag();
-
-    /**
-     * Encodes this graph entity as a packet for server to client synchronization.
-     *
-     * @param buf the buffer to write to.
-     * @param ctx the message context.
-     */
-    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Called right before this entity's associated graph is deleted.

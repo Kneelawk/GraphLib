@@ -41,13 +41,10 @@ import com.kneelawk.graphlib.api.util.ObjectType;
 public class LinkEntityType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull LinkEntityDecoder decoder;
-    private final @Nullable LinkEntityPacketDecoder packetDecoder;
 
-    private LinkEntityType(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder,
-                           @Nullable LinkEntityPacketDecoder packetDecoder) {
+    private LinkEntityType(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
-        this.packetDecoder = packetDecoder;
     }
 
     /**
@@ -67,15 +64,6 @@ public class LinkEntityType implements ObjectType {
      */
     public @NotNull LinkEntityDecoder getDecoder() {
         return decoder;
-    }
-
-    /**
-     * Gets this type's packet decoder.
-     *
-     * @return this type's packet decoder.
-     */
-    public @Nullable LinkEntityPacketDecoder getPacketDecoder() {
-        return packetDecoder;
     }
 
     @Override
@@ -103,27 +91,13 @@ public class LinkEntityType implements ObjectType {
     /**
      * Creates a new link entity type.
      *
-     * @param id            the id of the new type.
-     * @param decoder       the decoder for the new type.
-     * @param packetDecoder the packet decoder for the new type.
-     * @return a new link entity type.
-     */
-    @Contract(value = "_, _, _ -> new", pure = true)
-    public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder,
-                                             @Nullable LinkEntityPacketDecoder packetDecoder) {
-        return new LinkEntityType(id, decoder, packetDecoder);
-    }
-
-    /**
-     * Creates a new link entity type.
-     *
      * @param id      the id of the new type.
      * @param decoder the decoder for the new type.
      * @return a new link entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder) {
-        return new LinkEntityType(id, decoder, null);
+        return new LinkEntityType(id, decoder);
     }
 
     /**
@@ -135,6 +109,6 @@ public class LinkEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull Supplier<LinkEntity> supplier) {
-        return new LinkEntityType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
+        return new LinkEntityType(id, nbt -> supplier.get());
     }
 }

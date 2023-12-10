@@ -41,13 +41,10 @@ import com.kneelawk.graphlib.api.util.ObjectType;
 public class NodeEntityType implements ObjectType {
     private final @NotNull Identifier id;
     private final @NotNull NodeEntityDecoder decoder;
-    private final @Nullable NodeEntityPacketDecoder packetDecoder;
 
-    private NodeEntityType(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder,
-                           @Nullable NodeEntityPacketDecoder packetDecoder) {
+    private NodeEntityType(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
-        this.packetDecoder = packetDecoder;
     }
 
     /**
@@ -67,15 +64,6 @@ public class NodeEntityType implements ObjectType {
      */
     public @NotNull NodeEntityDecoder getDecoder() {
         return decoder;
-    }
-
-    /**
-     * Gets this type's packet decoder.
-     *
-     * @return this type's packet decoder.
-     */
-    public @Nullable NodeEntityPacketDecoder getPacketDecoder() {
-        return packetDecoder;
     }
 
     @Override
@@ -103,27 +91,13 @@ public class NodeEntityType implements ObjectType {
     /**
      * Creates a new node entity type.
      *
-     * @param id            the id of the new node entity type.
-     * @param decoder       the decoder for the new node entity type.
-     * @param packetDecoder the packet decoder for the new node entity type.
-     * @return a new node entity type.
-     */
-    @Contract(value = "_, _, _ -> new", pure = true)
-    public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder,
-                                             @Nullable NodeEntityPacketDecoder packetDecoder) {
-        return new NodeEntityType(id, decoder, packetDecoder);
-    }
-
-    /**
-     * Creates a new node entity type.
-     *
      * @param id      the id of the new node entity type.
      * @param decoder the decoder for the new node entity type.
      * @return a new node entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder) {
-        return new NodeEntityType(id, decoder, null);
+        return new NodeEntityType(id, decoder);
     }
 
     /**
@@ -135,6 +109,6 @@ public class NodeEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull Supplier<NodeEntity> supplier) {
-        return new NodeEntityType(id, nbt -> supplier.get(), (buf, ctx) -> supplier.get());
+        return new NodeEntityType(id, nbt -> supplier.get());
     }
 }

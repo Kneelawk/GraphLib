@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.mixin.impl;
+package com.kneelawk.graphlib.syncing.impl.mixin.impl;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -35,8 +35,8 @@ import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.ChunkPos;
 
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
-import com.kneelawk.graphlib.impl.mixin.api.ClientGraphWorldStorageAccess;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
+import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientGraphWorldStorageAccess;
 
 @Mixin(ClientChunkManager.class)
 public class ClientChunkManagerMixin implements ClientGraphWorldStorageAccess {
@@ -64,7 +64,7 @@ public class ClientChunkManagerMixin implements ClientGraphWorldStorageAccess {
     }
 
     @Override
-    public ClientGraphWorldStorage graphlib_getClientGraphWorldStorage() {
+    public ClientGraphWorldStorage graphlib_syncing_getClientGraphWorldStorage() {
         return storage;
     }
 }

@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.graph;
+package com.kneelawk.graphlib.syncing.impl.graph;
 
 import java.util.Map;
 
@@ -37,6 +37,9 @@ import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
+import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
+import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 
 public class ClientGraphWorldStorage implements GraphWorldStorage {
     private final Map<Identifier, ClientGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
@@ -45,7 +48,7 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
     public ClientGraphWorldStorage(World clientWorld, int loadDistance) {
         this.clientWorld = clientWorld;
 
-        for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSE) {
+        for (SyncedUniverseImpl universe : GraphLibSyncingImpl.SYNCED_UNIVERSE) {
             if (universe.getSyncProfile().isEnabled()) {
                 Identifier universeId = universe.getId();
 

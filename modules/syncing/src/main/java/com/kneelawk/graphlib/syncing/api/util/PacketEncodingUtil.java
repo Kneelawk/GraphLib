@@ -39,11 +39,14 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketDecoder;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.impl.GLNet;
 
@@ -52,6 +55,16 @@ import com.kneelawk.graphlib.syncing.impl.GLNet;
  */
 public class PacketEncodingUtil {
     private PacketEncodingUtil() {}
+
+    /**
+     * Packet encoder for {@link EmptyLinkKey}.
+     */
+    public static final LinkKeyPacketEncoder<EmptyLinkKey> EMPTY_KEY_ENCODER = LinkKeyPacketEncoder.noop();
+
+    /**
+     * Packet decoder for {@link EmptyLinkKey}.
+     */
+    public static final LinkKeyPacketDecoder EMPTY_KEY_DECODER = (buf, ctx) -> EmptyLinkKey.INSTANCE;
 
     /**
      * Writes this NodePos to a packet.
@@ -121,7 +134,7 @@ public class PacketEncodingUtil {
      * @param universe the universe that the link-pos's link key is associated with.
      */
     public static void encodeLinkPos(@NotNull LinkPos linkPos, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx,
-                              @NotNull SyncedUniverse universe) {
+                                     @NotNull SyncedUniverse universe) {
         encodeNodePos(linkPos.first(), buf, ctx, universe);
         encodeNodePos(linkPos.second(), buf, ctx, universe);
         buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), linkPos.key().getType().getId()));

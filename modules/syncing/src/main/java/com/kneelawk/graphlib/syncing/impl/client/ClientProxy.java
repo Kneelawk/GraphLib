@@ -36,12 +36,12 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 
-import com.kneelawk.graphlib.impl.CommonProxy;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
-import com.kneelawk.graphlib.impl.mixin.api.ClientStorageHelper;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.syncing.impl.CommonProxy;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
+import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
 
 @Environment(EnvType.CLIENT)
 public class ClientProxy extends CommonProxy {

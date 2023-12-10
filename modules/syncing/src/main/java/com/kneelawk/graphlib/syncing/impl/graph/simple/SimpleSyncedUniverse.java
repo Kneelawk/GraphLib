@@ -42,7 +42,7 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldStorage;
+import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
@@ -62,9 +62,11 @@ import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntityPacketDecoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntityPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
 import com.kneelawk.graphlib.syncing.impl.CommonProxy;
 import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 
 public class SimpleSyncedUniverse implements SyncedUniverseImpl {
@@ -82,6 +84,9 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
         id = universe.getId();
         this.universe = universe;
         syncProfile = builder.profile;
+
+        addLinkKeySyncing(EmptyLinkKey.TYPE, PacketEncodingUtil.EMPTY_KEY_ENCODER,
+            PacketEncodingUtil.EMPTY_KEY_DECODER);
     }
 
     @Override
@@ -222,5 +227,10 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     @Override
     public @NotNull WorldListener createWorldListener(ServerGraphWorldImpl world) {
         return new SimpleWorldEncoder(this, world);
+    }
+
+    @Override
+    public ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance) {
+        return new SimpleClientGraphWorld(this, world, loadDistance);
     }
 }

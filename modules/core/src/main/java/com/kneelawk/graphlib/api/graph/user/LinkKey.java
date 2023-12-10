@@ -5,9 +5,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
-import alexiil.mc.lib.net.IMsgWriteCtx;
-import alexiil.mc.lib.net.NetByteBuf;
-
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -32,14 +29,6 @@ public interface LinkKey {
      * @return this link key as an NBT tag.
      */
     @Nullable NbtElement toTag();
-
-    /**
-     * Encodes this link key as a packet for server to client synchronization.
-     *
-     * @param buf the buffer to write to.
-     * @param ctx the message context.
-     */
-    default void toPacket(@NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx) {}
 
     /**
      * Checks whether this specific link should have a link entity associated with it.
