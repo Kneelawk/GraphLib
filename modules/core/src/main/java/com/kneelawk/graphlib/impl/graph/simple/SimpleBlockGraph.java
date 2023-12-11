@@ -33,18 +33,12 @@ import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.IMsgWriteCtx;
-import alexiil.mc.lib.net.InvalidInputDataException;
-import alexiil.mc.lib.net.NetByteBuf;
-
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
-import com.kneelawk.graphlib.api.graph.user.GraphEntityPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
@@ -62,7 +56,7 @@ import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.net.GLNet;
+import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
@@ -70,7 +64,7 @@ import com.kneelawk.graphlib.impl.net.GLNet;
 /**
  * Holds and manages a set of block nodes.
  */
-public class SimpleBlockGraph implements BlockGraph {
+public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
     static @NotNull SimpleBlockGraph fromTag(@NotNull SimpleServerGraphWorld controller, long id,
                                              @NotNull NbtCompound tag) {
         NbtList chunksTag = tag.getList("chunks", NbtElement.LONG_TYPE);
@@ -178,7 +172,7 @@ public class SimpleBlockGraph implements BlockGraph {
     private final Multimap<BlockPos, NodeHolder<BlockNode>> nodesInPos = LinkedHashMultimap.create();
     private final Long2ObjectMap<Set<NodeHolder<BlockNode>>> nodesInChunk = new Long2ObjectLinkedOpenHashMap<>();
     private final Map<NodePos, NodeHolder<BlockNode>> nodesToHolders = new Object2ObjectLinkedOpenHashMap<>();
-    final LongSet chunks = new LongLinkedOpenHashSet();
+    private final LongSet chunks = new LongLinkedOpenHashSet();
     private final Map<CacheCategory<?>, List<?>> nodeCaches = new Object2ObjectLinkedOpenHashMap<>();
     private final Map<GraphEntityType<?>, GraphEntity<?>> graphEntities = new Object2ObjectLinkedOpenHashMap<>();
 
@@ -205,7 +199,8 @@ public class SimpleBlockGraph implements BlockGraph {
         this.chunks.addAll(chunks);
     }
 
-    @NotNull NbtCompound toTag() {
+    @Override
+    public @NotNull NbtCompound toTag() {
         NbtCompound tag = new NbtCompound();
 
         NbtList chunksTag = new NbtList();
@@ -301,36 +296,13 @@ public class SimpleBlockGraph implements BlockGraph {
         return tag;
     }
 
-    void loadGraphEntitiesFromPacket(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        int entityCount = buf.readVarUnsignedInt();
-        for (int entityIndex = 0; entityIndex < entityCount; entityIndex++) {
-            int typeIdInt = buf.readVarUnsignedInt();
-            Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
-            if (typeId == null) {
-                GLLog.warn("Unable to decode graph entity type id int as id. Int: {}", typeIdInt);
-                throw new InvalidInputDataException(
-                    "Unable to decode graph entity type id int as id. Int: " + typeIdInt);
-            }
-
-            GraphEntityType<?> type = world.getUniverse().getGraphEntityType(typeId);
-            if (type == null) {
-                GLLog.warn("Received unknown graph entity type id: {}", typeId);
-                throw new InvalidInputDataException("Received unknown graph entity type id: " + typeId);
-            }
-
-            GraphEntityPacketDecoder decoder = type.getPacketDecoder();
-            if (decoder == null) {
-                GLLog.warn("Received graph entity but type has no packet decoder. Id: {}", typeId);
-                throw new InvalidInputDataException(
-                    "Received graph entity but type has no packet decoder. Id: " + typeId);
-            }
-
-            GraphEntity<?> entity = decoder.decode(buf, ctx);
-
-            if (graphEntities.containsKey(type)) {
+    @Override
+    public void initializeGraphEntities(List<GraphEntity<?>> newGraphEntities) {
+        for (GraphEntity<?> entity : newGraphEntities) {
+            if (graphEntities.containsKey(entity.getType())) {
                 entity.onDiscard();
             } else {
-                graphEntities.put(type, entity);
+                graphEntities.put(entity.getType(), entity);
                 entity.onInit(new SimpleGraphEntityContext(world.getWorld(), world, this));
             }
         }
@@ -344,13 +316,9 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    void writeGraphEntitiesToPacket(NetByteBuf buf, IMsgWriteCtx ctx) {
-        buf.writeVarUnsignedInt(graphEntities.size());
-        for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
-            buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), entry.getKey().getId()));
-
-            entry.getValue().toPacket(buf, ctx);
-        }
+    @Override
+    public LongSet getChunksImpl() {
+        return chunks;
     }
 
     /**
@@ -611,9 +579,9 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull
-    public SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
-                                                  @Nullable NodeEntity entity, boolean newlyAdded) {
+    @Override
+    public @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
+                                                           @Nullable NodeEntity entity, boolean newlyAdded) {
         BlockPos pos = blockPos.toImmutable();
         NodePos nodePos = new NodePos(pos, node);
 
@@ -686,7 +654,8 @@ public class SimpleBlockGraph implements BlockGraph {
         return graphNode;
     }
 
-    void destroyNode(@NotNull NodeHolder<BlockNode> holder, boolean doSplit) {
+    @Override
+    public void destroyNode(@NotNull NodeHolder<BlockNode> holder, boolean doSplit) {
         // send the node remove packet before any of the removing has actually happened
         world.sendNodeRemove(this, holder);
 
@@ -780,10 +749,12 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    @NotNull
-    public LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
-                                    @Nullable LinkEntity entity, boolean newlyAdded) {
-        Link<SimpleNodeWrapper, LinkKey> rawLink = new Link<>(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
+    @Override
+    public @NotNull LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
+                                             LinkKey key,
+                                             @Nullable LinkEntity entity, boolean newlyAdded) {
+        Link<SimpleNodeWrapper, LinkKey> rawLink =
+            new Link<>(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
         LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.getWorld(), world, rawLink);
         boolean unique = graph.link(rawLink);
 
@@ -847,7 +818,8 @@ public class SimpleBlockGraph implements BlockGraph {
         return link;
     }
 
-    boolean unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key) {
+    @Override
+    public boolean unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key) {
         world.sendUnlink(this, a, b, key);
 
         boolean linkRemoved =
@@ -872,7 +844,12 @@ public class SimpleBlockGraph implements BlockGraph {
         return true;
     }
 
-    void merge(@NotNull SimpleBlockGraph other) {
+    @Override
+    public void merge(@NotNull BlockGraphImpl otherI) {
+        if (!(otherI instanceof SimpleBlockGraph other)) throw new IllegalArgumentException(
+            "Attempting to merge two block graphs with different implementations! A: " + getClass() + ", B: " +
+                otherI.getClass());
+
         if (other.id == id) {
             // we cannot merge with ourselves
             return;
@@ -919,7 +896,8 @@ public class SimpleBlockGraph implements BlockGraph {
         world.destroyGraph(other.id);
     }
 
-    @NotNull List<SimpleBlockGraph> split() {
+    @Override
+    public @NotNull List<SimpleBlockGraph> split() {
         var newGraphs = graph.split();
 
         if (!newGraphs.isEmpty()) {
@@ -1031,7 +1009,12 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    void splitInto(SimpleBlockGraph into, Collection<NodePos> nodes) {
+    @Override
+    public void splitInto(BlockGraphImpl intoI, Collection<NodePos> nodes) {
+        if (!(intoI instanceof SimpleBlockGraph into)) throw new IllegalArgumentException(
+            "Attempting to move nodes between two block graphs with different implementations! A: " + getClass() +
+                ", B: " + intoI.getClass());
+
         // collect the block-nodes, block-poses, and chunks we are no longer a part of
         Set<Node<SimpleNodeWrapper, LinkKey>> movedNodes = new LinkedHashSet<>();
         Set<NodePos> removedNodes = new LinkedHashSet<>();
@@ -1118,7 +1101,8 @@ public class SimpleBlockGraph implements BlockGraph {
         into.rebuildCaches();
     }
 
-    void unloadInChunk(int chunkX, int chunkZ) {
+    @Override
+    public void unloadInChunk(int chunkX, int chunkZ) {
         // collect the block-nodes, block-poses, and chunks we are no longer a part of
         Set<NodePos> removedNodes = new LinkedHashSet<>();
         Set<BlockPos> removedPoses = new LinkedHashSet<>();
@@ -1168,7 +1152,8 @@ public class SimpleBlockGraph implements BlockGraph {
         world.removeGraphInPoses(id, removedNodes, removedPoses, removedChunks);
     }
 
-    void onUnload() {
+    @Override
+    public void onUnload() {
         for (NodeEntity entity : nodeEntities.values()) {
             entity.onUnload();
         }
@@ -1180,13 +1165,15 @@ public class SimpleBlockGraph implements BlockGraph {
         }
     }
 
-    void onDestroy() {
+    @Override
+    public void onDestroy() {
         for (GraphEntity<?> entity : graphEntities.values()) {
             entity.onDestroy();
         }
     }
 
-    void onTick() {
+    @Override
+    public void onTick() {
         for (GraphEntity<?> entity : graphEntities.values()) {
             entity.onTick();
         }

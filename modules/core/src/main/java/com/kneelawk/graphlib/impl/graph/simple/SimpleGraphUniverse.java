@@ -21,7 +21,6 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -31,14 +30,11 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
-import com.kneelawk.graphlib.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.world.SaveMode;
-import com.kneelawk.graphlib.impl.CommonProxy;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
-import com.kneelawk.graphlib.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.UniverseListener;
@@ -56,18 +52,12 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     private final Set<CacheCategory<?>> cacheCategories = new ObjectLinkedOpenHashSet<>();
     final Map<Identifier, UniverseListener> listeners = new LinkedHashMap<>();
     final SaveMode saveMode;
-    final SyncProfile syncProfile;
 
     public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
         this.id = universeId;
         saveMode = builder.saveMode;
-        syncProfile = builder.profile;
 
         addLinkKeyType(EmptyLinkKey.TYPE);
-
-        if (syncProfile.getNodeFilter() != null) {
-            addCacheCategory(syncProfile.getNodeFilter());
-        }
     }
 
     @Override
@@ -154,11 +144,6 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull SyncProfile getSyncProfile() {
-        return syncProfile;
-    }
-
-    @Override
     public ServerGraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites) {
         return new SimpleServerGraphWorld(this, world, path, syncChunkWrites);
     }
@@ -201,7 +186,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull Iterable<GraphEntityType<?>> getAllGraphEntityTypes() {
+    public @NotNull Collection<GraphEntityType<?>> getAllGraphEntityTypes() {
         return graphEntityTypes.values();
     }
 }

@@ -87,6 +87,10 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
 
         addLinkKeySyncing(EmptyLinkKey.TYPE, PacketEncodingUtil.EMPTY_KEY_ENCODER,
             PacketEncodingUtil.EMPTY_KEY_DECODER);
+
+        if (syncProfile.getNodeFilter() != null) {
+            universe.addCacheCategory(syncProfile.getNodeFilter());
+        }
     }
 
     @Override

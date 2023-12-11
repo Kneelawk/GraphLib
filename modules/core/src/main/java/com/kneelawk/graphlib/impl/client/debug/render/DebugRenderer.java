@@ -40,8 +40,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
 
@@ -63,7 +61,6 @@ import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.client.GraphLibClientImpl;
 import com.kneelawk.graphlib.impl.client.debug.graph.DebugBlockGraph;
 import com.kneelawk.graphlib.impl.mixin.api.RenderLayerHelper;
-import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 
 public final class DebugRenderer {
     /**
@@ -86,10 +83,10 @@ public final class DebugRenderer {
     }
 
     static {
-        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_LINES,
-            new BufferBuilder(Layers.DEBUG_LINES.getExpectedBufferSize()));
-        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_QUADS,
-            new BufferBuilder(Layers.DEBUG_QUADS.getExpectedBufferSize()));
+//        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_LINES,
+//            new BufferBuilder(Layers.DEBUG_LINES.getExpectedBufferSize()));
+//        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_QUADS,
+//            new BufferBuilder(Layers.DEBUG_QUADS.getExpectedBufferSize()));
     }
 
     public static final class Layers extends RenderPhase {
@@ -130,7 +127,7 @@ public final class DebugRenderer {
     }
 
     public static void init() {
-        RenderToOverlay.EVENT.register(DebugRenderer::render);
+//        RenderToOverlay.EVENT.register(DebugRenderer::render);
     }
 
     private static void render(WorldRenderContext context) {
@@ -202,14 +199,14 @@ public final class DebugRenderer {
                     stack.push();
                     stack.translate(origin.getX(), origin.getY(), origin.getZ());
 
-                    renderer.render(cbn, node, RenderToOverlay.CONSUMERS, stack, graph, endpoint, graphColor);
+//                    renderer.render(cbn, node, RenderToOverlay.CONSUMERS, stack, graph, endpoint, graphColor);
 
                     stack.pop();
 
                     links.addAll(node.connections());
                 }
 
-                VertexConsumer consumer = RenderToOverlay.CONSUMERS.getBuffer(Layers.DEBUG_LINES);
+//                VertexConsumer consumer = RenderToOverlay.CONSUMERS.getBuffer(Layers.DEBUG_LINES);
 
                 for (var link : links) {
                     var nodeA = link.first();
@@ -222,10 +219,10 @@ public final class DebugRenderer {
                     BlockPos posA = nodeA.data().pos();
                     BlockPos posB = nodeB.data().pos();
 
-                    RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
-                        (float) (posA.getY() + endpointA.y),
-                        (float) (posA.getZ() + endpointA.z), (float) (posB.getX() + endpointB.x),
-                        (float) (posB.getY() + endpointB.y), (float) (posB.getZ() + endpointB.z), graphColor);
+//                    RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
+//                        (float) (posA.getY() + endpointA.y),
+//                        (float) (posA.getZ() + endpointA.z), (float) (posB.getX() + endpointB.x),
+//                        (float) (posB.getY() + endpointB.y), (float) (posB.getZ() + endpointB.z), graphColor);
                 }
             }
         }

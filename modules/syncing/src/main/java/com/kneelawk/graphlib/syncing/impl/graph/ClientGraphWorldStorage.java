@@ -35,6 +35,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
+import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -66,6 +67,11 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
         }
 
         return worlds.get(universeId);
+    }
+
+    @Override
+    public @NotNull Map<Identifier, ClientGraphWorldImpl> getAll() {
+        return worlds;
     }
 
     public void unload(ChunkPos pos) {

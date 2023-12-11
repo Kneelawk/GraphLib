@@ -43,6 +43,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
@@ -58,29 +59,31 @@ import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityPacketDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
+import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraph;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphChunk;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphPillar;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphCollection;
-import com.kneelawk.graphlib.impl.net.GLNet;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketDecoder;
+import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntitySyncing;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntitySyncing;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
+import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
 import com.kneelawk.graphlib.syncing.impl.GLNet;
+import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 
 public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, SimpleGraphCollection {
     private final SimpleSyncedUniverse universe;
@@ -129,7 +132,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             SimpleBlockGraph graph = getOrCreateGraph(graphId);
 
             // load graph entities if any exist
-            graph.loadGraphEntitiesFromPacket(buf, ctx);
+            loadGraphEntitiesFromPacket(graph, buf, ctx);
 
             List<NodeHolder<BlockNode>> nodeList = new ObjectArrayList<>();
 
@@ -179,14 +182,14 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
                     GLNet.readType(buf, ctx.getConnection(), universe.getUniverse()::getLinkKeyType, "LinkKey",
                         nodeA.getBlockPos());
 
-                LinkKeyPacketDecoder linkDecoder = linkType.getPacketDecoder();
-                if (linkDecoder == null) {
+                if (!universe.hasLinkKeySyncing(linkType)) {
                     GLLog.error("Unable to decode LinkKey {} @ {}-{} because it has no packet decoder",
                         linkType.getId(), nodeA.getBlockPos(), nodeB.getBlockPos());
                     throw new InvalidInputDataException(
                         "Unable to decode LinkKey " + linkType.getId() + " @ " + nodeA.getBlockPos() + "-" +
                             nodeB.getBlockPos() + " because it has no packet decoder");
                 }
+                LinkKeySyncing linkDecoder = universe.getLinkKeySyncing(linkType);
 
                 LinkKey linkKey = linkDecoder.decode(buf, ctx);
 
@@ -201,7 +204,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             // decode external links
             int eLinkCount = buf.readVarUnsignedInt();
             for (int i = 0; i < eLinkCount; i++) {
-                LinkPos link = LinkPos.fromPacket(buf, ctx, universe);
+                LinkPos link = PacketEncodingUtil.decodeLinkPos(buf, ctx, universe);
 
                 NodeHolder<BlockNode> holderA = graph.getNodeAt(link.first());
                 NodeHolder<BlockNode> holderB = graph.getNodeAt(link.second());
@@ -225,21 +228,55 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         }
     }
 
+    private void loadGraphEntitiesFromPacket(BlockGraphImpl graph, NetByteBuf buf, IMsgReadCtx ctx)
+        throws InvalidInputDataException {
+        List<GraphEntity<?>> decodedEntities = new ObjectArrayList<>();
+
+        int entityCount = buf.readVarUnsignedInt();
+        for (int entityIndex = 0; entityIndex < entityCount; entityIndex++) {
+            int typeIdInt = buf.readVarUnsignedInt();
+            Identifier typeId = GLNet.ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
+            if (typeId == null) {
+                GLLog.warn("Unable to decode graph entity type id int as id. Int: {}", typeIdInt);
+                throw new InvalidInputDataException(
+                    "Unable to decode graph entity type id int as id. Int: " + typeIdInt);
+            }
+
+            GraphEntityType<?> type = universe.getUniverse().getGraphEntityType(typeId);
+            if (type == null) {
+                GLLog.warn("Received unknown graph entity type id: {}", typeId);
+                throw new InvalidInputDataException("Received unknown graph entity type id: " + typeId);
+            }
+
+            if (!universe.hasGraphEntitySyncing(type)) {
+                GLLog.warn("Received graph entity but type has no packet decoder. Id: {}", typeId);
+                throw new InvalidInputDataException(
+                    "Received graph entity but type has no packet decoder. Id: " + typeId);
+            }
+            GraphEntitySyncing<?> decoder = universe.getGraphEntitySyncing(type);
+
+            GraphEntity<?> entity = decoder.decode(buf, ctx);
+            decodedEntities.add(entity);
+        }
+
+        graph.initializeGraphEntities(decodedEntities);
+    }
+
     private @Nullable NodeEntity readNodeEntity(IMsgReadCtx ctx, NetByteBuf buf, BlockPos blockPos)
         throws InvalidInputDataException {
         NodeEntity entity = null;
         if (buf.readBoolean()) {
             NodeEntityType entityType =
-                GLNet.readType(buf, ctx.getConnection(), universe::getNodeEntityType, "NodeEntity",
+                GLNet.readType(buf, ctx.getConnection(), universe.getUniverse()::getNodeEntityType, "NodeEntity",
                     blockPos);
-            NodeEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-            if (entityDecoder == null) {
+            if (!universe.hasNodeEntitySyncing(entityType)) {
                 GLLog.error("Unable to decode NodeEntity {} @ {} because it has no packet decoder",
                     entityType.getId(), blockPos);
                 throw new InvalidInputDataException(
                     "Unable to decode NodeEntity " + entityType.getId() + " @ " + blockPos +
                         " because it has no packet decoder");
             }
+            NodeEntitySyncing entityDecoder = universe.getNodeEntitySyncing(entityType);
 
             entity = entityDecoder.decode(buf, ctx);
         }
@@ -251,15 +288,15 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         LinkEntity entity = null;
         if (buf.readBoolean()) {
             LinkEntityType entityType =
-                GLNet.readType(buf, ctx.getConnection(), universe::getLinkEntityType, "LinkEntity",
+                GLNet.readType(buf, ctx.getConnection(), universe.getUniverse()::getLinkEntityType, "LinkEntity",
                     link.first().pos());
-            LinkEntityPacketDecoder entityDecoder = entityType.getPacketDecoder();
-            if (entityDecoder == null) {
+            if (!universe.hasLinkEntitySyncing(entityType)) {
                 GLLog.error("Unable to decode LinkEntity {} @ {} because it has no packet decoder",
                     entityType.getId(), link);
                 throw new InvalidInputDataException("Unable to decode LinkEntity " + entityType.getId() + " @ " + link +
                     " because it has no packet decoder");
             }
+            LinkEntitySyncing entityDecoder = universe.getLinkEntitySyncing(entityType);
 
             entity = entityDecoder.decode(buf, ctx);
         }
@@ -268,7 +305,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void readNodeAdd(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        NodePos pos = NodePos.fromPacket(buf, ctx, universe);
+        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
 
         BlockNode node = pos.node();
         BlockPos blockPos = pos.pos();
@@ -284,7 +321,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         SimpleBlockGraph graph = getOrCreateGraph(graphId);
 
-        graph.loadGraphEntitiesFromPacket(buf, ctx);
+        loadGraphEntitiesFromPacket(graph, buf, ctx);
 
         // decode node entity
         NodeEntity entity = readNodeEntity(ctx, buf, blockPos);
@@ -307,7 +344,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraph into = getOrCreateGraph(intoId);
 
         // initialize into's graph entities if we haven't already
-        into.loadGraphEntitiesFromPacket(buf, ctx);
+        loadGraphEntitiesFromPacket(into, buf, ctx);
 
         // do the merge
         into.merge(from);
@@ -323,7 +360,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             return;
         }
 
-        LinkPos linkPos = LinkPos.fromPacket(buf, ctx, universe);
+        LinkPos linkPos = PacketEncodingUtil.decodeLinkPos(buf, ctx, universe);
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
@@ -348,7 +385,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             return;
         }
 
-        LinkPos linkPos = LinkPos.fromPacket(buf, ctx, universe);
+        LinkPos linkPos = PacketEncodingUtil.decodeLinkPos(buf, ctx, universe);
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
@@ -376,13 +413,13 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraph into = getOrCreateGraph(intoId);
 
         // initialize into's graph entities
-        into.loadGraphEntitiesFromPacket(buf, ctx);
+        loadGraphEntitiesFromPacket(into, buf, ctx);
 
         // load the nodes to be split off
         Set<NodePos> toSplit = new ObjectLinkedOpenHashSet<>();
         int nodeCount = buf.readVarUnsignedInt();
         for (int i = 0; i < nodeCount; i++) {
-            NodePos pos = NodePos.fromPacket(buf, ctx, universe);
+            NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
 
             toSplit.add(pos);
         }
@@ -402,7 +439,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             return;
         }
 
-        NodePos pos = NodePos.fromPacket(buf, ctx, universe);
+        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
 
         NodeHolder<BlockNode> node = graph.getNodeAt(pos);
         // ignore removals of nodes we don't know about
@@ -413,7 +450,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public @NotNull GraphUniverse getUniverse() {
-        return universe;
+        return universe.getUniverse();
     }
 
     @Override
@@ -593,7 +630,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
         graphs.remove(id);
 
-        for (long sectionPos : graph.chunks) {
+        for (long sectionPos : graph.getChunksImpl()) {
             SimpleBlockGraphChunk chunk = manager.getIfExists(ChunkSectionPos.from(sectionPos));
             if (chunk != null) {
                 // Is called by graph.merge, which removes all nodes from the graph being deleted first.
@@ -675,20 +712,20 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     public void graphUpdated(SimpleBlockGraph graph) {}
 
     @Override
-    public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {}
+    public void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node) {}
 
     @Override
-    public void sendMerge(BlockGraph from, BlockGraph into) {}
+    public void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {}
 
     @Override
-    public void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {}
+    public void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link) {}
 
     @Override
-    public void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {}
+    public void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {}
 
     @Override
-    public void sendSplitInto(BlockGraph from, BlockGraph into) {}
+    public void sendSplitInto(BlockGraphImpl from, BlockGraphImpl into) {}
 
     @Override
-    public void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {}
+    public void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder) {}
 }

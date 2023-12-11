@@ -8,7 +8,6 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
@@ -311,7 +310,7 @@ public interface GraphUniverse {
      *
      * @return all the graph entity types currently registered.
      */
-    @NotNull Iterable<GraphEntityType<?>> getAllGraphEntityTypes();
+    @NotNull Collection<GraphEntityType<?>> getAllGraphEntityTypes();
 
     /**
      * Registers a cache category to be auto-initialized on all graphs.

@@ -3,6 +3,7 @@ package com.kneelawk.graphlib.impl.graph;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -45,5 +46,8 @@ public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
     @Override
     @NotNull ServerWorld getWorld();
 
-    WorldListener getListener(Identifier id);
+    @Nullable WorldListener getListener(Identifier id);
+
+    @Override
+    @Nullable BlockGraphImpl getGraph(long id);
 }

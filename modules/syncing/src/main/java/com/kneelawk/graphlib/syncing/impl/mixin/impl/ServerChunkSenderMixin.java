@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.mixin.impl;
+package com.kneelawk.graphlib.syncing.impl.mixin.impl;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -35,13 +35,13 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.chunk.WorldChunk;
 
-import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
+import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 
 @Mixin(ServerChunkSender.class)
 public class ServerChunkSenderMixin {
     @Inject(method = "sendChunk", at = @At("RETURN"))
     private static void onSendChunk(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk,
                                     CallbackInfo ci) {
-        StorageHelper.getStorage(world).sendChunkDataPackets(handler.player, chunk.getPos());
+        GraphLibSyncingImpl.sendChunkDataPackets(world, handler.player, chunk.getPos());
     }
 }

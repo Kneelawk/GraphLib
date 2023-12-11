@@ -31,13 +31,13 @@ import it.unimi.dsi.fastutil.longs.LongIterable;
 
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 
 public interface SimpleGraphCollection extends GraphView {
     /**
@@ -76,15 +76,15 @@ public interface SimpleGraphCollection extends GraphView {
 
     void graphUpdated(SimpleBlockGraph graph);
 
-    void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node);
+    void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node);
 
-    void sendMerge(BlockGraph from, BlockGraph into);
+    void sendMerge(BlockGraphImpl from, BlockGraphImpl into);
 
-    void sendLink(BlockGraph graph, LinkHolder<LinkKey> link);
+    void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link);
 
-    void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key);
+    void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key);
 
-    void sendSplitInto(BlockGraph from, BlockGraph into);
+    void sendSplitInto(BlockGraphImpl from, BlockGraphImpl into);
 
-    void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder);
+    void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder);
 }

@@ -55,7 +55,6 @@ import alexiil.mc.lib.net.impl.McNetworkStack;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -72,6 +71,7 @@ import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.util.ClassUtils;
 import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
@@ -298,7 +298,7 @@ public class GLNet {
     public static final NetIdData NODE_ADD =
         new NetIdData(GRAPH_LIB_ID, "node_add", -1).toClientOnly().setReceiver(GLNet::receiveNodeAdd);
 
-    public static void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
+    public static void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node) {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendNodeAdd should only be called on the logical server");
 
@@ -352,7 +352,7 @@ public class GLNet {
     public static final NetIdData GRAPH_MERGE =
         new NetIdData(GRAPH_LIB_ID, "graph_merge", -1).toClientOnly().setReceiver(GLNet::receiveMerge);
 
-    public static void sendMerge(BlockGraph from, BlockGraph into) {
+    public static void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendMerge should only be called on the logical server");
 
@@ -391,7 +391,7 @@ public class GLNet {
     public static final NetIdData NODE_LINK =
         new NetIdData(GRAPH_LIB_ID, "node_link", -1).toClientOnly().setReceiver(GLNet::receiveLink);
 
-    public static void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {
+    public static void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link) {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendLink should only be called on the logical server");
 
@@ -430,7 +430,7 @@ public class GLNet {
     public static final NetIdData NODE_UNLINK =
         new NetIdData(GRAPH_LIB_ID, "node_unlink", -1).toClientOnly().setReceiver(GLNet::receiveUnlink);
 
-    public static void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
+    public static void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendUnlink should only be called on the logical server");
 
@@ -468,7 +468,7 @@ public class GLNet {
     public static final NetIdData GRAPH_SPLIT =
         new NetIdData(GRAPH_LIB_ID, "graph_split", -1).toClientOnly().setReceiver(GLNet::receiveSplitInto);
 
-    public static void sendSplitInto(BlockGraph from, BlockGraph into) {
+    public static void sendSplitInto(BlockGraphImpl from, BlockGraphImpl into) {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendSplitInto should only be called on the logical server");
 
@@ -507,7 +507,7 @@ public class GLNet {
     public static final NetIdData NODE_REMOVE =
         new NetIdData(GRAPH_LIB_ID, "node_remove", -1).toClientOnly().setReceiver(GLNet::receiveNodeRemove);
 
-    public static void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {
+    public static void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder) {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendNodeRemove should only be called on the logical server");
 

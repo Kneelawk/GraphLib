@@ -30,11 +30,11 @@ import net.minecraft.util.math.ChunkPos;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
 
 public interface WorldEncoder extends WorldListener {
@@ -42,16 +42,16 @@ public interface WorldEncoder extends WorldListener {
 
     void writeChunkPillar(ChunkPos pos, NetByteBuf buf, IMsgWriteCtx ctx);
 
-    void writeNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx);
+    void writeNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx);
 
-    void writeMerge(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx);
+    void writeMerge(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx);
 
-    void writeLink(BlockGraph graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx);
+    void writeLink(BlockGraphImpl graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx);
 
-    void writeUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key, NetByteBuf buf,
+    void writeUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key, NetByteBuf buf,
                      IMsgWriteCtx ctx);
 
-    void writeSplitInto(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx);
+    void writeSplitInto(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx);
 
-    void writeNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx);
+    void writeNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx);
 }

@@ -27,6 +27,7 @@ package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.PrimitiveIterator;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -46,16 +47,20 @@ import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
-import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraph;
-import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphChunk;
+import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
 import com.kneelawk.graphlib.syncing.impl.GLNet;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.WorldEncoder;
@@ -78,29 +83,30 @@ public class SimpleWorldEncoder implements WorldEncoder {
     @SuppressWarnings("unchecked")
     public void writeChunkPillar(ChunkPos chunkPos, NetByteBuf buf, IMsgWriteCtx ctx) {
         // collect graphs to encode
-        Long2ObjectMap<SimpleBlockGraph> toEncode = new Long2ObjectLinkedOpenHashMap<>();
-        for (int chunkY = world.getWorld().getBottomSectionCoord(); chunkY < world.getWorld().getTopSectionCoord(); chunkY++) {
-            SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(chunkPos, chunkY));
-            if (chunk != null) {
-                for (long graphId : chunk.getGraphs()) {
-                    SimpleBlockGraph graph = getGraph(graphId);
-                    if (graph != null) {
-                        toEncode.put(graphId, graph);
-                    }
+        Long2ObjectMap<BlockGraphImpl> toEncode = new Long2ObjectLinkedOpenHashMap<>();
+        for (int chunkY = world.getWorld().getBottomSectionCoord();
+             chunkY < world.getWorld().getTopSectionCoord(); chunkY++) {
+            PrimitiveIterator.OfLong graphIds =
+                world.getAllGraphIdsInChunkSection(ChunkSectionPos.from(chunkPos, chunkY)).iterator();
+            while (graphIds.hasNext()) {
+                long graphId = graphIds.nextLong();
+                BlockGraphImpl graph = world.getGraph(graphId);
+                if (graph != null) {
+                    toEncode.put(graphId, graph);
                 }
             }
         }
 
         // write graphs
         buf.writeVarUnsignedInt(toEncode.size());
-        for (SimpleBlockGraph graph : toEncode.values()) {
+        for (BlockGraphImpl graph : toEncode.values()) {
             buf.writeMarker("gs");
 
             // write the graph id
             buf.writeVarUnsignedLong(graph.getId());
 
             // write graph entities if any exist
-            graph.writeGraphEntitiesToPacket(buf, ctx);
+            writeGraphEntitiesToPacket(graph, buf, ctx);
 
             buf.writeMarker("n");
 
@@ -132,7 +138,7 @@ public class SimpleWorldEncoder implements WorldEncoder {
                     continue;
                 }
 
-                holder.getPos().toPacket(buf, ctx);
+                PacketEncodingUtil.encodeNodePos(holder.getPos(), buf, ctx, universe);
 
                 writeNodeEntity(holder, buf, ctx, graph);
 
@@ -179,8 +185,9 @@ public class SimpleWorldEncoder implements WorldEncoder {
                 buf.writeVarUnsignedInt(nodeBIndex);
 
                 LinkKey linkKey = link.key();
-                GLNet.writeType(buf, ctx.getConnection(), linkKey.getType().getId());
-                linkKey.toPacket(buf, ctx);
+                LinkKeyType linkKeyType = linkKey.getType();
+                GLNet.writeType(buf, ctx.getConnection(), linkKeyType.getId());
+                universe.getLinkKeySyncing(linkKeyType).encode(linkKey, buf, ctx);
 
                 // quarantine the link entity for the same reason as node entities
                 writeLinkEntity(buf, ctx, link, graph);
@@ -194,7 +201,7 @@ public class SimpleWorldEncoder implements WorldEncoder {
             // write external links
             buf.writeVarUnsignedInt(externalLinks.size());
             for (LinkPos link : externalLinks) {
-                link.toPacket(buf, ctx);
+                PacketEncodingUtil.encodeLinkPos(link, buf, ctx, universe);
 
                 // quarantine link entities
                 writeLinkEntity(buf, ctx, link, graph);
@@ -204,76 +211,90 @@ public class SimpleWorldEncoder implements WorldEncoder {
         }
     }
 
-    private static void writeNodeEntity(NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx,
-                                        BlockGraph graph) {
+    private void writeGraphEntitiesToPacket(BlockGraphImpl graph, NetByteBuf buf, IMsgWriteCtx ctx) {
+        Collection<GraphEntityType<?>> types = graph.getGraphView().getUniverse().getAllGraphEntityTypes();
+        buf.writeVarUnsignedInt(types.size());
+        for (GraphEntityType<?> type : types) {
+            buf.writeVarUnsignedInt(GLNet.ID_CACHE.getId(ctx.getConnection(), type.getId()));
+
+            universe.getGraphEntitySyncing(type).encode(graph.getGraphEntity(type), buf, ctx);
+        }
+    }
+
+    private void writeNodeEntity(NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx,
+                                 BlockGraph graph) {
         NodeEntity entity = graph.getNodeEntity(node.getPos());
         if (entity != null) {
             buf.writeBoolean(true);
-            GLNet.writeType(buf, ctx.getConnection(), entity.getType().getId());
-            entity.toPacket(buf, ctx);
+            NodeEntityType type = entity.getType();
+            GLNet.writeType(buf, ctx.getConnection(), type.getId());
+
+            universe.getNodeEntitySyncing(type).encode(entity, buf, ctx);
         } else {
             buf.writeBoolean(false);
         }
     }
 
-    public static void writeLinkEntity(NetByteBuf buf, IMsgWriteCtx ctx, LinkPos link, BlockGraph graph) {
+    public void writeLinkEntity(NetByteBuf buf, IMsgWriteCtx ctx, LinkPos link, BlockGraph graph) {
         LinkEntity entity = graph.getLinkEntity(link);
         if (entity != null) {
             buf.writeBoolean(true);
-            GLNet.writeType(buf, ctx.getConnection(), entity.getType().getId());
-            entity.toPacket(buf, ctx);
+            LinkEntityType type = entity.getType();
+            GLNet.writeType(buf, ctx.getConnection(), type.getId());
+
+            universe.getLinkEntitySyncing(type).encode(entity, buf, ctx);
         } else {
             buf.writeBoolean(false);
         }
     }
 
     @Override
-    public void writeNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx) {
-        node.getPos().toPacket(buf, ctx);
+    public void writeNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx) {
+        PacketEncodingUtil.encodeNodePos(node.getPos(), buf, ctx, universe);
 
         buf.writeVarUnsignedLong(graph.getId());
 
-        ((SimpleBlockGraph) graph).writeGraphEntitiesToPacket(buf, ctx);
+        writeGraphEntitiesToPacket(graph, buf, ctx);
 
         writeNodeEntity(node, buf, ctx, graph);
     }
 
     @Override
-    public void writeMerge(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx) {
+    public void writeMerge(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx) {
         buf.writeVarUnsignedLong(from.getId());
 
         buf.writeVarUnsignedLong(into.getId());
 
-        ((SimpleBlockGraph) into).writeGraphEntitiesToPacket(buf, ctx);
+        writeGraphEntitiesToPacket(into, buf, ctx);
     }
 
     @Override
-    public void writeLink(BlockGraph graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx) {
+    public void writeLink(BlockGraphImpl graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx) {
         buf.writeVarUnsignedLong(graph.getId());
 
         LinkPos linkPos = link.getPos();
-        linkPos.toPacket(buf, ctx);
+        PacketEncodingUtil.encodeLinkPos(linkPos, buf, ctx, universe);
 
         writeLinkEntity(buf, ctx, linkPos, graph);
     }
 
     @Override
-    public void writeUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key,
+    public void writeUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key,
                             NetByteBuf buf, IMsgWriteCtx ctx) {
         buf.writeVarUnsignedLong(graph.getId());
 
         LinkPos linkPos = new LinkPos(a.getPos(), b.getPos(), key);
-        linkPos.toPacket(buf, ctx);
+        PacketEncodingUtil.encodeLinkPos(linkPos, buf, ctx, universe);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void writeSplitInto(BlockGraph from, BlockGraph into, NetByteBuf buf, IMsgWriteCtx ctx) {
+    public void writeSplitInto(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx) {
         buf.writeVarUnsignedLong(from.getId());
 
         buf.writeVarUnsignedLong(into.getId());
 
-        ((SimpleBlockGraph) into).writeGraphEntitiesToPacket(buf, ctx);
+        writeGraphEntitiesToPacket(into, buf, ctx);
 
         // iterate over only the nodes we want to synchronize
         Iterator<NodeHolder<BlockNode>> iter;
@@ -291,44 +312,44 @@ public class SimpleWorldEncoder implements WorldEncoder {
         buf.writeVarUnsignedInt(nodeCount);
         while (iter.hasNext()) {
             NodeHolder<BlockNode> holder = iter.next();
-            holder.getPos().toPacket(buf, ctx);
+            PacketEncodingUtil.encodeNodePos(holder.getPos(), buf, ctx, universe);
         }
     }
 
     @Override
-    public void writeNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx) {
+    public void writeNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder, NetByteBuf buf, IMsgWriteCtx ctx) {
         buf.writeVarUnsignedLong(graph.getId());
 
-        holder.getPos().toPacket(buf, ctx);
+        PacketEncodingUtil.encodeNodePos(holder.getPos(), buf, ctx, universe);
     }
 
     @Override
-    public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
+    public void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node) {
         GLNet.sendNodeAdd(graph, node);
     }
 
     @Override
-    public void sendMerge(BlockGraph from, BlockGraph into) {
+    public void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
         GLNet.sendMerge(from, into);
     }
 
     @Override
-    public void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {
+    public void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link) {
         GLNet.sendLink(graph, link);
     }
 
     @Override
-    public void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
+    public void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
         GLNet.sendUnlink(graph, a, b, key);
     }
 
     @Override
-    public void sendSplitInto(BlockGraph from, BlockGraph into) {
+    public void sendSplitInto(BlockGraphImpl from, BlockGraphImpl into) {
         GLNet.sendSplitInto(from, into);
     }
 
     @Override
-    public void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {
+    public void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder) {
         GLNet.sendNodeRemove(graph, holder);
     }
 }

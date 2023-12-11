@@ -66,6 +66,7 @@ import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.api.world.UnloadingRegionBasedStorage;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
@@ -216,7 +217,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     @Override
-    public WorldListener getListener(Identifier id) {
+    public @Nullable WorldListener getListener(Identifier id) {
         return listeners.get(id);
     }
 
@@ -629,7 +630,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         if (graph != null) {
-            for (long posLong : graph.chunks) {
+            for (long posLong : graph.getChunksImpl()) {
                 timer.onChunkUse(ChunkSectionPos.from(posLong));
             }
         }
@@ -680,7 +681,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     @Override
     public @NotNull LongStream getAllGraphIdsInChunk(@NotNull ChunkPos pos) {
         return LongStream.range(world.getBottomSectionCoord(), world.getTopSectionCoord())
-            .flatMap(y -> getAllGraphIdsInChunkSection(ChunkSectionPos.from(pos, (int) y)));
+            .flatMap(y -> getAllGraphIdsInChunkSection(ChunkSectionPos.from(pos, (int) y))).distinct();
     }
 
     /**
@@ -737,7 +738,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 if (graph.isEmpty()) {
                     GLLog.warn(
                         "Encountered empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
-                        graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
+                        graph.getId(), graph.getChunks().toList());
 
                     // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
                     destroyGraphImpl(graph);
@@ -897,32 +898,32 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     @Override
-    public void sendNodeAdd(BlockGraph graph, NodeHolder<BlockNode> node) {
+    public void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node) {
         for (WorldListener listener : listeners.values()) listener.sendNodeAdd(graph, node);
     }
 
     @Override
-    public void sendMerge(BlockGraph from, BlockGraph into) {
+    public void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
         for (WorldListener listener : listeners.values()) listener.sendMerge(from, into);
     }
 
     @Override
-    public void sendLink(BlockGraph graph, LinkHolder<LinkKey> link) {
+    public void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link) {
         for (WorldListener listener : listeners.values()) listener.sendLink(graph, link);
     }
 
     @Override
-    public void sendUnlink(BlockGraph graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
+    public void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
         for (WorldListener listener : listeners.values()) listener.sendUnlink(graph, a, b, key);
     }
 
     @Override
-    public void sendSplitInto(BlockGraph from, BlockGraph into) {
+    public void sendSplitInto(BlockGraphImpl from, BlockGraphImpl into) {
         for (WorldListener listener : listeners.values()) listener.sendSplitInto(from, into);
     }
 
     @Override
-    public void sendNodeRemove(BlockGraph graph, NodeHolder<BlockNode> holder) {
+    public void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder) {
         for (WorldListener listener : listeners.values()) listener.sendNodeRemove(graph, holder);
     }
 
@@ -1239,7 +1240,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         for (SimpleBlockGraph loadedGraph : loadedGraphs.values()) {
-            for (long graphChunk : loadedGraph.chunks) {
+            for (long graphChunk : loadedGraph.getChunksImpl()) {
                 if (chunkSectionPillar.contains(graphChunk)) {
                     writeGraph(loadedGraph);
                     unsavedGraphs.remove(loadedGraph.getId());
@@ -1261,7 +1262,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
             for (SimpleBlockGraph graph : loadedGraphs.values()) {
                 // we want to only unload graphs that aren't in any loaded chunks
-                if (graph.chunks.longStream().mapToObj(ChunkSectionPos::from).noneMatch(timer::isChunkLoaded)) {
+                if (graph.getChunks().noneMatch(timer::isChunkLoaded)) {
                     toUnload.add(graph.getId());
                 }
             }
@@ -1381,7 +1382,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             if (graph.isEmpty()) {
                 GLLog.warn(
                     "Loaded empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
-                    graph.getId(), graph.chunks.longStream().mapToObj(ChunkSectionPos::from).toList());
+                    graph.getId(), graph.getChunks().toList());
 
                 // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
                 destroyGraphImpl(graph);
@@ -1415,7 +1416,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             GLLog.error("Error removing graph file. Id: {}", id, e);
         }
 
-        for (long sectionPos : graph.chunks) {
+        for (long sectionPos : graph.getChunksImpl()) {
             SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(sectionPos));
             if (chunk != null) {
                 // Note: if this is changed to only remove from block-poses that the graph actually occupies, make sure

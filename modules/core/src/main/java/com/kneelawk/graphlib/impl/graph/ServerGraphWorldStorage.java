@@ -12,32 +12,22 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
-import com.kneelawk.graphlib.impl.net.GLNet;
 
 public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable {
     private final Map<Identifier, ServerGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
     private final ServerWorld serverWorld;
-    private final boolean synchronizationRequired;
 
     public ServerGraphWorldStorage(ServerWorld world, Path dataDir, boolean syncChunkWrites) {
         this.serverWorld = world;
 
-        boolean synced = false;
         for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSE) {
             Identifier universeId = universe.getId();
             Path path = dataDir.resolve(universeId.getNamespace()).resolve(universeId.getPath());
 
             worlds.put(universeId, universe.createGraphWorld(world, path, syncChunkWrites));
-
-            if (universe.getSyncProfile().isEnabled()) {
-                synced = true;
-            }
         }
-
-        synchronizationRequired = synced;
     }
 
     @Override
@@ -51,8 +41,9 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
         return worlds.get(universe);
     }
 
-    public boolean isSynchronizationRequired() {
-        return synchronizationRequired;
+    @Override
+    public @NotNull Map<Identifier, ServerGraphWorldImpl> getAll() {
+        return worlds;
     }
 
     public void onWorldChunkLoad(ChunkPos pos) {
@@ -124,17 +115,6 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     }
 
     public void sendChunkDataPackets(ServerPlayerEntity player, ChunkPos pos) {
-        for (ServerGraphWorldImpl world : worlds.values()) {
-            GraphUniverse universe = world.getUniverse();
-            if (universe.getSyncProfile().isEnabled() &&
-                universe.getSyncProfile().getPlayerFilter().shouldSync(player)) {
-                try {
-                    GLNet.sendChunkDataPacket(world, player, pos);
-                } catch (Exception e) {
-                    GLLog.error("Error sending GraphWorld chunk packets. World: '{}'/{}, Chunk: {}", serverWorld,
-                        serverWorld.getRegistryKey().getValue(), pos, e);
-                }
-            }
-        }
+
     }
 }
