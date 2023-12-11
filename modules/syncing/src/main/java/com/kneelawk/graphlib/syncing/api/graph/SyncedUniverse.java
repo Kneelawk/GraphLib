@@ -223,6 +223,7 @@ public interface SyncedUniverse {
      * Gets the encoder and decoder for the given graph entity type.
      *
      * @param type the type of graph entity to get the syncing for.
+     * @param <G>  the type of graph entity to get the syncing for.
      * @return the syncing for the given graph entity type.
      */
     <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> getGraphEntitySyncing(@NotNull GraphEntityType<G> type);
@@ -251,6 +252,9 @@ public interface SyncedUniverse {
         return new SimpleSyncedUniverseBuilder();
     }
 
+    /**
+     * A builder for {@link SyncedUniverse}s.
+     */
     interface Builder {
         /**
          * Builds a universe synchronization handler for the given universe.

@@ -39,6 +39,8 @@ import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
  * Synchronization API.
  */
 public class GraphLibSyncing {
+    private GraphLibSyncing() {}
+
     /**
      * Gets a registered {@link SyncedUniverse} by its id.
      *

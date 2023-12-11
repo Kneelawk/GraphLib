@@ -39,6 +39,7 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntity;
  *
  * @param encoder the encoder.
  * @param decoder the decoder.
+ * @param <G>     the type of graph entity this syncs.
  */
 public record GraphEntitySyncing<G extends GraphEntity<G>>(@NotNull GraphEntityPacketEncoder<G> encoder,
                                                            @NotNull GraphEntityPacketDecoder decoder) {
