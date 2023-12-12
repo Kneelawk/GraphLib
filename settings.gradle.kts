@@ -31,5 +31,4 @@ fun example(name: String) {
 module("core")
 module("debugrender")
 module("syncing")
-example("example")
 example("multiblock-lamps")
