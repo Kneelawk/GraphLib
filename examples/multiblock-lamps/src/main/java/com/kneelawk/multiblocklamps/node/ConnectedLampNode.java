@@ -40,14 +40,17 @@ import com.kneelawk.multiblocklamps.block.ConnectedLampBlock;
 
 import static com.kneelawk.multiblocklamps.MultiblockLampsMod.id;
 
-public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInputNode, LampNode {
+public class ConnectedLampNode
+    implements BlockNode<ConnectedLampNode>, FullWireBlockNode<ConnectedLampNode>, LampInputNode<ConnectedLampNode>,
+    LampNode<ConnectedLampNode> {
     public static final ConnectedLampNode INSTANCE = new ConnectedLampNode();
-    public static final BlockNodeType TYPE = BlockNodeType.of(id("connected_lamp"), () -> INSTANCE);
+    public static final BlockNodeType<ConnectedLampNode> TYPE =
+        BlockNodeType.of(ConnectedLampNode.class, id("connected_lamp"), () -> INSTANCE);
 
     private ConnectedLampNode() {}
 
     @Override
-    public @NotNull BlockNodeType getType() {
+    public @NotNull BlockNodeType<ConnectedLampNode> getType() {
         return TYPE;
     }
 
@@ -58,7 +61,7 @@ public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInpu
     }
 
     @Override
-    public void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self) {
+    public void onConnectionsChanged(@NotNull NodeHolder<ConnectedLampNode> self) {
         LampLogic.onLampUpdated(self);
     }
 
@@ -67,12 +70,12 @@ public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInpu
     //
 
     @Override
-    public boolean isPowered(NodeHolder<LampInputNode> self) {
+    public boolean isPowered(NodeHolder<ConnectedLampNode> self) {
         return self.getBlockWorld().isReceivingRedstonePower(self.getBlockPos());
     }
 
     @Override
-    public void setLit(NodeHolder<LampNode> self, boolean lit) {
+    public void setLit(NodeHolder<ConnectedLampNode> self, boolean lit) {
         if (self.getBlockState().isOf(MultiblockLampsMod.CONNECTED_LAMP_BLOCK)) {
             self.getBlockWorld().setBlockState(self.getBlockPos(),
                 MultiblockLampsMod.CONNECTED_LAMP_BLOCK.getDefaultState().with(ConnectedLampBlock.LIT, lit));

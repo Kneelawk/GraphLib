@@ -26,7 +26,7 @@ import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
  *
  * @see WireConnectionDiscoverers
  */
-public interface BlockNode {
+public interface BlockNode<N extends BlockNode<N>> {
     /**
      * Gets this block node's type ID, associated with its decoder.
      * <p>
@@ -35,7 +35,7 @@ public interface BlockNode {
      *
      * @return the id of this block node.
      */
-    @NotNull BlockNodeType getType();
+    @NotNull BlockNodeType<? super N> getType();
 
     /**
      * Encodes this block node's data to an NBT element.
@@ -55,7 +55,7 @@ public interface BlockNode {
      * @param self this node's holder, holding the context of this node.
      * @return <code>true</code> if this node should be automatically removed.
      */
-    default boolean isAutomaticRemoval(@NotNull NodeHolder<BlockNode> self) {
+    default boolean isAutomaticRemoval(@NotNull NodeHolder<N> self) {
         return true;
     }
 
@@ -69,7 +69,7 @@ public interface BlockNode {
      * @param self this node's holder, holding the context of this node.
      * @return <code>true</code> if this node should have a node entity associated with it.
      */
-    default boolean shouldHaveNodeEntity(@NotNull NodeHolder<BlockNode> self) {
+    default boolean shouldHaveNodeEntity(@NotNull NodeHolder<N> self) {
         return false;
     }
 
@@ -79,7 +79,7 @@ public interface BlockNode {
      * @param self this node's holder, holding the context of this node.
      * @return a newly created node entity, or <code>null</code> if an entity could not be created.
      */
-    default @Nullable NodeEntity createNodeEntity(@NotNull NodeHolder<BlockNode> self) {
+    default @Nullable NodeEntity createNodeEntity(@NotNull NodeHolder<N> self) {
         return null;
     }
 
@@ -94,7 +94,7 @@ public interface BlockNode {
      * @return all nodes this node can connect to.
      * @see WireConnectionDiscoverers
      */
-    @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self);
+    @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<N> self);
 
     /**
      * Determines whether this node can connect to another node.
@@ -107,7 +107,7 @@ public interface BlockNode {
      * @return whether this node can connect to the other node.
      * @see WireConnectionDiscoverers
      */
-    boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull HalfLink other);
+    boolean canConnect(@NotNull NodeHolder<N> self, @NotNull HalfLink other);
 
     /**
      * Called when the block graph controller has determined that this specific node's connections have been changed.
@@ -121,7 +121,7 @@ public interface BlockNode {
      *
      * @param self this node's holder, holding the context of this node.
      */
-    void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self);
+    void onConnectionsChanged(@NotNull NodeHolder<N> self);
 
     /**
      * Checks whether this node is valid at the given position.
@@ -132,7 +132,7 @@ public interface BlockNode {
      * @param self the node holder holding this node's context.
      * @return <code>true</code> if this node is valid and should remain that its current position.
      */
-    default boolean isValid(@NotNull NodeHolder<BlockNode> self) {
+    default boolean isValid(@NotNull NodeHolder<N> self) {
         return true;
     }
 

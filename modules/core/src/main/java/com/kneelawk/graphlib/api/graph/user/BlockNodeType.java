@@ -29,20 +29,22 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of block node.
  */
-public class BlockNodeType implements ObjectType {
+public class BlockNodeType<N extends BlockNode> implements ObjectType {
+    private final @NotNull Class<N> clazz;
     private final @NotNull Identifier id;
-    private final @NotNull BlockNodeDecoder decoder;
+    private final @NotNull BlockNodeDecoder<N> decoder;
 
-    private BlockNodeType(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder) {
+    private BlockNodeType(@NotNull Class<N> clazz, @NotNull Identifier id, @NotNull BlockNodeDecoder<N> decoder) {
+        this.clazz = clazz;
         this.id = id;
         this.decoder = decoder;
     }
@@ -62,8 +64,12 @@ public class BlockNodeType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull BlockNodeDecoder getDecoder() {
+    public @NotNull BlockNodeDecoder<N> getDecoder() {
         return decoder;
+    }
+
+    public @NotNull NodeHolder<N> cast(@NotNull NodeHolder<?> holder) {
+        return holder.cast(clazz);
     }
 
     @Override
@@ -71,7 +77,7 @@ public class BlockNodeType implements ObjectType {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BlockNodeType that = (BlockNodeType) o;
+        BlockNodeType<?> that = (BlockNodeType<?>) o;
 
         return id.equals(that.id);
     }
@@ -95,9 +101,10 @@ public class BlockNodeType implements ObjectType {
      * @param decoder the decoder for the new type.
      * @return a new block node type.
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder) {
-        return new BlockNodeType(id, decoder);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static <N extends BlockNode> @NotNull BlockNodeType<N> of(@NotNull Class<N> clazz, @NotNull Identifier id,
+                                                                     @NotNull BlockNodeDecoder<N> decoder) {
+        return new BlockNodeType<>(clazz, id, decoder);
     }
 
     /**
@@ -107,8 +114,9 @@ public class BlockNodeType implements ObjectType {
      * @param supplier a supplier for the new type.
      * @return a new block node type.
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull Supplier<BlockNode> supplier) {
-        return new BlockNodeType(id, nbt -> supplier.get());
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static <N extends BlockNode> @NotNull BlockNodeType<N> of(@NotNull Class<N> clazz, @NotNull Identifier id,
+                                                                     @NotNull Supplier<N> supplier) {
+        return new BlockNodeType<>(clazz, id, nbt -> supplier.get());
     }
 }

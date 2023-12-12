@@ -34,20 +34,20 @@ import com.kneelawk.multiblocklamps.node.LampInputNode;
 import com.kneelawk.multiblocklamps.node.LampNode;
 
 public class LampLogic {
-    public static void onLampUpdated(NodeHolder<BlockNode> node) {
+    public static void onLampUpdated(NodeHolder<?> node) {
         BlockGraph graph = node.getGraph();
 
         boolean powered = false;
-        Collection<NodeHolder<LampInputNode>> inputs = graph.getCachedNodes(MultiblockLampsMod.LAMP_INPUT_CACHE);
-        for (NodeHolder<LampInputNode> lamp : inputs) {
-            if (lamp.getNode().isPowered(lamp)) {
+        Collection<NodeHolder<LampInputNode<?>>> inputs = graph.getCachedNodes(MultiblockLampsMod.LAMP_INPUT_CACHE);
+        for (NodeHolder<LampInputNode<?>> lamp : inputs) {
+            if (lamp.getNode().isPowered(lamp.getNode().getType().cast(lamp))) {
                 powered = true;
                 break;
             }
         }
 
-        Collection<NodeHolder<LampNode>> lamps = graph.getCachedNodes(MultiblockLampsMod.LAMP_CACHE);
-        for (NodeHolder<LampNode> lamp : lamps) {
+        Collection<NodeHolder<LampNode<?>>> lamps = graph.getCachedNodes(MultiblockLampsMod.LAMP_CACHE);
+        for (NodeHolder<LampNode<?>> lamp : lamps) {
             lamp.getNode().setLit(lamp, powered);
         }
     }

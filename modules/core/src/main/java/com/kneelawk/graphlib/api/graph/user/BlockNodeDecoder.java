@@ -8,7 +8,7 @@ import net.minecraft.nbt.NbtElement;
  * Used for decoding a {@link BlockNode} from an NBT element.
  */
 @FunctionalInterface
-public interface BlockNodeDecoder {
+public interface BlockNodeDecoder<N extends BlockNode> {
     /**
      * Decodes a {@link BlockNode} from an NBT element.
      * <p>
@@ -17,5 +17,5 @@ public interface BlockNodeDecoder {
      * @param tag the NBT element used to decode the block node.
      * @return the decoded block node.
      */
-    @Nullable BlockNode decode(@Nullable NbtElement tag);
+    @Nullable N decode(@Nullable NbtElement tag);
 }

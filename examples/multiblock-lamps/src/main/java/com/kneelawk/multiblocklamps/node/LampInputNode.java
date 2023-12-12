@@ -28,6 +28,6 @@ package com.kneelawk.multiblocklamps.node;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
-public interface LampInputNode extends BlockNode {
-    boolean isPowered(NodeHolder<LampInputNode> self);
+public interface LampInputNode<N extends LampInputNode<N>> extends BlockNode<N> {
+    boolean isPowered(NodeHolder<N> self);
 }

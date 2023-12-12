@@ -16,7 +16,7 @@ import com.kneelawk.graphlib.api.util.HalfLink;
  * <p>
  * This is usually what most non-gate machines are.
  */
-public interface FullWireBlockNode extends BlockNode {
+public interface FullWireBlockNode<N extends FullWireBlockNode<N>> extends BlockNode<N> {
     /**
      * Checks whether this block node can connect to the given other block node.
      *
@@ -28,7 +28,7 @@ public interface FullWireBlockNode extends BlockNode {
      * @return <code>true</code> if this node and the other node should be allowed to connect, <code>false</code>
      * otherwise.
      */
-    default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull Direction onSide,
+    default boolean canConnect(@NotNull NodeHolder<N> self, @NotNull Direction onSide,
                                @Nullable Direction wireSide, @NotNull HalfLink link) {
         return true;
     }
@@ -42,7 +42,7 @@ public interface FullWireBlockNode extends BlockNode {
      * @return all the connections found through the default implementation.
      */
     @Override
-    default @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self) {
+    default @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<N> self) {
         return WireConnectionDiscoverers.fullBlockFindConnections(this, self);
     }
 
@@ -56,7 +56,7 @@ public interface FullWireBlockNode extends BlockNode {
      * @return whether this node can connect, as per the default implementation.
      */
     @Override
-    default boolean canConnect(@NotNull NodeHolder<BlockNode> self, @NotNull HalfLink other) {
+    default boolean canConnect(@NotNull NodeHolder<N> self, @NotNull HalfLink other) {
         return WireConnectionDiscoverers.fullBlockCanConnect(this, self, other);
     }
 }

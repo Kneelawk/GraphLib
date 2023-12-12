@@ -45,7 +45,7 @@ public class LampConnectorNode implements BlockNode, FullWireBlockNode, LampInpu
     private LampConnectorNode() {}
 
     @Override
-    public @NotNull BlockNodeType getType() {
+    public @NotNull BlockNodeType<? extends BlockNode> getType() {
         return TYPE;
     }
 

@@ -28,6 +28,6 @@ package com.kneelawk.multiblocklamps.node;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
-public interface LampNode extends BlockNode {
-    void setLit(NodeHolder<LampNode> self, boolean lit);
+public interface LampNode<N extends LampNode<N>> extends BlockNode<N> {
+    void setLit(NodeHolder<N> self, boolean lit);
 }
