@@ -6,11 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.client.BlockNodeDebugPacketDecoder;
-import com.kneelawk.graphlib.api.client.GraphLibClient;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -162,30 +158,4 @@ public interface BlockNode {
      */
     @Override
     boolean equals(@Nullable Object o);
-
-    /**
-     * Encodes this block node to a {@link PacketByteBuf} to be sent to the client for client-side graph debug
-     * rendering.
-     * <p>
-     * The default implementations of this method are compatible with the default client-side block node decoders.
-     * This method does <b>not</b> need to be implemented in order for client-side graph debug rendering to work.
-     * This method should only be overridden to provide custom data to the client.
-     * <p>
-     * If custom data is being sent to the client, use
-     * {@link GraphLibClient#registerDebugDecoder(Identifier, Identifier, BlockNodeDebugPacketDecoder)}
-     * to register a decoder for the custom data.
-     *
-     * @param self this node's holder, holding the context of this node.
-     * @param buf  the buffer to encode this node to.
-     */
-    default void toDebugPacket(@NotNull NodeHolder<BlockNode> self, @NotNull PacketByteBuf buf) {
-        // This keeps otherwise identical-looking client-side nodes separate.
-        buf.writeInt(hashCode());
-
-        // Get the default color for our node type
-        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(getType().getId()));
-
-        // A 0 byte to distinguish ourselves from SidedBlockNode, because both implementations use the same decoder
-        buf.writeByte(0);
-    }
 }

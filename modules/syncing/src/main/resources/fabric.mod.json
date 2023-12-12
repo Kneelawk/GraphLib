@@ -27,8 +27,11 @@
       }
     ]
   },
-  "mixins": [],
+  "mixins": [
+    "graphlib_syncing.mixins.json"
+  ],
   "depends": {
+    "graphlib": "*",
     "fabricloader": ">=0.14.0",
     "fabric-api": "*",
     "minecraft": ">=1.20.3 <1.21-",

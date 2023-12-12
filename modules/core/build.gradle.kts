@@ -20,7 +20,7 @@ base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-$suffix") })
 
 loom {
-    accessWidenerPath.set(file("src/main/resources/graphlib.accesswidener"))
+//    accessWidenerPath.set(file("src/main/resources/graphlib.accesswidener"))
 }
 
 repositories {

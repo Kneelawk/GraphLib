@@ -31,7 +31,6 @@
   "mixins": [
     "graphlib.mixins.json"
   ],
-  "accessWidener": "graphlib.accesswidener",
   "depends": {
     "fabricloader": ">=0.14.0",
     "fabric-api": "*",

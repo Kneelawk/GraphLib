@@ -9,7 +9,6 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
-import com.kneelawk.graphlib.impl.net.GLDebugNet;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricMod implements ModInitializer {
@@ -20,8 +19,6 @@ public class GraphLibFabricMod implements ModInitializer {
         GLLog.info("Initializing GraphLib...");
 
         GraphLibImpl.register();
-
-        GLDebugNet.init();
 
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, context, environment) -> GraphLibImpl.registerCommands(dispatcher, context));

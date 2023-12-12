@@ -3,8 +3,12 @@ package com.kneelawk.graphlib.impl.command;
 import java.util.List;
 import java.util.Locale;
 
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
+
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 
@@ -29,20 +33,24 @@ import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
-import com.kneelawk.graphlib.impl.net.GLDebugNet;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class GraphLibCommand {
-    private static final DynamicCommandExceptionType UNKNOWN_UNIVERSE =
+    public static final Event<AddUniverseSubcommands> ADD_UNIVERSE_SUBCOMMANDS = EventFactory.createArrayBacked(
+        AddUniverseSubcommands.class, listeners -> universe -> {
+            for (AddUniverseSubcommands listener : listeners) {
+                listener.addUniverseSubcommands(universe);
+            }
+        });
+
+    public static final DynamicCommandExceptionType UNKNOWN_UNIVERSE =
         new DynamicCommandExceptionType(arg -> new LiteralMessage("Unknown universe: " + arg));
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandBuildContext buildContext) {
-        dispatcher.register(literal("graphlib")
-            .requires(source -> source.hasPermission(2))
-            .then(literal("list").executes(context -> listUniverses(context.getSource())))
-            .then(argument("universe", IdentifierArgumentType.identifier())
+        RequiredArgumentBuilder<ServerCommandSource, Identifier> universeBuilder =
+            argument("universe", IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
                     String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
                     CommandSource.forEachMatching(GraphLibImpl.UNIVERSE.getKeys(), remaining, RegistryKey::getValue,
@@ -72,18 +80,14 @@ public class GraphLibCommand {
                                 BlockPosArgumentType.getBlockPos(context, "to")))
                         )
                     )
-                )
-                .then(literal("debugrender")
-                    .then(literal("start")
-                        .executes(context -> startDebugRender(context.getSource(),
-                            IdentifierArgumentType.getIdentifier(context, "universe")))
-                    )
-                    .then(literal("stop")
-                        .executes(context -> stopDebugRender(context.getSource(),
-                            IdentifierArgumentType.getIdentifier(context, "universe")))
-                    )
-                )
-            )
+                );
+
+        ADD_UNIVERSE_SUBCOMMANDS.invoker().addUniverseSubcommands(universeBuilder);
+
+        dispatcher.register(literal("graphlib")
+            .requires(source -> source.hasPermission(2))
+            .then(literal("list").executes(context -> listUniverses(context.getSource())))
+            .then(universeBuilder)
         );
     }
 
@@ -183,21 +187,6 @@ public class GraphLibCommand {
         return toRebuild.size();
     }
 
-    private static int startDebugRender(ServerCommandSource source, Identifier universeId)
-        throws CommandSyntaxException {
-        GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
-        if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
-
-        GLDebugNet.startDebuggingPlayer(source.getPlayerOrThrow(), universe);
-        return 15;
-    }
-
-    private static int stopDebugRender(ServerCommandSource source, Identifier universeId)
-        throws CommandSyntaxException {
-        GLDebugNet.stopDebuggingPlayer(source.getPlayerOrThrow(), universeId);
-        return 15;
-    }
-
     private static MutableText blockPosText(BlockPos pos) {
         return Texts.bracketed(Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()))
             .styled(
@@ -207,5 +196,9 @@ public class GraphLibCommand {
                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                         Text.translatable("chat.coordinates.tooltip")))
             );
+    }
+
+    public interface AddUniverseSubcommands {
+        void addUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
     }
 }

@@ -5,9 +5,8 @@
   "injectors": {
     "defaultRequire": 1
   },
-  "client": [],
-  "mixins": [
-    "StorageIoWorkerAccessor",
-    "ThreadedChunkManagerMixin"
-  ]
+  "client": [
+    "com.kneelawk.graphlib.debugrender.impl.mixin.impl.RenderLayerAccessor"
+  ],
+  "mixins": [ ]
 }

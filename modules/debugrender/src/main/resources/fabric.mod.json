@@ -16,9 +16,16 @@
   "icon": "assets/graphlib_debugrender/icon-128.png",
   "environment": "*",
   "entrypoints": {
+    "client": [
+      "com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderFabricModClient"
+    ]
   },
-  "mixins": [],
+  "mixins": [
+    "graphlib_debugrender.mixins.json"
+  ],
+  "accessWidener": "graphlib_debugrender.accesswidener",
   "depends": {
+    "graphlib": "*",
     "fabricloader": ">=0.14.0",
     "fabric-api": "*",
     "minecraft": ">=1.20.3 <1.21-",
