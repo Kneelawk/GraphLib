@@ -65,15 +65,15 @@ repositories {
         name 'Kneelawk Maven'
     }
     maven {
-        // For LibNetworkStack, which GraphLib depends on
+        // For LibNetworkStack, if using 'syncing' module
         url 'https://maven.alexiil.uk/'
         name 'AlexIIL Maven'
     }
 }
 
 dependencies {
-    modImplementation("com.kneelawk:graphlib:$graphlibVersion")
-    include("com.kneelawk:graphlib:$graphlibVersion")
+    modImplementation("com.kneelawk.graphlib:core:$graphlibVersion")
+    include("com.kneelawk.graphlib:core:$graphlibVersion")
 }
 ```
 

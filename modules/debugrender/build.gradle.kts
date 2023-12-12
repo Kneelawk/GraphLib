@@ -5,19 +5,16 @@ plugins {
     id("com.kneelawk.versioning")
 }
 
-val suffix = "debugrender"
-
 val maven_group: String by project
 group = maven_group
 
 val archives_base_name: String by project
 base {
-    archivesName.set("$archives_base_name-$suffix")
+    archivesName.set("$archives_base_name-${project.name}")
 }
 
-project.layout.buildDirectory.set(rootProject.layout.buildDirectory.map { it.dir(suffix) })
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-$suffix") })
+java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
 loom {
     accessWidenerPath.set(file("src/main/resources/graphlib_debugrender.accesswidener"))
@@ -131,10 +128,6 @@ tasks {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            groupId = maven_group
-            artifactId = "${rootProject.name}-$suffix"
-            version = project.version.toString()
-
             from(components["java"])
         }
     }
@@ -143,7 +136,7 @@ publishing {
         if (System.getenv("PUBLISH_REPO") != null) {
             maven {
                 name = "publishRepo"
-                url = uri(System.getenv("PUBLISH_REPO"))
+                url = uri(rootProject.file(System.getenv("PUBLISH_REPO")))
             }
         }
     }
