@@ -1,11 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "graphlib",
+  "id": "multiblock_lamps",
   "version": "${version}",
-  "name": "Graph Lib",
-  "description": "Library for helping mods that use graph networks, like Wired Redstone.",
+  "name": "Multiblock Lamps",
+  "description": "A simple GraphLib example mod that adds connected lamps.",
   "authors": [
-    "2xsaiko",
     "Kneelawk"
   ],
   "contact": {
@@ -14,27 +13,20 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/graphlib/icon-128.png",
+  "icon": "assets/multiblock_lamps/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.graphlib.impl.GraphLibFabricMod"
+        "value": "com.kneelawk.multiblocklamps.MultiblockLampsMod"
       }
     ]
   },
-  "mixins": [
-    "graphlib.mixins.json"
-  ],
+  "mixins": [ ],
   "depends": {
     "fabricloader": ">=0.14.0",
     "fabric-api": "*",
     "minecraft": ">=1.20.3 <1.21-",
     "java": ">=17"
-  },
-  "custom": {
-    "modmenu": {
-      "badges": [ "library" ]
-    }
   }
 }

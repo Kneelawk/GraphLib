@@ -1,12 +1,12 @@
 {
   "required": true,
-  "package": "com.kneelawk.graphlib.impl.mixin.impl",
+  "package": "com.kneelawk.graphlib.debugrender.impl.mixin.impl",
   "compatibilityLevel": "JAVA_17",
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
-    "com.kneelawk.graphlib.debugrender.impl.mixin.impl.RenderLayerAccessor"
+    "RenderLayerAccessor"
   ],
   "mixins": [ ]
 }

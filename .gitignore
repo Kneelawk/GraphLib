@@ -7,6 +7,7 @@ build/
 ### Loom ###
 /run/
 /*/run/
+/*/*/run/
 
 ### IntelliJ IDEA ###
 /.idea/

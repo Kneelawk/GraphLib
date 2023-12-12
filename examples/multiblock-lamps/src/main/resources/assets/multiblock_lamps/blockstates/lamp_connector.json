@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "multiblock_lamps:block/lamp_connector"
+    }
+  }
+}

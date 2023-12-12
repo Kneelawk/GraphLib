@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "multiblock_lamps:block/connected_lamp"
+    },
+    "lit=true": {
+      "model": "multiblock_lamps:block/connected_lamp_on"
+    }
+  }
+}

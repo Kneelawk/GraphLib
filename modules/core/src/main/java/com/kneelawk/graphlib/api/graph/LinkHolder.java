@@ -274,6 +274,17 @@ public interface LinkHolder<K extends LinkKey> {
     }
 
     /**
+     * Gets the graph that this node is a part of.
+     * <p>
+     * Note: This graph should <b>not</b> be cached, as nodes can move from graph to graph.
+     *
+     * @return the graph that this node is a part of.
+     */
+    default BlockGraph getGraph() {
+        return getGraphWorld().getGraph(getGraphId());
+    }
+
+    /**
      * Represents this node link from the perspective of one of its nodes.
      *
      * @param perspective the node whose perspective from which this link is to be represented.

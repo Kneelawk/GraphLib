@@ -16,6 +16,9 @@
   "icon": "assets/graphlib_debugrender/icon-128.png",
   "environment": "*",
   "entrypoints": {
+    "main": [
+      "com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderFabricMod"
+    ],
     "client": [
       "com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderFabricModClient"
     ]

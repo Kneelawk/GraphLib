@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "multiblock_lamps:block/connected_lamp"
+  }
+}

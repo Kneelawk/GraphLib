@@ -103,6 +103,17 @@ public interface NodeHolder<N extends BlockNode> {
     @NotNull SnapshotNode<N> toSnapshot();
 
     /**
+     * Gets the graph that this node is a part of.
+     * <p>
+     * Note: This graph should <b>not</b> be cached, as nodes can move from graph to graph.
+     *
+     * @return the graph that this node is a part of.
+     */
+    default BlockGraph getGraph() {
+        return getGraphWorld().getGraph(getGraphId());
+    }
+
+    /**
      * Gets the node entity associated with this node holder, if any.
      *
      * @return the node entity associated with this node holder, if any.
