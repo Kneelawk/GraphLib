@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "multiblock_lamps",
+  "id": "transfer_beams",
   "version": "${version}",
-  "name": "Multiblock Lamps",
-  "description": "A simple GraphLib example mod that adds connected lamps.",
+  "name": "Transfer Beams",
+  "description": "A more complicated GraphLib example mod that beams that can transfer things between inventories.",
   "authors": [
     "Kneelawk"
   ],
@@ -13,16 +13,23 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/multiblock_lamps/icon-128.png",
+  "icon": "assets/transfer_beams/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.multiblocklamps.MultiblockLampsMod"
+        "value": "com.kneelawk.transferbeams.TransferBeamsMod"
+      }
+    ],
+    "client": [
+      {
+        "value": "com.kneelawk.transferbeams.client.TransferBeamsModClient"
       }
     ]
   },
-  "mixins": [ ],
+  "mixins": [
+    "transfer_beams.mixins.json"
+  ],
   "depends": {
     "graphlib": "*",
     "fabricloader": ">=0.14.0",

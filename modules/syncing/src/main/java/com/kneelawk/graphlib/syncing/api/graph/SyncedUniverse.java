@@ -35,11 +35,15 @@ import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketDecoder;
@@ -104,8 +108,8 @@ public interface SyncedUniverse {
      * @param encoder the encoder for the block node.
      * @param decoder the decoder for the block node.
      */
-    void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodePacketEncoder<?> encoder,
-                        @NotNull BlockNodePacketDecoder decoder);
+    <N extends BlockNode> void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodePacketEncoder<N> encoder,
+                                              @NotNull BlockNodePacketDecoder decoder);
 
     /**
      * Gets whether the given block node type has had encoders and decoders registered with this universe.
@@ -130,8 +134,9 @@ public interface SyncedUniverse {
      * @param encoder the encoder for the node entity.
      * @param decoder the decoder for the node entity.
      */
-    void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntityPacketEncoder<?> encoder,
-                              @NotNull NodeEntityPacketDecoder decoder);
+    <N extends NodeEntity> void addNodeEntitySyncing(@NotNull NodeEntityType type,
+                                                     @NotNull NodeEntityPacketEncoder<N> encoder,
+                                                     @NotNull NodeEntityPacketDecoder decoder);
 
     /**
      * Gets whether the given node entity type has had encoders and decoders registered with this universe.
@@ -156,8 +161,8 @@ public interface SyncedUniverse {
      * @param encoder the encoder for the link key.
      * @param decoder the decoder for the link key.
      */
-    void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeyPacketEncoder<?> encoder,
-                           @NotNull LinkKeyPacketDecoder decoder);
+    <L extends LinkKey> void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeyPacketEncoder<L> encoder,
+                                               @NotNull LinkKeyPacketDecoder decoder);
 
     /**
      * Gets whether the given link key type has had encoders and decoders registered with this universe.
@@ -182,8 +187,9 @@ public interface SyncedUniverse {
      * @param encoder the encoder for the link entity.
      * @param decoder the decoder for the link entity.
      */
-    void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntityPacketEncoder<?> encoder,
-                              @NotNull LinkEntityPacketDecoder decoder);
+    <L extends LinkEntity> void addLinkEntitySyncing(@NotNull LinkEntityType type,
+                                                     @NotNull LinkEntityPacketEncoder<L> encoder,
+                                                     @NotNull LinkEntityPacketDecoder decoder);
 
     /**
      * Gets whether the given link entity type has had encoders and decoders registered with this universe.
@@ -208,7 +214,7 @@ public interface SyncedUniverse {
      * @param encoder the encoder for the graph entity.
      * @param decoder the decoder for the graph entity.
      */
-    void addGraphEntitySyncing(@NotNull GraphEntityType<?> type, @NotNull GraphEntityPacketEncoder<?> encoder,
+    <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type, @NotNull GraphEntityPacketEncoder<G> encoder,
                                @NotNull GraphEntityPacketDecoder decoder);
 
     /**

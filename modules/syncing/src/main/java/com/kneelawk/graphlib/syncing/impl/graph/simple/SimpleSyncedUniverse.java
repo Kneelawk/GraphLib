@@ -36,11 +36,15 @@ import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
@@ -122,8 +126,9 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodePacketEncoder<?> encoder,
-                               @NotNull BlockNodePacketDecoder decoder) {
+    public <N extends BlockNode> void addNodeSyncing(@NotNull BlockNodeType type,
+                                                     @NotNull BlockNodePacketEncoder<N> encoder,
+                                                     @NotNull BlockNodePacketDecoder decoder) {
         nodeSyncing.put(type, new BlockNodeSyncing(encoder, decoder));
     }
 
@@ -141,8 +146,9 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntityPacketEncoder<?> encoder,
-                                     @NotNull NodeEntityPacketDecoder decoder) {
+    public <N extends NodeEntity> void addNodeEntitySyncing(@NotNull NodeEntityType type,
+                                                            @NotNull NodeEntityPacketEncoder<N> encoder,
+                                                            @NotNull NodeEntityPacketDecoder decoder) {
         nodeEntitySyncing.put(type, new NodeEntitySyncing(encoder, decoder));
     }
 
@@ -160,8 +166,9 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeyPacketEncoder<?> encoder,
-                                  @NotNull LinkKeyPacketDecoder decoder) {
+    public <L extends LinkKey> void addLinkKeySyncing(@NotNull LinkKeyType type,
+                                                      @NotNull LinkKeyPacketEncoder<L> encoder,
+                                                      @NotNull LinkKeyPacketDecoder decoder) {
         linkKeySyncing.put(type, new LinkKeySyncing(encoder, decoder));
     }
 
@@ -179,8 +186,9 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntityPacketEncoder<?> encoder,
-                                     @NotNull LinkEntityPacketDecoder decoder) {
+    public <L extends LinkEntity> void addLinkEntitySyncing(@NotNull LinkEntityType type,
+                                                            @NotNull LinkEntityPacketEncoder<L> encoder,
+                                                            @NotNull LinkEntityPacketDecoder decoder) {
         linkEntitySyncing.put(type, new LinkEntitySyncing(encoder, decoder));
     }
 
@@ -198,8 +206,9 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public void addGraphEntitySyncing(@NotNull GraphEntityType<?> type, @NotNull GraphEntityPacketEncoder<?> encoder,
-                                      @NotNull GraphEntityPacketDecoder decoder) {
+    public <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type,
+                                                                 @NotNull GraphEntityPacketEncoder<G> encoder,
+                                                                 @NotNull GraphEntityPacketDecoder decoder) {
         graphEntitySyncing.put(type, new GraphEntitySyncing<>(encoder, decoder));
     }
 

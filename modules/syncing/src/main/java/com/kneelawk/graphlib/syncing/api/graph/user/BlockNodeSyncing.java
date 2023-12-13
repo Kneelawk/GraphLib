@@ -26,7 +26,6 @@
 package com.kneelawk.graphlib.syncing.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
@@ -37,11 +36,21 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Holds a block node encoder and decoder.
- *
- * @param encoder the encoder.
- * @param decoder the decoder.
  */
-public record BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
+// TODO: Make these all typed with creator functions
+public final class BlockNodeSyncing {
+    private final @NotNull BlockNodePacketEncoder<?> encoder;
+    private final @NotNull BlockNodePacketDecoder decoder;
+
+    /**
+     * @param encoder the encoder.
+     * @param decoder the decoder.
+     */
+    public BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
+        this.encoder = encoder;
+        this.decoder = decoder;
+    }
+
     /**
      * Encodes a block node.
      * <p>
