@@ -42,20 +42,10 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
-import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntityPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntityPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntitySyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntityPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntityPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntitySyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntityPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntityPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.syncing.impl.graph.simple.SimpleSyncedUniverseBuilder;
@@ -101,11 +91,9 @@ public interface SyncedUniverse {
      * Registers an encoder and decoder for the given block node type.
      *
      * @param type    the type of block node to associate the encoder and decoder with.
-     * @param encoder the encoder for the block node.
-     * @param decoder the decoder for the block node.
+     * @param syncing the syncing for the block node.
      */
-    void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodePacketEncoder<?> encoder,
-                        @NotNull BlockNodePacketDecoder decoder);
+    void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodeSyncing syncing);
 
     /**
      * Gets whether the given block node type has had encoders and decoders registered with this universe.
@@ -127,11 +115,9 @@ public interface SyncedUniverse {
      * Registers an encoder and decoder for the given node entity type.
      *
      * @param type    the type of node entity to associate the encoder and decoder with.
-     * @param encoder the encoder for the node entity.
-     * @param decoder the decoder for the node entity.
+     * @param syncing the node entity syncing.
      */
-    void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntityPacketEncoder<?> encoder,
-                              @NotNull NodeEntityPacketDecoder decoder);
+    void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntitySyncing syncing);
 
     /**
      * Gets whether the given node entity type has had encoders and decoders registered with this universe.
@@ -153,11 +139,9 @@ public interface SyncedUniverse {
      * Registers an encoder and decoder for the given link key type.
      *
      * @param type    the type of link key to associate the encoder and decoder with.
-     * @param encoder the encoder for the link key.
-     * @param decoder the decoder for the link key.
+     * @param syncing the link key syncing.
      */
-    void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeyPacketEncoder<?> encoder,
-                           @NotNull LinkKeyPacketDecoder decoder);
+    void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeySyncing syncing);
 
     /**
      * Gets whether the given link key type has had encoders and decoders registered with this universe.
@@ -179,11 +163,9 @@ public interface SyncedUniverse {
      * Registers an encoder and decoder for the given link entity type.
      *
      * @param type    the type of link entity to associate the encoder and decoder with.
-     * @param encoder the encoder for the link entity.
-     * @param decoder the decoder for the link entity.
+     * @param syncing the link entity syncing.
      */
-    void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntityPacketEncoder<?> encoder,
-                              @NotNull LinkEntityPacketDecoder decoder);
+    void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntitySyncing syncing);
 
     /**
      * Gets whether the given link entity type has had encoders and decoders registered with this universe.
@@ -204,12 +186,12 @@ public interface SyncedUniverse {
     /**
      * Registers an encoder and decoder for the given graph entity type.
      *
+     * @param <G>     the type of graph entity to add syncing for.
      * @param type    the type of graph entity to associate the encoder and decoder with.
-     * @param encoder the encoder for the graph entity.
-     * @param decoder the decoder for the graph entity.
+     * @param syncing the graph entity syncing.
      */
-    void addGraphEntitySyncing(@NotNull GraphEntityType<?> type, @NotNull GraphEntityPacketEncoder<?> encoder,
-                               @NotNull GraphEntityPacketDecoder decoder);
+    <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type,
+                                                          @NotNull GraphEntitySyncing<G> syncing);
 
     /**
      * Gets whether the given graph entity type has had encoders and decoders registered with this universe.

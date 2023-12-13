@@ -46,7 +46,7 @@ public interface LinkEntityPacketEncoder<L extends LinkEntity> {
      * @param <T> the type of link entity to encode.
      * @return a no-op encoder.
      */
-    static <T extends LinkEntity> LinkEntityPacketEncoder<T> noop() {
+    static <T extends LinkEntity> LinkEntityPacketEncoder<T> noOp() {
         return (link, buf, ctx) -> {};
     }
 

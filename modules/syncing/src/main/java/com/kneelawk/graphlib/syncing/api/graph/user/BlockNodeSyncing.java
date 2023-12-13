@@ -25,8 +25,10 @@
 
 package com.kneelawk.graphlib.syncing.api.graph.user;
 
+import java.util.function.Supplier;
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
@@ -37,11 +39,16 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Holds a block node encoder and decoder.
- *
- * @param encoder the encoder.
- * @param decoder the decoder.
  */
-public record BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
+public final class BlockNodeSyncing {
+    private final @NotNull BlockNodePacketEncoder<?> encoder;
+    private final @NotNull BlockNodePacketDecoder decoder;
+
+    private BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
+        this.encoder = encoder;
+        this.decoder = decoder;
+    }
+
     /**
      * Encodes a block node.
      * <p>
@@ -69,5 +76,30 @@ public record BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotN
     public @NotNull BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx)
         throws InvalidInputDataException {
         return decoder.decode(buf, ctx);
+    }
+
+    /**
+     * Makes a {@link BlockNode} syncing descriptor.
+     *
+     * @param encoder the encoder.
+     * @param decoder the decoder.
+     * @param <N>     the type of block node this descriptor syncs.
+     * @return a new block node syncing descriptor.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static <N extends BlockNode> @NotNull BlockNodeSyncing of(@NotNull BlockNodePacketEncoder<N> encoder,
+                                                                     @NotNull BlockNodePacketDecoder decoder) {
+        return new BlockNodeSyncing(encoder, decoder);
+    }
+
+    /**
+     * Makes a {@link BlockNode} syncing descriptor that does no encoding or decoding.
+     *
+     * @param supplier supplies the instance(s) of the block node.
+     * @return a new block node syncing descriptor.
+     */
+    @Contract(value = "_ -> new", pure = true)
+    public static @NotNull BlockNodeSyncing ofNoOp(@NotNull Supplier<? extends BlockNode> supplier) {
+        return new BlockNodeSyncing(BlockNodePacketEncoder.noOp(), (buf, ctx) -> supplier.get());
     }
 }

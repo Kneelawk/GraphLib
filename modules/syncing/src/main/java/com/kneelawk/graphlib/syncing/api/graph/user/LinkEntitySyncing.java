@@ -25,6 +25,8 @@
 
 package com.kneelawk.graphlib.syncing.api.graph.user;
 
+import java.util.function.Supplier;
+
 import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
@@ -36,11 +38,16 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 
 /**
  * Holds a link entity encoder and decoder.
- *
- * @param encoder the encoder.
- * @param decoder the decoder.
  */
-public record LinkEntitySyncing(@NotNull LinkEntityPacketEncoder<?> encoder, @NotNull LinkEntityPacketDecoder decoder) {
+public final class LinkEntitySyncing {
+    private final @NotNull LinkEntityPacketEncoder<?> encoder;
+    private final @NotNull LinkEntityPacketDecoder decoder;
+
+    private LinkEntitySyncing(@NotNull LinkEntityPacketEncoder<?> encoder, @NotNull LinkEntityPacketDecoder decoder) {
+        this.encoder = encoder;
+        this.decoder = decoder;
+    }
+
     /**
      * Encodes a link entity.
      * <p>
@@ -68,5 +75,28 @@ public record LinkEntitySyncing(@NotNull LinkEntityPacketEncoder<?> encoder, @No
     public @NotNull LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx)
         throws InvalidInputDataException {
         return decoder.decode(buf, ctx);
+    }
+
+    /**
+     * Makes a {@link LinkEntity} syncing descriptor.
+     *
+     * @param encoder the encoder.
+     * @param decoder the decoder.
+     * @param <L>     the type of link entity this descriptor syncs.
+     * @return a new link entity syncing descriptor.
+     */
+    public static <L extends LinkEntity> @NotNull LinkEntitySyncing of(@NotNull LinkEntityPacketEncoder<L> encoder,
+                                                                       @NotNull LinkEntityPacketDecoder decoder) {
+        return new LinkEntitySyncing(encoder, decoder);
+    }
+
+    /**
+     * Makes a {@link LinkEntity} syncing descriptor that does no encoding or decoding.
+     *
+     * @param supplier supplies new instances of the link entity.
+     * @return a new link entity syncing descriptor.
+     */
+    public static @NotNull LinkEntitySyncing ofNoOp(@NotNull Supplier<? extends LinkEntity> supplier) {
+        return new LinkEntitySyncing(LinkEntityPacketEncoder.noOp(), (buf, msgCtx) -> supplier.get());
     }
 }

@@ -46,7 +46,7 @@ public interface NodeEntityPacketEncoder<N extends NodeEntity> {
      * @param <T> the type of node entity to encode.
      * @return a no-op encoder.
      */
-    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noop() {
+    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noOp() {
         return (entity, buf, ctx) -> {};
     }
 

@@ -46,7 +46,7 @@ public interface GraphEntityPacketEncoder<G extends GraphEntity<G>> {
      * @param <T> the type of graph entity to encode.
      * @return a no-op encoder.
      */
-    static <T extends GraphEntity<T>> GraphEntityPacketEncoder<T> noop() {
+    static <T extends GraphEntity<T>> GraphEntityPacketEncoder<T> noOp() {
         return (link, buf, ctx) -> {};
     }
 
