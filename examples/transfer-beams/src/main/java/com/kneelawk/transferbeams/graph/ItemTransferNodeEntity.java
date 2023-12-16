@@ -84,4 +84,9 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity implements Transf
 
         return InventoryUtil.hasInventory(apiCache, cachedState);
     }
+
+    @Override
+    public void dropItems() {
+
+    }
 }

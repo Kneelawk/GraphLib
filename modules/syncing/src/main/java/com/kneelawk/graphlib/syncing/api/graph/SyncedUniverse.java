@@ -107,6 +107,7 @@ public interface SyncedUniverse {
      * @param type    the type of block node to associate the encoder and decoder with.
      * @param encoder the encoder for the block node.
      * @param decoder the decoder for the block node.
+     * @param <N>     the type of block node to add syncing for.
      */
     <N extends BlockNode> void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodePacketEncoder<N> encoder,
                                               @NotNull BlockNodePacketDecoder decoder);
@@ -133,6 +134,7 @@ public interface SyncedUniverse {
      * @param type    the type of node entity to associate the encoder and decoder with.
      * @param encoder the encoder for the node entity.
      * @param decoder the decoder for the node entity.
+     * @param <N>     the type of node entity to add syncing for.
      */
     <N extends NodeEntity> void addNodeEntitySyncing(@NotNull NodeEntityType type,
                                                      @NotNull NodeEntityPacketEncoder<N> encoder,
@@ -160,6 +162,7 @@ public interface SyncedUniverse {
      * @param type    the type of link key to associate the encoder and decoder with.
      * @param encoder the encoder for the link key.
      * @param decoder the decoder for the link key.
+     * @param <L>     tye type of link key to add syncing for.
      */
     <L extends LinkKey> void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeyPacketEncoder<L> encoder,
                                                @NotNull LinkKeyPacketDecoder decoder);
@@ -186,6 +189,7 @@ public interface SyncedUniverse {
      * @param type    the type of link entity to associate the encoder and decoder with.
      * @param encoder the encoder for the link entity.
      * @param decoder the decoder for the link entity.
+     * @param <L>     the type of link entity to add syncing for.
      */
     <L extends LinkEntity> void addLinkEntitySyncing(@NotNull LinkEntityType type,
                                                      @NotNull LinkEntityPacketEncoder<L> encoder,
@@ -213,9 +217,11 @@ public interface SyncedUniverse {
      * @param type    the type of graph entity to associate the encoder and decoder with.
      * @param encoder the encoder for the graph entity.
      * @param decoder the decoder for the graph entity.
+     * @param <G>     the type of graph entity to add syncing for.
      */
-    <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type, @NotNull GraphEntityPacketEncoder<G> encoder,
-                               @NotNull GraphEntityPacketDecoder decoder);
+    <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type,
+                                                          @NotNull GraphEntityPacketEncoder<G> encoder,
+                                                          @NotNull GraphEntityPacketDecoder decoder);
 
     /**
      * Gets whether the given graph entity type has had encoders and decoders registered with this universe.

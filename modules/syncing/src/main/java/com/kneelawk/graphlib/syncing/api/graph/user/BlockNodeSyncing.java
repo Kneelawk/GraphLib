@@ -43,6 +43,8 @@ public final class BlockNodeSyncing {
     private final @NotNull BlockNodePacketDecoder decoder;
 
     /**
+     * Constructs a {@link BlockNode} syncing descriptor.
+     *
      * @param encoder the encoder.
      * @param decoder the decoder.
      */
