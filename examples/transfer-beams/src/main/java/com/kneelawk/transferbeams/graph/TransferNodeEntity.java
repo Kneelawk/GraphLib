@@ -31,4 +31,6 @@ import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 
 public interface TransferNodeEntity extends NodeEntity {
     boolean hasInventory(BlockState cachedState);
+
+    void dropItems();
 }

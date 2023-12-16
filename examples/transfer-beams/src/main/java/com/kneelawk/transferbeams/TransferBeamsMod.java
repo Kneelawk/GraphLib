@@ -30,6 +30,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -60,6 +61,7 @@ public class TransferBeamsMod implements ModInitializer {
     public static final SyncedUniverse SYNCED = SyncedUniverse.builder().build(UNIVERSE);
 
     public static final TagKey<Item> NODE_VISUALIZERS = TagKey.of(RegistryKeys.ITEM, id("node_visualizers"));
+    public static final TagKey<Block> WORLDGEN_NODE_HOLDERS = TagKey.of(RegistryKeys.BLOCK, id("worldgen_node_holders"));
 
     public static final Item ITEM_NODE_ITEM = new NodeItem(new FabricItemSettings());
 

@@ -25,26 +25,17 @@
 
 package com.kneelawk.transferbeams.mixin.impl;
 
-import java.util.List;
-import java.util.PrimitiveIterator;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 
-import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.transferbeams.TransferBeamsMod;
-import com.kneelawk.transferbeams.graph.TransferNodeEntity;
+import com.kneelawk.transferbeams.mixin.api.BlockBreakHandler;
 
 /**
  * Detects when an inventory block has been removed and removes its associated nodes if there are any.
@@ -56,28 +47,15 @@ public class ServerWorldMixin {
         at = @At("HEAD"))
     private void onBlockChangedHook(BlockPos pos, BlockState oldBlock, BlockState newBlock, CallbackInfo ci) {
         ServerWorld world = (ServerWorld) (Object) this;
-        world.getServer().execute(() -> {
-            GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getServerGraphWorld(world);
-            PrimitiveIterator.OfLong iter = graphWorld.getAllGraphIdsAt(pos).iterator();
-            if (iter.hasNext()) {
-                List<NodeHolder<BlockNode>> collected = new ObjectArrayList<>();
-                while (iter.hasNext()) {
-                    BlockGraph graph = graphWorld.getGraph(iter.nextLong());
-                    if (graph != null) {
-                        graph.getNodesAt(pos).forEach(collected::add);
-                    }
-                }
-
-                // Remove all the nodes if the block no longer has an inventory
-                for (NodeHolder<BlockNode> node : collected) {
-                    TransferNodeEntity entity = node.getNodeEntity(TransferNodeEntity.class);
-                    if (entity == null) continue;
-
-                    if (!entity.hasInventory(newBlock)) {
-                        graphWorld.removeBlockNode(node.getPos());
-                    }
-                }
-            }
-        });
+        // Removing nodes should generally only happen on the server thread,
+        // because nodes are generally place by players, meaning they shouldn't
+        // appear in worldgen.
+        // This method is called *a lot* during worldgen, so we need to be careful.
+        if (world.getServer().isOnThread()) {
+            BlockBreakHandler.onBlockChanged(pos, newBlock, world);
+        } else if (oldBlock.isIn(TransferBeamsMod.WORLDGEN_NODE_HOLDERS)) {
+            world.getServer().execute(() -> BlockBreakHandler.onBlockChanged(pos, newBlock, world));
+        }
     }
+
 }
