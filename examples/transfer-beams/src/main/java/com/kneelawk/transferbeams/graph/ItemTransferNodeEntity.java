@@ -56,12 +56,6 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity implements Transf
 
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
 
-    public ItemTransferNodeEntity() {}
-
-    public ItemTransferNodeEntity(NetByteBuf buf, IMsgReadCtx ctx) {this();}
-
-    public void toPacket(NetByteBuf buf, IMsgWriteCtx ctx) {}
-
     @Override
     public void onInit(@NotNull NodeEntityContext ctx) {
         super.onInit(ctx);

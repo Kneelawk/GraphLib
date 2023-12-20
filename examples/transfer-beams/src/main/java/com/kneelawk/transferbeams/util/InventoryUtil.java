@@ -38,7 +38,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 public class InventoryUtil {
-    public static boolean hasInventory(BlockApiCache<Storage<ItemVariant>, Direction> cache,
+    public static boolean hasInventory(BlockApiCache<?, Direction> cache,
                                        @Nullable BlockState cachedState) {
         return cache.find(cachedState, null) != null;
     }
