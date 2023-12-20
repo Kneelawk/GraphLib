@@ -25,6 +25,9 @@
 
 package com.kneelawk.graphlib.syncing.api.graph.user;
 
+import java.util.function.Supplier;
+
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
@@ -37,12 +40,18 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 /**
  * Holds a graph entity encoder and decoder.
  *
- * @param encoder the encoder.
- * @param decoder the decoder.
- * @param <G>     the type of graph entity this syncs.
+ * @param <G> the type of graph entity this syncs.
  */
-public record GraphEntitySyncing<G extends GraphEntity<G>>(@NotNull GraphEntityPacketEncoder<G> encoder,
-                                                           @NotNull GraphEntityPacketDecoder decoder) {
+public final class GraphEntitySyncing<G extends GraphEntity<G>> {
+    private final @NotNull GraphEntityPacketEncoder<G> encoder;
+    private final @NotNull GraphEntityPacketDecoder decoder;
+
+    private GraphEntitySyncing(@NotNull GraphEntityPacketEncoder<G> encoder,
+                               @NotNull GraphEntityPacketDecoder decoder) {
+        this.encoder = encoder;
+        this.decoder = decoder;
+    }
+
     /**
      * Encodes a graph entity.
      * <p>
@@ -70,5 +79,31 @@ public record GraphEntitySyncing<G extends GraphEntity<G>>(@NotNull GraphEntityP
     public @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx)
         throws InvalidInputDataException {
         return decoder.decode(buf, ctx);
+    }
+
+    /**
+     * Makes a new {@link GraphEntity} syncing descriptor.
+     *
+     * @param encoder the encoder for the graph entity.
+     * @param decoder the decoder for the graph entity.
+     * @param <G>     the type of graph entity this descriptor syncs.
+     * @return a new graph entity syncing descriptor.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> of(
+        @NotNull GraphEntityPacketEncoder<G> encoder, @NotNull GraphEntityPacketDecoder decoder) {
+        return new GraphEntitySyncing<>(encoder, decoder);
+    }
+
+    /**
+     * Makes a new {@link GraphEntity} syncing descriptor that does no encoding or decoding.
+     *
+     * @param supplier supplies instances of the graph entity.
+     * @param <G>      the type of graph entity this descriptor syncs.
+     * @return a new graph entity syncing descriptor.
+     */
+    @Contract(value = "_ -> new", pure = true)
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofNoOp(@NotNull Supplier<G> supplier) {
+        return new GraphEntitySyncing<G>(GraphEntityPacketEncoder.noOp(), (buf, msgCtx) -> supplier.get());
     }
 }

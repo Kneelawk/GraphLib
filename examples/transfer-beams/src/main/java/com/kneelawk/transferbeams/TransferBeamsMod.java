@@ -45,12 +45,10 @@ import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntityPacketEncoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketEncoder;
+import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
 import com.kneelawk.transferbeams.graph.TransferLinkEntity;
 import com.kneelawk.transferbeams.graph.TransferLinkKey;
-import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.item.InteractionCancellerItem;
 import com.kneelawk.transferbeams.item.NodeItem;
 
@@ -61,7 +59,8 @@ public class TransferBeamsMod implements ModInitializer {
     public static final SyncedUniverse SYNCED = SyncedUniverse.builder().build(UNIVERSE);
 
     public static final TagKey<Item> NODE_VISUALIZERS = TagKey.of(RegistryKeys.ITEM, id("node_visualizers"));
-    public static final TagKey<Block> WORLDGEN_NODE_HOLDERS = TagKey.of(RegistryKeys.BLOCK, id("worldgen_node_holders"));
+    public static final TagKey<Block> WORLDGEN_NODE_HOLDERS =
+        TagKey.of(RegistryKeys.BLOCK, id("worldgen_node_holders"));
 
     public static final Item ITEM_NODE_ITEM = new NodeItem(new FabricItemSettings());
 
@@ -77,17 +76,14 @@ public class TransferBeamsMod implements ModInitializer {
         SYNCED.register();
 
         UNIVERSE.addNodeType(TransferBlockNode.TYPE);
-        SYNCED.addNodeSyncing(TransferBlockNode.TYPE, TransferBlockNode::toPacket, TransferBlockNode::new);
+        SYNCED.addNodeSyncing(TransferBlockNode.TYPE, TransferBlockNode.SYNCING);
         UNIVERSE.addNodeEntityType(ItemTransferNodeEntity.TYPE);
-        SYNCED.addNodeEntitySyncing(ItemTransferNodeEntity.TYPE, ItemTransferNodeEntity::toPacket, ItemTransferNodeEntity::new);
+        SYNCED.addNodeEntitySyncing(ItemTransferNodeEntity.TYPE, ItemTransferNodeEntity.SYNCING);
 
         UNIVERSE.addLinkKeyType(TransferLinkKey.TYPE);
-        // TODO: make this less clunky, maybe via LinkKeySyncing
-        SYNCED.addLinkKeySyncing(TransferLinkKey.TYPE, LinkKeyPacketEncoder.noop(),
-            (buf, ctx) -> TransferLinkKey.INSTANCE);
+        SYNCED.addLinkKeySyncing(TransferLinkKey.TYPE, TransferLinkKey.SYNCING);
         UNIVERSE.addLinkEntityType(TransferLinkEntity.TYPE);
-        SYNCED.addLinkEntitySyncing(TransferLinkEntity.TYPE, LinkEntityPacketEncoder.noop(),
-            (buf, msgCtx) -> new TransferLinkEntity());
+        SYNCED.addLinkEntitySyncing(TransferLinkEntity.TYPE, TransferLinkEntity.SYNCING);
     }
 
     private static void registerItems() {

@@ -36,34 +36,20 @@ import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
-import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
-import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
-import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodePacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntityPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntityPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntitySyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntityPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntityPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntitySyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntityPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntityPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
@@ -89,8 +75,7 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
         this.universe = universe;
         syncProfile = builder.profile;
 
-        addLinkKeySyncing(EmptyLinkKey.TYPE, PacketEncodingUtil.EMPTY_KEY_ENCODER,
-            PacketEncodingUtil.EMPTY_KEY_DECODER);
+        addLinkKeySyncing(EmptyLinkKey.TYPE, PacketEncodingUtil.EMPTY_KEY_SYNCING);
 
         if (syncProfile.getNodeFilter() != null) {
             universe.addCacheCategory(syncProfile.getNodeFilter());
@@ -126,10 +111,8 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public <N extends BlockNode> void addNodeSyncing(@NotNull BlockNodeType type,
-                                                     @NotNull BlockNodePacketEncoder<N> encoder,
-                                                     @NotNull BlockNodePacketDecoder decoder) {
-        nodeSyncing.put(type, new BlockNodeSyncing(encoder, decoder));
+    public void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodeSyncing syncing) {
+        nodeSyncing.put(type, syncing);
     }
 
     @Override
@@ -146,10 +129,8 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public <N extends NodeEntity> void addNodeEntitySyncing(@NotNull NodeEntityType type,
-                                                            @NotNull NodeEntityPacketEncoder<N> encoder,
-                                                            @NotNull NodeEntityPacketDecoder decoder) {
-        nodeEntitySyncing.put(type, new NodeEntitySyncing(encoder, decoder));
+    public void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntitySyncing syncing) {
+        nodeEntitySyncing.put(type, syncing);
     }
 
     @Override
@@ -166,10 +147,8 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public <L extends LinkKey> void addLinkKeySyncing(@NotNull LinkKeyType type,
-                                                      @NotNull LinkKeyPacketEncoder<L> encoder,
-                                                      @NotNull LinkKeyPacketDecoder decoder) {
-        linkKeySyncing.put(type, new LinkKeySyncing(encoder, decoder));
+    public void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeySyncing syncing) {
+        linkKeySyncing.put(type, syncing);
     }
 
     @Override
@@ -186,10 +165,8 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
     }
 
     @Override
-    public <L extends LinkEntity> void addLinkEntitySyncing(@NotNull LinkEntityType type,
-                                                            @NotNull LinkEntityPacketEncoder<L> encoder,
-                                                            @NotNull LinkEntityPacketDecoder decoder) {
-        linkEntitySyncing.put(type, new LinkEntitySyncing(encoder, decoder));
+    public void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntitySyncing syncing) {
+        linkEntitySyncing.put(type, syncing);
     }
 
     @Override
@@ -207,9 +184,8 @@ public class SimpleSyncedUniverse implements SyncedUniverseImpl {
 
     @Override
     public <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type,
-                                                                 @NotNull GraphEntityPacketEncoder<G> encoder,
-                                                                 @NotNull GraphEntityPacketDecoder decoder) {
-        graphEntitySyncing.put(type, new GraphEntitySyncing<>(encoder, decoder));
+                                                                 @NotNull GraphEntitySyncing<G> syncing) {
+        graphEntitySyncing.put(type, syncing);
     }
 
     @Override

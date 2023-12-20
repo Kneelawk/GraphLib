@@ -32,12 +32,14 @@ import net.minecraft.nbt.NbtElement;
 
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class TransferLinkKey implements LinkKey {
-    public static TransferLinkKey INSTANCE = new TransferLinkKey();
-    public static LinkKeyType TYPE = LinkKeyType.of(id("transfer_link"), () -> INSTANCE);
+    public static final TransferLinkKey INSTANCE = new TransferLinkKey();
+    public static final LinkKeyType TYPE = LinkKeyType.of(id("transfer_link"), () -> INSTANCE);
+    public static final LinkKeySyncing SYNCING = LinkKeySyncing.ofNoOp(TransferLinkKey::new);
 
     private TransferLinkKey() {}
 

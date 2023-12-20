@@ -46,7 +46,7 @@ public interface BlockNodePacketEncoder<N extends BlockNode> {
      * @param <T> the type of block node to encode.
      * @return a no-op encoder.
      */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noop() {
+    static <T extends BlockNode> BlockNodePacketEncoder<T> noOp() {
         return (node, buf, ctx) -> {};
     }
 

@@ -46,7 +46,7 @@ public interface LinkKeyPacketEncoder<L extends LinkKey> {
      * @param <T> the type of link key to encode.
      * @return a no-op encoder.
      */
-    static <T extends LinkKey> LinkKeyPacketEncoder<T> noop() {
+    static <T extends LinkKey> LinkKeyPacketEncoder<T> noOp() {
         return (link, buf, ctx) -> {};
     }
 

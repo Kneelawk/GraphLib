@@ -45,12 +45,14 @@ import alexiil.mc.lib.net.NetByteBuf;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
+import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.transferbeams.util.InventoryUtil;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class ItemTransferNodeEntity extends AbstractNodeEntity implements TransferNodeEntity {
     public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), ItemTransferNodeEntity::new);
+    public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(ItemTransferNodeEntity::new);
 
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
 

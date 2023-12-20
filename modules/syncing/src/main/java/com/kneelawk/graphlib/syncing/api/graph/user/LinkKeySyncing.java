@@ -25,6 +25,8 @@
 
 package com.kneelawk.graphlib.syncing.api.graph.user;
 
+import java.util.function.Supplier;
+
 import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
@@ -36,11 +38,16 @@ import com.kneelawk.graphlib.api.graph.user.LinkKey;
 
 /**
  * Holds a link key encoder and decoder.
- *
- * @param encoder the encoder.
- * @param decoder the decoder.
  */
-public record LinkKeySyncing(@NotNull LinkKeyPacketEncoder<?> encoder, @NotNull LinkKeyPacketDecoder decoder) {
+public final class LinkKeySyncing {
+    private final @NotNull LinkKeyPacketEncoder<?> encoder;
+    private final @NotNull LinkKeyPacketDecoder decoder;
+
+    private LinkKeySyncing(@NotNull LinkKeyPacketEncoder<?> encoder, @NotNull LinkKeyPacketDecoder decoder) {
+        this.encoder = encoder;
+        this.decoder = decoder;
+    }
+
     /**
      * Encodes a link key.
      * <p>
@@ -65,8 +72,30 @@ public record LinkKeySyncing(@NotNull LinkKeyPacketEncoder<?> encoder, @NotNull 
      * @return a newly decoded link key.
      * @throws InvalidInputDataException if the buffer contained invalid data.
      */
-    public @NotNull LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx)
-        throws InvalidInputDataException {
+    public @NotNull LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException {
         return decoder.decode(buf, ctx);
+    }
+
+    /**
+     * Makes a {@link LinkKey} syncing descriptor.
+     *
+     * @param encoder the encoder.
+     * @param decoder the decoder.
+     * @param <L>     the type of link key this descriptor syncs.
+     * @return a link key syncing descriptor.
+     */
+    public static <L extends LinkKey> @NotNull LinkKeySyncing of(@NotNull LinkKeyPacketEncoder<L> encoder,
+                                                                 @NotNull LinkKeyPacketDecoder decoder) {
+        return new LinkKeySyncing(encoder, decoder);
+    }
+
+    /**
+     * Makes a {@link LinkKey} syncing descriptor that does not do any encoding or decoding.
+     *
+     * @param supplier supplies the instance(s) of the link key.
+     * @return a link key syncing descriptor.
+     */
+    public static @NotNull LinkKeySyncing ofNoOp(@NotNull Supplier<? extends LinkKey> supplier) {
+        return new LinkKeySyncing(LinkKeyPacketEncoder.noOp(), (buf, ctx) -> supplier.get());
     }
 }

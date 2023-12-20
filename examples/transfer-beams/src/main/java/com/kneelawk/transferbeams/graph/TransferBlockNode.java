@@ -36,7 +36,6 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.util.DyeColor;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -44,6 +43,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.HalfLink;
+import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
@@ -54,14 +54,9 @@ public record TransferBlockNode(@NotNull DyeColor color) implements BlockNode {
         }
         return null;
     });
-
-    public TransferBlockNode(NetByteBuf buf, IMsgReadCtx ctx) {
-        this(DyeColor.byId(buf.readVarInt()));
-    }
-
-    public void toPacket(NetByteBuf buf, IMsgWriteCtx ctx) {
-        buf.writeVarInt(color.getId());
-    }
+    public static final BlockNodeSyncing SYNCING =
+        BlockNodeSyncing.<TransferBlockNode>of((node, buf, ctx) -> buf.writeVarInt(node.color.getId()),
+            (buf, ctx) -> new TransferBlockNode(DyeColor.byId(buf.readVarInt())));
 
     @Override
     public @NotNull BlockNodeType getType() {

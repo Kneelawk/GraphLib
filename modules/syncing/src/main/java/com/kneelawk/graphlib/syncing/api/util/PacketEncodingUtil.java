@@ -45,8 +45,6 @@ import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketDecoder;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeyPacketEncoder;
 import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.impl.GLNet;
 
@@ -57,14 +55,9 @@ public class PacketEncodingUtil {
     private PacketEncodingUtil() {}
 
     /**
-     * Packet encoder for {@link EmptyLinkKey}.
+     * Syncing for {@link EmptyLinkKey}.
      */
-    public static final LinkKeyPacketEncoder<EmptyLinkKey> EMPTY_KEY_ENCODER = LinkKeyPacketEncoder.noop();
-
-    /**
-     * Packet decoder for {@link EmptyLinkKey}.
-     */
-    public static final LinkKeyPacketDecoder EMPTY_KEY_DECODER = (buf, ctx) -> EmptyLinkKey.INSTANCE;
+    public static final LinkKeySyncing EMPTY_KEY_SYNCING = LinkKeySyncing.ofNoOp(() -> EmptyLinkKey.INSTANCE);
 
     /**
      * Writes this NodePos to a packet.

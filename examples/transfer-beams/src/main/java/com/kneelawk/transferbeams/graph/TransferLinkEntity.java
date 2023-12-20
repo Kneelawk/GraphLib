@@ -32,11 +32,13 @@ import net.minecraft.nbt.NbtElement;
 
 import com.kneelawk.graphlib.api.graph.user.AbstractLinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntitySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class TransferLinkEntity extends AbstractLinkEntity {
     public static final LinkEntityType TYPE = LinkEntityType.of(id("transfer_link"), TransferLinkEntity::new);
+    public static final LinkEntitySyncing SYNCING = LinkEntitySyncing.ofNoOp(TransferLinkEntity::new);
 
     @Override
     public @NotNull LinkEntityType getType() {

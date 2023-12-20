@@ -25,6 +25,8 @@
 
 package com.kneelawk.graphlib.syncing.api.graph.user;
 
+import java.util.function.Supplier;
+
 import org.jetbrains.annotations.NotNull;
 
 import alexiil.mc.lib.net.IMsgReadCtx;
@@ -36,11 +38,16 @@ import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 
 /**
  * Holds a node entity encoder and decoder.
- *
- * @param encoder the encoder.
- * @param decoder the decoder.
  */
-public record NodeEntitySyncing(@NotNull NodeEntityPacketEncoder<?> encoder, @NotNull NodeEntityPacketDecoder decoder) {
+public final class NodeEntitySyncing {
+    private final @NotNull NodeEntityPacketEncoder<?> encoder;
+    private final @NotNull NodeEntityPacketDecoder decoder;
+
+    private NodeEntitySyncing(@NotNull NodeEntityPacketEncoder<?> encoder, @NotNull NodeEntityPacketDecoder decoder) {
+        this.encoder = encoder;
+        this.decoder = decoder;
+    }
+
     /**
      * Encodes a node entity.
      * <p>
@@ -68,5 +75,28 @@ public record NodeEntitySyncing(@NotNull NodeEntityPacketEncoder<?> encoder, @No
     public @NotNull NodeEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx)
         throws InvalidInputDataException {
         return decoder.decode(buf, ctx);
+    }
+
+    /**
+     * Makes a {@link NodeEntity} syncing descriptor.
+     *
+     * @param encoder the encoder.
+     * @param decoder the decoder.
+     * @param <N>     the type of node entity this descriptor syncs.
+     * @return a new node entity syncing descriptor.
+     */
+    public static <N extends NodeEntity> @NotNull NodeEntitySyncing of(@NotNull NodeEntityPacketEncoder<N> encoder,
+                                                                       @NotNull NodeEntityPacketDecoder decoder) {
+        return new NodeEntitySyncing(encoder, decoder);
+    }
+
+    /**
+     * Makes a {@link NodeEntity} syncing descriptor that does no encoding or decoding.
+     *
+     * @param supplier supplies new instances of node entities.
+     * @return a new node entity syncing descriptor.
+     */
+    public static @NotNull NodeEntitySyncing ofNoOp(@NotNull Supplier<? extends NodeEntity> supplier) {
+        return new NodeEntitySyncing(NodeEntityPacketEncoder.noOp(), (buf, msgCtx) -> supplier.get());
     }
 }
