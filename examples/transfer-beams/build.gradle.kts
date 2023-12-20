@@ -15,6 +15,9 @@ base {
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
+val modId = "transfer_beams"
+val genResDir = file("src/main/resources-generated")
+
 loom {
 //    accessWidenerPath.set(file("src/main/resources/graphlib.accesswidener"))
     runs {
@@ -24,6 +27,23 @@ loom {
         }
         named("server") {
             ideConfigGenerated(true)
+        }
+        create("datagen") {
+            inherit(getByName("client"))
+            name("Data Generation")
+            vmArg("-Dfabric-api.datagen")
+            vmArg("-Dfabric-api.datagen.output-dir=${genResDir}")
+            vmArg("-Dfabric-api.datagen.modid=${modId}")
+
+            runDir("build/datagen")
+        }
+    }
+}
+
+sourceSets {
+    named("main") {
+        resources {
+            srcDir(genResDir)
         }
     }
 }
@@ -86,6 +106,9 @@ dependencies {
 tasks {
     processResources {
         inputs.property("version", project.version)
+
+        exclude("**/*.xcf")
+        exclude("**/*.bbmodel")
 
         filesMatching("quilt.mod.json") {
             expand(mapOf("version" to project.version))

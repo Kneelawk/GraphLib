@@ -25,6 +25,11 @@
       {
         "value": "com.kneelawk.transferbeams.client.TransferBeamsModClient"
       }
+    ],
+    "fabric-datagen": [
+      {
+        "value": "com.kneelawk.transferbeams.datagen.TransferBeamsDatagen"
+      }
     ]
   },
   "mixins": [

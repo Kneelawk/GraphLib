@@ -1,0 +1,7 @@
+{
+  "parent": "transfer_beams:block/transfer_node",
+  "textures": {
+    "particle": "transfer_beams:block/gray_item_transfer_node",
+    "node": "transfer_beams:block/gray_item_transfer_node"
+  }
+}
