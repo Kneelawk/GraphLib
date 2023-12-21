@@ -26,16 +26,16 @@ public class NodeTextureGen extends AbstractTextureGenerator {
 
             gen.addTexture(id, gfx -> {
                 gfx.setPaint(colorColor);
-                gfx.drawRect(5, 4, 6, 0);
-                gfx.drawRect(4, 5, 0, 6);
-                gfx.drawRect(5, 12, 6, 0);
-                gfx.drawRect(12, 5, 0, 6);
+                gfx.drawRect(6, 4, 3, 1);
+                gfx.drawRect(4, 6, 1, 3);
+                gfx.drawRect(6, 10, 3, 1);
+                gfx.drawRect(10, 6, 1, 3);
 
                 gfx.setPaint(ITEM_CORNER_COLOR);
-                gfx.drawRect(4, 4, 0, 0);
-                gfx.drawRect(4, 12, 0, 0);
-                gfx.drawRect(12, 4, 0, 0);
-                gfx.drawRect(12, 12, 0, 0);
+                gfx.drawRect(4, 4, 1, 1);
+                gfx.drawRect(4, 10, 1, 1);
+                gfx.drawRect(10, 4, 1, 1);
+                gfx.drawRect(10, 10, 1, 1);
             });
         }
     }
