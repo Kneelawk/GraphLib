@@ -10,5 +10,6 @@ public class TransferBeamsDatagen implements DataGeneratorEntrypoint {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(NodeModelGen::new);
         pack.addProvider(NodeTextureGen::new);
+        pack.addProvider(NodeLangGen::new);
     }
 }

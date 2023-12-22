@@ -41,6 +41,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -62,7 +63,13 @@ public class TransferBeamsMod implements ModInitializer {
     public static final TagKey<Block> WORLDGEN_NODE_HOLDERS =
         TagKey.of(RegistryKeys.BLOCK, id("worldgen_node_holders"));
 
-    public static final Item ITEM_NODE_ITEM = new NodeItem(new FabricItemSettings());
+    public static final Item[] ITEM_NODE_ITEMS = new Item[DyeColor.values().length];
+
+    static {
+        for (DyeColor color : DyeColor.values()) {
+            ITEM_NODE_ITEMS[color.getId()] = new NodeItem(color, new FabricItemSettings());
+        }
+    }
 
     @Override
     public void onInitialize() {
@@ -87,11 +94,15 @@ public class TransferBeamsMod implements ModInitializer {
     }
 
     private static void registerItems() {
-        Registry.register(Registries.ITEM, id("item_node"), ITEM_NODE_ITEM);
+        for (DyeColor color : DyeColor.values()) {
+            Registry.register(Registries.ITEM, id(color.getName() + "_item_transfer_node"), ITEM_NODE_ITEMS[color.getId()]);
+        }
 
         ItemGroup itemGroup = FabricItemGroup.builder().name(tt("itemGroup", "main")).entries((params, collector) -> {
-            collector.addItem(ITEM_NODE_ITEM);
-        }).build();
+            for (DyeColor color : DyeColor.values()) {
+                collector.addItem(ITEM_NODE_ITEMS[color.getId()]);
+            }
+        }).icon(() -> new ItemStack(ITEM_NODE_ITEMS[DyeColor.GRAY.getId()])).build();
         Registry.register(Registries.ITEM_GROUP, id("main"), itemGroup);
     }
 

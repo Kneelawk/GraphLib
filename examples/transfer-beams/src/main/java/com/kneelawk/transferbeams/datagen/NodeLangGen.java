@@ -23,38 +23,37 @@
  *
  */
 
-package com.kneelawk.transferbeams.item;
+package com.kneelawk.transferbeams.datagen;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
+import java.io.IOException;
+
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
+
 import net.minecraft.util.DyeColor;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
 
-import com.kneelawk.transferbeams.util.InventoryUtil;
+import com.kneelawk.transferbeams.TransferBeamsMod;
 
-public class NodeItem extends Item implements InteractionCancellerItem {
-    private final DyeColor color;
+public class NodeLangGen extends FabricLanguageProvider {
+    private static final String[] DYE_COLOR_NAMES = {
+        "White", "Orange", "Magenta", "Light Blue", "Yellow", "Lime", "Pink", "Gray", "Light Gray", "Cyan", "Purple",
+        "Blue", "Brown", "Green", "Red", "Black"
+    };
 
-    public NodeItem(DyeColor color, Settings settings) {
-        super(settings);
-        this.color = color;
+    protected NodeLangGen(FabricDataOutput dataOutput) {
+        super(dataOutput);
     }
 
     @Override
-    public ActionResult interceptBlockUse(ItemStack stack, PlayerEntity player, World world, Hand hand,
-                                          BlockHitResult hitResult) {
-        if (!InventoryUtil.hasInventory(world, hitResult.getBlockPos())) return ActionResult.PASS;
+    public void generateTranslations(TranslationBuilder translationBuilder) {
+        for (DyeColor color : DyeColor.values()) {
+            translationBuilder.add(TransferBeamsMod.ITEM_NODE_ITEMS[color.getId()], DYE_COLOR_NAMES[color.getId()] + " Item Transfer Node");
+        }
 
-        if (world.isClient()) {
-            // send event to the server
-            return ActionResult.SUCCESS;
-        } else {
-            // actually add the node
-            return ActionResult.CONSUME;
+        try {
+            translationBuilder.add(dataOutput.getModContainer().findPath("assets/transfer_beams/lang/en_us.existing.json").get());
+        } catch (IOException e) {
+            throw new RuntimeException("Filed to load existing language file", e);
         }
     }
 }
