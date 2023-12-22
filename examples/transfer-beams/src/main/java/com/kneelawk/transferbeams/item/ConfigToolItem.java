@@ -25,5 +25,41 @@
 
 package com.kneelawk.transferbeams.item;
 
-public class ConfigToolItem {
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.world.World;
+
+import com.kneelawk.transferbeams.net.TBNet;
+import com.kneelawk.transferbeams.proxy.CommonProxy;
+import com.kneelawk.transferbeams.util.SelectedNode;
+
+public class ConfigToolItem extends Item implements InteractionCancellerItem {
+    public ConfigToolItem(Settings settings) {
+        super(settings);
+    }
+
+    @Override
+    public ActionResult interceptBlockUse(ItemStack stack, PlayerEntity player, World world, Hand hand,
+                                          BlockHitResult hitResult) {
+        if (world.isClient()) {
+            SelectedNode node = CommonProxy.INSTANCE.getClientSelectedNode();
+            if (node != null) {
+                // sneaking means we remove the node
+                if (player.isSneaking()) {
+                    TBNet.sendNodeRemove(node.entity().getContext().getPos());
+                }
+
+                return ActionResult.SUCCESS;
+            } else {
+                return ActionResult.FAIL;
+            }
+        } else {
+            // This should not be processed on the server, as node clicks will be handled via a separate packet.
+            return ActionResult.FAIL;
+        }
+    }
 }

@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "transfer_beams:white_item_transfer_node",
+    "transfer_beams:orange_item_transfer_node",
+    "transfer_beams:magenta_item_transfer_node",
+    "transfer_beams:light_blue_item_transfer_node",
+    "transfer_beams:yellow_item_transfer_node",
+    "transfer_beams:lime_item_transfer_node",
+    "transfer_beams:pink_item_transfer_node",
+    "transfer_beams:gray_item_transfer_node",
+    "transfer_beams:light_gray_item_transfer_node",
+    "transfer_beams:cyan_item_transfer_node",
+    "transfer_beams:purple_item_transfer_node",
+    "transfer_beams:blue_item_transfer_node",
+    "transfer_beams:brown_item_transfer_node",
+    "transfer_beams:green_item_transfer_node",
+    "transfer_beams:red_item_transfer_node",
+    "transfer_beams:black_item_transfer_node",
+    "transfer_beams:config_tool"
+  ]
+}

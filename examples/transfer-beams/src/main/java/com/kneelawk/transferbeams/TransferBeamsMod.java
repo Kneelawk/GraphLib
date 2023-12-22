@@ -50,6 +50,7 @@ import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
 import com.kneelawk.transferbeams.graph.TransferLinkEntity;
 import com.kneelawk.transferbeams.graph.TransferLinkKey;
+import com.kneelawk.transferbeams.item.ConfigToolItem;
 import com.kneelawk.transferbeams.item.InteractionCancellerItem;
 import com.kneelawk.transferbeams.item.NodeItem;
 
@@ -60,6 +61,7 @@ public class TransferBeamsMod implements ModInitializer {
     public static final SyncedUniverse SYNCED = SyncedUniverse.builder().build(UNIVERSE);
 
     public static final TagKey<Item> NODE_VISUALIZERS = TagKey.of(RegistryKeys.ITEM, id("node_visualizers"));
+    public static final TagKey<Item> NODE_SELECTORS = TagKey.of(RegistryKeys.ITEM, id("node_selectors"));
     public static final TagKey<Block> WORLDGEN_NODE_HOLDERS =
         TagKey.of(RegistryKeys.BLOCK, id("worldgen_node_holders"));
 
@@ -70,6 +72,8 @@ public class TransferBeamsMod implements ModInitializer {
             ITEM_NODE_ITEMS[color.getId()] = new NodeItem(color, new FabricItemSettings());
         }
     }
+
+    public static final Item CONFIG_TOOL_ITEM = new ConfigToolItem(new FabricItemSettings());
 
     @Override
     public void onInitialize() {
@@ -95,10 +99,14 @@ public class TransferBeamsMod implements ModInitializer {
 
     private static void registerItems() {
         for (DyeColor color : DyeColor.values()) {
-            Registry.register(Registries.ITEM, id(color.getName() + "_item_transfer_node"), ITEM_NODE_ITEMS[color.getId()]);
+            Registry.register(Registries.ITEM, id(color.getName() + "_item_transfer_node"),
+                ITEM_NODE_ITEMS[color.getId()]);
         }
 
+        Registry.register(Registries.ITEM, id("config_tool"), CONFIG_TOOL_ITEM);
+
         ItemGroup itemGroup = FabricItemGroup.builder().name(tt("itemGroup", "main")).entries((params, collector) -> {
+            collector.addItem(CONFIG_TOOL_ITEM);
             for (DyeColor color : DyeColor.values()) {
                 collector.addItem(ITEM_NODE_ITEMS[color.getId()]);
             }

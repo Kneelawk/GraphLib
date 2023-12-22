@@ -8,8 +8,9 @@ public class TransferBeamsDatagen implements DataGeneratorEntrypoint {
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
-        pack.addProvider(NodeModelGen::new);
+        pack.addProvider(TransferBeamsModelGen::new);
         pack.addProvider(NodeTextureGen::new);
         pack.addProvider(NodeLangGen::new);
+        pack.addProvider(TransferBeamsItemTagGen::new);
     }
 }

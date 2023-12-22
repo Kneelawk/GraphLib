@@ -35,9 +35,6 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.util.DyeColor;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.NetByteBuf;
-
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -93,5 +90,13 @@ public record TransferBlockNode(@NotNull DyeColor color) implements BlockNode {
         // This is the default no-context node entity. Because we're supplying the node entity at creation, this should
         // only really be used when recovering from an error.
         return new ItemTransferNodeEntity();
+    }
+
+    @Override
+    public boolean isAutomaticRemoval(@NotNull NodeHolder<BlockNode> self) {
+        // Disable automatic removal.
+        // Automatic removal only really happens when GraphWorld.updateNodes() is called, which is something we don't
+        // do. But it's always a good idea to have this anyways.
+        return false;
     }
 }

@@ -36,11 +36,8 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
-
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.IMsgWriteCtx;
-import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
@@ -51,6 +48,10 @@ import com.kneelawk.transferbeams.util.InventoryUtil;
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class ItemTransferNodeEntity extends AbstractNodeEntity implements TransferNodeEntity {
+    private static final Box BOUNDING_BOX =
+        new Box(4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0,
+            12.0 / 16.0 / 4.0);
+
     public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), ItemTransferNodeEntity::new);
     public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(ItemTransferNodeEntity::new);
 
@@ -84,5 +85,10 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity implements Transf
     @Override
     public void dropItems() {
 
+    }
+
+    @Override
+    public Box getBoundingBox() {
+        return BOUNDING_BOX;
     }
 }

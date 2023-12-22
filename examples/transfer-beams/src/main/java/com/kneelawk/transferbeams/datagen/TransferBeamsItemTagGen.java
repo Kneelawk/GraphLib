@@ -23,17 +23,27 @@
  *
  */
 
-package com.kneelawk.transferbeams.graph;
+package com.kneelawk.transferbeams.datagen;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.Box;
+import java.util.concurrent.CompletableFuture;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 
-public interface TransferNodeEntity extends NodeEntity {
-    boolean hasInventory(BlockState cachedState);
+import net.minecraft.registry.HolderLookup;
 
-    void dropItems();
+import com.kneelawk.transferbeams.TransferBeamsMod;
 
-    Box getBoundingBox();
+public class TransferBeamsItemTagGen extends FabricTagProvider.ItemTagProvider {
+    public TransferBeamsItemTagGen(FabricDataOutput output,
+                                   CompletableFuture<HolderLookup.Provider> completableFuture) {
+        super(output, completableFuture);
+    }
+
+    @Override
+    protected void configure(HolderLookup.Provider arg) {
+        getOrCreateTagBuilder(TransferBeamsMod.NODE_VISUALIZERS).add(TransferBeamsMod.ITEM_NODE_ITEMS)
+            .add(TransferBeamsMod.CONFIG_TOOL_ITEM);
+        getOrCreateTagBuilder(TransferBeamsMod.NODE_SELECTORS).add(TransferBeamsMod.CONFIG_TOOL_ITEM);
+    }
 }

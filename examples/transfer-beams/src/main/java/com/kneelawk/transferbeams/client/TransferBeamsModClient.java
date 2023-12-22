@@ -27,9 +27,11 @@ package com.kneelawk.transferbeams.client;
 
 import net.fabricmc.api.ClientModInitializer;
 
+@SuppressWarnings("unused")
 public class TransferBeamsModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
+        ClientProxy.init();
         BeamRenderer.init();
     }
 }

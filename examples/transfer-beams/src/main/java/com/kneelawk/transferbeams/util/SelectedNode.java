@@ -23,17 +23,11 @@
  *
  */
 
-package com.kneelawk.transferbeams.graph;
+package com.kneelawk.transferbeams.util;
 
-import net.minecraft.block.BlockState;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.transferbeams.graph.TransferNodeEntity;
 
-public interface TransferNodeEntity extends NodeEntity {
-    boolean hasInventory(BlockState cachedState);
-
-    void dropItems();
-
-    Box getBoundingBox();
-}
+public record SelectedNode(TransferNodeEntity entity, Vec3d intersection, Box boundingBox) {}

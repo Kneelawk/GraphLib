@@ -28,12 +28,20 @@ package com.kneelawk.transferbeams.item;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.transferbeams.TransferBeamsMod;
+import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
+import com.kneelawk.transferbeams.graph.TransferBlockNode;
 import com.kneelawk.transferbeams.util.InventoryUtil;
 
 public class NodeItem extends Item implements InteractionCancellerItem {
@@ -47,14 +55,38 @@ public class NodeItem extends Item implements InteractionCancellerItem {
     @Override
     public ActionResult interceptBlockUse(ItemStack stack, PlayerEntity player, World world, Hand hand,
                                           BlockHitResult hitResult) {
-        if (!InventoryUtil.hasInventory(world, hitResult.getBlockPos())) return ActionResult.PASS;
+        BlockPos blockPos = hitResult.getBlockPos();
+        if (!InventoryUtil.hasInventory(world, blockPos)) return ActionResult.PASS;
+
+        GraphView syncedView = TransferBeamsMod.SYNCED.getSidedGraphView(world);
+        // getSidedGraphView may return null if world is not a ClientWorld or a ServerWorld, like with Create.
+        if (syncedView == null) return ActionResult.FAIL;
+
+        NodePos nodePos = new NodePos(blockPos, new TransferBlockNode(color));
 
         if (world.isClient()) {
-            // send event to the server
-            return ActionResult.SUCCESS;
+            // The fact that nodes are synced means we can tell client-side if the node of our color already exists.
+            if (syncedView.nodeExistsAt(nodePos)) {
+                return ActionResult.FAIL;
+            } else {
+                // send event to the server
+                return ActionResult.SUCCESS;
+            }
+        } else if (world instanceof ServerWorld serverWorld) {
+            // the synced view exists on both client and server
+            if (syncedView.nodeExistsAt(nodePos)) {
+                return ActionResult.FAIL;
+            } else {
+                // the editable graph world only exists on the server
+                GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
+
+                graphWorld.addBlockNode(nodePos, new ItemTransferNodeEntity());
+
+                return ActionResult.CONSUME;
+            }
         } else {
-            // actually add the node
-            return ActionResult.CONSUME;
+            // handle weirdness
+            return ActionResult.FAIL;
         }
     }
 }

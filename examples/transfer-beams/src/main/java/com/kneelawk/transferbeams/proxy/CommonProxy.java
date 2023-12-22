@@ -23,17 +23,16 @@
  *
  */
 
-package com.kneelawk.transferbeams.graph;
+package com.kneelawk.transferbeams.proxy;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.Box;
+import org.jetbrains.annotations.Nullable;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.transferbeams.util.SelectedNode;
 
-public interface TransferNodeEntity extends NodeEntity {
-    boolean hasInventory(BlockState cachedState);
+public class CommonProxy {
+    public static CommonProxy INSTANCE = new CommonProxy();
 
-    void dropItems();
-
-    Box getBoundingBox();
+    public @Nullable SelectedNode getClientSelectedNode() {
+        return null;
+    }
 }
