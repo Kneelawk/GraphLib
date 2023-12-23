@@ -61,11 +61,9 @@ public class RenderUtils {
         return manager.getModel(id);
     }
 
-    public static void renderModel(BlockRenderView view, BakedModel model, BlockState state, BlockPos pos,
-                                   MatrixStack stack, VertexConsumer consumer) {
+    public static void renderModel(BakedModel model, BlockState state, MatrixStack stack, VertexConsumer consumer, int light) {
         BlockModelRenderer renderer = MC.getBlockRenderManager().getModelRenderer();
-        renderer.render(view, model, state, pos, stack, consumer, false, RandomGenerator.createLegacy(42), 42,
-            OverlayTexture.DEFAULT_UV);
+        renderer.render(stack.peek(), consumer, state, model, 1f, 1f, 1f, light, OverlayTexture.DEFAULT_UV);
     }
 
     public static void drawBox(MatrixStack stack, VertexConsumer consumer, Box box, int color) {

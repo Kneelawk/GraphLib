@@ -38,9 +38,13 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.model.BakedModel;
@@ -54,6 +58,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.shape.VoxelShape;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -132,6 +137,10 @@ public class BeamRenderer {
         GraphView view = TransferBeamsMod.SYNCED.getClientGraphView();
         if (view == null) return;
 
+        MinecraftClient client = MinecraftClient.getInstance();
+        ClientPlayerEntity player = client.player;
+        if (player == null) return;
+
         MatrixStack stack = ctx.matrixStack();
         ClientWorld world = ctx.world();
         VertexConsumerProvider provider = ctx.consumers();
@@ -161,14 +170,16 @@ public class BeamRenderer {
 
                 stack.push();
 
+                // correctly position the stack
                 stack.translate(blockPos.getX() - cameraPos.getX() + position.x,
                     blockPos.getY() - cameraPos.getY() + position.y, blockPos.getZ() - cameraPos.getZ() + position.z);
                 stack.scale(0.25f, 0.25f, 0.25f);
                 stack.translate(-0.5f, -0.5f, -0.5f);
 
+                // actually render the model
                 BakedModel model = RenderUtils.getBakedModel(ITEM_NODE_MODELS[color.getId()]);
-                RenderUtils.renderModel(world, model, state, blockPos, stack,
-                    provider.getBuffer(RenderLayer.getCutout()));
+                RenderUtils.renderModel(model, state, stack, provider.getBuffer(RenderLayer.getCutout()),
+                    LightmapTextureManager.MAX_LIGHT_COORDINATE);
 
                 stack.pop();
 
@@ -196,7 +207,19 @@ public class BeamRenderer {
                 stack.push();
                 stack.translate(-cameraPos.getX(), -cameraPos.getY(), -cameraPos.getZ());
 
-                RenderUtils.drawBox(stack, provider.getBuffer(RenderLayer.LINES), selected.boundingBox(), 0xFFFFFFFF);
+                // draw outline around the node itself
+                VertexConsumer consumer = provider.getBuffer(RenderLayer.LINES);
+                RenderUtils.drawBox(stack, consumer, selected.boundingBox(), 0xFFFFFFFF);
+
+                // draw outline around the block its in
+                NodeEntityContext ectx = selected.entity().getContext();
+                BlockPos blockPos = ectx.getBlockPos();
+                BlockState state = world.getBlockState(blockPos);
+                VoxelShape outlineShape = state.getOutlineShape(world, blockPos, ShapeContext.of(player));
+                outlineShape.forEachEdge(
+                    (d, e, f, g, h, i) -> RenderUtils.drawLine(stack, consumer, (float) d + blockPos.getX(),
+                        (float) e + blockPos.getY(), (float) f + blockPos.getZ(), (float) g + blockPos.getX(),
+                        (float) h + blockPos.getY(), (float) i + blockPos.getZ(), 0xFFFFFFFF));
 
                 stack.pop();
             }
