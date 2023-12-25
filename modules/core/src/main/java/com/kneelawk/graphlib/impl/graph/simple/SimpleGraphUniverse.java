@@ -139,8 +139,13 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public int getDefaultDebugColor(@NotNull Identifier typeId) {
-        return ColorUtils.hsba2Argb((float) typeIndices.getInt(typeId) / (float) typeIndices.size(), 1f, 1f, 1f);
+    public int getNodeTypeIndex(@NotNull Identifier typeId) {
+        return typeIndices.getInt(typeId);
+    }
+
+    @Override
+    public int getNodeTypeCount() {
+        return typeIndices.size();
     }
 
     @Override

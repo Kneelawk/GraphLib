@@ -63,6 +63,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.user.SidedBlockNode;
+import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
@@ -86,7 +87,11 @@ public final class GLDebugNet {
         buf.writeInt(node.hashCode());
 
         // Get the default color for our node type
-        buf.writeInt(self.getGraphWorld().getUniverse().getDefaultDebugColor(node.getType().getId()));
+        GraphUniverse universe = self.getGraphWorld().getUniverse();
+        int color = ColorUtils.hsba2Argb(
+            (float) universe.getNodeTypeIndex(node.getType().getId()) / (float) universe.getNodeTypeCount(),
+            1f, 1f, 1f);
+        buf.writeInt(color);
 
         if (node instanceof SidedBlockNode sided) {
             // A 1 byte to distinguish ourselves from BlockNode, because both implementations use the same decoder
