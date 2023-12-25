@@ -30,6 +30,8 @@ import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.nbt.NbtElement;
 
+import com.kneelawk.graphlib.api.graph.LinkHolder;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
@@ -51,5 +53,20 @@ public class TransferLinkKey implements LinkKey {
     @Override
     public @Nullable NbtElement toTag() {
         return null;
+    }
+
+    @Override
+    public boolean shouldHaveLinkEntity(@NotNull LinkHolder<LinkKey> holder) {
+        return true;
+    }
+
+    @Override
+    public @Nullable LinkEntity createLinkEntity(@NotNull LinkHolder<LinkKey> holder) {
+        return new TransferLinkEntity();
+    }
+
+    @Override
+    public boolean isAutomaticRemoval(@NotNull LinkHolder<LinkKey> holder) {
+        return false;
     }
 }

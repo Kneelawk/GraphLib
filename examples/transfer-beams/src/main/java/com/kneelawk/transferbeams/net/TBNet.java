@@ -41,11 +41,18 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
 import com.kneelawk.transferbeams.TransferBeamsMod;
+import com.kneelawk.transferbeams.item.LinkToolItem;
 
 public class TBNet {
+    public static void init() {
+        // performs static initialization
+    }
+
     public static final ParentNetId TRANSFER_BEAMS = McNetworkStack.ROOT.child(TransferBeamsMod.MOD_ID);
     public static final NetIdData NODE_REMOVE =
         TRANSFER_BEAMS.idData("node_remove").toServerOnly().setReceiver(TBNet::receiveNodeRemove);
+    public static final NetIdData NODE_LINK =
+        TRANSFER_BEAMS.idData("node_link").toServerOnly().setReceiver(TBNet::receiveNodeLink);
 
     public static void sendNodeRemove(NodePos pos) {
         NODE_REMOVE.send(CoreMinecraftNetUtil.getClientConnection(),
@@ -69,5 +76,28 @@ public class TBNet {
 
         // TODO: drop items properly into player inventory
         world.removeBlockNode(pos);
+    }
+
+    public static void sendNodeLink(NodePos pos) {
+        NODE_LINK.send(CoreMinecraftNetUtil.getClientConnection(),
+            (buf, ctx) -> PacketEncodingUtil.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+    }
+
+    private static void receiveNodeLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
+        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+
+        PlayerEntity player = ctx.getConnection().getPlayer();
+
+        // make sure the player is reasonably close
+        if (pos.pos().getSquaredDistanceToCenter(player.getPos()) > 100.0) return;
+
+        World playerWorld = player.getWorld();
+        if (!(playerWorld instanceof ServerWorld serverWorld)) return;
+
+        // FIXME: no claim detection
+
+        GraphWorld world = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
+
+        LinkToolItem.onNodeClick(player, world, pos);
     }
 }

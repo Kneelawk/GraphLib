@@ -25,6 +25,9 @@
 
 package com.kneelawk.transferbeams;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
@@ -52,10 +55,14 @@ import com.kneelawk.transferbeams.graph.TransferLinkEntity;
 import com.kneelawk.transferbeams.graph.TransferLinkKey;
 import com.kneelawk.transferbeams.item.ConfigToolItem;
 import com.kneelawk.transferbeams.item.InteractionCancellerItem;
+import com.kneelawk.transferbeams.item.LinkToolItem;
 import com.kneelawk.transferbeams.item.NodeItem;
+import com.kneelawk.transferbeams.net.TBNet;
 
 public class TransferBeamsMod implements ModInitializer {
     public static final String MOD_ID = "transfer_beams";
+
+    public static final Logger LOG = LoggerFactory.getLogger(MOD_ID);
 
     public static final GraphUniverse UNIVERSE = GraphUniverse.builder().build(id("beams"));
     public static final SyncedUniverse SYNCED = SyncedUniverse.builder().build(UNIVERSE);
@@ -74,12 +81,18 @@ public class TransferBeamsMod implements ModInitializer {
     }
 
     public static final Item CONFIG_TOOL_ITEM = new ConfigToolItem(new FabricItemSettings());
+    public static final Item LINK_TOOL_ITEM = new LinkToolItem(new FabricItemSettings());
 
     @Override
     public void onInitialize() {
+        LOG.info("Transfer Beams initializing...");
+
+        TBNet.init();
         registerUniverse();
         registerItems();
         registerEvents();
+
+        LOG.info("Transfer Beams initialized.");
     }
 
     private static void registerUniverse() {
@@ -104,9 +117,11 @@ public class TransferBeamsMod implements ModInitializer {
         }
 
         Registry.register(Registries.ITEM, id("config_tool"), CONFIG_TOOL_ITEM);
+        Registry.register(Registries.ITEM, id("link_tool"), LINK_TOOL_ITEM);
 
         ItemGroup itemGroup = FabricItemGroup.builder().name(tt("itemGroup", "main")).entries((params, collector) -> {
             collector.addItem(CONFIG_TOOL_ITEM);
+            collector.addItem(LINK_TOOL_ITEM);
             for (DyeColor color : DyeColor.values()) {
                 collector.addItem(ITEM_NODE_ITEMS[color.getId()]);
             }
@@ -131,5 +146,9 @@ public class TransferBeamsMod implements ModInitializer {
 
     public static MutableText tt(String prefix, String suffix) {
         return Text.translatable(prefix + "." + MOD_ID + "." + suffix);
+    }
+
+    public static String str(String path) {
+        return MOD_ID + ":" + path;
     }
 }

@@ -168,7 +168,7 @@ public class PacketEncodingUtil {
                     universe.getId());
         }
 
-        if (universe.hasLinkKeySyncing(type)) {
+        if (!universe.hasLinkKeySyncing(type)) {
             GLLog.error("Tried to decode link key {} @ {}-{} in universe {} but it has no packet decoder.", typeId,
                 first, second, universe.getId());
             throw new InvalidInputDataException(

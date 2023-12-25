@@ -13,6 +13,7 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
 
@@ -135,6 +136,33 @@ public interface GraphWorld extends GraphView {
                                                @Nullable LinkEntity entity);
 
     /**
+     * Connects two nodes to each other.
+     * <p>
+     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
+     * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
+     *
+     * @param link the link that will be made.
+     * @return the link created, or <code>null</code> if the link could not be created.
+     */
+    default @Nullable LinkHolder<LinkKey> connectNodes(@NotNull LinkPos link) {
+        return connectNodes(link.first(), link.second(), link.key(), null);
+    }
+
+    /**
+     * Connects two nodes to each other.
+     * <p>
+     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
+     * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
+     *
+     * @param link   the link that will be made.
+     * @param entity the link's entity, if any.
+     * @return the link created, or <code>null</code> if the link could not be created.
+     */
+    default @Nullable LinkHolder<LinkKey> connectNodes(@NotNull LinkPos link, @Nullable LinkEntity entity) {
+        return connectNodes(link.first(), link.second(), link.key(), entity);
+    }
+
+    /**
      * Disconnects two nodes from each other.
      *
      * @param a the first node to be disconnected.
@@ -147,6 +175,9 @@ public interface GraphWorld extends GraphView {
 
     /**
      * Disconnects two nodes from each other.
+     * <p>
+     * Note: in order for manually connected links to not be removed when the connected nodes are updated,
+     * {@link LinkKey#isAutomaticRemoval(LinkHolder)} should return <code>false</code> for the given key.
      *
      * @param a   the first node to be disconnected.
      * @param b   the second node to be disconnected.
@@ -154,6 +185,16 @@ public interface GraphWorld extends GraphView {
      * @return <code>true</code> if a link was actually removed, <code>false</code> otherwise.
      */
     boolean disconnectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key);
+
+    /**
+     * Disconnects the two nodes in the link from each other.
+     *
+     * @param link the link to remove.
+     * @return <code>true</code> if the link was actually removed, <code>false</code> otherwise.
+     */
+    default boolean disconnectNodes(@NotNull LinkPos link) {
+        return disconnectNodes(link.first(), link.second(), link.key());
+    }
 
     /**
      * Notifies the controller that a block-position has been changed and may need to have its nodes and connections

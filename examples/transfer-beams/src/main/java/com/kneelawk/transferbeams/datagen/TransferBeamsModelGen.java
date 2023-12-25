@@ -40,5 +40,6 @@ public class TransferBeamsModelGen extends FabricModelProvider {
     @Override
     public void generateItemModels(ItemModelGenerator gen) {
         gen.register(TransferBeamsMod.CONFIG_TOOL_ITEM, Models.SINGLE_LAYER_ITEM);
+        gen.register(TransferBeamsMod.LINK_TOOL_ITEM, Models.SINGLE_LAYER_ITEM);
     }
 }

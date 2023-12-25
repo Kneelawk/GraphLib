@@ -17,6 +17,7 @@
     "transfer_beams:green_item_transfer_node",
     "transfer_beams:red_item_transfer_node",
     "transfer_beams:black_item_transfer_node",
-    "transfer_beams:config_tool"
+    "transfer_beams:config_tool",
+    "transfer_beams:link_tool"
   ]
 }

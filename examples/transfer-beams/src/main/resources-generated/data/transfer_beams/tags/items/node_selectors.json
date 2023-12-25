@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "transfer_beams:config_tool"
+    "transfer_beams:config_tool",
+    "transfer_beams:link_tool"
   ]
 }

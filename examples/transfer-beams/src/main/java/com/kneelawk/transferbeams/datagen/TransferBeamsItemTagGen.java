@@ -43,7 +43,8 @@ public class TransferBeamsItemTagGen extends FabricTagProvider.ItemTagProvider {
     @Override
     protected void configure(HolderLookup.Provider arg) {
         getOrCreateTagBuilder(TransferBeamsMod.NODE_VISUALIZERS).add(TransferBeamsMod.ITEM_NODE_ITEMS)
-            .add(TransferBeamsMod.CONFIG_TOOL_ITEM);
-        getOrCreateTagBuilder(TransferBeamsMod.NODE_SELECTORS).add(TransferBeamsMod.CONFIG_TOOL_ITEM);
+            .add(TransferBeamsMod.CONFIG_TOOL_ITEM, TransferBeamsMod.LINK_TOOL_ITEM);
+        getOrCreateTagBuilder(TransferBeamsMod.NODE_SELECTORS).add(TransferBeamsMod.CONFIG_TOOL_ITEM,
+            TransferBeamsMod.LINK_TOOL_ITEM);
     }
 }

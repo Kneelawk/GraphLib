@@ -1,4 +1,4 @@
-// 1.20.4	2023-12-22T01:05:36.876341077	Transfer Beams/Model Definitions
+// 1.20.4	2023-12-25T09:39:36.46447265	Transfer Beams/Model Definitions
 3004bb8a1ba1d9ca44d6b1470d7450ffc63268e6 assets/transfer_beams/models/block/purple_item_transfer_node.json
 eb2f44ab01f22445b6da12feda183b810766cb77 assets/transfer_beams/models/item/lime_item_transfer_node.json
 ab6eed60d7a2a470f1155605f6494f862033a2bd assets/transfer_beams/models/item/green_item_transfer_node.json
@@ -15,6 +15,7 @@ dcee45cb791482284964a9456934100d698f4eca assets/transfer_beams/models/block/gree
 b79653e30a5c684976b892a15790d4c27b20d5b3 assets/transfer_beams/models/item/yellow_item_transfer_node.json
 c097d5850d57db8cd87ec3b58202f55fb86ff705 assets/transfer_beams/models/block/gray_item_transfer_node.json
 646de900f9656320008da5cb9b4149afd0980b1f assets/transfer_beams/models/block/light_gray_item_transfer_node.json
+baa65c065ecbd90c295c41f068bf207a3ef6e60f assets/transfer_beams/models/item/link_tool.json
 5d3e78757e403b21014020b4035d5d594189e8a1 assets/transfer_beams/models/block/white_item_transfer_node.json
 05e5ed8e9a365fa48cff4efce754bf78c7d3c4c8 assets/transfer_beams/models/item/pink_item_transfer_node.json
 c3e5fb7fa1569058c77afae819770f2dbdfba599 assets/transfer_beams/models/block/blue_item_transfer_node.json
