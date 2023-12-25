@@ -356,12 +356,24 @@ public interface GraphUniverse {
     void register();
 
     /**
-     * Gets the default debug color for use when encoding packets to clients.
+     * Gets the registration index of the given block node type id.
+     * <p>
+     * This is currently used in the debug renderer for determining a node's color.
+     * <p>
+     * Note: this should not be used for synchronization, as this <b>is</b> mod load order dependant, which may not be
+     * the same on the client as on the server.
      *
-     * @param typeId the type id of the block node for which a color is being chosen.
-     * @return the ARGB default debug color.
+     * @param typeId the type id of the block node to get the registration index of.
+     * @return the registration index of the given block node type id.
      */
-    int getDefaultDebugColor(@NotNull Identifier typeId);
+    int getNodeTypeIndex(@NotNull Identifier typeId);
+
+    /**
+     * Gets the number of block node type ids currently registered.
+     *
+     * @return the number of block node type ids currently registered.
+     */
+    int getNodeTypeCount();
 
     /**
      * Creates a new GraphUniverse builder.
