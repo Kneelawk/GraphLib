@@ -23,18 +23,12 @@
  *
  */
 
-package com.kneelawk.transferbeams.graph;
+package com.kneelawk.transferbeams.util;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.Box;
+import net.minecraft.item.ItemStack;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.transferbeams.util.DropHandler;
+public interface DropHandler {
+    void drop(ItemStack stack);
 
-public interface TransferNodeEntity extends NodeEntity {
-    boolean hasInventory(BlockState cachedState);
-
-    void dropItems(DropHandler handler);
-
-    Box getBoundingBox();
+    void dropNonCreative(ItemStack stack);
 }

@@ -26,6 +26,7 @@
 package com.kneelawk.transferbeams.net;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 
@@ -38,10 +39,14 @@ import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil;
 import alexiil.mc.lib.net.impl.McNetworkStack;
 
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
 import com.kneelawk.transferbeams.TransferBeamsMod;
+import com.kneelawk.transferbeams.graph.TransferNodeEntity;
 import com.kneelawk.transferbeams.item.LinkToolItem;
+import com.kneelawk.transferbeams.util.PlayerDropHandler;
 
 public class TBNet {
     public static void init() {
@@ -62,19 +67,25 @@ public class TBNet {
     private static void receiveNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
 
-        PlayerEntity player = ctx.getConnection().getPlayer();
+        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayerEntity player)) return;
 
         // make sure the player is reasonably close
         if (pos.pos().getSquaredDistanceToCenter(player.getPos()) > 100.0) return;
 
-        World playerWorld = player.getWorld();
-        if (!(playerWorld instanceof ServerWorld serverWorld)) return;
+        if (!(player.getWorld() instanceof ServerWorld serverWorld)) return;
 
         // FIXME: no claim detection
 
         GraphWorld world = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
 
-        // TODO: drop items properly into player inventory
+        NodeHolder<BlockNode> holder = world.getNodeAt(pos);
+        if (holder == null) return;
+
+        // drop items into player inventory
+        TransferNodeEntity entity = holder.getNodeEntity(TransferNodeEntity.class);
+        if (entity == null) return;
+        entity.dropItems(new PlayerDropHandler(player));
+
         world.removeBlockNode(pos);
     }
 

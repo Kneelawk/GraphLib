@@ -40,6 +40,7 @@ import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.graph.TransferNodeEntity;
+import com.kneelawk.transferbeams.util.PositionDropHandler;
 
 public class BlockBreakHandler {
     public static void onBlockChanged(BlockPos pos, BlockState newBlock, ServerWorld world) {
@@ -60,7 +61,7 @@ public class BlockBreakHandler {
                 if (entity == null) continue;
 
                 if (!entity.hasInventory(newBlock)) {
-                    entity.dropItems();
+                    entity.dropItems(new PositionDropHandler(world, pos));
                     graphWorld.removeBlockNode(node.getPos());
                 }
             }

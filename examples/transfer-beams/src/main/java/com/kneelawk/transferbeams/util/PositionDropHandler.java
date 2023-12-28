@@ -23,18 +23,31 @@
  *
  */
 
-package com.kneelawk.transferbeams.graph;
+package com.kneelawk.transferbeams.util;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.Box;
+import net.minecraft.entity.ItemEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.transferbeams.util.DropHandler;
+public class PositionDropHandler implements DropHandler {
+    private final ServerWorld world;
+    private final BlockPos pos;
 
-public interface TransferNodeEntity extends NodeEntity {
-    boolean hasInventory(BlockState cachedState);
+    public PositionDropHandler(ServerWorld world, BlockPos pos) {
+        this.world = world;
+        this.pos = pos;
+    }
 
-    void dropItems(DropHandler handler);
+    @Override
+    public void drop(ItemStack stack) {
+        Vec3d dropPos = pos.ofCenter();
+        world.spawnEntity(new ItemEntity(world, dropPos.x, dropPos.y, dropPos.z, stack));
+    }
 
-    Box getBoundingBox();
+    @Override
+    public void dropNonCreative(ItemStack stack) {
+        drop(stack);
+    }
 }

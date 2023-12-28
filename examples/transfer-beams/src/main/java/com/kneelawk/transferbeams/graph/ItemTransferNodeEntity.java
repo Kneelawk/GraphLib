@@ -34,6 +34,7 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Box;
@@ -43,6 +44,8 @@ import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
+import com.kneelawk.transferbeams.TransferBeamsMod;
+import com.kneelawk.transferbeams.util.DropHandler;
 import com.kneelawk.transferbeams.util.InventoryUtil;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
@@ -83,8 +86,10 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity implements Transf
     }
 
     @Override
-    public void dropItems() {
+    public void dropItems(DropHandler handler) {
+        if (!(getContext().getNode() instanceof TransferBlockNode node)) return;
 
+        handler.dropNonCreative(new ItemStack(TransferBeamsMod.ITEM_NODE_ITEMS[node.color().getId()]));
     }
 
     @Override
