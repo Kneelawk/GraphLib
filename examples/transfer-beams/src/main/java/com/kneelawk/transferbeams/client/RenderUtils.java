@@ -88,7 +88,7 @@ public class RenderUtils {
         float animationAmount = Math.floorMod(worldTime, 4000) + tickDelta;
         float pitchShift = (float) -Math.atan2(xzLen, offset.y);
         float yawShift = (float) (-Math.atan2(offset.z, offset.x) - Math.PI / 2.0);
-        float rollShift = animationAmount * 0.08f;
+        float rollShift = animationAmount * 0.16f;
 
         stack.push();
 
