@@ -85,25 +85,33 @@ public class RenderUtils {
         float xzLen = (float) Math.sqrt(offset.x * offset.x + offset.z * offset.z);
         float len = (float) Math.sqrt(offset.x * offset.x + offset.y * offset.y + offset.z * offset.z);
 
-        float animationAmount = Math.floorMod(worldTime, 40) + tickDelta;
+        float animationAmount = Math.floorMod(worldTime, 4000) + tickDelta;
         float pitchShift = (float) -Math.atan2(xzLen, offset.y);
         float yawShift = (float) (-Math.atan2(offset.z, offset.x) - Math.PI / 2.0);
-        float rollShift = animationAmount * 0.04f;
+        float rollShift = animationAmount * 0.08f;
 
         stack.push();
 
         stack.multiply(new Quaternionf().rotationY(yawShift).rotateX(pitchShift).rotateY(rollShift));
 
+        stack.translate(0.015625f, 0f, 0.015625f);
+        renderBeam(stack, provider, topColor, bottomColor, len, beamSprite);
+        stack.translate(-0.03125f, 0f, -0.03125f);
+        renderBeam(stack, provider, topColor, bottomColor, len, beamSprite);
+
+        stack.pop();
+    }
+
+    private static void renderBeam(MatrixStack stack, VertexConsumerProvider provider, int topColor, int bottomColor,
+                                  float len, Sprite beamSprite) {
         renderBeamSquare(stack.peek(),
             provider.getBuffer(RenderLayer.getBeaconBeam(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false)),
-            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.03125f, beamSprite.getFrameU(0f),
+            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.015625f, beamSprite.getFrameU(0f),
             beamSprite.getFrameU(1f), beamSprite.getFrameV(0f), beamSprite.getFrameV(1f));
         renderBeamEnds(stack.peek(),
             provider.getBuffer(RenderLayer.getBeaconBeam(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false)),
-            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.03125f, beamSprite.getFrameU(0f),
+            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.015625f, beamSprite.getFrameU(0f),
             beamSprite.getFrameU(1f), beamSprite.getFrameV(0f), beamSprite.getFrameV(1f));
-
-        stack.pop();
     }
 
     public static void drawBox(MatrixStack stack, VertexConsumer consumer, Box box, int color) {
