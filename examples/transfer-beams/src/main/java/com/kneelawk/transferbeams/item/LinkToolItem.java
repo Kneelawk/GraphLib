@@ -25,6 +25,9 @@
 
 package com.kneelawk.transferbeams.item;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.entity.player.PlayerEntity;
@@ -37,6 +40,10 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.transferbeams.TransferBeamsMod;
@@ -72,20 +79,32 @@ public class LinkToolItem extends Item implements InteractionCancellerItem {
 
         if (stack.isOf(TransferBeamsMod.LINK_TOOL_ITEM)) {
             if (world.nodeExistsAt(pos)) {
-                NodePos prevPos = getNodePos(stack);
-                if (prevPos != null) {
-                    if (!prevPos.equals(pos)) {
-                        LinkPos linkPos = new LinkPos(prevPos, pos, TransferLinkKey.INSTANCE);
-                        if (world.linkExistsAt(linkPos)) {
-                            world.disconnectNodes(linkPos);
-                        } else {
-                            world.connectNodes(linkPos);
-                        }
+                if (player.isSneaking()) {
+                    // sift-right-click disconnects everything
+                    NodeHolder<BlockNode> holder = world.getNodeAt(pos);
+                    assert holder != null;
+                    // copy connections so we don't do concurrent modification
+                    List<LinkHolder<LinkKey>> connections = new ArrayList<>(holder.getConnections());
+                    for (LinkHolder<LinkKey> connection : connections) {
+                        world.disconnectNodes(connection.getPos());
                     }
-
-                    removeNodePos(stack);
                 } else {
-                    setNodePos(stack, pos);
+                    // normal right-click connects two nodes
+                    NodePos prevPos = getNodePos(stack);
+                    if (prevPos != null) {
+                        if (!prevPos.equals(pos)) {
+                            LinkPos linkPos = new LinkPos(prevPos, pos, TransferLinkKey.INSTANCE);
+                            if (world.linkExistsAt(linkPos)) {
+                                world.disconnectNodes(linkPos);
+                            } else {
+                                world.connectNodes(linkPos);
+                            }
+                        }
+
+                        removeNodePos(stack);
+                    } else {
+                        setNodePos(stack, pos);
+                    }
                 }
             } else {
                 TransferBeamsMod.LOG.warn("Received node click for node that does not exist: {}", pos);
