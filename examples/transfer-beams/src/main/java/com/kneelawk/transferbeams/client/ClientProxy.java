@@ -37,6 +37,6 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public @Nullable SelectedNode getClientSelectedNode() {
-        return BeamRenderer.selectedNode;
+        return NodeRenderer.selectedNode;
     }
 }

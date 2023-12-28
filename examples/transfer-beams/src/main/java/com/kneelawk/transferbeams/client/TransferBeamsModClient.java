@@ -32,6 +32,6 @@ public class TransferBeamsModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientProxy.init();
-        BeamRenderer.init();
+        NodeRenderer.init();
     }
 }

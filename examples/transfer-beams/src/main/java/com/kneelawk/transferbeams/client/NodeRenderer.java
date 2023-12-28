@@ -62,19 +62,22 @@ import net.minecraft.util.shape.VoxelShape;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
+import com.kneelawk.transferbeams.graph.TransferLinkEntity;
 import com.kneelawk.transferbeams.graph.TransferNodeEntity;
 import com.kneelawk.transferbeams.util.SelectedNode;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
-public class BeamRenderer {
+public class NodeRenderer {
     private static final Identifier[] ITEM_NODE_MODELS = new Identifier[DyeColor.values().length];
 
     public static @Nullable SelectedNode selectedNode = null;
@@ -86,9 +89,9 @@ public class BeamRenderer {
     }
 
     public static void init() {
-        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register(BeamRenderer::beforeBlockOutline);
-        WorldRenderEvents.AFTER_ENTITIES.register(BeamRenderer::plainRender);
-        RenderToOverlay.EVENT.register(BeamRenderer::overlayRender);
+        WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register(NodeRenderer::beforeBlockOutline);
+        WorldRenderEvents.AFTER_ENTITIES.register(NodeRenderer::plainRender);
+        RenderToOverlay.EVENT.register(NodeRenderer::overlayRender);
 
         ModelLoadingPlugin.register(pluginContext -> pluginContext.addModels(ITEM_NODE_MODELS));
     }
@@ -195,6 +198,35 @@ public class BeamRenderer {
             Iterator<LinkEntity> linkIter = graph.getLinkEntities().iterator();
             while (linkIter.hasNext()) {
                 LinkEntity entity = linkIter.next();
+                if (!(entity instanceof TransferLinkEntity)) continue;
+                LinkEntityContext ectx = entity.getContext();
+                NodeHolder<BlockNode> holder1 = ectx.getFirst();
+                NodeHolder<BlockNode> holder2 = ectx.getSecond();
+
+                if (!(holder1.getNode() instanceof TransferBlockNode node1)) continue;
+                if (!(holder2.getNode() instanceof TransferBlockNode node2)) continue;
+
+                BlockPos bpos1 = holder1.getBlockPos();
+                BlockPos bpos2 = holder2.getBlockPos();
+
+                EnumMap<DyeColor, Vec3d> map1 = positions.get(bpos1);
+                if (map1 == null) continue;
+                EnumMap<DyeColor, Vec3d> map2 = positions.get(bpos2);
+                if (map2 == null) continue;
+                Vec3d vpos1 = map1.get(node1.color());
+                if (vpos1 == null) continue;
+                Vec3d vpos2 = map2.get(node2.color());
+                if (vpos2 == null) continue;
+
+                stack.push();
+                stack.translate(bpos1.getX() + vpos1.getX() - cameraPos.getX(),
+                    bpos1.getY() + vpos1.getY() - cameraPos.getY(), bpos1.getZ() + vpos1.getZ() - cameraPos.getZ());
+                Vec3d offset = vpos2.subtract(vpos1).add(Vec3d.of(bpos2.subtract(bpos1)));
+
+                RenderUtils.renderBeam(stack, provider, offset, node2.color().getFireworkColor(),
+                    node1.color().getFireworkColor(), world.getTime(), ctx.tickDelta());
+
+                stack.pop();
             }
         }
 

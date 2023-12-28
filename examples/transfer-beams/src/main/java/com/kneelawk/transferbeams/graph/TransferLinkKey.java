@@ -41,7 +41,7 @@ import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 public class TransferLinkKey implements LinkKey {
     public static final TransferLinkKey INSTANCE = new TransferLinkKey();
     public static final LinkKeyType TYPE = LinkKeyType.of(id("transfer_link"), () -> INSTANCE);
-    public static final LinkKeySyncing SYNCING = LinkKeySyncing.ofNoOp(TransferLinkKey::new);
+    public static final LinkKeySyncing SYNCING = LinkKeySyncing.ofNoOp(() -> INSTANCE);
 
     private TransferLinkKey() {}
 

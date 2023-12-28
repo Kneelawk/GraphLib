@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -40,20 +41,25 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.LightmapTextureManager;
 import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.BlockModelRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedModelManager;
+import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.random.RandomGenerator;
-import net.minecraft.world.BlockRenderView;
+
+import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class RenderUtils {
+    private static final Identifier TRANSFER_BEAM_ID = id("block/beam");
     private static final MinecraftClient MC = MinecraftClient.getInstance();
 
     public static BakedModel getBakedModel(Identifier id) {
@@ -61,9 +67,43 @@ public class RenderUtils {
         return manager.getModel(id);
     }
 
-    public static void renderModel(BakedModel model, BlockState state, MatrixStack stack, VertexConsumer consumer, int light) {
+    public static Sprite getBlockSprite(Identifier id) {
+        return MC.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(id);
+    }
+
+    public static void renderModel(BakedModel model, BlockState state, MatrixStack stack, VertexConsumer consumer,
+                                   int light) {
         BlockModelRenderer renderer = MC.getBlockRenderManager().getModelRenderer();
         renderer.render(stack.peek(), consumer, state, model, 1f, 1f, 1f, light, OverlayTexture.DEFAULT_UV);
+    }
+
+    public static void renderBeam(MatrixStack stack, VertexConsumerProvider provider, Vec3d offset, int topColor,
+                                  int bottomColor, long worldTime,
+                                  float tickDelta) {
+        Sprite beamSprite = getBlockSprite(TRANSFER_BEAM_ID);
+
+        float xzLen = (float) Math.sqrt(offset.x * offset.x + offset.z * offset.z);
+        float len = (float) Math.sqrt(offset.x * offset.x + offset.y * offset.y + offset.z * offset.z);
+
+        float animationAmount = Math.floorMod(worldTime, 40) + tickDelta;
+        float pitchShift = (float) -Math.atan2(xzLen, offset.y);
+        float yawShift = (float) (-Math.atan2(offset.z, offset.x) - Math.PI / 2.0);
+        float rollShift = animationAmount * 0.04f;
+
+        stack.push();
+
+        stack.multiply(new Quaternionf().rotationY(yawShift).rotateX(pitchShift).rotateY(rollShift));
+
+        renderBeamSquare(stack.peek(),
+            provider.getBuffer(RenderLayer.getBeaconBeam(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false)),
+            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.03125f, beamSprite.getFrameU(0f),
+            beamSprite.getFrameU(1f), beamSprite.getFrameV(0f), beamSprite.getFrameV(1f));
+        renderBeamEnds(stack.peek(),
+            provider.getBuffer(RenderLayer.getBeaconBeam(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false)),
+            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.03125f, beamSprite.getFrameU(0f),
+            beamSprite.getFrameU(1f), beamSprite.getFrameV(0f), beamSprite.getFrameV(1f));
+
+        stack.pop();
     }
 
     public static void drawBox(MatrixStack stack, VertexConsumer consumer, Box box, int color) {
@@ -71,6 +111,49 @@ public class RenderUtils {
         drawCube(stack, consumer, (float) center.x, (float) center.y, (float) center.z,
             (float) (box.maxX - box.minX) / 2f, (float) (box.maxY - box.minY) / 2f, (float) (box.maxZ - box.minZ) / 2f,
             color);
+    }
+
+    // translated from heart of the machine
+
+    private static void renderBeamSquare(MatrixStack.Entry entry, VertexConsumer consumer, int topColor,
+                                         int bottomColor, float height,
+                                         float radius, float u1, float u2, float v1, float v2) {
+        renderBeamFace(entry, consumer, topColor, bottomColor, height, 0f, radius, radius, 0f, u1, u2, v1, v2);
+        renderBeamFace(entry, consumer, topColor, bottomColor, height, 0f, -radius, -radius, 0f, u1, u2, v1, v2);
+        renderBeamFace(entry, consumer, topColor, bottomColor, height, radius, 0f, 0f, -radius, u1, u2, v1, v2);
+        renderBeamFace(entry, consumer, topColor, bottomColor, height, -radius, 0f, 0f, radius, u1, u2, v1, v2);
+    }
+
+    private static void renderBeamFace(MatrixStack.Entry entry, VertexConsumer consumer, int topColor, int bottomColor,
+                                       float height,
+                                       float x1, float z1, float x2, float z2, float u1, float u2, float v1, float v2) {
+        renderBeamVertex(entry, consumer, topColor, height, x1, z1, u2, v1);
+        renderBeamVertex(entry, consumer, bottomColor, 0f, x1, z1, u2, v2);
+        renderBeamVertex(entry, consumer, bottomColor, 0f, x2, z2, u1, v2);
+        renderBeamVertex(entry, consumer, topColor, height, x2, z2, u1, v1);
+    }
+
+    private static void renderBeamEnds(MatrixStack.Entry entry, VertexConsumer consumer, int topColor, int bottomColor,
+                                       float height,
+                                       float radius, float u1, float u2, float v1, float v2) {
+        renderBeamEnd(entry, consumer, topColor, height, radius, u1, u2, v1, v2, true);
+        renderBeamEnd(entry, consumer, bottomColor, 0f, radius, u1, u2, v1, v2, false);
+    }
+
+    private static void renderBeamEnd(MatrixStack.Entry entry, VertexConsumer consumer, int color, float y,
+                                      float radius, float u1, float u2, float v1, float v2, boolean top) {
+        float zRadius = top ? radius : -radius;
+        renderBeamVertex(entry, consumer, color, y, 0f, zRadius, u2, v1);
+        renderBeamVertex(entry, consumer, color, y, radius, 0f, u1, v1);
+        renderBeamVertex(entry, consumer, color, y, 0f, -zRadius, u1, v2);
+        renderBeamVertex(entry, consumer, color, y, -radius, 0f, u2, v2);
+    }
+
+    private static void renderBeamVertex(MatrixStack.Entry entry, VertexConsumer consumer, int color, float y,
+                                         float x, float z, float u, float v) {
+        consumer.vertex(entry.getModel(), x, y, z).color(color).uv(u, v)
+            .overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
+            .normal(entry.getNormal(), 0f, 1f, 0f).next();
     }
 
     // ripped from the debug-renderer module
