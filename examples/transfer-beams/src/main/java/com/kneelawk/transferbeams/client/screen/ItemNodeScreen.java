@@ -23,25 +23,23 @@
  *
  */
 
-package com.kneelawk.transferbeams.client;
+package com.kneelawk.transferbeams.client.screen;
 
-import net.fabricmc.api.ClientModInitializer;
+import dev.lambdaurora.spruceui.screen.SpruceHandledScreen;
 
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.text.Text;
 
-import com.kneelawk.transferbeams.TransferBeamsMod;
-import com.kneelawk.transferbeams.client.screen.ItemNodeScreen;
+import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 
-@SuppressWarnings("unused")
-public class TransferBeamsModClient implements ClientModInitializer {
-    @Override
-    public void onInitializeClient() {
-        ClientProxy.init();
-        NodeRenderer.init();
-        registerScreens();
+public class ItemNodeScreen extends SpruceHandledScreen<ItemNodeScreenHandler> {
+    public ItemNodeScreen(ItemNodeScreenHandler handler, PlayerInventory inventory, Text title) {
+        super(handler, inventory, title);
     }
 
-    private void registerScreens() {
-        HandledScreens.register(TransferBeamsMod.ITEM_SCREEN_HANDLER, ItemNodeScreen::new);
+    @Override
+    protected void drawBackground(GuiGraphics graphics, float delta, int mouseX, int mouseY) {
+
     }
 }

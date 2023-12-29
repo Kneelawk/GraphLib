@@ -54,10 +54,40 @@ public class TBNet {
     }
 
     public static final ParentNetId TRANSFER_BEAMS = McNetworkStack.ROOT.child(TransferBeamsMod.MOD_ID);
+    public static final NetIdData NODE_ACTIVATE =
+        TRANSFER_BEAMS.idData("node_activate").toServerOnly().setReceiver(TBNet::receiveNodeActivate);
     public static final NetIdData NODE_REMOVE =
         TRANSFER_BEAMS.idData("node_remove").toServerOnly().setReceiver(TBNet::receiveNodeRemove);
     public static final NetIdData NODE_LINK =
         TRANSFER_BEAMS.idData("node_link").toServerOnly().setReceiver(TBNet::receiveNodeLink);
+
+    public static void sendNodeActivate(NodePos pos) {
+        NODE_ACTIVATE.send(CoreMinecraftNetUtil.getClientConnection(),
+            (buf, ctx) -> PacketEncodingUtil.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+    }
+
+    private static void receiveNodeActivate(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
+        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+
+        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayerEntity player)) return;
+
+        // make sure the player is reasonably close
+        if (pos.pos().getSquaredDistanceToCenter(player.getPos()) > 100.0) return;
+
+        ServerWorld serverWorld = player.getServerWorld();
+
+        // FIXME: no claim detection
+
+        GraphWorld world = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
+
+        NodeHolder<BlockNode> holder = world.getNodeAt(pos);
+        if (holder == null) return;
+
+        // call activate
+        TransferNodeEntity entity = holder.getNodeEntity(TransferNodeEntity.class);
+        if (entity == null) return;
+        entity.onActivate(player);
+    }
 
     public static void sendNodeRemove(NodePos pos) {
         NODE_REMOVE.send(CoreMinecraftNetUtil.getClientConnection(),
@@ -72,7 +102,7 @@ public class TBNet {
         // make sure the player is reasonably close
         if (pos.pos().getSquaredDistanceToCenter(player.getPos()) > 100.0) return;
 
-        if (!(player.getWorld() instanceof ServerWorld serverWorld)) return;
+        ServerWorld serverWorld = player.getServerWorld();
 
         // FIXME: no claim detection
 

@@ -34,6 +34,7 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 
 import net.minecraft.block.Block;
+import net.minecraft.feature_flags.FeatureFlags;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -41,6 +42,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
+import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -58,6 +60,7 @@ import com.kneelawk.transferbeams.item.InteractionCancellerItem;
 import com.kneelawk.transferbeams.item.LinkToolItem;
 import com.kneelawk.transferbeams.item.NodeItem;
 import com.kneelawk.transferbeams.net.TBNet;
+import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 
 public class TransferBeamsMod implements ModInitializer {
     public static final String MOD_ID = "transfer_beams";
@@ -83,6 +86,9 @@ public class TransferBeamsMod implements ModInitializer {
     public static final Item CONFIG_TOOL_ITEM = new ConfigToolItem(new FabricItemSettings());
     public static final Item LINK_TOOL_ITEM = new LinkToolItem(new FabricItemSettings());
 
+    public static final ScreenHandlerType<ItemNodeScreenHandler> ITEM_SCREEN_HANDLER = new ScreenHandlerType<>(
+        ItemNodeScreenHandler::new, FeatureFlags.DEFAULT_SET);
+
     @Override
     public void onInitialize() {
         LOG.info("Transfer Beams initializing...");
@@ -91,6 +97,7 @@ public class TransferBeamsMod implements ModInitializer {
         registerUniverse();
         registerItems();
         registerEvents();
+        registerScreens();
 
         LOG.info("Transfer Beams initialized.");
     }
@@ -138,6 +145,10 @@ public class TransferBeamsMod implements ModInitializer {
             }
             return ActionResult.PASS;
         });
+    }
+
+    private static void registerScreens() {
+        Registry.register(Registries.SCREEN_HANDLER_TYPE, id("item_node"), ITEM_SCREEN_HANDLER);
     }
 
     public static Identifier id(String path) {

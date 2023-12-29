@@ -33,6 +33,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.world.World;
 
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.transferbeams.net.TBNet;
 import com.kneelawk.transferbeams.proxy.CommonProxy;
 import com.kneelawk.transferbeams.util.SelectedNode;
@@ -49,8 +50,11 @@ public class ConfigToolItem extends Item implements InteractionCancellerItem {
             SelectedNode node = CommonProxy.INSTANCE.getClientSelectedNode();
             if (node != null) {
                 // sneaking means we remove the node
+                NodePos pos = node.entity().getContext().getPos();
                 if (player.isSneaking()) {
-                    TBNet.sendNodeRemove(node.entity().getContext().getPos());
+                    TBNet.sendNodeRemove(pos);
+                } else {
+                    TBNet.sendNodeActivate(pos);
                 }
 
                 return ActionResult.SUCCESS;

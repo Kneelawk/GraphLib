@@ -1,5 +1,8 @@
 {
   "item.transfer_beams.config_tool": "Config Tool",
   "item.transfer_beams.link_tool": "Link Tool",
-  "itemGroup.transfer_beams.main": "Transfer Beams"
+
+  "itemGroup.transfer_beams.main": "Transfer Beams",
+
+  "title.transfer_beams.item_transfer_node": "Item Transfer Node"
 }

@@ -26,6 +26,7 @@
 package com.kneelawk.transferbeams.graph;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Box;
 
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
@@ -37,4 +38,6 @@ public interface TransferNodeEntity extends NodeEntity {
     void dropItems(DropHandler handler);
 
     Box getBoundingBox();
+
+    void onActivate(ServerPlayerEntity player);
 }

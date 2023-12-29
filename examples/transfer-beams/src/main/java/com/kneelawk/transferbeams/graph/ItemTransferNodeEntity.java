@@ -34,9 +34,18 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.PropertyDelegate;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 
@@ -45,20 +54,51 @@ import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.transferbeams.TransferBeamsMod;
+import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 import com.kneelawk.transferbeams.util.DropHandler;
 import com.kneelawk.transferbeams.util.InventoryUtil;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
+import static com.kneelawk.transferbeams.TransferBeamsMod.tt;
 
-public class ItemTransferNodeEntity extends AbstractNodeEntity implements TransferNodeEntity {
+public class ItemTransferNodeEntity extends AbstractNodeEntity
+    implements TransferNodeEntity, NamedScreenHandlerFactory {
     private static final Box BOUNDING_BOX =
         new Box(4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0,
             12.0 / 16.0 / 4.0);
 
-    public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), ItemTransferNodeEntity::new);
+    public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), nbt -> {
+        if (!(nbt instanceof NbtCompound root)) return null;
+
+        ItemTransferNodeEntity entity = new ItemTransferNodeEntity();
+        entity.inventory.readNbtList(root.getList("inventory", NbtElement.COMPOUND_TYPE));
+
+        return entity;
+    });
     public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(ItemTransferNodeEntity::new);
 
+    public static final int INVENTORY_SIZE = 6 * 2 + 6 * 2 + 3;
+    public static final int PROPERTY_COUNT = 2;
+
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
+
+    private final SimpleInventory inventory = new SimpleInventory(INVENTORY_SIZE);
+    private final PropertyDelegate properties = new PropertyDelegate() {
+        @Override
+        public int get(int index) {
+            return 0;
+        }
+
+        @Override
+        public void set(int index, int value) {
+
+        }
+
+        @Override
+        public int size() {
+            return PROPERTY_COUNT;
+        }
+    };
 
     @Override
     public void onInit(@NotNull NodeEntityContext ctx) {
@@ -75,7 +115,9 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity implements Transf
 
     @Override
     public @Nullable NbtElement toTag() {
-        return null;
+        NbtCompound root = new NbtCompound();
+        root.put("inventory", inventory.toNbtList());
+        return root;
     }
 
     @Override
@@ -95,5 +137,23 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity implements Transf
     @Override
     public Box getBoundingBox() {
         return BOUNDING_BOX;
+    }
+
+    @Override
+    public void onActivate(ServerPlayerEntity player) {
+        player.openHandledScreen(this);
+    }
+
+    @Override
+    public Text getDisplayName() {
+        if (!(getContext().getNode() instanceof TransferBlockNode node)) return tt("title", "item_transfer_node");
+
+        return TransferBeamsMod.ITEM_NODE_ITEMS[node.color().getId()].getName();
+    }
+
+    @Nullable
+    @Override
+    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+        return new ItemNodeScreenHandler(syncId, playerInventory, inventory, properties);
     }
 }

@@ -54,6 +54,7 @@ repositories {
     maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
     maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
     maven("https://maven.terraformersmc.com/releases/") { name = "TerraformersMC" }
+    maven("https://maven.gegy.dev/releases/") { name = "Gegy" } // SpruceUI
 
     mavenLocal()
 }
@@ -92,7 +93,13 @@ dependencies {
 
     // LibNetworkStack
     val lns_version: String by project
-    modLocalRuntime("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+    modImplementation("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+    include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+
+    // SpruceUI
+    val spruceui_version: String by project
+    modImplementation("dev.lambdaurora:spruceui:$spruceui_version")
+    include("dev.lambdaurora:spruceui:$spruceui_version")
 
     // Mod Menu
     val mod_menu_version: String by project
