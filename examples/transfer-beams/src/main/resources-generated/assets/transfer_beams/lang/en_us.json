@@ -1,4 +1,7 @@
 {
+  "gui.transfer_beams.input": "Input",
+  "gui.transfer_beams.output": "Output",
+  "gui.transfer_beams.signal": "Signals",
   "item.transfer_beams.black_item_transfer_node": "Black Item Transfer Node",
   "item.transfer_beams.blue_item_transfer_node": "Blue Item Transfer Node",
   "item.transfer_beams.brown_item_transfer_node": "Brown Item Transfer Node",
@@ -17,5 +20,6 @@
   "item.transfer_beams.red_item_transfer_node": "Red Item Transfer Node",
   "item.transfer_beams.white_item_transfer_node": "White Item Transfer Node",
   "item.transfer_beams.yellow_item_transfer_node": "Yellow Item Transfer Node",
-  "itemGroup.transfer_beams.main": "Transfer Beams"
+  "itemGroup.transfer_beams.main": "Transfer Beams",
+  "title.transfer_beams.item_transfer_node": "Item Transfer Node"
 }

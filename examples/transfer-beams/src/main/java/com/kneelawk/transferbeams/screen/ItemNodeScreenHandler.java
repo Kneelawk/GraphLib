@@ -40,22 +40,25 @@ import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 
 public class ItemNodeScreenHandler extends ScreenHandler {
     public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(ItemTransferNodeEntity.INVENTORY_SIZE), new ArrayPropertyDelegate(ItemTransferNodeEntity.PROPERTY_COUNT));
+        this(syncId, playerInventory, new SimpleInventory(ItemTransferNodeEntity.INVENTORY_SIZE),
+            new ArrayPropertyDelegate(ItemTransferNodeEntity.PROPERTY_COUNT));
     }
 
-    public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory, PropertyDelegate properties) {
+    public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory,
+                                 PropertyDelegate properties) {
         super(TransferBeamsMod.ITEM_SCREEN_HANDLER, syncId);
         addProperties(properties);
 
         // add player inventory
-        for(int i = 0; i < 3; ++i) {
-            for(int j = 0; j < 9; ++j) {
-                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 9; ++j) {
+                this.addSlot(
+                    new Slot(playerInventory, j + i * 9 + 9, 6 + j * 18, 26 + 5 + 9 + 18 * 2 + 9 + 1 + i * 18));
             }
         }
 
-        for(int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
+        for (int i = 0; i < 9; ++i) {
+            this.addSlot(new Slot(playerInventory, i, 6 + i * 18, 26 + 5 + 9 + 18 * 2 + 9 + 18 * 3 + 4 + 1));
         }
     }
 

@@ -155,8 +155,12 @@ public class TransferBeamsMod implements ModInitializer {
         return new Identifier(MOD_ID, path);
     }
 
-    public static MutableText tt(String prefix, String suffix) {
-        return Text.translatable(prefix + "." + MOD_ID + "." + suffix);
+    public static MutableText tt(String prefix, String suffix, Object... args) {
+        return Text.translatable(prefix + "." + MOD_ID + "." + suffix, args);
+    }
+
+    public static MutableText gui(String suffix, Object... args) {
+        return tt("gui", suffix, args);
     }
 
     public static String str(String path) {

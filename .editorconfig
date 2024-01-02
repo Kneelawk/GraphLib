@@ -307,7 +307,7 @@ ij_xml_space_inside_empty_tag = false
 ij_xml_text_wrap = normal
 ij_xml_use_custom_settings = false
 
-[{*.har,*.jsb2,*.jsb3,*.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config,mcmod.info,pack.mcmeta}]
+[{*.har,*.jsb2,*.jsb3,*.json,.babelrc,.eslintrc,.prettierrc,.stylelintrc,bowerrc,jest.config,mcmod.info,*.mcmeta}]
 indent_size = 2
 ij_json_array_wrapping = normal
 ij_json_keep_blank_lines_in_code = 1

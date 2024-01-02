@@ -1,4 +1,8 @@
 {
+  "gui.transfer_beams.input": "Input",
+  "gui.transfer_beams.output": "Output",
+  "gui.transfer_beams.signal": "Signals",
+
   "item.transfer_beams.config_tool": "Config Tool",
   "item.transfer_beams.link_tool": "Link Tool",
 

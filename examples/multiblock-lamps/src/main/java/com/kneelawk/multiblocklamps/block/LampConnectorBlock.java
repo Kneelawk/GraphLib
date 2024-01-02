@@ -56,7 +56,7 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
     }
 
     @Override
-    protected MapCodec<? extends Block> method_53969() {
+    protected MapCodec<? extends Block> getCodec() {
         return CODEC;
     }
 
