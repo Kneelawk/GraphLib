@@ -40,12 +40,14 @@ import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 
 public class ItemNodeScreenHandler extends ScreenHandler {
     public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(ItemTransferNodeEntity.INVENTORY_SIZE),
+        this(syncId, playerInventory, new SimpleInventory(ItemTransferNodeEntity.FILTER_INVENTORY_SIZE),
+            new SimpleInventory(ItemTransferNodeEntity.FILTER_INVENTORY_SIZE),
+            new SimpleInventory(ItemTransferNodeEntity.SIGNAL_INVENTORY_SIZE),
             new ArrayPropertyDelegate(ItemTransferNodeEntity.PROPERTY_COUNT));
     }
 
-    public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inventory,
-                                 PropertyDelegate properties) {
+    public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inputFilter,
+                                 Inventory outputFilter, Inventory signalInventory, PropertyDelegate properties) {
         super(TransferBeamsMod.ITEM_SCREEN_HANDLER, syncId);
         addProperties(properties);
 

@@ -71,18 +71,23 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
         if (!(nbt instanceof NbtCompound root)) return null;
 
         ItemTransferNodeEntity entity = new ItemTransferNodeEntity();
-        entity.inventory.readNbtList(root.getList("inventory", NbtElement.COMPOUND_TYPE));
+        entity.inputFilter.readNbtList(root.getList("inputFilter", NbtElement.COMPOUND_TYPE));
+        entity.outputFilter.readNbtList(root.getList("outputFilter", NbtElement.COMPOUND_TYPE));
+        entity.signalInventory.readNbtList(root.getList("signalInventory", NbtElement.COMPOUND_TYPE));
 
         return entity;
     });
     public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(ItemTransferNodeEntity::new);
 
-    public static final int INVENTORY_SIZE = 6 * 2 + 6 * 2 + 3;
+    public static final int FILTER_INVENTORY_SIZE = 6 * 2;
+    public static final int SIGNAL_INVENTORY_SIZE = 3;
     public static final int PROPERTY_COUNT = 2;
 
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
 
-    private final SimpleInventory inventory = new SimpleInventory(INVENTORY_SIZE);
+    private final SimpleInventory inputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE);
+    private final SimpleInventory outputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE);
+    private final SimpleInventory signalInventory = new SimpleInventory(SIGNAL_INVENTORY_SIZE);
     private final PropertyDelegate properties = new PropertyDelegate() {
         @Override
         public int get(int index) {
@@ -116,7 +121,9 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     @Override
     public @Nullable NbtElement toTag() {
         NbtCompound root = new NbtCompound();
-        root.put("inventory", inventory.toNbtList());
+        root.put("inputFilter", inputFilter.toNbtList());
+        root.put("outputFilter", outputFilter.toNbtList());
+        root.put("signalInventory", signalInventory.toNbtList());
         return root;
     }
 
@@ -154,6 +161,7 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     @Nullable
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
-        return new ItemNodeScreenHandler(syncId, playerInventory, inventory, properties);
+        return new ItemNodeScreenHandler(syncId, playerInventory, inputFilter, outputFilter, signalInventory,
+            properties);
     }
 }
