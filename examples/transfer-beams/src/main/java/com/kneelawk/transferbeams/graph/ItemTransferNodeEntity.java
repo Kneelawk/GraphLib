@@ -85,9 +85,27 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
 
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
 
-    private final SimpleInventory inputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE);
-    private final SimpleInventory outputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE);
-    private final SimpleInventory signalInventory = new SimpleInventory(SIGNAL_INVENTORY_SIZE);
+    private final SimpleInventory inputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE) {
+        @Override
+        public void markDirty() {
+            super.markDirty();
+            if (ctx != null) ctx.markDirty();
+        }
+    };
+    private final SimpleInventory outputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE) {
+        @Override
+        public void markDirty() {
+            super.markDirty();
+            if (ctx != null) ctx.markDirty();
+        }
+    };
+    private final SimpleInventory signalInventory = new SimpleInventory(SIGNAL_INVENTORY_SIZE) {
+        @Override
+        public void markDirty() {
+            super.markDirty();
+            if (ctx != null) ctx.markDirty();
+        }
+    };
     private final PropertyDelegate properties = new PropertyDelegate() {
         @Override
         public int get(int index) {
