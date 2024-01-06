@@ -31,6 +31,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -47,6 +48,8 @@ public class ItemNodeScreen extends HandledScreen<ItemNodeScreenHandler> {
     private static final Identifier TAB_SELECTED = id("widget/tab_selected");
     private static final Identifier TAB_HIGHLIGHT = id("widget/tab_highlight");
     private static final Identifier TAB_SELECTED_HIGHLIGHT = id("widget/tab_selected_highlight");
+    private static final Identifier SLOT = id("widget/slot");
+    private static final Identifier SLOT_2 = id("widget/slot_2");
     private static final Identifier INPUT = id("icon/input");
     private static final Identifier OUTPUT = id("icon/output");
     private static final Identifier SIGNAL = id("icon/signal");
@@ -79,6 +82,8 @@ public class ItemNodeScreen extends HandledScreen<ItemNodeScreenHandler> {
         addDrawableSelectableElement(outputTab);
         signalTab.setTooltip(Tooltip.create(gui("signal")));
         addDrawableSelectableElement(signalTab);
+
+        handler.inputSlots.forEach(slot -> slot.setEnabled(true));
     }
 
     @Override
@@ -92,11 +97,35 @@ public class ItemNodeScreen extends HandledScreen<ItemNodeScreenHandler> {
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-        super.render(graphics, mouseX, mouseY, delta);
+    protected void drawForeground(GuiGraphics graphics, int mouseX, int mouseY) {
+        graphics.drawText(textRenderer, title, titleX, titleY, 0xFF2A2A2A, false);
+        graphics.drawText(textRenderer, playerInventoryTitle, playerInventoryTitleX, playerInventoryTitleY, 0xFF2A2A2A,
+            false);
     }
 
-    private enum Tab {
+    @Override
+    protected void drawSlot(GuiGraphics graphics, Slot slot) {
+        if (slot instanceof ItemNodeScreenHandler.FilterSlot filter) {
+            graphics.drawGuiTexture(SLOT_2, filter.x - 1, filter.y - 1, 18, 18);
+        } else if (slot instanceof ItemNodeScreenHandler.SignalSlot signal) {
+            graphics.drawGuiTexture(SLOT, signal.x - 1, signal.y - 1, 18, 18);
+        }
+
+        super.drawSlot(graphics, slot);
+    }
+
+    public void setTab(Tab tab) {
+        currentTab = tab;
+        handler.tabSlots.forEach(slot -> slot.setEnabled(false));
+
+        switch (tab) {
+            case INPUT -> handler.inputSlots.forEach(slot -> slot.setEnabled(true));
+            case OUTPUT -> handler.outputSlots.forEach(slot -> slot.setEnabled(true));
+            case SIGNAL -> handler.signalSlots.forEach(slot -> slot.setEnabled(true));
+        }
+    }
+
+    public enum Tab {
         INPUT,
         OUTPUT,
         SIGNAL
@@ -150,7 +179,7 @@ public class ItemNodeScreen extends HandledScreen<ItemNodeScreenHandler> {
 
         @Override
         public void onPress() {
-            currentTab = tab;
+            setTab(tab);
         }
 
         boolean isSelected() {

@@ -25,6 +25,10 @@
 
 package com.kneelawk.transferbeams.screen;
 
+import java.util.List;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -36,31 +40,69 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 
 import com.kneelawk.transferbeams.TransferBeamsMod;
-import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
+
+import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.FILTER_INVENTORY_SIZE;
+import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.PROPERTY_COUNT;
+import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.SIGNAL_INVENTORY_SIZE;
 
 public class ItemNodeScreenHandler extends ScreenHandler {
+    public final Inventory outputFilter;
+    public final Inventory inputFilter;
+    public final Inventory signalInventory;
+
+    public final List<TabSlot> tabSlots = new ObjectArrayList<>();
+    public final List<FilterSlot> outputSlots = new ObjectArrayList<>();
+    public final List<FilterSlot> inputSlots = new ObjectArrayList<>();
+    public final List<SignalSlot> signalSlots = new ObjectArrayList<>();
+
     public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(ItemTransferNodeEntity.FILTER_INVENTORY_SIZE),
-            new SimpleInventory(ItemTransferNodeEntity.FILTER_INVENTORY_SIZE),
-            new SimpleInventory(ItemTransferNodeEntity.SIGNAL_INVENTORY_SIZE),
-            new ArrayPropertyDelegate(ItemTransferNodeEntity.PROPERTY_COUNT));
+        this(syncId, playerInventory, new SimpleInventory(FILTER_INVENTORY_SIZE),
+            new SimpleInventory(FILTER_INVENTORY_SIZE),
+            new SimpleInventory(SIGNAL_INVENTORY_SIZE),
+            new ArrayPropertyDelegate(PROPERTY_COUNT));
     }
 
     public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inputFilter,
                                  Inventory outputFilter, Inventory signalInventory, PropertyDelegate properties) {
         super(TransferBeamsMod.ITEM_SCREEN_HANDLER, syncId);
+        this.outputFilter = outputFilter;
+        this.inputFilter = inputFilter;
+        this.signalInventory = signalInventory;
         addProperties(properties);
 
         // add player inventory
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 9; ++j) {
-                this.addSlot(
-                    new Slot(playerInventory, j + i * 9 + 9, 6 + j * 18, 26 + 5 + 9 + 18 * 2 + 9 + 1 + i * 18));
+                addSlot(new Slot(playerInventory, j + i * 9 + 9, 6 + j * 18, 26 + 5 + 9 + 18 * 2 + 9 + 1 + i * 18));
             }
         }
 
         for (int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, 6 + i * 18, 26 + 5 + 9 + 18 * 2 + 9 + 18 * 3 + 4 + 1));
+            addSlot(new Slot(playerInventory, i, 6 + i * 18, 26 + 5 + 9 + 18 * 2 + 9 + 18 * 3 + 4 + 1));
+        }
+
+        // add output filter
+        for (int i = 0; i < FILTER_INVENTORY_SIZE; i++) {
+            FilterSlot slot = new FilterSlot(outputFilter, i, 5 + 27 + 1 + (i % 6) * 18, 26 + 5 + 9 + 1 + i / 6 * 18);
+            addSlot(slot);
+            tabSlots.add(slot);
+            outputSlots.add(slot);
+        }
+
+        // add input filter
+        for (int i = 0; i < FILTER_INVENTORY_SIZE; i++) {
+            FilterSlot slot = new FilterSlot(inputFilter, i, 5 + 27 + 1 + (i % 6) * 18, 26 + 5 + 9 + 1 + i / 6 * 18);
+            addSlot(slot);
+            tabSlots.add(slot);
+            inputSlots.add(slot);
+        }
+
+        // add signal slots
+        for (int i = 0; i < SIGNAL_INVENTORY_SIZE; i++) {
+            SignalSlot slot = new SignalSlot(signalInventory, i, 5 + 54 + 1 + i * 18, 26 + 5 + 9 + 9 + 1);
+            addSlot(slot);
+            tabSlots.add(slot);
+            signalSlots.add(slot);
         }
     }
 
@@ -72,5 +114,45 @@ public class ItemNodeScreenHandler extends ScreenHandler {
     @Override
     public boolean canUse(PlayerEntity player) {
         return true;
+    }
+
+    public interface TabSlot {
+        void setEnabled(boolean enabled);
+    }
+
+    public static class FilterSlot extends Slot implements TabSlot {
+        private boolean enabled = false;
+
+        public FilterSlot(Inventory inventory, int index, int x, int y) {
+            super(inventory, index, x, y);
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
+    }
+
+    public static class SignalSlot extends Slot implements TabSlot {
+        private boolean enabled = false;
+
+        public SignalSlot(Inventory inventory, int index, int x, int y) {
+            super(inventory, index, x, y);
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return enabled;
+        }
     }
 }
