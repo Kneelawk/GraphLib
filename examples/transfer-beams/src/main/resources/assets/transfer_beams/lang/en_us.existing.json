@@ -2,6 +2,10 @@
   "gui.transfer_beams.input": "Input",
   "gui.transfer_beams.output": "Output",
   "gui.transfer_beams.signal": "Signals",
+  "gui.transfer_beams.allow_deny.input": "Input filter allow/deny",
+  "gui.transfer_beams.allow_deny.output": "Output filter allow/deny",
+  "gui.transfer_beams.allow_deny.allow": "Allow items in filter",
+  "gui.transfer_beams.allow_deny.deny": "Deny items in filter",
 
   "item.transfer_beams.config_tool": "Config Tool",
   "item.transfer_beams.link_tool": "Link Tool",

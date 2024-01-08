@@ -50,9 +50,11 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
+import com.kneelawk.transferbeams.graph.TransferGraphEntity;
 import com.kneelawk.transferbeams.graph.TransferLinkEntity;
 import com.kneelawk.transferbeams.graph.TransferLinkKey;
 import com.kneelawk.transferbeams.item.ConfigToolItem;
@@ -86,9 +88,6 @@ public class TransferBeamsMod implements ModInitializer {
     public static final Item CONFIG_TOOL_ITEM = new ConfigToolItem(new FabricItemSettings());
     public static final Item LINK_TOOL_ITEM = new LinkToolItem(new FabricItemSettings());
 
-    public static final ScreenHandlerType<ItemNodeScreenHandler> ITEM_SCREEN_HANDLER = new ScreenHandlerType<>(
-        ItemNodeScreenHandler::new, FeatureFlags.DEFAULT_SET);
-
     @Override
     public void onInitialize() {
         LOG.info("Transfer Beams initializing...");
@@ -115,6 +114,9 @@ public class TransferBeamsMod implements ModInitializer {
         SYNCED.addLinkKeySyncing(TransferLinkKey.TYPE, TransferLinkKey.SYNCING);
         UNIVERSE.addLinkEntityType(TransferLinkEntity.TYPE);
         SYNCED.addLinkEntitySyncing(TransferLinkEntity.TYPE, TransferLinkEntity.SYNCING);
+
+        UNIVERSE.addGraphEntityType(TransferGraphEntity.TYPE);
+        SYNCED.addGraphEntitySyncing(TransferGraphEntity.TYPE, TransferGraphEntity.SYNCING);
     }
 
     private static void registerItems() {
@@ -148,7 +150,7 @@ public class TransferBeamsMod implements ModInitializer {
     }
 
     private static void registerScreens() {
-        Registry.register(Registries.SCREEN_HANDLER_TYPE, id("item_node"), ITEM_SCREEN_HANDLER);
+        Registry.register(Registries.SCREEN_HANDLER_TYPE, id("item_node"), ItemNodeScreenHandler.TYPE);
     }
 
     public static Identifier id(String path) {

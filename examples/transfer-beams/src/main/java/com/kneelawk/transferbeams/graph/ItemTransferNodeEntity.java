@@ -81,9 +81,19 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
 
     public static final int FILTER_INVENTORY_SIZE = 6 * 2;
     public static final int SIGNAL_INVENTORY_SIZE = 3;
-    public static final int PROPERTY_COUNT = 2;
+    public static final int PROPERTY_COUNT = 4;
+    public static final int INPUT_ALLOW_PROPERTY = 0;
+    public static final int INPUT_SIDE_PROPERTY = 1;
+    public static final int OUTPUT_ALLOW_PROPERTY = 2;
+    public static final int OUTPUT_SIDE_PROPERTY = 3;
 
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
+
+    // input filter is an allow-list
+    private boolean inputAllow = true;
+    private @Nullable Direction inputSide = null;
+    private boolean outputAllow = true;
+    private @Nullable Direction outputSide = null;
 
     private final SimpleInventory inputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE) {
         @Override
@@ -109,12 +119,36 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     private final PropertyDelegate properties = new PropertyDelegate() {
         @Override
         public int get(int index) {
-            return 0;
+            return switch (index) {
+                case INPUT_ALLOW_PROPERTY -> inputAllow ? 1 : 0;
+                case INPUT_SIDE_PROPERTY -> {
+                    if (inputSide != null) yield inputSide.getId();
+                    else yield 6;
+                }
+                case OUTPUT_ALLOW_PROPERTY -> outputAllow ? 1 : 0;
+                case OUTPUT_SIDE_PROPERTY -> {
+                    if (outputSide != null) yield outputSide.getId();
+                    else yield 6;
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + index);
+            };
         }
 
         @Override
         public void set(int index, int value) {
-
+            switch (index) {
+                case INPUT_ALLOW_PROPERTY -> inputAllow = value != 0;
+                case INPUT_SIDE_PROPERTY -> {
+                    if (0 <= value && value < 6) inputSide = Direction.byId(value);
+                    else inputSide = null;
+                }
+                case OUTPUT_ALLOW_PROPERTY -> outputAllow = value != 0;
+                case OUTPUT_SIDE_PROPERTY -> {
+                    if (0 <= value && value < 6) outputSide = Direction.byId(value);
+                    else outputSide = null;
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + index);
+            }
         }
 
         @Override
@@ -139,6 +173,10 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     @Override
     public @Nullable NbtElement toTag() {
         NbtCompound root = new NbtCompound();
+        root.putBoolean("inputAllow", inputAllow);
+        root.putByte("inputSide", (byte) (inputSide != null ? inputSide.getId() : 6));
+        root.putBoolean("outputAllow", outputAllow);
+        root.putByte("outputSide", (byte) (outputSide != null ? outputSide.getId() : 6));
         root.put("inputFilter", inputFilter.toNbtList());
         root.put("outputFilter", outputFilter.toNbtList());
         root.put("signalInventory", signalInventory.toNbtList());
