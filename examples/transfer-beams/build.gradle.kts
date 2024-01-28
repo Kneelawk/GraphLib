@@ -96,11 +96,6 @@ dependencies {
     modImplementation("alexiil.mc.lib:libnetworkstack-base:$lns_version")
     include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
 
-    // SpruceUI
-    val spruceui_version: String by project
-    modImplementation("dev.lambdaurora:spruceui:$spruceui_version")
-    include("dev.lambdaurora:spruceui:$spruceui_version")
-
     // Mod Menu
     val mod_menu_version: String by project
     modLocalRuntime("com.terraformersmc:modmenu:$mod_menu_version")
