@@ -17,6 +17,7 @@ build/
 out/
 /logs/
 /*/logs/
+/*/*/logs/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
