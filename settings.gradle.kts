@@ -20,12 +20,12 @@ rootProject.name = "graphlib"
 
 fun module(name: String) {
     include(name)
-    project(":$name").projectDir = File(rootDir, "modules/$name")
+    project(":$name").projectDir = File(rootDir, "modules/${name.replace(':', '/')}")
 }
 
 fun example(name: String) {
     include(name)
-    project(":$name").projectDir = File(rootDir, "examples/$name")
+    project(":$name").projectDir = File(rootDir, "examples/${name.replace(':', '/')}")
 }
 
 module("core")
