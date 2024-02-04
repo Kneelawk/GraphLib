@@ -40,6 +40,7 @@ fun example(name: String) {
 
 module("core")
 module("core:xplat")
+module("core:xplat:mojmap")
 module("core:fabric")
 module("core:neoforge")
 module("debugrender")
