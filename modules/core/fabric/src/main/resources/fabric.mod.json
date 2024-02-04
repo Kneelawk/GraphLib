@@ -24,7 +24,7 @@
     ]
   },
   "mixins": [
-    "graphlib.mixins.json"
+    "graphlib-common.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.14.0",

@@ -3,9 +3,6 @@ package com.kneelawk.graphlib.impl.command;
 import java.util.List;
 import java.util.Locale;
 
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
-
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -33,18 +30,12 @@ import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
+import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class GraphLibCommand {
-    public static final Event<AddUniverseSubcommands> ADD_UNIVERSE_SUBCOMMANDS = EventFactory.createArrayBacked(
-        AddUniverseSubcommands.class, listeners -> universe -> {
-            for (AddUniverseSubcommands listener : listeners) {
-                listener.addUniverseSubcommands(universe);
-            }
-        });
-
     public static final DynamicCommandExceptionType UNKNOWN_UNIVERSE =
         new DynamicCommandExceptionType(arg -> new LiteralMessage("Unknown universe: " + arg));
 
@@ -82,7 +73,7 @@ public class GraphLibCommand {
                     )
                 );
 
-        ADD_UNIVERSE_SUBCOMMANDS.invoker().addUniverseSubcommands(universeBuilder);
+        GraphLibPlatform.INSTANCE.fireAddUniverseSubcommands(universeBuilder);
 
         dispatcher.register(literal("graphlib")
             .requires(source -> source.hasPermission(2))
@@ -196,9 +187,5 @@ public class GraphLibCommand {
                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                         Text.translatable("chat.coordinates.tooltip")))
             );
-    }
-
-    public interface AddUniverseSubcommands {
-        void addUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
     }
 }

@@ -1,0 +1,21 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mixins]]
+config = "graphlib-common.mixins.json"
+
+[[mods]]
+modId = "graphlib"
+version = "${version}"
+displayName = "GraphLib"
+authors = "Kneelawk"
+description = "Library for helping mods that use graph networks."
+logoFile = "assets/graphlib/icon-128.png"
+
+[[dependencies.graphlib]]
+modId = "neoforge"
+type = "REQUIRED"
+versionRange = "[20.4.148-beta,)"
+ordering = "NONE"
+side = "BOTH"

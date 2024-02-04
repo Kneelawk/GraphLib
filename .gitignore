@@ -5,19 +5,19 @@ build/
 !**/src/test/**/build/
 
 ### Loom ###
-/run/
-/*/run/
-/*/*/run/
+run/
+!**/src/main/**/run/
+!**/src/test/**/run/
 
 ### IntelliJ IDEA ###
 /.idea/
 *.iws
 *.iml
 *.ipr
+logs/
+!**/src/main/**/logs/
+!**/src/test/**/logs/
 out/
-/logs/
-/*/logs/
-/*/*/logs/
 !**/src/main/**/out/
 !**/src/test/**/out/
 

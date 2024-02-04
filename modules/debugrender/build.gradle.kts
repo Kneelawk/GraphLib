@@ -1,7 +1,6 @@
 plugins {
     `maven-publish`
     id("fabric-loom")
-    id("io.github.juuxel.loom-quiltflower")
     id("com.kneelawk.versioning")
 }
 
@@ -49,7 +48,8 @@ dependencies {
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     // GraphLib Core
-    implementation(project(":core", configuration = "namedElements"))
+    compileOnly(project(":core:xplat", configuration = "namedElements"))
+    implementation(project(":core:fabric", configuration = "namedElements"))
 
     // KModLib Overlay
     val kml_version: String by project
@@ -114,14 +114,8 @@ tasks {
 
     afterEvaluate {
         named("genSources") {
-            setDependsOn(listOf("genSourcesWithQuiltflower"))
+            setDependsOn(listOf("genSourcesWithVineflower"))
         }
-    }
-
-    // make builds reproducible
-    withType<AbstractArchiveTask>().configureEach {
-        isPreserveFileTimestamps = false
-        isReproducibleFileOrder = true
     }
 }
 

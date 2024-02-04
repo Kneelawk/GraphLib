@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,30 @@
  *
  */
 
-package com.kneelawk.graphlib.debugrender.impl;
+package com.kneelawk.graphlib.impl.platform;
 
-import net.fabricmc.api.ModInitializer;
+import java.util.ServiceLoader;
 
-import com.kneelawk.graphlib.debugrender.impl.command.GraphLibDebugRenderCommand;
-import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.event.InternalEvents;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
-public class GraphLibDebugRenderFabricMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLib Debug Render...");
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 
-        GLDebugNet.init();
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphWorld;
 
-        InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.register(GraphLibDebugRenderCommand::addUniverseSubcommands);
+public interface GraphLibPlatform {
+    GraphLibPlatform INSTANCE = ServiceLoader.load(GraphLibPlatform.class).findFirst()
+        .orElseThrow(() -> new RuntimeException("Failed to load platform implementation"));
 
-        GLLog.info("GraphLib Debug Render initialized.");
-    }
+    void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
+
+    void fireGraphCreated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+
+    void fireGraphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+
+    void fireGraphUnloading(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+
+    void fireGraphDestroyed(ServerWorld world, GraphWorld graphWorld, long id);
 }

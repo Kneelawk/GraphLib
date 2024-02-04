@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,25 @@
  *
  */
 
-package com.kneelawk.graphlib.debugrender.impl;
+package com.kneelawk.graphlib.impl.event;
 
-import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.Event;
+import net.fabricmc.fabric.api.event.EventFactory;
 
-import com.kneelawk.graphlib.debugrender.impl.command.GraphLibDebugRenderCommand;
-import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.event.InternalEvents;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
-public class GraphLibDebugRenderFabricMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLib Debug Render...");
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.util.Identifier;
 
-        GLDebugNet.init();
+public class InternalEvents {
+    public static final Event<AddUniverseSubcommands> ADD_UNIVERSE_SUBCOMMANDS = EventFactory.createArrayBacked(
+        AddUniverseSubcommands.class, listeners -> universe -> {
+            for (AddUniverseSubcommands listener : listeners) {
+                listener.addUniverseSubcommands(universe);
+            }
+        });
 
-        InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.register(GraphLibDebugRenderCommand::addUniverseSubcommands);
-
-        GLLog.info("GraphLib Debug Render initialized.");
+    public interface AddUniverseSubcommands {
+        void addUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
     }
 }
