@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.platform;
+package com.kneelawk.graphlib.fabric.impl.platform;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
@@ -31,10 +31,11 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.event.GraphLibEvents;
+import com.kneelawk.graphlib.fabric.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.impl.event.InternalEvents;
+import com.kneelawk.graphlib.fabric.impl.event.InternalEvents;
+import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 public class GraphLibPlatformImpl implements GraphLibPlatform {
     @Override

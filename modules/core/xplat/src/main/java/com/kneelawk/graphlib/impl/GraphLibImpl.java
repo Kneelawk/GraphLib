@@ -19,19 +19,14 @@ public final class GraphLibImpl {
     private GraphLibImpl() {
     }
 
-    private static final Identifier UNIVERSE_IDENTIFIER = Constants.id("universe");
+    public static final Identifier UNIVERSE_IDENTIFIER = Constants.id("universe");
     public static final RegistryKey<Registry<GraphUniverseImpl>> UNIVERSE_KEY =
         RegistryKey.ofRegistry(UNIVERSE_IDENTIFIER);
 
     public static final Registry<GraphUniverseImpl> UNIVERSE =
         new SimpleRegistry<>(UNIVERSE_KEY, Lifecycle.stable(), false);
 
-    @SuppressWarnings("unchecked")
-    static void register() {
-        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, UNIVERSE_IDENTIFIER, UNIVERSE);
-    }
-
-    static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandBuildContext context) {
+    public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher, CommandBuildContext context) {
         GraphLibCommand.register(dispatcher, context);
     }
 

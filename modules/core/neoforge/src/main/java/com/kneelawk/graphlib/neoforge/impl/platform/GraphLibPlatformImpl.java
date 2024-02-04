@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,41 @@
  *
  */
 
-package com.kneelawk.graphlib.debugrender.impl;
+package com.kneelawk.graphlib.neoforge.impl.platform;
 
-import net.fabricmc.api.ModInitializer;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
-import com.kneelawk.graphlib.debugrender.impl.command.GraphLibDebugRenderCommand;
-import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.fabric.impl.event.InternalEvents;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 
-public class GraphLibDebugRenderFabricMod implements ModInitializer {
+import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
+
+public class GraphLibPlatformImpl implements GraphLibPlatform {
     @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLib Debug Render...");
+    public void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
 
-        GLDebugNet.init();
+    }
 
-        InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.register(GraphLibDebugRenderCommand::addUniverseSubcommands);
+    @Override
+    public void fireGraphCreated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
 
-        GLLog.info("GraphLib Debug Render initialized.");
+    }
+
+    @Override
+    public void fireGraphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+
+    }
+
+    @Override
+    public void fireGraphUnloading(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+
+    }
+
+    @Override
+    public void fireGraphDestroyed(ServerWorld world, GraphWorld graphWorld, long id) {
+
     }
 }

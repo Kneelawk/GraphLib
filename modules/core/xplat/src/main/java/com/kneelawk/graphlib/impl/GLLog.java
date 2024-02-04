@@ -27,7 +27,7 @@ public final class GLLog {
     private static Path gameDir = null;
     private static boolean fileLoggerInitialized = false;
 
-    static void setGameDir(Path dir) {
+    public static void setGameDir(Path dir) {
         gameDir = dir;
     }
 

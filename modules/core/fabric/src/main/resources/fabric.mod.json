@@ -19,7 +19,7 @@
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.graphlib.impl.GraphLibFabricMod"
+        "value": "com.kneelawk.graphlib.fabric.impl.GraphLibFabricMod"
       }
     ]
   },

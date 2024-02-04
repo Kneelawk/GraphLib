@@ -23,7 +23,7 @@
  *
  */
 
-package com.kneelawk.graphlib.impl.event;
+package com.kneelawk.graphlib.fabric.impl.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;

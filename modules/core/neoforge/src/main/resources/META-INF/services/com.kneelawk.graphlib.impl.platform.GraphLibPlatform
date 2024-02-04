@@ -23,4 +23,4 @@
 #
 #
 
-com.kneelawk.graphlib.fabric.impl.platform.GraphLibPlatformImpl
+com.kneelawk.graphlib.neoforge.impl.platform.GraphLibPlatformImpl
