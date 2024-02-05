@@ -36,6 +36,7 @@ import com.kneelawk.multiblocklamps.node.LampNode;
 public class LampLogic {
     public static void onLampUpdated(NodeHolder<BlockNode> node) {
         BlockGraph graph = node.getGraph();
+        if (graph == null) return;
 
         boolean powered = false;
         Collection<NodeHolder<LampInputNode>> inputs = graph.getCachedNodes(MultiblockLamps.LAMP_INPUT_CACHE);

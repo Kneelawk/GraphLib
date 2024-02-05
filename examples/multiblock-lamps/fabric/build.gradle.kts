@@ -46,6 +46,18 @@ base {
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${parent!!.name}-${project.name}") })
 
+loom {
+    runs {
+        named("client") {
+            ideConfigGenerated(true)
+            programArgs("--width", "1280", "--height", "720")
+        }
+        named("server") {
+            ideConfigGenerated(true)
+        }
+    }
+}
+
 architectury {
     platformSetupLoomIde()
     fabric()
