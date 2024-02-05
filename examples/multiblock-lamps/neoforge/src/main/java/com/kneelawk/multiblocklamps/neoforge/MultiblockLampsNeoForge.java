@@ -36,7 +36,7 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 
-import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.multiblocklamps.MultiblockLamps;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.CONNECTED_LAMP_BLOCK;
@@ -52,7 +52,7 @@ public class MultiblockLampsNeoForge {
     }
 
     public void onRegister(RegisterEvent event) {
-        event.register(GraphLibImpl.UNIVERSE_KEY, _helper -> MultiblockLamps.registerUniverse());
+        event.register(GraphLib.UNIVERSE_KEY, _helper -> MultiblockLamps.registerUniverse());
         event.register(RegistryKeys.BLOCK, helper -> {
             helper.register(id("connected_lamp"), CONNECTED_LAMP_BLOCK);
             helper.register(id("lamp_connector"), LAMP_CONNECTOR_BLOCK);

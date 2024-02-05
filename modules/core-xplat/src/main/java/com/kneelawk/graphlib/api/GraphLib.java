@@ -2,6 +2,8 @@ package com.kneelawk.graphlib.api;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -16,6 +18,15 @@ import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 public final class GraphLib {
     private GraphLib() {
     }
+
+    /**
+     * A registry key for the universe registry.
+     * <p>
+     * Use this key on NeoForge to either create a DeferredRegistry or to listen for the event for when to register.
+     */
+    @SuppressWarnings("unchecked")
+    public static final RegistryKey<Registry<GraphUniverse>> UNIVERSE_KEY =
+        (RegistryKey<Registry<GraphUniverse>>) (RegistryKey<?>) GraphLibImpl.UNIVERSE_KEY;
 
     /**
      * The unique id of the universe representing the data managed by pre-1.0 versions of GraphLib.

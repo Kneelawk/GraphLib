@@ -1,6 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.fabricmc.loom.task.RemapJarTask
-
 /*
  * MIT License
  *
@@ -89,9 +86,16 @@ dependencies {
     neoForge("net.neoforged:neoforge:$neoforge_version")
 
     "common"(project(path = ":multiblock-lamps:xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":multiblock-lamps:xplat", configuration = "transformProductionNeoForge")) { isTransitive = false }
+    "shadowCommon"(
+        project(
+            path = ":multiblock-lamps:xplat",
+            configuration = "transformProductionNeoForge"
+        )
+    ) { isTransitive = false }
 
-    implementation(project(":core-neoforge", configuration = "dev"))
+    compileOnly(project(":core-xplat", configuration = "namedElements"))
+    compileOnly(project(":core-neoforge", configuration = "namedElements"))
+    runtimeOnly(project(":core-neoforge", configuration = "dev"))
     include(project(":core-neoforge"))
 }
 

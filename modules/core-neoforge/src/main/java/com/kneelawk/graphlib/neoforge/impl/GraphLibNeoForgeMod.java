@@ -40,6 +40,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 
+import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
@@ -70,7 +71,7 @@ public class GraphLibNeoForgeMod {
     }
 
     public void onRegister(RegisterEvent event) {
-        event.register(GraphLibImpl.UNIVERSE_KEY, helper -> {
+        event.register(GraphLib.UNIVERSE_KEY, helper -> {
 //            GraphLib.LEGACY_UNIVERSE.register();
         });
     }
