@@ -41,7 +41,6 @@ base {
 }
 
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${parent!!.name}-${project.name}") })
 
 loom {
     runs {

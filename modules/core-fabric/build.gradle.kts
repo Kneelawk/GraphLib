@@ -173,7 +173,6 @@ tasks {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifactId = "${parent!!.name}-${project.name}"
             from(components["java"])
         }
     }

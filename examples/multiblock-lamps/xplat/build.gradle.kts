@@ -39,9 +39,6 @@ base {
     archivesName.set("$archives_base_name-${parent!!.name}-${project.name}")
 }
 
-base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${parent!!.name}-${project.name}") })
-
 loom {
 //    accessWidenerPath.set(file("src/main/resources/graphlib.accesswidener"))
 //    runs {

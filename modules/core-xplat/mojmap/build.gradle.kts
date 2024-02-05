@@ -44,9 +44,6 @@ base {
     archivesName.set("$archives_base_name-${parent!!.name}-${project.name}")
 }
 
-base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${parent!!.name}-${project.name}") })
-
 dependencies {
     val minecraft_version: String by rootProject
     minecraft("com.mojang:minecraft:$minecraft_version")
@@ -78,9 +75,18 @@ val mojmapSourcesJar = tasks.create("mojmapSourcesJar", RemapSourcesJarTask::cla
     remapperIsolation.set(true)
 }
 
-tasks.build.configure {
-    dependsOn(mojmapJar)
-    dependsOn(mojmapSourcesJar)
+tasks {
+    build.configure {
+        dependsOn(mojmapJar)
+        dependsOn(mojmapSourcesJar)
+    }
+
+    remapJar {
+        archiveClassifier.set("remapJar-disabled")
+    }
+    remapSourcesJar {
+        archiveClassifier.set("remapSourcesJar-disabled")
+    }
 }
 
 publishing {
