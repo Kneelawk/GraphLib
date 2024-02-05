@@ -29,7 +29,7 @@ plugins {
     id("com.kneelawk.versioning")
 }
 
-evaluationDependsOn(":core:xplat")
+evaluationDependsOn(":core-xplat")
 
 val maven_group: String by project
 group = maven_group
@@ -82,7 +82,7 @@ dependencies {
     modLocalRuntime("net.fabricmc:fabric-loader:$fabric_loader_version")
 
     // GraphLib
-    compileOnly(project(":core", configuration = "xplat"))
+    compileOnly(project(":core-xplat", configuration = "namedElements"))
 }
 
 tasks {

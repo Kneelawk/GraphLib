@@ -1,6 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.fabricmc.loom.task.RemapJarTask
-
 /*
  * MIT License
  *
@@ -34,18 +31,18 @@ plugins {
     id("com.kneelawk.versioning")
 }
 
-evaluationDependsOn(":core:xplat")
+evaluationDependsOn(":core-xplat")
 
 val maven_group: String by project
 group = maven_group
 
 val archives_base_name: String by project
 base {
-    archivesName.set("$archives_base_name-${parent!!.name}-${project.name}")
+    archivesName.set("$archives_base_name-${project.name}")
 }
 
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${parent!!.name}-${project.name}") })
+java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
 architectury {
     platformSetupLoomIde()
@@ -58,6 +55,10 @@ configurations {
     getByName("compileClasspath").extendsFrom(common)
     getByName("runtimeClasspath").extendsFrom(common)
     getByName("developmentNeoForge").extendsFrom(common)
+    create("dev") {
+        isCanBeConsumed = true
+        isCanBeResolved = false
+    }
 }
 
 repositories {
@@ -77,8 +78,10 @@ dependencies {
     val neoforge_version: String by project
     neoForge("net.neoforged:neoforge:$neoforge_version")
 
-    "common"(project(path = ":core:xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":core:xplat", configuration = "transformProductionNeoForge")) { isTransitive = false }
+    "common"(project(path = ":core-xplat", configuration = "namedElements")) { isTransitive = false }
+    "shadowCommon"(project(path = ":core-xplat", configuration = "transformProductionNeoForge")) {
+        isTransitive = false
+    }
 }
 
 tasks {
@@ -90,13 +93,13 @@ tasks {
         }
     }
 
-    val shadowJar = named("shadowJar", ShadowJar::class) {
+    shadowJar {
         exclude("architectury.common.json")
         configurations = listOf(project.configurations["shadowCommon"])
         archiveClassifier = "dev-shadow"
     }
 
-    named("remapJar", RemapJarTask::class) {
+    remapJar {
         injectAccessWidener = true
         inputFile.set(shadowJar.flatMap { it.archiveFile })
         dependsOn(shadowJar)
@@ -122,7 +125,7 @@ tasks {
     }
 
     javadoc {
-        source(project(":core:xplat").sourceSets.main.get().allJava)
+        source(project(":core-xplat").sourceSets.main.get().allJava)
         exclude("com/kneelawk/graphlib/impl")
         exclude("com/kneelawk/graphlib/neoforge/impl")
 
@@ -140,7 +143,7 @@ tasks {
     }
 
     named("sourcesJar", Jar::class) {
-        val xplatSources = project(":core:xplat").tasks.named("sourcesJar", Jar::class)
+        val xplatSources = project(":core-xplat").tasks.named("sourcesJar", Jar::class)
         dependsOn(xplatSources)
         from(xplatSources.flatMap { task -> task.archiveFile.map { zipTree(it) } })
     }
@@ -150,6 +153,10 @@ tasks {
             setDependsOn(listOf("genSourcesWithVineflower"))
         }
     }
+}
+
+artifacts {
+    add("dev", tasks.shadowJar)
 }
 
 //components.named("java", AdhocComponentWithVariants::class) {

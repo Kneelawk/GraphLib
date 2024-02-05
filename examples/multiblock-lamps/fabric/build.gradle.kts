@@ -1,6 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.fabricmc.loom.task.RemapJarTask
-
 /*
  * MIT License
  *
@@ -40,11 +37,11 @@ group = maven_group
 
 val archives_base_name: String by project
 base {
-    archivesName.set("$archives_base_name-${parent!!.name}-${project.name}")
+    archivesName.set("$archives_base_name-${project.name}")
 }
 
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${parent!!.name}-${project.name}") })
+java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
 loom {
     runs {
@@ -100,10 +97,16 @@ dependencies {
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     "common"(project(path = ":multiblock-lamps:xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":multiblock-lamps:xplat", configuration = "transformProductionFabric")) { isTransitive = false }
+    "shadowCommon"(
+        project(
+            path = ":multiblock-lamps:xplat",
+            configuration = "transformProductionFabric"
+        )
+    ) { isTransitive = false }
 
-    compileOnly(project(":core", configuration = "fabric"))
-    localRuntime(project(":core", configuration = "fabric"))
+    compileOnly(project(":core-xplat", configuration = "namedElements"))
+    implementation(project(":core-fabric", configuration = "namedElements"))
+    include(project(":core-fabric"))
 
     // Mod Menu
     val mod_menu_version: String by project
@@ -122,13 +125,13 @@ tasks {
         }
     }
 
-    val shadowJar = named("shadowJar", ShadowJar::class) {
+    shadowJar {
         exclude("architectury.common.json")
         configurations = listOf(project.configurations["shadowCommon"])
         archiveClassifier = "dev-shadow"
     }
 
-    named("remapJar", RemapJarTask::class) {
+    remapJar {
         injectAccessWidener = true
         inputFile.set(shadowJar.flatMap { it.archiveFile })
         dependsOn(shadowJar)

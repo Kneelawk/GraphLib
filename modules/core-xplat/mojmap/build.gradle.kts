@@ -34,18 +34,18 @@ plugins {
     id("com.kneelawk.versioning")
 }
 
-evaluationDependsOn(":core:xplat")
+evaluationDependsOn(":core-xplat")
 
 val maven_group: String by project
 group = maven_group
 
 val archives_base_name: String by project
 base {
-    archivesName.set("$archives_base_name-${parent!!.parent!!.name}-${parent!!.name}-${project.name}")
+    archivesName.set("$archives_base_name-${parent!!.name}-${project.name}")
 }
 
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
+java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${parent!!.name}-${project.name}") })
 
 dependencies {
     val minecraft_version: String by rootProject
@@ -56,9 +56,9 @@ dependencies {
 
 val mojmapJar = tasks.create("mojmapJar", RemapJarTask::class) {
     classpath.from((loom as LoomGradleExtension).getMinecraftJarsCollection(MappingsNamespace.INTERMEDIARY))
-    dependsOn(project(":core:xplat").tasks.remapJar)
+    dependsOn(project(":core-xplat").tasks.remapJar)
 
-    inputFile.set(project(":core:xplat").tasks.remapJar.flatMap { it.archiveFile })
+    inputFile.set(project(":core-xplat").tasks.remapJar.flatMap { it.archiveFile })
     sourceNamespace.set("intermediary")
     targetNamespace.set("named")
 
@@ -67,11 +67,11 @@ val mojmapJar = tasks.create("mojmapJar", RemapJarTask::class) {
 
 val mojmapSourcesJar = tasks.create("mojmapSourcesJar", RemapSourcesJarTask::class) {
     classpath.from((loom as LoomGradleExtension).getMinecraftJarsCollection(MappingsNamespace.INTERMEDIARY))
-    dependsOn(project(":core:xplat").tasks.remapSourcesJar)
+    dependsOn(project(":core-xplat").tasks.remapSourcesJar)
 
     archiveClassifier.set("sources")
 
-    inputFile.set(project(":core:xplat").tasks.remapSourcesJar.flatMap { it.archiveFile })
+    inputFile.set(project(":core-xplat").tasks.remapSourcesJar.flatMap { it.archiveFile })
     sourceNamespace.set("intermediary")
     targetNamespace.set("named")
 
@@ -86,7 +86,7 @@ tasks.build.configure {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifactId = "${parent!!.parent!!.name}-${parent!!.name}-${project.name}"
+            artifactId = "${parent!!.name}-${project.name}"
             artifact(mojmapJar) {
                 builtBy(mojmapJar)
                 classifier = ""

@@ -58,7 +58,9 @@ fun example(name: String, vararg submodules: String) {
     }
 }
 
-module("core", "xplat", "xplat:mojmap", "fabric", "neoforge")
+module("core-xplat", "mojmap")
+module("core-fabric")
+module("core-neoforge")
 module("debugrender")
 module("syncing")
 example("multiblock-lamps", "xplat", "fabric", "neoforge")

@@ -48,8 +48,8 @@ dependencies {
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     // GraphLib Core
-    compileOnly(project(":core:xplat", configuration = "namedElements"))
-    implementation(project(":core:fabric", configuration = "namedElements"))
+    compileOnly(project(":core-xplat", configuration = "namedElements"))
+    implementation(project(":core-fabric", configuration = "namedElements"))
 
     // KModLib Overlay
     val kml_version: String by project

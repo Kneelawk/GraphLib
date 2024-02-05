@@ -92,8 +92,8 @@ dependencies {
     "common"(project(path = ":multiblock-lamps:xplat", configuration = "namedElements")) { isTransitive = false }
     "shadowCommon"(project(path = ":multiblock-lamps:xplat", configuration = "transformProductionNeoForge")) { isTransitive = false }
 
-    compileOnly(project(":core", configuration = "neoforge"))
-    localRuntime(project(":core", configuration = "neoforge"))
+    implementation(project(":core-neoforge", configuration = "dev"))
+    include(project(":core-neoforge"))
 }
 
 tasks {
@@ -105,13 +105,13 @@ tasks {
         }
     }
 
-    val shadowJar = named("shadowJar", ShadowJar::class) {
+    shadowJar {
         exclude("architectury.common.json")
         configurations = listOf(project.configurations["shadowCommon"])
         archiveClassifier = "dev-shadow"
     }
 
-    named("remapJar", RemapJarTask::class) {
+    remapJar {
         injectAccessWidener = true
         inputFile.set(shadowJar.flatMap { it.archiveFile })
         dependsOn(shadowJar)
