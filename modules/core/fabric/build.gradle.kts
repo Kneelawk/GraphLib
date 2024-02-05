@@ -136,6 +136,7 @@ tasks {
     javadoc {
         source(project(":core:xplat").sourceSets.main.get().allJava)
         exclude("com/kneelawk/graphlib/impl")
+        exclude("com/kneelawk/graphlib/fabric/impl")
 
 //        val minecraft_version: String by project
 //        val quilt_mappings: String by project
