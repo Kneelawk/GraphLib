@@ -18,7 +18,7 @@
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.multiblocklamps.MultiblockLampsMod"
+        "value": "com.kneelawk.multiblocklamps.fabric.MultiblockLampsFabric"
       }
     ]
   },

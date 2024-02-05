@@ -6,10 +6,10 @@ pluginManagement {
         maven("https://maven.fabricmc.net/") {
             name = "Fabric"
         }
-        maven ("https://maven.architectury.dev/") {
+        maven("https://maven.architectury.dev/") {
             name = "Architectury"
         }
-        maven ("https://maven.neoforged.net/releases/") {
+        maven("https://maven.neoforged.net/releases/") {
             name = "NeoForged"
         }
         gradlePluginPortal()
@@ -33,16 +33,32 @@ fun module(name: String) {
     project(":$name").projectDir = File(rootDir, "modules/${name.replace(':', '/')}")
 }
 
+fun module(name: String, vararg submodules: String) {
+    include(name)
+    project(":$name").projectDir = File(rootDir, "modules/$name")
+
+    for (submodule in submodules) {
+        include("$name:$submodule")
+        project(":$name:$submodule").projectDir = File(rootDir, "modules/$name/${submodule.replace(':', '/')}")
+    }
+}
+
 fun example(name: String) {
     include(name)
     project(":$name").projectDir = File(rootDir, "examples/${name.replace(':', '/')}")
 }
 
-module("core")
-module("core:xplat")
-module("core:xplat:mojmap")
-module("core:fabric")
-module("core:neoforge")
+fun example(name: String, vararg submodules: String) {
+    include(name)
+    project(":$name").projectDir = File(rootDir, "examples/$name")
+
+    for (submodule in submodules) {
+        include("$name:$submodule")
+        project(":$name:$submodule").projectDir = File(rootDir, "examples/$name/${submodule.replace(':', '/')}")
+    }
+}
+
+module("core", "xplat", "xplat:mojmap", "fabric", "neoforge")
 module("debugrender")
 module("syncing")
-example("multiblock-lamps")
+example("multiblock-lamps", "xplat", "fabric", "neoforge")

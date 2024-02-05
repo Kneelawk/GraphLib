@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +25,9 @@
 
 package com.kneelawk.multiblocklamps;
 
-import java.util.Collection;
+import java.util.ServiceLoader;
 
-import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.multiblocklamps.node.LampInputNode;
-import com.kneelawk.multiblocklamps.node.LampNode;
-
-public class LampLogic {
-    public static void onLampUpdated(NodeHolder<BlockNode> node) {
-        BlockGraph graph = node.getGraph();
-
-        boolean powered = false;
-        Collection<NodeHolder<LampInputNode>> inputs = graph.getCachedNodes(MultiblockLampsMod.LAMP_INPUT_CACHE);
-        for (NodeHolder<LampInputNode> lamp : inputs) {
-            if (lamp.getNode().isPowered(lamp)) {
-                powered = true;
-                break;
-            }
-        }
-
-        Collection<NodeHolder<LampNode>> lamps = graph.getCachedNodes(MultiblockLampsMod.LAMP_CACHE);
-        for (NodeHolder<LampNode> lamp : lamps) {
-            lamp.getNode().setLit(lamp, powered);
-        }
-    }
+public interface MLPlatform {
+    MLPlatform INSTANCE = ServiceLoader.load(MLPlatform.class).findFirst()
+        .orElseThrow(() -> new RuntimeException("Failed to load Multiblock Lamps platform"));
 }

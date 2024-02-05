@@ -23,45 +23,32 @@
  *
  */
 
-package com.kneelawk.multiblocklamps.node;
+package com.kneelawk.multiblocklamps;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import java.util.Collection;
 
-import net.minecraft.nbt.NbtElement;
-
+import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
-import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
-import com.kneelawk.multiblocklamps.LampLogic;
+import com.kneelawk.multiblocklamps.node.LampInputNode;
+import com.kneelawk.multiblocklamps.node.LampNode;
 
-import static com.kneelawk.multiblocklamps.MultiblockLampsMod.id;
+public class LampLogic {
+    public static void onLampUpdated(NodeHolder<BlockNode> node) {
+        BlockGraph graph = node.getGraph();
 
-public class LampConnectorNode implements BlockNode, FullWireBlockNode, LampInputNode {
-    public static final LampConnectorNode INSTANCE = new LampConnectorNode();
-    public static final BlockNodeType TYPE = BlockNodeType.of(id("lamp_connector"), () -> INSTANCE);
+        boolean powered = false;
+        Collection<NodeHolder<LampInputNode>> inputs = graph.getCachedNodes(MultiblockLamps.LAMP_INPUT_CACHE);
+        for (NodeHolder<LampInputNode> lamp : inputs) {
+            if (lamp.getNode().isPowered(lamp)) {
+                powered = true;
+                break;
+            }
+        }
 
-    private LampConnectorNode() {}
-
-    @Override
-    public @NotNull BlockNodeType getType() {
-        return TYPE;
-    }
-
-    @Override
-    public @Nullable NbtElement toTag() {
-        // This node is a singleton so no data needs to be encoded
-        return null;
-    }
-
-    @Override
-    public void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self) {
-        LampLogic.onLampUpdated(self);
-    }
-
-    @Override
-    public boolean isPowered(NodeHolder<LampInputNode> self) {
-        return self.getBlockWorld().isReceivingRedstonePower(self.getBlockPos());
+        Collection<NodeHolder<LampNode>> lamps = graph.getCachedNodes(MultiblockLamps.LAMP_CACHE);
+        for (NodeHolder<LampNode> lamp : lamps) {
+            lamp.getNode().setLit(lamp, powered);
+        }
     }
 }

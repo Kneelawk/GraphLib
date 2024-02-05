@@ -1,0 +1,25 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mods]]
+modId = "multiblock_lamps"
+version = "${version}"
+displayName = "Multiblock Lamps"
+authors = "Kneelawk"
+description = "A simple GraphLib example mod that adds connected lamps."
+logoFile = "assets/graphlib/icon-128.png"
+
+[[dependencies.multiblock_lamps]]
+modId = "neoforge"
+type = "REQUIRED"
+versionRange = "[20.4.148-beta,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.multiblock_lamps]]
+modId = "graphlib"
+type = "REQUIRED"
+versionRange = "[2-alpha,)"
+ordering = "NONE"
+side = "BOTH"

@@ -35,10 +35,10 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
 import com.kneelawk.multiblocklamps.LampLogic;
-import com.kneelawk.multiblocklamps.MultiblockLampsMod;
+import com.kneelawk.multiblocklamps.MultiblockLamps;
 import com.kneelawk.multiblocklamps.block.ConnectedLampBlock;
 
-import static com.kneelawk.multiblocklamps.MultiblockLampsMod.id;
+import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
 
 public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInputNode, LampNode {
     public static final ConnectedLampNode INSTANCE = new ConnectedLampNode();
@@ -73,9 +73,9 @@ public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInpu
 
     @Override
     public void setLit(NodeHolder<LampNode> self, boolean lit) {
-        if (self.getBlockState().isOf(MultiblockLampsMod.CONNECTED_LAMP_BLOCK)) {
+        if (self.getBlockState().isOf(MultiblockLamps.CONNECTED_LAMP_BLOCK)) {
             self.getBlockWorld().setBlockState(self.getBlockPos(),
-                MultiblockLampsMod.CONNECTED_LAMP_BLOCK.getDefaultState().with(ConnectedLampBlock.LIT, lit));
+                MultiblockLamps.CONNECTED_LAMP_BLOCK.getDefaultState().with(ConnectedLampBlock.LIT, lit));
         }
     }
 }
