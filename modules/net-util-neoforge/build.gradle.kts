@@ -31,7 +31,7 @@ plugins {
     id("com.kneelawk.versioning")
 }
 
-evaluationDependsOn(":core-xplat")
+evaluationDependsOn(":net-util-xplat")
 
 val maven_group: String by project
 group = maven_group
@@ -46,7 +46,7 @@ java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("gra
 
 architectury {
     platformSetupLoomIde()
-    fabric()
+    neoForge()
 }
 
 configurations {
@@ -54,12 +54,17 @@ configurations {
     create("shadowCommon")
     getByName("compileClasspath").extendsFrom(common)
     getByName("runtimeClasspath").extendsFrom(common)
-    getByName("developmentFabric").extendsFrom(common)
+    getByName("developmentNeoForge").extendsFrom(common)
+    create("dev") {
+        isCanBeConsumed = true
+        isCanBeResolved = false
+    }
 }
 
 repositories {
     mavenCentral()
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
+    maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
 
     mavenLocal()
 }
@@ -70,31 +75,20 @@ dependencies {
     val quilt_mappings: String by project
     mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:intermediary-v2")
 
-    // Using modCompileOnly & modLocalRuntime so that these dependencies don't get brought into any projects that depend
-    // on this one.
+    val neoforge_version: String by project
+    neoForge("net.neoforged:neoforge:$neoforge_version")
 
-    // Fabric Loader
-    val fabric_loader_version: String by project
-    modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
-    modLocalRuntime("net.fabricmc:fabric-loader:$fabric_loader_version")
-
-    // Fabric Api
-    val fapi_version: String by project
-    modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
-    modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
-
-    "common"(project(path = ":core-xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":core-xplat", configuration = "transformProductionFabric")) { isTransitive = false }
+    "common"(project(path = ":net-util-xplat", configuration = "namedElements")) { isTransitive = false }
+    "shadowCommon"(project(path = ":net-util-xplat", configuration = "transformProductionNeoForge")) {
+        isTransitive = false
+    }
 }
 
 tasks {
     processResources {
         inputs.property("version", project.version)
 
-        filesMatching("quilt.mod.json") {
-            expand(mapOf("version" to project.version))
-        }
-        filesMatching("fabric.mod.json") {
+        filesMatching("META-INF/mods.toml") {
             expand(mapOf("version" to project.version))
         }
     }
@@ -131,9 +125,9 @@ tasks {
     }
 
     javadoc {
-        source(project(":core-xplat").sourceSets.main.get().allJava)
+        source(project(":net-util-xplat").sourceSets.main.get().allJava)
         exclude("com/kneelawk/graphlib/impl")
-        exclude("com/kneelawk/graphlib/fabric/impl")
+        exclude("com/kneelawk/graphlib/neoforge/impl")
 
 //        val minecraft_version: String by project
 //        val quilt_mappings: String by project
@@ -149,7 +143,7 @@ tasks {
     }
 
     named("sourcesJar", Jar::class) {
-        val xplatSources = project(":core-xplat").tasks.named("sourcesJar", Jar::class)
+        val xplatSources = project(":net-util-xplat").tasks.named("sourcesJar", Jar::class)
         dependsOn(xplatSources)
         from(xplatSources.flatMap { task -> task.archiveFile.map { zipTree(it) } })
     }
@@ -159,6 +153,10 @@ tasks {
             setDependsOn(listOf("genSourcesWithVineflower"))
         }
     }
+}
+
+artifacts {
+    add("dev", tasks.shadowJar)
 }
 
 //components.named("java", AdhocComponentWithVariants::class) {

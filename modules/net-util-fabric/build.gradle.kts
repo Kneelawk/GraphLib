@@ -31,7 +31,7 @@ plugins {
     id("com.kneelawk.versioning")
 }
 
-evaluationDependsOn(":core-xplat")
+evaluationDependsOn(":net-util-xplat")
 
 val maven_group: String by project
 group = maven_group
@@ -83,8 +83,10 @@ dependencies {
     modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
-    "common"(project(path = ":core-xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":core-xplat", configuration = "transformProductionFabric")) { isTransitive = false }
+    "common"(project(path = ":net-util-xplat", configuration = "namedElements")) { isTransitive = false }
+    "shadowCommon"(project(path = ":net-util-xplat", configuration = "transformProductionFabric")) {
+        isTransitive = false
+    }
 }
 
 tasks {
@@ -131,7 +133,7 @@ tasks {
     }
 
     javadoc {
-        source(project(":core-xplat").sourceSets.main.get().allJava)
+        source(project(":net-util-xplat").sourceSets.main.get().allJava)
         exclude("com/kneelawk/graphlib/impl")
         exclude("com/kneelawk/graphlib/fabric/impl")
 
@@ -149,7 +151,7 @@ tasks {
     }
 
     named("sourcesJar", Jar::class) {
-        val xplatSources = project(":core-xplat").tasks.named("sourcesJar", Jar::class)
+        val xplatSources = project(":net-util-xplat").tasks.named("sourcesJar", Jar::class)
         dependsOn(xplatSources)
         from(xplatSources.flatMap { task -> task.archiveFile.map { zipTree(it) } })
     }

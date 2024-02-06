@@ -27,34 +27,22 @@ plugins {
     `maven-publish`
     id("architectury-plugin")
     id("dev.architectury.loom")
-    id("com.github.johnrengelman.shadow")
     id("com.kneelawk.versioning")
 }
-
-evaluationDependsOn(":core-xplat")
 
 val maven_group: String by project
 group = maven_group
 
 val archives_base_name: String by project
 base {
-    archivesName.set("$archives_base_name-${project.name}")
+    archivesName.set("$archives_base_name-${project.name}-intermediary")
 }
 
-base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
 architectury {
-    platformSetupLoomIde()
-    fabric()
-}
-
-configurations {
-    val common = create("common")
-    create("shadowCommon")
-    getByName("compileClasspath").extendsFrom(common)
-    getByName("runtimeClasspath").extendsFrom(common)
-    getByName("developmentFabric").extendsFrom(common)
+    val enabled_platforms: String by project
+    common(enabled_platforms.split(','))
 }
 
 repositories {
@@ -78,13 +66,7 @@ dependencies {
     modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
     modLocalRuntime("net.fabricmc:fabric-loader:$fabric_loader_version")
 
-    // Fabric Api
-    val fapi_version: String by project
-    modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
-    modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
-
-    "common"(project(path = ":core-xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":core-xplat", configuration = "transformProductionFabric")) { isTransitive = false }
+    testImplementation("junit:junit:4.13.2")
 }
 
 tasks {
@@ -97,18 +79,6 @@ tasks {
         filesMatching("fabric.mod.json") {
             expand(mapOf("version" to project.version))
         }
-    }
-
-    shadowJar {
-        exclude("architectury.common.json")
-        configurations = listOf(project.configurations["shadowCommon"])
-        archiveClassifier = "dev-shadow"
-    }
-
-    remapJar {
-        injectAccessWidener = true
-        inputFile.set(shadowJar.flatMap { it.archiveFile })
-        dependsOn(shadowJar)
     }
 
     withType<JavaCompile> {
@@ -131,9 +101,7 @@ tasks {
     }
 
     javadoc {
-        source(project(":core-xplat").sourceSets.main.get().allJava)
         exclude("com/kneelawk/graphlib/impl")
-        exclude("com/kneelawk/graphlib/fabric/impl")
 
 //        val minecraft_version: String by project
 //        val quilt_mappings: String by project
@@ -148,10 +116,8 @@ tasks {
         options.optionFiles(rootProject.file("javadoc-options.txt"))
     }
 
-    named("sourcesJar", Jar::class) {
-        val xplatSources = project(":core-xplat").tasks.named("sourcesJar", Jar::class)
-        dependsOn(xplatSources)
-        from(xplatSources.flatMap { task -> task.archiveFile.map { zipTree(it) } })
+    test {
+        useJUnit()
     }
 
     afterEvaluate {
@@ -161,15 +127,10 @@ tasks {
     }
 }
 
-//components.named("java", AdhocComponentWithVariants::class) {
-//    withVariantsFromConfiguration(project.configurations["shadowCommon"]) {
-//        skip()
-//    }
-//}
-
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
+            artifactId = "${project.name}-intermediary"
             from(components["java"])
         }
     }
