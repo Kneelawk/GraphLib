@@ -40,6 +40,10 @@ base {
 
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
+loom {
+    accessWidenerPath.set(file("src/main/resources/graphlib_debugrender.accesswidener"))
+}
+
 architectury {
     val enabled_platforms: String by project
     common(enabled_platforms.split(','))
@@ -65,6 +69,8 @@ dependencies {
     val fabric_loader_version: String by project
     modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
     modLocalRuntime("net.fabricmc:fabric-loader:$fabric_loader_version")
+
+    compileOnly(project(":core-xplat", configuration = "namedElements"))
 
     testImplementation("junit:junit:4.13.2")
 }

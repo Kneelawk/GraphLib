@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2023-2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,21 @@
  *
  */
 
-package com.kneelawk.graphlib.debugrender.impl.client;
-
-import java.util.ArrayList;
-import java.util.Set;
+package com.kneelawk.graphlib.debugrender.fabric.impl.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
-import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
+import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
+import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
+import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 
 @SuppressWarnings("unused")
 public class GraphLibDebugRenderFabricModClient implements ClientModInitializer {
-    private final LongSet loadedChunks = new LongLinkedOpenHashSet();
 
     /**
      * Runs the mod initializer on the client environment.
@@ -52,8 +48,6 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
 
         GLClientDebugNet.init();
 
-        DebugRenderer.init();
-
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             DebugRenderer.DEBUG_GRAPHS.clear();
             GraphLibDebugRenderClientImpl.GRAPHS_PER_CHUNK.clear();
@@ -63,34 +57,17 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
             GraphLibDebugRenderClientImpl.GRAPHS_PER_CHUNK.clear();
         });
 
-        ClientChunkEvents.CHUNK_LOAD.register((world, chunk) -> loadedChunks.add(chunk.getPos().toLong()));
-        ClientChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
-            long chunkLong = chunk.getPos().toLong();
-            loadedChunks.remove(chunkLong);
+        ClientChunkEvents.CHUNK_LOAD.register(
+            (world, chunk) -> GraphLibDebugRenderClientImpl.chunkLoad(chunk.getPos().toLong()));
+        ClientChunkEvents.CHUNK_UNLOAD.register(
+            (world, chunk) -> GraphLibDebugRenderClientImpl.chunkUnload(chunk.getPos().toLong()));
 
-            Set<DebugBlockGraph> graphs = GraphLibDebugRenderClientImpl.GRAPHS_PER_CHUNK.get(chunkLong);
-            if (graphs != null) {
-                for (DebugBlockGraph graph : new ArrayList<>(graphs)) {
-                    boolean anyChunkLoaded = false;
-                    for (long graphChunk : graph.chunks()) {
-                        if (loadedChunks.contains(graphChunk)) {
-                            anyChunkLoaded = true;
-                            break;
-                        }
-                    }
-
-                    if (!anyChunkLoaded) {
-                        Long2ObjectMap<DebugBlockGraph> universe =
-                            DebugRenderer.DEBUG_GRAPHS.get(graph.universeId());
-                        universe.remove(graph.graphId());
-                        if (universe.isEmpty()) {
-                            DebugRenderer.DEBUG_GRAPHS.remove(graph.universeId());
-                        }
-
-                        GraphLibDebugRenderClientImpl.removeGraphChunks(graph);
-                    }
-                }
-            }
-        });
+        // RenderToOverlay stuff
+        RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_LINES,
+            new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.getExpectedBufferSize()));
+        RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
+            new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.getExpectedBufferSize()));
+        RenderToOverlay.EVENT.register(
+            ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.camera().getPos(), ctx.consumers()));
     }
 }

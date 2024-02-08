@@ -59,6 +59,7 @@ configurations {
 repositories {
     mavenCentral()
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
+    maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
 
     mavenLocal()
 }
@@ -86,6 +87,15 @@ dependencies {
     "shadowCommon"(project(path = ":debugrender-xplat", configuration = "transformProductionFabric")) {
         isTransitive = false
     }
+
+    // GraphLib Core
+    compileOnly(project(":core-xplat", configuration = "namedElements"))
+    implementation(project(":core-fabric", configuration = "namedElements"))
+
+    // KModLib Overlay
+    val kml_version: String by project
+    modImplementation("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
+    include("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
 }
 
 tasks {

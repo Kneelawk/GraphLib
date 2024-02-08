@@ -32,21 +32,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
 
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -63,7 +61,6 @@ import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 import com.kneelawk.graphlib.debugrender.api.graph.SidedDebugBlockNode;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.mixin.api.RenderLayerHelper;
-import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 
 public final class DebugRenderer {
     /**
@@ -83,13 +80,6 @@ public final class DebugRenderer {
     private static class NPosData {
         int nodeCount = 0;
         List<Vec3d> endpoints = new ArrayList<>();
-    }
-
-    static {
-        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_LINES,
-            new BufferBuilder(Layers.DEBUG_LINES.getExpectedBufferSize()));
-        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_QUADS,
-            new BufferBuilder(Layers.DEBUG_QUADS.getExpectedBufferSize()));
     }
 
     public static final class Layers extends RenderPhase {
@@ -129,26 +119,20 @@ public final class DebugRenderer {
         );
     }
 
-    public static void init() {
-        RenderToOverlay.EVENT.register(DebugRenderer::render);
-    }
-
-    private static void render(WorldRenderContext context) {
+    public static void render(MatrixStack stack, Vec3d camPos, VertexConsumerProvider consumers) {
         if (DEBUG_GRAPHS.isEmpty()) {
             return;
         }
 
-        Vec3d camPos = context.camera().getPos();
-        MatrixStack stack = context.matrixStack();
         stack.push();
         stack.translate(-camPos.x, -camPos.y, -camPos.z);
 
-        renderGraphs(stack);
+        renderGraphs(stack, consumers);
 
         stack.pop();
     }
 
-    private static void renderGraphs(MatrixStack stack) {
+    private static void renderGraphs(MatrixStack stack, VertexConsumerProvider consumers) {
         Map<NPos, NPosData> nodeEndpoints = new HashMap<>();
 
         for (Long2ObjectMap<DebugBlockGraph> universe : DEBUG_GRAPHS.values()) {
@@ -202,14 +186,14 @@ public final class DebugRenderer {
                     stack.push();
                     stack.translate(origin.getX(), origin.getY(), origin.getZ());
 
-                    renderer.render(cbn, node, RenderToOverlay.CONSUMERS, stack, graph, endpoint, graphColor);
+                    renderer.render(cbn, node, consumers, stack, graph, endpoint, graphColor);
 
                     stack.pop();
 
                     links.addAll(node.connections());
                 }
 
-                VertexConsumer consumer = RenderToOverlay.CONSUMERS.getBuffer(Layers.DEBUG_LINES);
+                VertexConsumer consumer = consumers.getBuffer(Layers.DEBUG_LINES);
 
                 for (var link : links) {
                     var nodeA = link.first();

@@ -17,10 +17,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderFabricMod"
+      "com.kneelawk.graphlib.debugrender.fabric.impl.GraphLibDebugRenderFabricMod"
     ],
     "client": [
-      "com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderFabricModClient"
+      "com.kneelawk.graphlib.debugrender.fabric.impl.client.GraphLibDebugRenderFabricModClient"
     ]
   },
   "mixins": [

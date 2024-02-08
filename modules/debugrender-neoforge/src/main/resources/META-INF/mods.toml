@@ -1,0 +1,24 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mixins]]
+config = "graphlib_debugrender.mixins.json"
+
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"
+
+[[mods]]
+modId = "graphlib_debugrender"
+version = "${version}"
+displayName = "GraphLib Debug Render"
+authors = "Kneelawk"
+description = "Client-side rendering of graphs for debugging server-side graphs."
+logoFile = "assets/graphlib/icon-128.png"
+
+[[dependencies.graphlib_debugrender]]
+modId = "neoforge"
+type = "REQUIRED"
+versionRange = "[20.4.148-beta,)"
+ordering = "NONE"
+side = "BOTH"

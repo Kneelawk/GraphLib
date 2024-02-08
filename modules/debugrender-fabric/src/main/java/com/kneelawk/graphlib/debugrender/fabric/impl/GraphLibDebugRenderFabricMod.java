@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2023-2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,11 @@
  *
  */
 
-package com.kneelawk.graphlib.debugrender.impl;
+package com.kneelawk.graphlib.debugrender.fabric.impl;
 
 import net.fabricmc.api.ModInitializer;
 
+import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.command.GraphLibDebugRenderCommand;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.fabric.impl.event.InternalEvents;
