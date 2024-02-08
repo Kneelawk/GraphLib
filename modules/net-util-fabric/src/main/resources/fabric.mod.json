@@ -18,7 +18,7 @@
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.graphlib.netutil.fabric.impl.GraphLibFabricMod"
+        "value": "com.kneelawk.graphlib.netutil.fabric.impl.NetUtilFabric"
       }
     ]
   },
