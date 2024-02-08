@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "package": "com.kneelawk.graphlib.debugrender.impl.mixin.impl",
+  "compatibilityLevel": "JAVA_17",
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [ ],
+  "mixins": [ ]
+}

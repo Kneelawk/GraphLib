@@ -2,6 +2,9 @@ modLoader = "javafml"
 loaderVersion = "[1,)"
 license = "MIT"
 
+[[mixins]]
+config = "graphlib_net_util.mixins.json"
+
 [[mods]]
 modId = "graphlib_net_lib"
 version = "${version}"
