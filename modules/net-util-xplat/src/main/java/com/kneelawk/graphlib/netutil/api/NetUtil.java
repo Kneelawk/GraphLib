@@ -29,4 +29,5 @@ package com.kneelawk.graphlib.netutil.api;
  * GraphLib Net Util public interface.
  */
 public class NetUtil {
+    private NetUtil() {}
 }

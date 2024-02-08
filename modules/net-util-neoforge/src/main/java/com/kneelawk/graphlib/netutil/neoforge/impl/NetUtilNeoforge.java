@@ -28,7 +28,6 @@ package com.kneelawk.graphlib.netutil.neoforge.impl;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 
 import com.kneelawk.graphlib.netutil.impl.NetUtilImpl;
 

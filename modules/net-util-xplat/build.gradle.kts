@@ -101,7 +101,7 @@ tasks {
     }
 
     javadoc {
-        exclude("com/kneelawk/graphlib/impl")
+        exclude("com/kneelawk/graphlib/netutil/impl")
 
 //        val minecraft_version: String by project
 //        val quilt_mappings: String by project
