@@ -45,7 +45,6 @@ base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
 architectury {
-    platformSetupLoomIde()
     fabric()
 }
 
