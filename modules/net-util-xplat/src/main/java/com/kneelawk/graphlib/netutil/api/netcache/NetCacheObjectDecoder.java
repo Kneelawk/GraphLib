@@ -7,7 +7,7 @@ import net.minecraft.network.PacketByteBuf;
  *
  * @param <T> the type of object being cached.
  */
-public interface NetCacheObjectDecoder<T extends NetCacheObject> {
+public interface NetCacheObjectDecoder<T> {
     /**
      * Decodes an object from a packet so that it can be cached.
      *

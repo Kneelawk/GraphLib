@@ -23,41 +23,46 @@
  *
  */
 
-package com.kneelawk.graphlib.netutil.api;
+package com.kneelawk.graphlib.netutil.impl.mixin.api;
 
-import org.jetbrains.annotations.Nullable;
-
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.NetworkSide;
 import net.minecraft.network.listener.PacketListener;
-
-import com.kneelawk.graphlib.netutil.api.netcache.NetCache;
-import com.kneelawk.graphlib.netutil.impl.NetUtilImpl;
-import com.kneelawk.graphlib.netutil.impl.netcache.NetCacheImpl;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
+import net.minecraft.network.packet.payload.CustomPayload;
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket;
 
 /**
- * GraphLib Net Util public interface.
+ * Super-interface for all minecraft network handlers.
  */
-public class NetUtil {
-    private NetUtil() {}
+public interface MinecraftNetworkHandler extends PacketListener {
+    /**
+     * Gets the connection associated with this network handler.
+     *
+     * @return the connection associated with this network handler.
+     */
+    ClientConnection gl_getConnection();
 
     /**
-     * Gets the Net Util connection associated with the given Minecraft connection.
+     * Sends a packet to the underlying connection.
      *
-     * @param listener the Minecraft connection to get the associated Net Util connection for.
-     * @return the associated Net Util connection for the given Minecraft connection,
-     * or {@code null} if the connection is not a valid minecraft connection.
+     * @param packet the packet to send.
      */
-    public static @Nullable ConnectionExtra getExtra(PacketListener listener) {
-        return NetUtilImpl.getOrCreateConnection(listener);
+    default void gl_sendPacket(Packet<?> packet) {
+        gl_getConnection().send(packet);
     }
 
     /**
-     * Registers the net cache for synchronization.
-     * <p>
-     * Note, this <b>must</b> be called before any connections are opened.
+     * Sends a custom payload to the underlying connection.
      *
-     * @param cache the cache to register.
+     * @param payload the payload to send.
      */
-    public static void registerNetCache(NetCache<?> cache) {
-        NetCacheImpl.register(cache);
+    default void gl_sendPayload(CustomPayload payload) {
+        if (getSide() == NetworkSide.C2S) {
+            gl_sendPacket(new CustomPayloadS2CPacket(payload));
+        } else {
+            gl_sendPacket(new CustomPayloadC2SPacket(payload));
+        }
     }
 }

@@ -1,6 +1,5 @@
 package com.kneelawk.graphlib.netutil.impl.netcache;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -10,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
-import net.minecraft.network.listener.PacketListener;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.netutil.api.netcache.NetCache;
@@ -18,8 +16,16 @@ import com.kneelawk.graphlib.netutil.api.netcache.NetCache;
 public class NetCacheImpl {
     private static final Map<Identifier, NetCache<?>> registeredCaches = new Object2ObjectLinkedOpenHashMap<>();
     private static final ReadWriteLock cachesLock = new ReentrantReadWriteLock();
-    private static final Map<PacketListener, NetCacheHolder> holders = new Object2ObjectLinkedOpenHashMap<>();
-    private static final ReadWriteLock holdersLock = new ReentrantReadWriteLock();
+
+    public static NetCache<?> getCache(Identifier id) {
+        Lock lock = cachesLock.readLock();
+        lock.lock();
+        try {
+            return registeredCaches.get(id);
+        } finally {
+            lock.unlock();
+        }
+    }
 
     public static void register(NetCache<?> cache) {
         Lock lock = cachesLock.writeLock();
@@ -43,33 +49,5 @@ public class NetCacheImpl {
         } finally {
             lock.unlock();
         }
-    }
-
-    public NetCacheHolder getHolder(PacketListener connection) {
-        NetCacheHolder holder;
-        holdersLock.readLock().lock();
-        try {
-            holder = holders.get(connection);
-        } finally {
-            holdersLock.readLock().unlock();
-        }
-
-        if (holder != null) return holder;
-
-        holdersLock.writeLock().lock();
-        try {
-            return holders.computeIfAbsent(connection, _connection -> new NetCacheHolder(createCaches()));
-        } finally {
-            holdersLock.writeLock().unlock();
-        }
-    }
-
-    public void removeClosedConnections() {
-        holdersLock.readLock().lock();
-         try {
-             Iterator<PacketListener> keyIter =
-         } finally {
-             holdersLock.readLock().unlock();
-         }
     }
 }

@@ -9,9 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-import com.kneelawk.graphlib.netutil.api.netcache.NetCacheObject;
-
-public class SyncedObjectCache<T extends NetCacheObject> {
+public class SyncedObjectCache<T> {
     private final Int2ObjectMap<T> incoming = new Int2ObjectOpenHashMap<>();
     private final ReadWriteLock incomingLock = new ReentrantReadWriteLock();
     private final Object2IntMap<T> outgoing = new Object2IntOpenHashMap<>();
@@ -22,6 +20,16 @@ public class SyncedObjectCache<T extends NetCacheObject> {
         lock.lock();
         try {
             incoming.put(id, obj);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public boolean hasIncoming(int id) {
+        Lock lock = incomingLock.readLock();
+        lock.lock();
+        try {
+            return incoming.containsKey(id);
         } finally {
             lock.unlock();
         }
@@ -45,6 +53,10 @@ public class SyncedObjectCache<T extends NetCacheObject> {
         } finally {
             lock.unlock();
         }
+    }
+
+    public boolean hasOutgoing(T obj) {
+
     }
 
     public int getOutgoing(T obj) {

@@ -23,29 +23,21 @@
  *
  */
 
-package com.kneelawk.graphlib.netutil.neoforge.impl;
+package com.kneelawk.graphlib.netutil.api.netcache;
 
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+import net.minecraft.network.PacketByteBuf;
 
-import com.kneelawk.graphlib.netutil.impl.NetUtilImpl;
-import com.kneelawk.graphlib.netutil.impl.payload.AssociateIdPayload;
-import com.kneelawk.graphlib.netutil.neoforge.impl.client.NetUtilNeoforgeClient;
-
-@SuppressWarnings("unused")
-@Mod(NetUtilImpl.MOD_ID)
-public class NetUtilNeoforge {
-    public NetUtilNeoforge(IEventBus modBus) {
-        modBus.addListener(this::onRegisterPayloadHandlers);
-    }
-
-    private void onRegisterPayloadHandlers(RegisterPayloadHandlerEvent event) {
-        IPayloadRegistrar registrar = event.registrar(NetUtilImpl.MOD_ID);
-        registrar.common(AssociateIdPayload.ID, AssociateIdPayload::decode, handler -> {
-            handler.server(NetUtilNeoforgeServer::handleAssociateIdPayload)
-                .client(NetUtilNeoforgeClient::handleAssociateIdPayload);
-        });
-    }
+/**
+ * Encoder for encoding objects to be cached.
+ *
+ * @param <T> the type of object to be cached.
+ */
+public interface NetCacheObjectEncoder<T> {
+    /**
+     * Writes the object to the buffer.
+     *
+     * @param obj the object to encode.
+     * @param buf the buffer to write to.
+     */
+    void encode(T obj, PacketByteBuf buf);
 }

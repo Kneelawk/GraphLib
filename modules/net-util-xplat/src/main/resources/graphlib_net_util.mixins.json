@@ -1,10 +1,10 @@
 {
   "required": true,
-  "package": "com.kneelawk.graphlib.debugrender.impl.mixin.impl",
+  "package": "com.kneelawk.graphlib.netutil.impl.mixin.impl",
   "compatibilityLevel": "JAVA_17",
   "injectors": {
     "defaultRequire": 1
   },
-  "client": [ ],
-  "mixins": [ ]
+  "client": [ "AbstractClientNetworkHandlerMixin", "ClientLoginNetworkHandlerMixin" ],
+  "mixins": [ "AbstractServerNetworkHandlerMixin" ]
 }

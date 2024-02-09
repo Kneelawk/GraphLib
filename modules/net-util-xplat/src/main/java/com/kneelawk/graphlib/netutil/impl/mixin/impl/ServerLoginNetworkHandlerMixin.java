@@ -23,29 +23,25 @@
  *
  */
 
-package com.kneelawk.graphlib.netutil.neoforge.impl;
+package com.kneelawk.graphlib.netutil.impl.mixin.impl;
 
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
-import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 
-import com.kneelawk.graphlib.netutil.impl.NetUtilImpl;
-import com.kneelawk.graphlib.netutil.impl.payload.AssociateIdPayload;
-import com.kneelawk.graphlib.netutil.neoforge.impl.client.NetUtilNeoforgeClient;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.server.network.ServerLoginNetworkHandler;
 
-@SuppressWarnings("unused")
-@Mod(NetUtilImpl.MOD_ID)
-public class NetUtilNeoforge {
-    public NetUtilNeoforge(IEventBus modBus) {
-        modBus.addListener(this::onRegisterPayloadHandlers);
-    }
+import com.kneelawk.graphlib.netutil.impl.mixin.api.MinecraftNetworkHandler;
 
-    private void onRegisterPayloadHandlers(RegisterPayloadHandlerEvent event) {
-        IPayloadRegistrar registrar = event.registrar(NetUtilImpl.MOD_ID);
-        registrar.common(AssociateIdPayload.ID, AssociateIdPayload::decode, handler -> {
-            handler.server(NetUtilNeoforgeServer::handleAssociateIdPayload)
-                .client(NetUtilNeoforgeClient::handleAssociateIdPayload);
-        });
+@Mixin(ServerLoginNetworkHandler.class)
+public abstract class ServerLoginNetworkHandlerMixin implements MinecraftNetworkHandler {
+    @Shadow
+    @Final
+    ClientConnection connection;
+
+    @Override
+    public ClientConnection gl_getConnection() {
+        return connection;
     }
 }
