@@ -44,10 +44,6 @@ base {
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
-loom {
-    accessWidenerPath.set(project(":debugrender-xplat").file("src/main/resources/graphlib_debugrender.accesswidener"))
-}
-
 architectury {
     fabric()
 }
