@@ -54,6 +54,10 @@ configurations {
     getByName("compileClasspath").extendsFrom(common)
     getByName("runtimeClasspath").extendsFrom(common)
     getByName("developmentFabric").extendsFrom(common)
+    create("dev") {
+        isCanBeConsumed = true
+        isCanBeResolved = false
+    }
 }
 
 repositories {
@@ -170,6 +174,10 @@ tasks {
             setDependsOn(listOf("genSourcesWithVineflower"))
         }
     }
+}
+
+artifacts {
+    add("dev", tasks.shadowJar)
 }
 
 //components.named("java", AdhocComponentWithVariants::class) {

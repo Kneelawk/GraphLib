@@ -109,9 +109,8 @@ dependencies {
     include(project(":core-fabric"))
 
     // GraphLib debug renderer
-    compileOnly(project(":debugrender-xplat", configuration = "namedElements"))
-    implementation(project(":debugrender-fabric", configuration = "namedElements"))
-    include(project(":debugrender-fabric"))
+//    implementation(project(":debugrender-fabric", configuration = "dev"))
+//    include(project(":debugrender-fabric"))
 
     // KModLib Overlay
     val kml_version: String by project
