@@ -28,18 +28,33 @@ package com.kneelawk.graphlib.debugrender.neoforge.impl.client;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
 import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
+import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
 import com.kneelawk.graphlib.debugrender.impl.payload.DebuggingStopPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
+import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
-public class GLDRPayloadClient {
+public class GLDRModClient {
+    @SubscribeEvent
+    public static void onClientStartup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_LINES,
+                new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.getExpectedBufferSize()));
+            RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
+                new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.getExpectedBufferSize()));
+        });
+    }
+
     @SubscribeEvent
     public static void onRegisterPayloads(RegisterPayloadHandlerEvent event) {
         IPayloadRegistrar registrar = event.registrar(GraphLibDebugRenderImpl.MOD_ID);

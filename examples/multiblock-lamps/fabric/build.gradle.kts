@@ -108,10 +108,14 @@ dependencies {
     implementation(project(":core-fabric", configuration = "namedElements"))
     include(project(":core-fabric"))
 
-    // the debug renderer
-    runtimeOnly(project(":debugrender-xplat", configuration = "namedElements"))
-    runtimeOnly(project(":debugrender-fabric", configuration = "namedElements"))
+    // GraphLib debug renderer
+    compileOnly(project(":debugrender-xplat", configuration = "namedElements"))
+    implementation(project(":debugrender-fabric", configuration = "namedElements"))
     include(project(":debugrender-fabric"))
+
+    // KModLib Overlay
+    val kml_version: String by project
+    modRuntimeOnly("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
 
     // Mod Menu
     val mod_menu_version: String by project

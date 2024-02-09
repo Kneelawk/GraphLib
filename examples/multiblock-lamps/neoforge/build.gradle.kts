@@ -93,13 +93,21 @@ dependencies {
         )
     ) { isTransitive = false }
 
+    // GraphLib
     compileOnly(project(":core-xplat", configuration = "namedElements"))
     compileOnly(project(":core-neoforge", configuration = "namedElements"))
     runtimeOnly(project(":core-neoforge", configuration = "dev"))
     include(project(":core-neoforge"))
 
+    // GraphLib debug renderer
+    compileOnly(project(":debugrender-xplat", configuration = "namedElements"))
+    compileOnly(project(":debugrender-neoforge", configuration = "namedElements"))
     runtimeOnly(project(":debugrender-neoforge", configuration = "dev"))
     include(project(":debugrender-neoforge"))
+
+    // KModLib Overlay
+    val kml_version: String by project
+    modRuntimeOnly("com.kneelawk:kmodlib-overlay-neoforge:$kml_version")
 }
 
 tasks {

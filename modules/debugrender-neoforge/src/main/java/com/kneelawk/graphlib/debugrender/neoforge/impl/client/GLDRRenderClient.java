@@ -39,16 +39,6 @@ import com.kneelawk.kmodlib.client.overlay.RenderToOverlayEvent;
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class GLDRRenderClient {
     @SubscribeEvent
-    public static void onClientStartup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_LINES,
-                new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.getExpectedBufferSize()));
-            RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
-                new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.getExpectedBufferSize()));
-        });
-    }
-
-    @SubscribeEvent
     public static void onRenderToOverlay(RenderToOverlayEvent event) {
         DebugRenderer.render(event.getPoseStack(), event.getCamera().getPos(), event.getProvider());
     }
