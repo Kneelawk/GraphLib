@@ -36,6 +36,7 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
+import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
 import com.kneelawk.graphlib.debugrender.impl.payload.DebuggingStopPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
@@ -48,6 +49,9 @@ public class GLDRModClient {
     @SubscribeEvent
     public static void onClientStartup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> {
+            GraphLibDebugRenderClientImpl.register();
+
+            // Render to overlay stuff
             RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_LINES,
                 new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.getExpectedBufferSize()));
             RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
