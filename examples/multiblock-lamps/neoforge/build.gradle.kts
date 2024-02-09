@@ -97,6 +97,9 @@ dependencies {
     compileOnly(project(":core-neoforge", configuration = "namedElements"))
     runtimeOnly(project(":core-neoforge", configuration = "dev"))
     include(project(":core-neoforge"))
+
+    runtimeOnly(project(":debugrender-neoforge", configuration = "dev"))
+    include(project(":debugrender-neoforge"))
 }
 
 tasks {

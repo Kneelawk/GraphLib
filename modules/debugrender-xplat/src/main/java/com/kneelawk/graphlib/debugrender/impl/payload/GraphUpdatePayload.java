@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.debugrender.impl;
+package com.kneelawk.graphlib.debugrender.impl.payload;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jetbrains.annotations.Nullable;
-
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.payload.CustomPayload;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
+import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
-public class GraphLibDebugRenderImpl {
-    public static final String MOD_ID = "graphlib_debugrender";
+public record GraphUpdatePayload(PayloadHeader header, PayloadGraph graph) implements CustomPayload {
+    public static final Identifier ID = GraphLibDebugRenderImpl.id("graph_update");
 
-    public static final Map<Identifier, Map<Identifier, BlockNodeDebugPacketEncoder>> DEBUG_ENCODERS = new HashMap<>();
+    public static GraphUpdatePayload decode(PacketByteBuf buf) {
+        PayloadHeader header = PayloadHeader.decode(buf);
+        PayloadGraph graph = PayloadGraph.decode(buf);
 
-    public static @Nullable BlockNodeDebugPacketEncoder getDebugEncoder(Identifier universeId, Identifier typeId) {
-        Map<Identifier, BlockNodeDebugPacketEncoder> universeDecoders = DEBUG_ENCODERS.get(universeId);
-        if (universeDecoders == null) return null;
-        return universeDecoders.get(typeId);
+        return new GraphUpdatePayload(header, graph);
     }
 
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    @Override
+    public void write(PacketByteBuf buf) {
+        header.write(buf);
+        graph.write(buf);
+    }
+
+    @Override
+    public Identifier id() {
+        return ID;
     }
 }

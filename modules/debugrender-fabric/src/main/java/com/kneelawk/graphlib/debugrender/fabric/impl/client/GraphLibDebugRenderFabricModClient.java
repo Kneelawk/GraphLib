@@ -28,12 +28,17 @@ package com.kneelawk.graphlib.debugrender.fabric.impl.client;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 
 import com.mojang.blaze3d.vertex.BufferBuilder;
 
 import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
+import com.kneelawk.graphlib.debugrender.impl.payload.DebuggingStopPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
 import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 
 @SuppressWarnings("unused")
@@ -45,8 +50,6 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
     @Override
     public void onInitializeClient() {
         GraphLibDebugRenderClientImpl.register();
-
-        GLClientDebugNet.init();
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             DebugRenderer.DEBUG_GRAPHS.clear();
@@ -69,5 +72,19 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
             new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.getExpectedBufferSize()));
         RenderToOverlay.EVENT.register(
             ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.camera().getPos(), ctx.consumers()));
+
+        // packet receivers
+        ClientPlayNetworking.registerGlobalReceiver(GraphUpdatePayload.ID,
+            (client, handler, buf, responseSender) -> GLClientDebugNet.onGraphUpdate(GraphUpdatePayload.decode(buf),
+                client));
+        ClientPlayNetworking.registerGlobalReceiver(GraphUpdateBulkPayload.ID,
+            (client, handler, buf, responseSender) -> GLClientDebugNet.onGraphUpdateBulk(
+                GraphUpdateBulkPayload.decode(buf), client));
+        ClientPlayNetworking.registerGlobalReceiver(GraphDestroyPayload.ID,
+            (client, handler, buf, responseSender) -> GLClientDebugNet.onGraphDestroy(new GraphDestroyPayload(buf),
+                client));
+        ClientPlayNetworking.registerGlobalReceiver(DebuggingStopPayload.ID,
+            (client, handler, buf, responseSender) -> GLClientDebugNet.onDebugginStop(new DebuggingStopPayload(buf),
+                client));
     }
 }

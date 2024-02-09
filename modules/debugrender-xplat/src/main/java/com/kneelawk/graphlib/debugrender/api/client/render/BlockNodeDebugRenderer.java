@@ -29,26 +29,22 @@ import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
 
-import com.kneelawk.graphlib.debugrender.api.client.ClientBlockNodeHolder;
-import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Node;
+import com.kneelawk.graphlib.debugrender.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
+import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 
 /**
  * Handles rendering a {@link DebugBlockNode}.
  *
  * @param <N> the specific type of client block node that this renderer handles.
  */
-@Environment(EnvType.CLIENT)
 public interface BlockNodeDebugRenderer<N extends DebugBlockNode> {
     /**
      * Renders the client block node.

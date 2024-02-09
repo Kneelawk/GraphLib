@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +25,14 @@
 
 package com.kneelawk.graphlib.debugrender.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ServiceLoader;
 
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.network.packet.payload.CustomPayload;
+import net.minecraft.server.network.ServerPlayerEntity;
 
-import net.minecraft.util.Identifier;
+public interface GLDRPlatform {
+    GLDRPlatform INSTANCE = ServiceLoader.load(GLDRPlatform.class).findFirst()
+        .orElseThrow(() -> new RuntimeException("Failed to find platform object for GraphLib Debug Renderer"));
 
-import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
-
-public class GraphLibDebugRenderImpl {
-    public static final String MOD_ID = "graphlib_debugrender";
-
-    public static final Map<Identifier, Map<Identifier, BlockNodeDebugPacketEncoder>> DEBUG_ENCODERS = new HashMap<>();
-
-    public static @Nullable BlockNodeDebugPacketEncoder getDebugEncoder(Identifier universeId, Identifier typeId) {
-        Map<Identifier, BlockNodeDebugPacketEncoder> universeDecoders = DEBUG_ENCODERS.get(universeId);
-        if (universeDecoders == null) return null;
-        return universeDecoders.get(typeId);
-    }
-
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
-    }
+    void sendPlayPayload(ServerPlayerEntity player, CustomPayload payload);
 }

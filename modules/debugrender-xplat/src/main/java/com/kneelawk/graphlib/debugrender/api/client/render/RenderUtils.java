@@ -31,9 +31,6 @@ import com.google.common.math.IntMath;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -51,7 +48,6 @@ import com.kneelawk.graphlib.api.util.ColorUtils;
 /**
  * Assorted utilities for rendering debug block-nodes.
  */
-@Environment(EnvType.CLIENT)
 public final class RenderUtils {
     private RenderUtils() {
     }

@@ -25,6 +25,8 @@
 
 package com.kneelawk.graphlib.neoforge.impl.platform;
 
+import net.neoforged.neoforge.common.NeoForge;
+
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
 import net.minecraft.server.command.ServerCommandSource;
@@ -34,30 +36,35 @@ import net.minecraft.util.Identifier;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
+import com.kneelawk.graphlib.neoforge.api.event.GraphCreatedEvent;
+import com.kneelawk.graphlib.neoforge.api.event.GraphDestroyedEvent;
+import com.kneelawk.graphlib.neoforge.api.event.GraphUnloadingEvent;
+import com.kneelawk.graphlib.neoforge.api.event.GraphUpdatedEvent;
+import com.kneelawk.graphlib.neoforge.impl.event.AddUniverseSubcommandsEvent;
 
 public class GraphLibPlatformImpl implements GraphLibPlatform {
     @Override
     public void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
-
+        NeoForge.EVENT_BUS.post(new AddUniverseSubcommandsEvent(universe));
     }
 
     @Override
     public void fireGraphCreated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
-
+        NeoForge.EVENT_BUS.post(new GraphCreatedEvent(world, graphWorld, graph));
     }
 
     @Override
     public void fireGraphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
-
+        NeoForge.EVENT_BUS.post(new GraphUpdatedEvent(world, graphWorld, graph));
     }
 
     @Override
     public void fireGraphUnloading(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
-
+        NeoForge.EVENT_BUS.post(new GraphUnloadingEvent(world, graphWorld, graph));
     }
 
     @Override
     public void fireGraphDestroyed(ServerWorld world, GraphWorld graphWorld, long id) {
-
+        NeoForge.EVENT_BUS.post(new GraphDestroyedEvent(world, graphWorld, id));
     }
 }

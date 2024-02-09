@@ -32,9 +32,6 @@ import java.util.Set;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
@@ -54,7 +51,6 @@ import com.kneelawk.graphlib.debugrender.impl.client.debug.render.SimpleBlockNod
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.SimpleSidedBlockNodeDebugRenderer;
 import com.kneelawk.graphlib.impl.Constants;
 
-@Environment(EnvType.CLIENT)
 public class GraphLibDebugRenderClientImpl {
     private GraphLibDebugRenderClientImpl() {
     }
@@ -89,7 +85,8 @@ public class GraphLibDebugRenderClientImpl {
     }
 
     public static void register() {
-        GraphLibDebugRenderClient.registerDebugRendererForAllUniverses(Constants.id("simple"), SimpleDebugBlockNode.class,
+        GraphLibDebugRenderClient.registerDebugRendererForAllUniverses(Constants.id("simple"),
+            SimpleDebugBlockNode.class,
             SimpleBlockNodeDebugRenderer.INSTANCE);
         GraphLibDebugRenderClient.registerDebugRendererForAllUniverses(Constants.id("simple_sided"),
             SimpleDebugSidedBlockNode.class,

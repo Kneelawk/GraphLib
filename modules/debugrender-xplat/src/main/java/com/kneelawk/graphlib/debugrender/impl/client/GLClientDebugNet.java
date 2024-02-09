@@ -26,25 +26,20 @@
 package com.kneelawk.graphlib.debugrender.impl.client;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 
@@ -59,15 +54,19 @@ import com.kneelawk.graphlib.debugrender.impl.client.debug.graph.SimpleDebugBloc
 import com.kneelawk.graphlib.debugrender.impl.client.debug.graph.SimpleDebugBlockNode;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.graph.SimpleDebugSidedBlockNode;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
+import com.kneelawk.graphlib.debugrender.impl.payload.DebuggingStopPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadGraph;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadHeader;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadLink;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadNode;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
 
 public final class GLClientDebugNet {
     private GLClientDebugNet() {
     }
-
-    private static final Map<Integer, Identifier> idMap =
-        Collections.synchronizedMap(new Int2ObjectLinkedOpenHashMap<>());
 
     public static final BlockNodeDebugPacketDecoder DEFAULT_DECODER = buf -> {
         int hashCode = buf.readInt();
@@ -85,160 +84,107 @@ public final class GLClientDebugNet {
         };
     };
 
-    public static void init() {
-        ClientPlayNetworking.registerGlobalReceiver(GLDebugNet.ID_MAP_BULK_ID,
-            (client, handler, buf, responseSender) -> {
-                int size = buf.readVarInt();
+    public static void onGraphUpdate(GraphUpdatePayload payload, Executor clientEx) {
+        DebugBlockGraph debugGraph = decodeBlockGraph(payload.header(), payload.graph());
+        if (debugGraph == null) return;
 
-                for (int i = 0; i < size; i++) {
-                    Identifier id = buf.readIdentifier();
-                    int index = buf.readVarInt();
-                    idMap.put(index, id);
-                }
-            });
-        ClientPlayNetworking.registerGlobalReceiver(GLDebugNet.ID_MAP_PUT_ID,
-            (client, handler, buf, responseSender) -> {
-                Identifier id = buf.readIdentifier();
-                int index = buf.readVarInt();
-                idMap.put(index, id);
-            });
-
-        ClientPlayNetworking.registerGlobalReceiver(GLDebugNet.GRAPH_UPDATE_ID,
-            (client, handler, buf, responseSender) -> {
-                int universeInt = buf.readVarInt();
-                Identifier universeId = idMap.get(universeInt);
-                if (universeId == null) {
-                    GLLog.error("Received unknown universe id: {}", universeInt);
-                    return;
-                }
-
-                DebugBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
-                if (debugGraph == null) return;
-
-                client.execute(() -> addBlockGraph(universeId, debugGraph));
-            });
-        ClientPlayNetworking.registerGlobalReceiver(GLDebugNet.GRAPH_UPDATE_BULK_ID,
-            (client, handler, buf, responseSender) -> {
-                int universeInt = buf.readVarInt();
-                Identifier universeId = idMap.get(universeInt);
-                if (universeId == null) {
-                    GLLog.error("Received unknown universe id: {}", universeInt);
-                    return;
-                }
-
-                int graphCount = buf.readVarInt();
-                List<DebugBlockGraph> graphs = new ArrayList<>(graphCount);
-
-                for (int i = 0; i < graphCount; i++) {
-                    DebugBlockGraph debugGraph = decodeBlockGraph(universeId, buf);
-                    if (debugGraph == null) return;
-                    graphs.add(debugGraph);
-                }
-
-                client.execute(() -> {
-                    for (DebugBlockGraph debugGraph : graphs) {
-                        addBlockGraph(universeId, debugGraph);
-                    }
-                });
-            });
-        ClientPlayNetworking.registerGlobalReceiver(GLDebugNet.GRAPH_DESTROY_ID,
-            (client, handler, buf, responseSender) -> {
-                int universeInt = buf.readVarInt();
-                Identifier universeId = idMap.get(universeInt);
-                if (universeId == null) {
-                    GLLog.error("Received unknown universe id: {}", universeInt);
-                    return;
-                }
-
-                long graphId = buf.readLong();
-
-                client.execute(() -> {
-                    Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.get(universeId);
-                    if (universe == null) {
-                        GLLog.warn("Received GRAPH_DESTROY for un-tracked universe: {}", universeId);
-                        return;
-                    }
-
-                    DebugBlockGraph graph = universe.remove(graphId);
-
-                    if (universe.isEmpty()) {
-                        DebugRenderer.DEBUG_GRAPHS.remove(universeId);
-                    }
-
-                    if (graph != null) {
-                        GraphLibDebugRenderClientImpl.removeGraphChunks(graph);
-                    }
-                });
-            });
-        ClientPlayNetworking.registerGlobalReceiver(GLDebugNet.DEBUGGING_STOP_ID,
-            (client, handler, buf, responseSender) -> {
-                int universeInt = buf.readVarInt();
-
-                client.execute(() -> {
-                    Identifier universeId = idMap.get(universeInt);
-                    if (universeId == null) {
-                        GLLog.error("Received unknown universe id: {}", universeInt);
-                        return;
-                    }
-
-                    Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.remove(universeId);
-
-                    if (DebugRenderer.DEBUG_GRAPHS.isEmpty()) {
-                        GraphLibDebugRenderClientImpl.GRAPHS_PER_CHUNK.clear();
-                    } else {
-                        if (universe == null) {
-                            GLLog.warn("Received DEBUGGING_STOP for un-tracked universe: {}", universeId);
-                            return;
-                        }
-
-                        for (DebugBlockGraph graph : universe.values()) {
-                            GraphLibDebugRenderClientImpl.removeGraphChunks(graph);
-                        }
-                    }
-                });
-            });
+        clientEx.execute(() -> addBlockGraph(payload.header().universeId(), debugGraph));
     }
 
-    @Nullable
-    private static DebugBlockGraph decodeBlockGraph(Identifier universeId, PacketByteBuf buf) {
+    public static void onGraphUpdateBulk(GraphUpdateBulkPayload payload, Executor clientEx) {
+        List<DebugBlockGraph> graphs = new ObjectArrayList<>(payload.graphs().size());
+        for (PayloadGraph graph : payload.graphs()) {
+            DebugBlockGraph debugGraph = decodeBlockGraph(payload.header(), graph);
+            if (debugGraph == null) return;
+            graphs.add(debugGraph);
+        }
+
+        clientEx.execute(() -> {
+            for (DebugBlockGraph debugGraph : graphs) {
+                addBlockGraph(payload.header().universeId(), debugGraph);
+            }
+        });
+    }
+
+    public static void onGraphDestroy(GraphDestroyPayload payload, Executor clientEx) {
+        clientEx.execute(() -> {
+            Identifier universeId = payload.universeId();
+            long graphId = payload.graphId();
+
+            Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.get(universeId);
+            if (universe == null) {
+                GLLog.warn("Received GRAPH_DESTROY for un-tracked universe: {}", universeId);
+                return;
+            }
+
+            DebugBlockGraph graph = universe.remove(graphId);
+
+            if (universe.isEmpty()) {
+                DebugRenderer.DEBUG_GRAPHS.remove(universeId);
+            }
+
+            if (graph != null) {
+                GraphLibDebugRenderClientImpl.removeGraphChunks(graph);
+            }
+        });
+    }
+
+    public static void onDebugginStop(DebuggingStopPayload payload, Executor clientEx) {
+        clientEx.execute(() -> {
+            Identifier universeId = payload.universeId();
+
+            Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.remove(universeId);
+
+            if (DebugRenderer.DEBUG_GRAPHS.isEmpty()) {
+                GraphLibDebugRenderClientImpl.GRAPHS_PER_CHUNK.clear();
+            } else {
+                if (universe == null) {
+                    GLLog.warn("Received DEBUGGING_STOP for un-tracked universe: {}", universeId);
+                    return;
+                }
+
+                for (DebugBlockGraph graph : universe.values()) {
+                    GraphLibDebugRenderClientImpl.removeGraphChunks(graph);
+                }
+            }
+        });
+    }
+
+    private static @Nullable DebugBlockGraph decodeBlockGraph(PayloadHeader header, PayloadGraph payload) {
         Graph<ClientBlockNodeHolder, EmptyLinkKey> graph = new Graph<>();
         List<Node<ClientBlockNodeHolder, EmptyLinkKey>> nodeList = new ArrayList<>();
         LongSet chunks = new LongLinkedOpenHashSet();
 
-        long graphId = buf.readLong();
-
-        int nodeCount = buf.readVarInt();
-        for (int i = 0; i < nodeCount; i++) {
-            int nodeTypeInt = buf.readVarInt();
-            Identifier nodeTypeId = idMap.get(nodeTypeInt);
+        for (PayloadNode node : payload.nodes()) {
+            int nodeTypeInt = node.typeId();
+            Identifier nodeTypeId = header.palette().get(nodeTypeInt);
             if (nodeTypeId == null) {
                 GLLog.error("Received unknown BlockNode id: {}", nodeTypeInt);
                 return null;
             }
 
-            BlockPos pos = buf.readBlockPos();
-
-            BlockNodeDebugPacketDecoder decoder = GraphLibDebugRenderClientImpl.getDebugDecoder(universeId, nodeTypeId);
+            BlockNodeDebugPacketDecoder decoder =
+                GraphLibDebugRenderClientImpl.getDebugDecoder(header.universeId(), nodeTypeId);
             if (decoder == null) {
                 decoder = DEFAULT_DECODER;
             }
 
-            DebugBlockNode data = decoder.fromPacket(buf);
+            DebugBlockNode data = decoder.fromPacket(header.nodeData());
             if (data == null) {
                 GLLog.error("Unable to decode BlockNode packet for {}", nodeTypeId);
                 return null;
             }
 
-            Node<ClientBlockNodeHolder, EmptyLinkKey> node = graph.add(new ClientBlockNodeHolder(pos, data, graphId));
-            nodeList.add(node);
+            Node<ClientBlockNodeHolder, EmptyLinkKey> debugNode =
+                graph.add(new ClientBlockNodeHolder(node.pos(), data, payload.graphId()));
+            nodeList.add(debugNode);
 
-            chunks.add(ChunkPos.toLong(pos));
+            chunks.add(ChunkPos.toLong(node.pos()));
         }
 
-        int linkCount = buf.readVarInt();
-        for (int i = 0; i < linkCount; i++) {
-            int nodeAIndex = buf.readVarInt();
-            int nodeBIndex = buf.readVarInt();
+        for (PayloadLink link : payload.links()) {
+            int nodeAIndex = link.nodeA();
+            int nodeBIndex = link.nodeB();
 
             if (nodeAIndex < 0 || nodeAIndex >= nodeList.size()) {
                 GLLog.warn("Received packet with invalid links. Node {} points to nothing.", nodeAIndex);
@@ -256,15 +202,12 @@ public final class GLClientDebugNet {
             graph.link(nodeA, nodeB, EmptyLinkKey.INSTANCE);
         }
 
-        return new SimpleDebugBlockGraph(universeId, graphId, graph, chunks);
+        return new SimpleDebugBlockGraph(header.universeId(), payload.graphId(), graph, chunks);
     }
 
     private static void addBlockGraph(Identifier universeId, DebugBlockGraph debugGraph) {
-        Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.get(universeId);
-        if (universe == null) {
-            universe = new Long2ObjectLinkedOpenHashMap<>();
-            DebugRenderer.DEBUG_GRAPHS.put(universeId, universe);
-        }
+        Long2ObjectMap<DebugBlockGraph> universe =
+            DebugRenderer.DEBUG_GRAPHS.computeIfAbsent(universeId, k -> new Long2ObjectLinkedOpenHashMap<>());
 
         DebugBlockGraph oldGraph = universe.put(debugGraph.graphId(), debugGraph);
 

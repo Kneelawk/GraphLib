@@ -25,10 +25,54 @@
 
 package com.kneelawk.graphlib.debugrender.neoforge.impl;
 
+import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
+import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
+import com.kneelawk.graphlib.debugrender.impl.command.GraphLibDebugRenderCommand;
+import com.kneelawk.graphlib.neoforge.api.event.GraphCreatedEvent;
+import com.kneelawk.graphlib.neoforge.api.event.GraphDestroyedEvent;
+import com.kneelawk.graphlib.neoforge.api.event.GraphUpdatedEvent;
+import com.kneelawk.graphlib.neoforge.impl.event.AddUniverseSubcommandsEvent;
 
 @Mod(GraphLibDebugRenderImpl.MOD_ID)
+@Mod.EventBusSubscriber
 public class GraphLibDebugRenderNeoforgeMod {
+    @SubscribeEvent
+    public static void onServerStart(ServerStartingEvent event) {
+        GLDebugNet.onServerStart();
+    }
+
+    @SubscribeEvent
+    public static void onServerStop(ServerStoppedEvent event) {
+        GLDebugNet.onServerStop();
+    }
+
+    public static void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent event) {
+        GLDebugNet.onDisconnect(event.getEntity().getUuid());
+    }
+
+    @SubscribeEvent
+    public static void onGraphCreated(GraphCreatedEvent event) {
+        GLDebugNet.onGraphCreated(event.getWorld(), event.getGraphWorld(), event.getGraph());
+    }
+
+    @SubscribeEvent
+    public static void onGraphUpdated(GraphUpdatedEvent event) {
+        GLDebugNet.onGraphUpdated(event.getWorld(), event.getGraphWorld(), event.getGraph());
+    }
+
+    @SubscribeEvent
+    public static void onGraphDestroyed(GraphDestroyedEvent event) {
+        GLDebugNet.onGraphDestroyed(event.getWorld(), event.getGraphWorld(), event.getGraphId());
+    }
+
+    @SubscribeEvent
+    public static void onAddUniverseSubcommands(AddUniverseSubcommandsEvent event) {
+        GraphLibDebugRenderCommand.addUniverseSubcommands(event.universe);
+    }
 }

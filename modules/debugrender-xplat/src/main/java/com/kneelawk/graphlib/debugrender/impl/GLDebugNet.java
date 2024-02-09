@@ -25,10 +25,8 @@
 
 package com.kneelawk.graphlib.debugrender.impl;
 
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -37,18 +35,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import io.netty.buffer.Unpooled;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.payload.CustomPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -57,7 +54,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
-import com.kneelawk.graphlib.fabric.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
@@ -67,20 +63,20 @@ import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
-import com.kneelawk.graphlib.impl.Constants;
+import com.kneelawk.graphlib.debugrender.impl.payload.DebuggingStopPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadGraph;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadHeader;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadLink;
+import com.kneelawk.graphlib.debugrender.impl.payload.PayloadNode;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.util.ClassUtils;
 
 public final class GLDebugNet {
     private GLDebugNet() {
     }
-
-    public static final Identifier ID_MAP_BULK_ID = Constants.id("id_map_bulk");
-    public static final Identifier ID_MAP_PUT_ID = Constants.id("id_map_put");
-    public static final Identifier GRAPH_UPDATE_ID = Constants.id("graph_update");
-    public static final Identifier GRAPH_UPDATE_BULK_ID = Constants.id("graph_update_bulk");
-    public static final Identifier GRAPH_DESTROY_ID = Constants.id("graph_destroy");
-    public static final Identifier DEBUGGING_STOP_ID = Constants.id("debugging_stop");
 
     public static final BlockNodeDebugPacketEncoder DEFAULT_ENCODER = (node, self, buf) -> {
         // This keeps otherwise identical-looking client-side nodes separate.
@@ -106,23 +102,30 @@ public final class GLDebugNet {
     };
 
     private static final Multimap<UUID, Identifier> debuggingPlayers = LinkedHashMultimap.create();
-    private static final Object2IntMap<Identifier> idMap = new Object2IntLinkedOpenHashMap<>();
 
-    public static void init() {
-        ServerLifecycleEvents.SERVER_STARTING.register(server -> debuggingPlayers.clear());
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> debuggingPlayers.clear());
-        ServerPlayConnectionEvents.DISCONNECT.register(
-            (handler, server) -> debuggingPlayers.removeAll(handler.player.getUuid()));
+    public static void onServerStart() {
+        debuggingPlayers.clear();
+    }
 
-        GraphLibEvents.GRAPH_CREATED.register(GLDebugNet::sendBlockGraph);
-        GraphLibEvents.GRAPH_UPDATED.register(GLDebugNet::sendBlockGraph);
-        GraphLibEvents.GRAPH_DESTROYED.register((world, graphWorld, id) -> {
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
-            buf.writeLong(id);
+    public static void onServerStop() {
+        debuggingPlayers.clear();
+    }
 
-            sendToDebuggingPlayers(world, graphWorld.getUniverse().getId(), GRAPH_DESTROY_ID, buf);
-        });
+    public static void onDisconnect(UUID playerId) {
+        debuggingPlayers.removeAll(playerId);
+    }
+
+    public static void onGraphCreated(ServerWorld serverWorld, GraphWorld graphWorld, BlockGraph blockGraph) {
+        sendBlockGraph(serverWorld, graphWorld, blockGraph);
+    }
+
+    public static void onGraphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+        sendBlockGraph(world, graphWorld, graph);
+    }
+
+    public static void onGraphDestroyed(ServerWorld world, GraphWorld graphWorld, long id) {
+        Identifier universeId = graphWorld.getUniverse().getId();
+        sendToDebuggingPlayers(world, universeId, new GraphDestroyPayload(universeId, id));
     }
 
     public static void startDebuggingPlayer(ServerPlayerEntity player, GraphUniverse universe) {
@@ -132,11 +135,11 @@ public final class GLDebugNet {
             return;
         }
 
-        sendIdMap(player);
         debuggingPlayers.put(player.getUuid(), universe.getId());
 
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt(world, universe.getId()));
+        PayloadHeader header = new PayloadHeader(universe.getId(), new Int2ObjectLinkedOpenHashMap<>(),
+            new PacketByteBuf(Unpooled.buffer()));
+        Object2IntMap<Identifier> paletteLookup = new Object2IntOpenHashMap<>();
 
         MinecraftServer server = world.getServer();
         GraphWorld graphWorld = universe.getServerGraphWorld(world);
@@ -163,13 +166,15 @@ public final class GLDebugNet {
         List<BlockGraph> graphs =
             graphIds.longStream().mapToObj(graphWorld::getGraph).filter(Objects::nonNull).toList();
 
-        buf.writeVarInt(graphs.size());
-
+        List<PayloadGraph> payloadGraphs = new ObjectArrayList<>();
         for (BlockGraph graph : graphs) {
-            encodeBlockGraph(world, graphWorld, graph, buf);
+            PayloadGraph payloadGraph = encodeBlockGraph(header, paletteLookup, graph);
+            payloadGraphs.add(payloadGraph);
         }
 
-        ServerPlayNetworking.send(player, GRAPH_UPDATE_BULK_ID, buf);
+        GraphUpdateBulkPayload payload = new GraphUpdateBulkPayload(header, payloadGraphs);
+
+        GLDRPlatform.INSTANCE.sendPlayPayload(player, payload);
     }
 
     public static void stopDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
@@ -179,38 +184,9 @@ public final class GLDebugNet {
             return;
         }
 
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt(world, universe));
-
-        ServerPlayNetworking.send(player, DEBUGGING_STOP_ID, buf);
+        GLDRPlatform.INSTANCE.sendPlayPayload(player, new DebuggingStopPayload(universe));
 
         debuggingPlayers.remove(player.getUuid(), universe);
-    }
-
-    private static void sendIdMap(ServerPlayerEntity player) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(idMap.size());
-        for (var entry : idMap.object2IntEntrySet()) {
-            buf.writeIdentifier(entry.getKey());
-            buf.writeVarInt(entry.getIntValue());
-        }
-        ServerPlayNetworking.send(player, ID_MAP_BULK_ID, buf);
-    }
-
-    private static int getIdentifierInt(ServerWorld world, Identifier id) {
-        if (idMap.containsKey(id)) {
-            return idMap.getInt(id);
-        } else {
-            int index = idMap.size();
-            idMap.put(id, index);
-
-            PacketByteBuf buf = PacketByteBufs.create();
-            buf.writeIdentifier(id);
-            buf.writeVarInt(index);
-            sendToDebuggingPlayers(world, ID_MAP_PUT_ID, buf);
-
-            return index;
-        }
     }
 
     private static void sendBlockGraph(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
@@ -218,14 +194,18 @@ public final class GLDebugNet {
             return;
         }
 
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(getIdentifierInt(world, graphWorld.getUniverse().getId()));
+        PayloadHeader header = new PayloadHeader(graphWorld.getUniverse().getId(), new Int2ObjectLinkedOpenHashMap<>(),
+            new PacketByteBuf(Unpooled.buffer()));
+        Object2IntMap<Identifier> paletteLookup = new Object2IntOpenHashMap<>();
 
-        encodeBlockGraph(world, graphWorld, graph, buf);
+        PayloadGraph payloadGraph = encodeBlockGraph(header, paletteLookup, graph);
+
+        GraphUpdatePayload payload = new GraphUpdatePayload(header, payloadGraph);
 
         Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
         graph.getChunks().forEachOrdered(section -> {
-            for (ServerPlayerEntity player : PlayerLookup.tracking(world, section.toChunkPos())) {
+            for (ServerPlayerEntity player : world.getChunkManager().delegate.getPlayersWatchingChunk(
+                section.toChunkPos(), false)) {
                 if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse().getId())) {
                     sendTo.add(player);
                 }
@@ -233,37 +213,41 @@ public final class GLDebugNet {
         });
 
         for (ServerPlayerEntity player : sendTo) {
-            ServerPlayNetworking.send(player, GRAPH_UPDATE_ID, buf);
+            GLDRPlatform.INSTANCE.sendPlayPayload(player, payload);
         }
     }
 
-    private static void encodeBlockGraph(ServerWorld world, GraphWorld graphWorld, BlockGraph graph,
-                                         PacketByteBuf buf) {
-        buf.writeLong(graph.getId());
-
+    private static PayloadGraph encodeBlockGraph(PayloadHeader header, Object2IntMap<Identifier> paletteLookup,
+                                                 BlockGraph graph) {
         AtomicInteger index = new AtomicInteger();
-        Map<NodePos, Integer> indexMap = new HashMap<>();
+        Object2IntMap<NodePos> indexMap = new Object2IntOpenHashMap<>();
         Set<LinkPos> distinct = new LinkedHashSet<>();
 
-        buf.writeVarInt(graph.size());
+        List<PayloadNode> nodes = new ObjectArrayList<>();
         graph.getNodes().forEachOrdered(node -> {
             Identifier typeId = node.getNode().getType().getId();
-            buf.writeVarInt(getIdentifierInt(world, typeId));
-            buf.writeBlockPos(node.getBlockPos());
+            int typeIdInt;
+            if (paletteLookup.containsKey(typeId)) {
+                typeIdInt = paletteLookup.getInt(typeId);
+            } else {
+                typeIdInt = header.palette().size();
+                paletteLookup.put(typeId, typeIdInt);
+                header.palette().put(typeIdInt, typeId);
+            }
 
-            BlockNodeDebugPacketEncoder encoder =
-                GraphLibDebugRenderImpl.getDebugEncoder(graphWorld.getUniverse().getId(), typeId);
+            BlockNodeDebugPacketEncoder encoder = GraphLibDebugRenderImpl.getDebugEncoder(header.universeId(), typeId);
             if (encoder == null) {
                 encoder = DEFAULT_ENCODER;
             }
 
-            encoder.encode(node.getNode(), node, buf);
+            encoder.encode(node.getNode(), node, header.nodeData());
+
             indexMap.put(node.getPos(), index.getAndIncrement());
             node.getConnections().stream().map(LinkHolder::getPos).forEach(distinct::add);
+            nodes.add(new PayloadNode(typeIdInt, node.getBlockPos()));
         });
 
-        PacketByteBuf linkBuf = PacketByteBufs.create();
-        int written = 0;
+        List<PayloadLink> links = new ObjectArrayList<>();
         for (LinkPos link : distinct) {
             if (!indexMap.containsKey(link.first())) {
                 GLLog.warn(
@@ -277,32 +261,19 @@ public final class GLDebugNet {
                     graph.getId(), link.first(), link.second());
                 continue;
             }
-            linkBuf.writeVarInt(indexMap.get(link.first()));
-            linkBuf.writeVarInt(indexMap.get(link.second()));
-            written++;
+            links.add(new PayloadLink(indexMap.getInt(link.first()), indexMap.getInt(link.second())));
         }
-        buf.writeVarInt(written);
-        buf.writeBytes(linkBuf);
+
+        return new PayloadGraph(graph.getId(), nodes, links);
     }
 
-    private static void sendToDebuggingPlayers(ServerWorld world, Identifier packetId, PacketByteBuf buf) {
-        PlayerManager manager = world.getServer().getPlayerManager();
-        for (UUID playerId : debuggingPlayers.keySet()) {
-            ServerPlayerEntity player = manager.getPlayer(playerId);
-            if (player != null) {
-                ServerPlayNetworking.send(player, packetId, buf);
-            }
-        }
-    }
-
-    private static void sendToDebuggingPlayers(ServerWorld world, Identifier universe, Identifier packetId,
-                                               PacketByteBuf buf) {
+    private static void sendToDebuggingPlayers(ServerWorld world, Identifier universe, CustomPayload payload) {
         PlayerManager manager = world.getServer().getPlayerManager();
         for (UUID playerId : debuggingPlayers.keySet()) {
             if (debuggingPlayers.containsEntry(playerId, universe)) {
                 ServerPlayerEntity player = manager.getPlayer(playerId);
                 if (player != null) {
-                    ServerPlayNetworking.send(player, packetId, buf);
+                    GLDRPlatform.INSTANCE.sendPlayPayload(player, payload);
                 }
             }
         }

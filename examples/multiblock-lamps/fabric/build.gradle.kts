@@ -103,9 +103,15 @@ dependencies {
         )
     ) { isTransitive = false }
 
+    // GraphLib
     compileOnly(project(":core-xplat", configuration = "namedElements"))
     implementation(project(":core-fabric", configuration = "namedElements"))
     include(project(":core-fabric"))
+
+    // the debug renderer
+    runtimeOnly(project(":debugrender-xplat", configuration = "namedElements"))
+    runtimeOnly(project(":debugrender-fabric", configuration = "namedElements"))
+    include(project(":debugrender-fabric"))
 
     // Mod Menu
     val mod_menu_version: String by project

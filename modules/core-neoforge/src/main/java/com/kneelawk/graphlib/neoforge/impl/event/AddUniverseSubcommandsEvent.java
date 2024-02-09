@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,19 @@
  *
  */
 
-package com.kneelawk.graphlib.debugrender.impl;
+package com.kneelawk.graphlib.neoforge.impl.event;
 
-import java.util.HashMap;
-import java.util.Map;
+import net.neoforged.bus.api.Event;
 
-import org.jetbrains.annotations.Nullable;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
+public class AddUniverseSubcommandsEvent extends Event {
+    public final RequiredArgumentBuilder<ServerCommandSource, Identifier> universe;
 
-public class GraphLibDebugRenderImpl {
-    public static final String MOD_ID = "graphlib_debugrender";
-
-    public static final Map<Identifier, Map<Identifier, BlockNodeDebugPacketEncoder>> DEBUG_ENCODERS = new HashMap<>();
-
-    public static @Nullable BlockNodeDebugPacketEncoder getDebugEncoder(Identifier universeId, Identifier typeId) {
-        Map<Identifier, BlockNodeDebugPacketEncoder> universeDecoders = DEBUG_ENCODERS.get(universeId);
-        if (universeDecoders == null) return null;
-        return universeDecoders.get(typeId);
-    }
-
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    public AddUniverseSubcommandsEvent(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
+        this.universe = universe;
     }
 }

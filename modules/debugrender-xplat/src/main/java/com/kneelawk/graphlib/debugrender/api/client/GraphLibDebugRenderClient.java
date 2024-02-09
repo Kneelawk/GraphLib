@@ -27,9 +27,6 @@ package com.kneelawk.graphlib.debugrender.api.client;
 
 import java.util.HashMap;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.debugrender.api.GraphLibDebugRender;
@@ -43,7 +40,6 @@ import com.kneelawk.graphlib.debugrender.impl.client.debug.render.BlockNodeDebug
  * Graph Lib Client-Side Public API. This class contains static methods and fields for registering
  * {@link BlockNodeDebugPacketDecoder}s and renderers.
  */
-@Environment(EnvType.CLIENT)
 public final class GraphLibDebugRenderClient {
     private GraphLibDebugRenderClient() {
     }
