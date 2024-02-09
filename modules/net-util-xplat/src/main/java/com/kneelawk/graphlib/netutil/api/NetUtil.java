@@ -25,39 +25,9 @@
 
 package com.kneelawk.graphlib.netutil.api;
 
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.network.listener.PacketListener;
-
-import com.kneelawk.graphlib.netutil.api.netcache.NetCache;
-import com.kneelawk.graphlib.netutil.impl.NetUtilImpl;
-import com.kneelawk.graphlib.netutil.impl.netcache.NetCacheImpl;
-
 /**
  * GraphLib Net Util public interface.
  */
 public class NetUtil {
     private NetUtil() {}
-
-    /**
-     * Gets the Net Util connection associated with the given Minecraft connection.
-     *
-     * @param listener the Minecraft connection to get the associated Net Util connection for.
-     * @return the associated Net Util connection for the given Minecraft connection,
-     * or {@code null} if the connection is not a valid minecraft connection.
-     */
-    public static @Nullable ConnectionExtra getExtra(PacketListener listener) {
-        return NetUtilImpl.getOrCreateConnection(listener);
-    }
-
-    /**
-     * Registers the net cache for synchronization.
-     * <p>
-     * Note, this <b>must</b> be called before any connections are opened.
-     *
-     * @param cache the cache to register.
-     */
-    public static void registerNetCache(NetCache<?> cache) {
-        NetCacheImpl.register(cache);
-    }
 }
