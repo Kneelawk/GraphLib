@@ -8,7 +8,7 @@ version = "${version}"
 displayName = "Multiblock Lamps"
 authors = "Kneelawk"
 description = "A simple GraphLib example mod that adds connected lamps."
-logoFile = "assets/graphlib/icon-128.png"
+logoFile = "assets/multiblock_lamps/icon-128.png"
 
 [[dependencies.multiblock_lamps]]
 modId = "neoforge"

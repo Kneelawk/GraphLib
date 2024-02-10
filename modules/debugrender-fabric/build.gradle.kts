@@ -54,10 +54,6 @@ configurations {
     getByName("compileClasspath").extendsFrom(common)
     getByName("runtimeClasspath").extendsFrom(common)
     getByName("developmentFabric").extendsFrom(common)
-    create("dev") {
-        isCanBeConsumed = true
-        isCanBeResolved = false
-    }
 }
 
 repositories {
@@ -100,10 +96,15 @@ dependencies {
     val kml_version: String by project
     modImplementation("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
     include("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
+
+    // KModLib RenderLayer
+    include("com.kneelawk:kmodlib-renderlayer:$kml_version")
 }
 
 tasks {
     processResources {
+        from(project(":debugrender-xplat").sourceSets.main.map { it.resources.asFileTree })
+
         inputs.property("version", project.version)
 
         filesMatching("quilt.mod.json") {
@@ -174,10 +175,6 @@ tasks {
             setDependsOn(listOf("genSourcesWithVineflower"))
         }
     }
-}
-
-artifacts {
-    add("dev", tasks.shadowJar)
 }
 
 //components.named("java", AdhocComponentWithVariants::class) {

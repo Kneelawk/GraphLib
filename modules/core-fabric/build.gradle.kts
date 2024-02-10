@@ -88,6 +88,8 @@ dependencies {
 
 tasks {
     processResources {
+        from(project(":core-xplat").sourceSets.main.map { it.resources.asFileTree })
+
         inputs.property("version", project.version)
 
         filesMatching("quilt.mod.json") {

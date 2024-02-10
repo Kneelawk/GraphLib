@@ -14,7 +14,7 @@ version = "${version}"
 displayName = "GraphLib Debug Render"
 authors = "Kneelawk"
 description = "Client-side rendering of graphs for debugging server-side graphs."
-logoFile = "assets/graphlib/icon-128.png"
+logoFile = "assets/graphlib_debugrender/icon-128.png"
 
 [[dependencies.graphlib_debugrender]]
 modId = "neoforge"

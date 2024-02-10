@@ -26,7 +26,6 @@
   "mixins": [
     "graphlib_debugrender.mixins.json"
   ],
-  "accessWidener": "graphlib_debugrender.accesswidener",
   "depends": {
     "graphlib": "*",
     "fabricloader": ">=0.14.0",

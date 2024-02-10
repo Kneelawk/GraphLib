@@ -105,16 +105,19 @@ dependencies {
 
     // GraphLib
     compileOnly(project(":core-xplat", configuration = "namedElements"))
+    localRuntime(project(":core-xplat", configuration = "namedElements"))
     implementation(project(":core-fabric", configuration = "namedElements"))
     include(project(":core-fabric"))
 
     // GraphLib debug renderer
-//    implementation(project(":debugrender-fabric", configuration = "dev"))
-//    include(project(":debugrender-fabric"))
+    localRuntime(project(":debugrender-xplat", configuration = "namedElements"))
+    runtimeOnly(project(":debugrender-fabric", configuration = "namedElements"))
+    include(project(":debugrender-fabric"))
 
     // KModLib Overlay
     val kml_version: String by project
     modRuntimeOnly("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
+    modRuntimeOnly("com.kneelawk:kmodlib-renderlayer:$kml_version")
 
     // Mod Menu
     val mod_menu_version: String by project
@@ -123,6 +126,8 @@ dependencies {
 
 tasks {
     processResources {
+        from(project(":multiblock-lamps:xplat").sourceSets.main.map { it.resources.asFileTree })
+
         inputs.property("version", project.version)
 
         filesMatching("quilt.mod.json") {

@@ -40,10 +40,6 @@ base {
 
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
 
-loom {
-    accessWidenerPath.set(file("src/main/resources/graphlib_debugrender.accesswidener"))
-}
-
 architectury {
     val enabled_platforms: String by project
     common(enabled_platforms.split(','))
@@ -52,6 +48,7 @@ architectury {
 repositories {
     mavenCentral()
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
+    maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
 
     mavenLocal()
 }
@@ -71,6 +68,9 @@ dependencies {
     modLocalRuntime("net.fabricmc:fabric-loader:$fabric_loader_version")
 
     compileOnly(project(":core-xplat", configuration = "namedElements"))
+
+    val kml_version: String by project
+    modImplementation("com.kneelawk:kmodlib-renderlayer:$kml_version")
 
     testImplementation("junit:junit:4.13.2")
 }

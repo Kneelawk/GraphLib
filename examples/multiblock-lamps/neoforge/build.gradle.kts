@@ -112,6 +112,8 @@ dependencies {
 
 tasks {
     processResources {
+        from(project(":multiblock-lamps:xplat").sourceSets.main.map { it.resources.asFileTree })
+
         inputs.property("version", project.version)
 
         filesMatching("META-INF/mods.toml") {

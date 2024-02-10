@@ -85,6 +85,8 @@ dependencies {
 
 tasks {
     processResources {
+        from(project(":net-util-xplat").sourceSets.main.map { it.resources.asFileTree })
+
         inputs.property("version", project.version)
 
         filesMatching("META-INF/mods.toml") {
