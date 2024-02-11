@@ -4,7 +4,7 @@ name: release
 env:
   PROJECT_NAME: GraphLib
   JAVADOC_NAME: graphlib
-  MAVEN_IDENTIFIER: 'com.kneelawk:graphlib'
+  MAVEN_URL: 'https://kneelawk.com/maven#com/kneelawk/graphlib'
 
 # Variant: github, maven+javadoc, discord
 
@@ -112,7 +112,7 @@ jobs:
             let changesStart = lines.findIndex(line => line.startsWith('*'));
             lines.splice(0, changesStart);
             lines.unshift(`**${process.env.PROJECT_NAME} ${versions[0]} has been released for Minecraft ${versions[1]}!**`, '', '__Changes:__');
-            lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", `With the identifier: \`${process.env.MAVEN_IDENTIFIER}:${mavenVersion}\``);
+            lines.push(`Available on Kneelawk's maven at: ${process.env.MAVEN_URL}`);
             lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/javadoc/index.html`);
             return lines.join('\n');
           result-encoding: string
