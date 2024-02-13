@@ -25,7 +25,38 @@
 
 package com.kneelawk.multiblocklamps.fabric;
 
+import java.util.function.Supplier;
+
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+
+import com.mojang.serialization.MapCodec;
+
+import net.minecraft.block.Block;
+import net.minecraft.item.BlockItem;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
+
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.multiblocklamps.MLPlatform;
 
+import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
+
 public class MLPlatformImpl implements MLPlatform {
+    @Override
+    public <T extends Block> Supplier<T> registerBlockWithItem(String path, Supplier<T> creator,
+                                                               MapCodec<? extends Block> codec) {
+        Identifier id = id(path);
+        T block = creator.get();
+        MultiblockLampsFabric.BLOCKS.add(new Pair<>(id, block));
+        MultiblockLampsFabric.ITEMS.add(new Pair<>(id, new BlockItem(block, new FabricItemSettings())));
+        MultiblockLampsFabric.BLOCK_TYPES.add(new Pair<>(id, codec));
+        return () -> block;
+    }
+
+    @Override
+    public Supplier<GraphUniverse> registerUniverse(String path, Supplier<GraphUniverse> creator) {
+        GraphUniverse universe = creator.get();
+        MultiblockLampsFabric.UNIVERSES.add(new Pair<>(id(path), universe));
+        return () -> universe;
+    }
 }

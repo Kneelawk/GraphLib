@@ -25,40 +25,51 @@
 
 package com.kneelawk.multiblocklamps.fabric;
 
+import java.util.List;
+
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 
-import net.minecraft.item.BlockItem;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
+import com.mojang.serialization.MapCodec;
+
+import net.minecraft.block.Block;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
 
-import com.kneelawk.multiblocklamps.MultiblockLamps;
-import com.kneelawk.multiblocklamps.block.ConnectedLampBlock;
-import com.kneelawk.multiblocklamps.block.LampConnectorBlock;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.fabric.api.GraphLibFabric;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.CONNECTED_LAMP_BLOCK;
 import static com.kneelawk.multiblocklamps.MultiblockLamps.LAMP_CONNECTOR_BLOCK;
-import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
 
 public class MultiblockLampsFabric implements ModInitializer {
+    public static final List<Pair<Identifier, GraphUniverse>> UNIVERSES = new ObjectArrayList<>();
+    public static final List<Pair<Identifier, Block>> BLOCKS = new ObjectArrayList<>();
+    public static final List<Pair<Identifier, Item>> ITEMS = new ObjectArrayList<>();
+    public static final List<Pair<Identifier, MapCodec<? extends Block>>> BLOCK_TYPES = new ObjectArrayList<>();
+
     @Override
     public void onInitialize() {
-        MultiblockLamps.registerUniverse();
-
-        Registry.register(Registries.BLOCK, id("connected_lamp"), CONNECTED_LAMP_BLOCK);
-        Registry.register(Registries.ITEM, id("connected_lamp"),
-            new BlockItem(CONNECTED_LAMP_BLOCK, new FabricItemSettings()));
-        Registry.register(Registries.BLOCK_TYPE, id("connected_lamp"), ConnectedLampBlock.CODEC);
-        Registry.register(Registries.BLOCK, id("lamp_connector"), LAMP_CONNECTOR_BLOCK);
-        Registry.register(Registries.ITEM, id("lamp_connector"),
-            new BlockItem(LAMP_CONNECTOR_BLOCK, new FabricItemSettings()));
-        Registry.register(Registries.BLOCK_TYPE, id("lamp_connector"), LampConnectorBlock.CODEC);
+        register(UNIVERSES, GraphLibFabric.UNIVERSE);
+        register(BLOCKS, Registries.BLOCK);
+        register(ITEMS, Registries.ITEM);
+        register(BLOCK_TYPES, Registries.BLOCK_TYPE);
 
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE_BLOCKS).register(entries -> {
-            entries.addItem(CONNECTED_LAMP_BLOCK);
-            entries.addItem(LAMP_CONNECTOR_BLOCK);
+            entries.addItem(CONNECTED_LAMP_BLOCK.get());
+            entries.addItem(LAMP_CONNECTOR_BLOCK.get());
         });
+    }
+
+    private static <T> void register(List<Pair<Identifier, T>> list, Registry<T> registry) {
+        for (var pair : list) {
+            Registry.register(registry, pair.getLeft(), pair.getRight());
+        }
     }
 }

@@ -26,8 +26,20 @@
 package com.kneelawk.multiblocklamps;
 
 import java.util.ServiceLoader;
+import java.util.function.Supplier;
+
+import com.mojang.serialization.MapCodec;
+
+import net.minecraft.block.Block;
+
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 
 public interface MLPlatform {
     MLPlatform INSTANCE = ServiceLoader.load(MLPlatform.class).findFirst()
         .orElseThrow(() -> new RuntimeException("Failed to load Multiblock Lamps platform"));
+
+    <T extends Block> Supplier<T> registerBlockWithItem(String path, Supplier<T> creator,
+                                                        MapCodec<? extends Block> codec);
+
+    Supplier<GraphUniverse> registerUniverse(String path, Supplier<GraphUniverse> creator);
 }

@@ -73,9 +73,9 @@ public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInpu
 
     @Override
     public void setLit(NodeHolder<LampNode> self, boolean lit) {
-        if (self.getBlockState().isOf(MultiblockLamps.CONNECTED_LAMP_BLOCK)) {
+        if (self.getBlockState().isOf(MultiblockLamps.CONNECTED_LAMP_BLOCK.get())) {
             self.getBlockWorld().setBlockState(self.getBlockPos(),
-                MultiblockLamps.CONNECTED_LAMP_BLOCK.getDefaultState().with(ConnectedLampBlock.LIT, lit));
+                MultiblockLamps.CONNECTED_LAMP_BLOCK.get().getDefaultState().with(ConnectedLampBlock.LIT, lit));
         }
     }
 }

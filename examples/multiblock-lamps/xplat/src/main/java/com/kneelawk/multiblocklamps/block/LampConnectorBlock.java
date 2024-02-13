@@ -42,7 +42,6 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.multiblocklamps.LampLogic;
 import com.kneelawk.multiblocklamps.MultiblockLamps;
-import com.kneelawk.multiblocklamps.node.ConnectedLampNode;
 import com.kneelawk.multiblocklamps.node.LampConnectorNode;
 
 public class LampConnectorBlock extends Block implements ConnectableBlock {
@@ -69,7 +68,7 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
     public void prepare(BlockState state, WorldAccess world, BlockPos pos, int flags, int maxUpdateDepth) {
         // only update nodes on the server
         if (world instanceof ServerWorld serverWorld) {
-            MultiblockLamps.UNIVERSE.getServerGraphWorld(serverWorld).updateNodes(pos);
+            MultiblockLamps.UNIVERSE.get().getServerGraphWorld(serverWorld).updateNodes(pos);
         }
     }
 
@@ -78,7 +77,7 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
                                boolean notify) {
         if (world instanceof ServerWorld serverWorld) {
             // grab a node holder for the node that *should* be at our current position and update it
-            NodeHolder<BlockNode> node = MultiblockLamps.UNIVERSE.getServerGraphWorld(serverWorld)
+            NodeHolder<BlockNode> node = MultiblockLamps.UNIVERSE.get().getServerGraphWorld(serverWorld)
                 .getNodeAt(new NodePos(pos, LampConnectorNode.INSTANCE));
             if (node != null) {
                 LampLogic.onLampUpdated(node);

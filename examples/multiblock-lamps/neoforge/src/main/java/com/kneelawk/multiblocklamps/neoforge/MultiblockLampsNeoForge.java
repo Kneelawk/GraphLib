@@ -28,45 +28,45 @@ package com.kneelawk.multiblocklamps.neoforge;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
+import com.mojang.serialization.MapCodec;
+
+import net.minecraft.block.Block;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 
 import com.kneelawk.graphlib.api.GraphLib;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.multiblocklamps.MultiblockLamps;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.CONNECTED_LAMP_BLOCK;
 import static com.kneelawk.multiblocklamps.MultiblockLamps.LAMP_CONNECTOR_BLOCK;
-import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
 
 @Mod(MultiblockLamps.MOD_ID)
 @SuppressWarnings("unused")
 public class MultiblockLampsNeoForge {
-    public MultiblockLampsNeoForge(IEventBus modBus) {
-        modBus.addListener(this::onRegister);
-        modBus.addListener(this::onCreativeTab);
-    }
+    public static final DeferredRegister<GraphUniverse> UNIVERSES =
+        DeferredRegister.create(GraphLib.UNIVERSE_KEY, MultiblockLamps.MOD_ID);
+    public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MultiblockLamps.MOD_ID);
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MultiblockLamps.MOD_ID);
+    public static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =
+        DeferredRegister.create(RegistryKeys.BLOCK_TYPE, MultiblockLamps.MOD_ID);
 
-    public void onRegister(RegisterEvent event) {
-        event.register(GraphLib.UNIVERSE_KEY, _helper -> MultiblockLamps.registerUniverse());
-        event.register(RegistryKeys.BLOCK, helper -> {
-            helper.register(id("connected_lamp"), CONNECTED_LAMP_BLOCK);
-            helper.register(id("lamp_connector"), LAMP_CONNECTOR_BLOCK);
-        });
-        event.register(RegistryKeys.ITEM, helper -> {
-            helper.register(id("connected_lamp"), new BlockItem(CONNECTED_LAMP_BLOCK, new Item.Settings()));
-            helper.register(id("lamp_connector"), new BlockItem(LAMP_CONNECTOR_BLOCK, new Item.Settings()));
-        });
+    public MultiblockLampsNeoForge(IEventBus modBus) {
+        modBus.addListener(this::onCreativeTab);
+
+        UNIVERSES.register(modBus);
+        BLOCKS.register(modBus);
+        ITEMS.register(modBus);
+        BLOCK_TYPES.register(modBus);
     }
 
     public void onCreativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == ItemGroups.REDSTONE_BLOCKS) {
-            event.addStack(new ItemStack(CONNECTED_LAMP_BLOCK.asItem()));
-            event.addStack(new ItemStack(LAMP_CONNECTOR_BLOCK.asItem()));
+            event.addStack(new ItemStack(CONNECTED_LAMP_BLOCK.get().asItem()));
+            event.addStack(new ItemStack(LAMP_CONNECTOR_BLOCK.get().asItem()));
         }
     }
 }

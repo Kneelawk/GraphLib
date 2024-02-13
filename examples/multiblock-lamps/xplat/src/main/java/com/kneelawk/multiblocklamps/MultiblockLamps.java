@@ -26,6 +26,7 @@
 package com.kneelawk.multiblocklamps;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -46,26 +47,30 @@ import com.kneelawk.multiblocklamps.node.LampNode;
 public class MultiblockLamps {
     public static final String MOD_ID = "multiblock_lamps";
 
-    public static final GraphUniverse UNIVERSE = GraphUniverse.builder().build(id("graph_universe"));
+    public static final Supplier<GraphUniverse> UNIVERSE =
+        MLPlatform.INSTANCE.registerUniverse("graph_universe", () -> {
+            GraphUniverse universe = GraphUniverse.builder().build(id("graph_universe"));
+            universe.addNodeTypes(ConnectedLampNode.TYPE);
+            universe.addNodeTypes(LampConnectorNode.TYPE);
+            universe.addDiscoverer(
+                (world, pos) -> world.getBlockState(pos).getBlock() instanceof ConnectableBlock connectable ?
+                    connectable.createNodes() : List.of());
+            return universe;
+        });
 
     // Cache to make node lookups faster
     public static final CacheCategory<LampInputNode> LAMP_INPUT_CACHE = CacheCategory.of(LampInputNode.class);
     public static final CacheCategory<LampNode> LAMP_CACHE = CacheCategory.of(LampNode.class);
 
-    public static final Block CONNECTED_LAMP_BLOCK = new ConnectedLampBlock(
-        AbstractBlock.Settings.create().luminance(state -> state.get(ConnectedLampBlock.LIT) ? 15 : 0).strength(0.3f)
-            .sounds(BlockSoundGroup.GLASS).allowsSpawning((_state, _view, _pos, _type) -> true));
-    public static final Block LAMP_CONNECTOR_BLOCK =
-        new LampConnectorBlock(AbstractBlock.Settings.create().mapColor(MapColor.STONE).strength(1.5f, 6.0f));
-
-    public static void registerUniverse() {
-        UNIVERSE.register();
-        UNIVERSE.addNodeTypes(ConnectedLampNode.TYPE);
-        UNIVERSE.addNodeTypes(LampConnectorNode.TYPE);
-        UNIVERSE.addDiscoverer(
-            (world, pos) -> world.getBlockState(pos).getBlock() instanceof ConnectableBlock connectable ?
-                connectable.createNodes() : List.of());
-    }
+    public static final Supplier<Block> CONNECTED_LAMP_BLOCK =
+        MLPlatform.INSTANCE.registerBlockWithItem("connected_lamp", () -> new ConnectedLampBlock(
+                AbstractBlock.Settings.create().luminance(state -> state.get(ConnectedLampBlock.LIT) ? 15 : 0)
+                    .strength(0.3f).sounds(BlockSoundGroup.GLASS).allowsSpawning((_state, _view, _pos, _type) -> true)),
+            ConnectedLampBlock.CODEC);
+    public static final Supplier<Block> LAMP_CONNECTOR_BLOCK =
+        MLPlatform.INSTANCE.registerBlockWithItem("lamp_connector",
+            () -> new LampConnectorBlock(AbstractBlock.Settings.create().mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
+            LampConnectorBlock.CODEC);
 
     public static Identifier id(String path) {
         return new Identifier(MOD_ID, path);
