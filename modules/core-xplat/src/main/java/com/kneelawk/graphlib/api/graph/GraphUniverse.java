@@ -2,6 +2,7 @@ package com.kneelawk.graphlib.api.graph;
 
 import java.util.Collection;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +36,7 @@ import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
  * <b>NeoForge Note:</b> On NeoForge, GraphUniverses should only be modified (i.e. have discoverers, node-types, etc. added)
  * from the RegisterEvent for {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY}.
  */
+@ApiStatus.NonExtendable
 public interface GraphUniverse {
 
     /**

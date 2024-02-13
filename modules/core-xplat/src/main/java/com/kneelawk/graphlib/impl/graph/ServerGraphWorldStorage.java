@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
 
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable {
     private final Map<Identifier, ServerGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
@@ -22,7 +22,7 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     public ServerGraphWorldStorage(ServerWorld world, Path dataDir, boolean syncChunkWrites) {
         this.serverWorld = world;
 
-        for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSE) {
+        for (GraphUniverseImpl universe : GraphLibPlatform.INSTANCE.getUniverseRegistry()) {
             Identifier universeId = universe.getId();
             Path path = dataDir.resolve(universeId.getNamespace()).resolve(universeId.getPath());
 

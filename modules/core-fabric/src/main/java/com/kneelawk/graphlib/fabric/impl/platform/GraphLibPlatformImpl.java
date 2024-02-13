@@ -27,17 +27,25 @@ package com.kneelawk.graphlib.fabric.impl.platform;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
+import net.minecraft.registry.Registry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.fabric.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.fabric.api.event.GraphLibEvents;
+import com.kneelawk.graphlib.fabric.impl.GraphLibFabricMod;
 import com.kneelawk.graphlib.fabric.impl.event.InternalEvents;
+import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 public class GraphLibPlatformImpl implements GraphLibPlatform {
+    @Override
+    public Registry<GraphUniverseImpl> getUniverseRegistry() {
+        return GraphLibFabricMod.UNIVERSE;
+    }
+
     @Override
     public void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
         InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.invoker().addUniverseSubcommands(universe);

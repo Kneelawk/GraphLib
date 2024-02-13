@@ -10,6 +10,7 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
+import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, like obtaining a
@@ -45,13 +46,23 @@ public final class GraphLib {
     public static final GraphUniverse LEGACY_UNIVERSE = GraphUniverse.builder().build(LEGACY_UNIVERSE_ID);
 
     /**
+     * Gets whether the given universe has been registered.
+     *
+     * @param universeId the id of the universe to check.
+     * @return {@code true} if the universe has been registered.
+     */
+    public static boolean universeExists(@NotNull Identifier universeId) {
+        return GraphLibPlatform.INSTANCE.getUniverseRegistry().containsId(universeId);
+    }
+
+    /**
      * Gets a registered {@link GraphUniverse} by its id.
      *
      * @param universeId the id of the universe to look up.
      * @return the universe with the given id.
      */
     public static @NotNull GraphUniverse getUniverse(@NotNull Identifier universeId) {
-        GraphUniverseImpl graphUniverse = GraphLibImpl.UNIVERSE.get(universeId);
+        GraphUniverseImpl graphUniverse = GraphLibPlatform.INSTANCE.getUniverseRegistry().get(universeId);
         if (graphUniverse == null) {
             throw new IllegalArgumentException("No universe exists with the name " + universeId);
         }

@@ -32,23 +32,30 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.loader.api.FabricLoader;
 
+import com.mojang.serialization.Lifecycle;
+
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.SimpleRegistry;
 
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricMod implements ModInitializer {
+    public static final Registry<GraphUniverseImpl> UNIVERSE =
+        new SimpleRegistry<>(GraphLibImpl.UNIVERSE_KEY, Lifecycle.stable(), false);
+
     @Override
     public void onInitialize() {
         GLLog.setGameDir(FabricLoader.getInstance().getGameDir());
 
         GLLog.info("Initializing GraphLib...");
 
-        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, GraphLibImpl.UNIVERSE_IDENTIFIER, GraphLibImpl.UNIVERSE);
+        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, GraphLibImpl.UNIVERSE_IDENTIFIER, UNIVERSE);
 
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, context, environment) -> GraphLibImpl.registerCommands(dispatcher, context));

@@ -36,7 +36,9 @@ import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.registries.RegistryBuilder;
 
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 
@@ -44,19 +46,21 @@ import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
+import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 @Mod("graphlib")
 @SuppressWarnings("unused")
 public class GraphLibNeoForgeMod {
+    public static Registry<GraphUniverseImpl> universes;
+
     public GraphLibNeoForgeMod(IEventBus eventBus) {
         GLLog.setGameDir(FMLPaths.GAMEDIR.get());
 
         GLLog.info("Initializing GraphLib...");
 
         eventBus.addListener(this::onNewRegistry);
-        eventBus.addListener(this::onRegister);
         eventBus.addListener(this::onPostInit);
 
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
@@ -67,13 +71,7 @@ public class GraphLibNeoForgeMod {
     }
 
     public void onNewRegistry(NewRegistryEvent event) {
-        event.register(GraphLibImpl.UNIVERSE);
-    }
-
-    public void onRegister(RegisterEvent event) {
-        event.register(GraphLib.UNIVERSE_KEY, helper -> {
-//            GraphLib.LEGACY_UNIVERSE.register();
-        });
+        universes = event.create(new RegistryBuilder<>(GraphLibImpl.UNIVERSE_KEY));
     }
 
     public void onPostInit(FMLLoadCompleteEvent event) {
@@ -115,8 +113,8 @@ public class GraphLibNeoForgeMod {
             try {
                 StorageHelper.getStorage(world).tick();
             } catch (Exception e) {
-                GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world,
-                    world.getRegistryKey().getValue(), e);
+                GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world, world.getRegistryKey().getValue(),
+                    e);
             }
         }
     }
@@ -126,8 +124,8 @@ public class GraphLibNeoForgeMod {
             try {
                 StorageHelper.getStorage(world).close();
             } catch (Exception e) {
-                GLLog.error("Error closing GraphWorldStorage. World: '{}'/{}", world,
-                    world.getRegistryKey().getValue(), e);
+                GLLog.error("Error closing GraphWorldStorage. World: '{}'/{}", world, world.getRegistryKey().getValue(),
+                    e);
             }
         }
     }

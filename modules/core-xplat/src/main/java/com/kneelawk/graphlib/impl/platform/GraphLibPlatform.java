@@ -29,16 +29,21 @@ import java.util.ServiceLoader;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
+import net.minecraft.registry.Registry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
 public interface GraphLibPlatform {
     GraphLibPlatform INSTANCE = ServiceLoader.load(GraphLibPlatform.class).findFirst()
         .orElseThrow(() -> new RuntimeException("Failed to load platform implementation"));
+
+    Registry<GraphUniverseImpl> getUniverseRegistry();
 
     void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
 

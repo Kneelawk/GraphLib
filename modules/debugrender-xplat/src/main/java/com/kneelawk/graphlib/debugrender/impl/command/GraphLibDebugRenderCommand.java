@@ -32,10 +32,10 @@ import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.graphlib.api.GraphLib;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
-import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -55,8 +55,9 @@ public class GraphLibDebugRenderCommand {
 
     private static int startDebugRender(ServerCommandSource source, Identifier universeId)
         throws CommandSyntaxException {
-        GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
-        if (universe == null) throw GraphLibCommand.UNKNOWN_UNIVERSE.create(universeId);
+        if (!GraphLib.universeExists(universeId)) throw GraphLibCommand.UNKNOWN_UNIVERSE.create(universeId);
+
+        GraphUniverse universe = GraphLib.getUniverse(universeId);
 
         GLDebugNet.startDebuggingPlayer(source.getPlayerOrThrow(), universe);
         return 15;
