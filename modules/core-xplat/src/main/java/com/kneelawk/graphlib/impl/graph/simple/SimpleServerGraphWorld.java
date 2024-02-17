@@ -775,6 +775,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
             LongSortedSet existingGraphs = getExistingGraphs();
             if (existingGraphs.isEmpty()) {
+                // No graphs means a 'clear'-ed chunk is the correct chunk state. All requested chunks have been cleared already.
                 listener.onComplete(0, chunksToRebuild.size());
                 return;
             }
