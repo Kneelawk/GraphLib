@@ -362,10 +362,9 @@ public interface GraphUniverse {
      * <p>
      * <b>NeoForge Note:</b> On NeoForge, this method must only be called in the RegisterEvent for
      * {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY}. It should be safe to use a DeferredRegistry in place of calling this method.
-     *
-     * @deprecated use {@code GraphLibFabric.UNIVERSE} registry on fabric or {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY} on NeoForge.
+     * <p>
+     * Note: you can also use {@code GraphLibFabric.UNIVERSE} registry on fabric or {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY} on NeoForge.
      */
-    @Deprecated
     void register();
 
     /**
