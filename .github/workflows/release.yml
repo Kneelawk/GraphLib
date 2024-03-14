@@ -112,8 +112,13 @@ jobs:
             let changesStart = lines.findIndex(line => line.startsWith('*'));
             lines.splice(0, changesStart);
             lines.unshift(`**${process.env.PROJECT_NAME} ${versions[0]} has been released for Minecraft ${versions[1]}!**`, '', '__Changes:__');
-            lines.push(`Available on Kneelawk's maven at: ${process.env.MAVEN_URL}`);
-            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/javadoc/index.html`);
+            lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", "With identifiers:");
+            lines.push(`\`com.kneelawk.graphlib:core-xplat-intermediary:${mavenVersion}\``);
+            lines.push(`\`com.kneelawk.graphlib:core-xplat-mojmap:${mavenVersion}\``);
+            lines.push(`\`com.kneelawk.graphlib:core-fabric:${mavenVersion}\``);
+            lines.push(`\`com.kneelawk.graphlib:core-neoforge:${mavenVersion}\``);
+            lines.push(`Find more more at ${process.env.MAVEN_URL}`);
+            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/graphlib-core-xplat/javadoc/index.html`);
             return lines.join('\n');
           result-encoding: string
       - name: Make Release Announcement
