@@ -70,7 +70,7 @@ jobs:
       - name: Create Docs Directory
         run: mkdir -p deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}
       - name: Copy To Deployment Repository Javadocs
-        run: cp -rf build/docs/javadoc deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}/
+        run: cp -rf build/docs/* deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}/
       - name: Commit Deployment Repository Changes
         run: |
           git config --global user.name "github-actions[bot]"
