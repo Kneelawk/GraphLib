@@ -52,9 +52,9 @@ dependencies {
     implementation(project(":core-fabric", configuration = "namedElements"))
 
     // LibNetworkStack
-    val lns_version: String by project
-    modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version")
-    include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+//    val lns_version: String by project
+//    modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version")
+//    include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
 
     // We use JUnit 4 because many Minecraft classes require heavy mocking or complete gutting, meaning a custom
     // classloader is required. JUnit 5 does not yet support using custom classloaders.
