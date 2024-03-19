@@ -47,16 +47,7 @@ import com.kneelawk.multiblocklamps.node.LampNode;
 public class MultiblockLamps {
     public static final String MOD_ID = "multiblock_lamps";
 
-    public static final Supplier<GraphUniverse> UNIVERSE =
-        MLPlatform.INSTANCE.registerUniverse("graph_universe", () -> {
-            GraphUniverse universe = GraphUniverse.builder().build(id("graph_universe"));
-            universe.addNodeTypes(ConnectedLampNode.TYPE);
-            universe.addNodeTypes(LampConnectorNode.TYPE);
-            universe.addDiscoverer(
-                (world, pos) -> world.getBlockState(pos).getBlock() instanceof ConnectableBlock connectable ?
-                    connectable.createNodes() : List.of());
-            return universe;
-        });
+    public static final GraphUniverse UNIVERSE = GraphUniverse.builder().build(id("graph_universe"));
 
     // Cache to make node lookups faster
     public static final CacheCategory<LampInputNode> LAMP_INPUT_CACHE = CacheCategory.of(LampInputNode.class);
@@ -71,6 +62,17 @@ public class MultiblockLamps {
         MLPlatform.INSTANCE.registerBlockWithItem("lamp_connector",
             () -> new LampConnectorBlock(AbstractBlock.Settings.create().mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
             LampConnectorBlock.CODEC);
+    
+    public static void init() {}
+    
+    public static void initUniverse() {
+        UNIVERSE.register();
+        UNIVERSE.addNodeTypes(ConnectedLampNode.TYPE);
+        UNIVERSE.addNodeTypes(LampConnectorNode.TYPE);
+        UNIVERSE.addDiscoverer(
+            (world, pos) -> world.getBlockState(pos).getBlock() instanceof ConnectableBlock connectable ?
+                connectable.createNodes() : List.of());
+    }
 
     public static Identifier id(String path) {
         return new Identifier(MOD_ID, path);

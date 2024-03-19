@@ -32,9 +32,6 @@ import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
  * Represents one {@link GraphWorld} per {@link ServerWorld}. Provides access to each world's associated {@link GraphWorld}.
  * <p>
  * <b>Note: GraphUniverses must be registered with the {@link #register()} method in order to work properly.</b>
- * <p>
- * <b>NeoForge Note:</b> On NeoForge, GraphUniverses should only be modified (i.e. have discoverers, node-types, etc. added)
- * from the RegisterEvent for {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY}.
  */
 @ApiStatus.NonExtendable
 public interface GraphUniverse {
@@ -357,13 +354,6 @@ public interface GraphUniverse {
      * Registers this graph universe so that it can be found by its id.
      * <p>
      * If a graph universe is not registered, it will not work.
-     * <p>
-     * This should be a shortcut for registering to the registry described by {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY}.
-     * <p>
-     * <b>NeoForge Note:</b> On NeoForge, this method must only be called in the RegisterEvent for
-     * {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY}. It should be safe to use a DeferredRegistry in place of calling this method.
-     * <p>
-     * Note: you can also use {@code GraphLibFabric.UNIVERSE} registry on fabric or {@link com.kneelawk.graphlib.api.GraphLib#UNIVERSE_KEY} on NeoForge.
      */
     void register();
 

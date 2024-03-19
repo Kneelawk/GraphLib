@@ -2,15 +2,12 @@ package com.kneelawk.graphlib.api;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
-import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, like obtaining a
@@ -19,15 +16,6 @@ import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 public final class GraphLib {
     private GraphLib() {
     }
-
-    /**
-     * A registry key for the universe registry.
-     * <p>
-     * Use this key on NeoForge to either create a DeferredRegistry or to listen for the event for when to register.
-     */
-    @SuppressWarnings("unchecked")
-    public static final RegistryKey<Registry<GraphUniverse>> UNIVERSE_KEY =
-        (RegistryKey<Registry<GraphUniverse>>) (RegistryKey<?>) GraphLibImpl.UNIVERSE_KEY;
 
     /**
      * The unique id of the universe representing the data managed by pre-1.0 versions of GraphLib.
@@ -52,7 +40,7 @@ public final class GraphLib {
      * @return {@code true} if the universe has been registered.
      */
     public static boolean universeExists(@NotNull Identifier universeId) {
-        return GraphLibPlatform.INSTANCE.getUniverseRegistry().containsId(universeId);
+        return GraphLibImpl.UNIVERSE.containsKey(universeId);
     }
 
     /**
@@ -62,7 +50,7 @@ public final class GraphLib {
      * @return the universe with the given id.
      */
     public static @NotNull GraphUniverse getUniverse(@NotNull Identifier universeId) {
-        GraphUniverseImpl graphUniverse = GraphLibPlatform.INSTANCE.getUniverseRegistry().get(universeId);
+        GraphUniverseImpl graphUniverse = GraphLibImpl.UNIVERSE.get(universeId);
         if (graphUniverse == null) {
             throw new IllegalArgumentException("No universe exists with the name " + universeId);
         }

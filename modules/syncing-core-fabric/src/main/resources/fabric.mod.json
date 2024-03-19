@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "graphlib_syncing",
+  "version": "${version}",
+  "name": "Graph Lib Syncing",
+  "description": "Server to client synchronization of graphs for client-side rendering.",
+  "authors": [
+    "Kneelawk"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Kneelawk/GraphLib",
+    "issues": "https://github.com/Kneelawk/GraphLib/issues",
+    "sources": "https://github.com/Kneelawk/GraphLib"
+  },
+  "license": "MIT",
+  "icon": "assets/graphlib_syncing/icon-128.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "value": "com.kneelawk.graphlib.syncing.fabric.impl.GraphLibSyncingFabricMod"
+      }
+    ],
+    "client": [
+      {
+        "value": "com.kneelawk.graphlib.syncing.fabric.impl.client.GraphLibSyncingFabricModClient"
+      }
+    ]
+  },
+  "mixins": [
+    "graphlib_syncing.mixins.json"
+  ],
+  "depends": {
+    "graphlib": "*",
+    "fabricloader": ">=0.14.0",
+    "fabric-api": "*",
+    "minecraft": ">=1.20.3 <1.21-",
+    "java": ">=17"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [ "library" ],
+      "parent": "graphlib"
+    }
+  }
+}

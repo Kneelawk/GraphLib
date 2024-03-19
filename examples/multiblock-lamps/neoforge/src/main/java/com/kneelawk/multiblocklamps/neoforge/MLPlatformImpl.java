@@ -47,9 +47,4 @@ public class MLPlatformImpl implements MLPlatform {
         MultiblockLampsNeoForge.BLOCK_TYPES.register(path, () -> codec);
         return block;
     }
-
-    @Override
-    public Supplier<GraphUniverse> registerUniverse(String path, Supplier<GraphUniverse> creator) {
-        return MultiblockLampsNeoForge.UNIVERSES.register(path, creator);
-    }
 }

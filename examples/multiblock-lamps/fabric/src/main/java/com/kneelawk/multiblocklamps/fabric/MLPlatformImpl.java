@@ -52,11 +52,4 @@ public class MLPlatformImpl implements MLPlatform {
         MultiblockLampsFabric.BLOCK_TYPES.add(new Pair<>(id, codec));
         return () -> block;
     }
-
-    @Override
-    public Supplier<GraphUniverse> registerUniverse(String path, Supplier<GraphUniverse> creator) {
-        GraphUniverse universe = creator.get();
-        MultiblockLampsFabric.UNIVERSES.add(new Pair<>(id(path), universe));
-        return () -> universe;
-    }
 }

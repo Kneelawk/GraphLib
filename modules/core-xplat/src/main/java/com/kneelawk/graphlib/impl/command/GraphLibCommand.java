@@ -2,6 +2,7 @@ package com.kneelawk.graphlib.impl.command;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Function;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.LiteralMessage;
@@ -27,6 +28,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkSectionPos;
 
 import com.kneelawk.graphlib.impl.Constants;
+import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
 import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
@@ -43,8 +45,8 @@ public class GraphLibCommand {
             argument("universe", IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
                     String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
-                    CommandSource.forEachMatching(GraphLibPlatform.INSTANCE.getUniverseRegistry().getKeys(), remaining,
-                        RegistryKey::getValue, id -> builder.suggest(id.getValue().toString()));
+                    CommandSource.forEachMatching(GraphLibImpl.UNIVERSE.keySet(), remaining,
+                        Function.identity(), id -> builder.suggest(id.toString()));
                     return builder.buildFuture();
                 })
                 .then(literal("updateblocks")
@@ -84,15 +86,15 @@ public class GraphLibCommand {
     private static int listUniverses(ServerCommandSource source) {
         MutableText msg = Text.literal("Universes:");
 
-        for (RegistryKey<GraphUniverseImpl> key : GraphLibPlatform.INSTANCE.getUniverseRegistry().getKeys()) {
+        for (Identifier key : GraphLibImpl.UNIVERSE.keySet()) {
             msg.append("\n");
-            msg.append(Text.literal(key.getValue().toString()).styled(style -> style.withColor(Formatting.AQUA)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key.getValue().toString()))));
+            msg.append(Text.literal(key.toString()).styled(style -> style.withColor(Formatting.AQUA)
+                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key.toString()))));
         }
 
         source.sendFeedback(() -> msg, false);
 
-        return GraphLibPlatform.INSTANCE.getUniverseRegistry().size();
+        return GraphLibImpl.UNIVERSE.size();
     }
 
     private static int updateBlocks(ServerCommandSource source, Identifier universeId, BlockPos from, BlockPos to)
@@ -103,7 +105,7 @@ public class GraphLibCommand {
 
         ServerWorld world = source.getWorld();
 
-        GraphUniverseImpl universe = GraphLibPlatform.INSTANCE.getUniverseRegistry().get(universeId);
+        GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
         universe.getServerGraphWorld(world).updateNodes(BlockPos.stream(from, to));
@@ -117,7 +119,7 @@ public class GraphLibCommand {
 
     private static int removeEmptyGraphsCommand(ServerCommandSource source, Identifier universeId)
         throws CommandSyntaxException {
-        GraphUniverseImpl universe = GraphLibPlatform.INSTANCE.getUniverseRegistry().get(universeId);
+        GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
         int result = universe.getServerGraphWorld(source.getWorld()).removeEmptyGraphs();
@@ -131,7 +133,7 @@ public class GraphLibCommand {
         throws CommandSyntaxException {
         ServerWorld world = source.getWorld();
 
-        GraphUniverseImpl universe = GraphLibPlatform.INSTANCE.getUniverseRegistry().get(universeId);
+        GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
         ChunkSectionPos fromSection = ChunkSectionPos.from(from);

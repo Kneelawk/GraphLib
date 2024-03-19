@@ -47,11 +47,6 @@ import com.kneelawk.graphlib.neoforge.impl.event.AddUniverseSubcommandsEvent;
 
 public class GraphLibPlatformImpl implements GraphLibPlatform {
     @Override
-    public Registry<GraphUniverseImpl> getUniverseRegistry() {
-        return GraphLibNeoForgeMod.universes;
-    }
-
-    @Override
     public void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
         NeoForge.EVENT_BUS.post(new AddUniverseSubcommandsEvent(universe));
     }

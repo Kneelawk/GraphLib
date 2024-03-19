@@ -27,6 +27,7 @@ package com.kneelawk.multiblocklamps.neoforge;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -37,8 +38,6 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 
-import com.kneelawk.graphlib.api.GraphLib;
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.multiblocklamps.MultiblockLamps;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.CONNECTED_LAMP_BLOCK;
@@ -47,20 +46,24 @@ import static com.kneelawk.multiblocklamps.MultiblockLamps.LAMP_CONNECTOR_BLOCK;
 @Mod(MultiblockLamps.MOD_ID)
 @SuppressWarnings("unused")
 public class MultiblockLampsNeoForge {
-    public static final DeferredRegister<GraphUniverse> UNIVERSES =
-        DeferredRegister.create(GraphLib.UNIVERSE_KEY, MultiblockLamps.MOD_ID);
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MultiblockLamps.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MultiblockLamps.MOD_ID);
     public static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =
         DeferredRegister.create(RegistryKeys.BLOCK_TYPE, MultiblockLamps.MOD_ID);
 
     public MultiblockLampsNeoForge(IEventBus modBus) {
+        MultiblockLamps.init();
+
+        modBus.addListener(this::onInit);
         modBus.addListener(this::onCreativeTab);
 
-        UNIVERSES.register(modBus);
         BLOCKS.register(modBus);
         ITEMS.register(modBus);
         BLOCK_TYPES.register(modBus);
+    }
+
+    public void onInit(FMLCommonSetupEvent event) {
+        event.enqueueWork(MultiblockLamps::initUniverse);
     }
 
     public void onCreativeTab(BuildCreativeModeTabContentsEvent event) {

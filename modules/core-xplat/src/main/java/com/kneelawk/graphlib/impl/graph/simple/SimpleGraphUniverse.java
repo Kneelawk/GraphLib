@@ -31,7 +31,6 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
-import com.kneelawk.graphlib.api.util.ColorUtils;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
@@ -155,6 +154,10 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
 
     @Override
     public void addListener(Identifier key, UniverseListener listener) {
+        if (listeners.containsKey(key)) throw new IllegalArgumentException(
+            "Attempted to register a listener of type " + key + " with the universe " + id +
+                " but one was already registered.");
+
         listeners.put(key, listener);
     }
 
