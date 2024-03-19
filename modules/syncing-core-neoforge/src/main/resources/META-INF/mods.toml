@@ -1,0 +1,28 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mixins]]
+config = "graphlib_syncing.mixins.json"
+
+[[mods]]
+modId = "graphlib_syncing"
+version = "${version}"
+displayName = "GraphLib Syncing"
+authors = "Kneelawk"
+description = "Server to client synchronization of graphs for client-side rendering."
+logoFile = "assets/graphlib_syncing/icon-128.png"
+
+[[dependencies.graphlib_syncing]]
+modId = "neoforge"
+type = "REQUIRED"
+versionRange = "[20.4.148-beta,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.graphlib_syncing]]
+modId = "graphlib"
+type = "REQUIRED"
+versionRange = "[2-alpha,)"
+ordering = "NONE"
+side = "BOTH"
