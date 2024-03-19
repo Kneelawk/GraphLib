@@ -53,14 +53,11 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 @Mod("graphlib")
 @SuppressWarnings("unused")
 public class GraphLibNeoForgeMod {
-    public static Registry<GraphUniverseImpl> universes;
-
     public GraphLibNeoForgeMod(IEventBus eventBus) {
         GLLog.setGameDir(FMLPaths.GAMEDIR.get());
 
         GLLog.info("Initializing GraphLib...");
 
-        eventBus.addListener(this::onNewRegistry);
         eventBus.addListener(this::onPostInit);
 
         NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
@@ -68,10 +65,6 @@ public class GraphLibNeoForgeMod {
         NeoForge.EVENT_BUS.addListener(this::onChunkUnload);
         NeoForge.EVENT_BUS.addListener(this::onLevelTick);
         NeoForge.EVENT_BUS.addListener(this::onLevelUnload);
-    }
-
-    public void onNewRegistry(NewRegistryEvent event) {
-        universes = event.create(new RegistryBuilder<>(GraphLibImpl.UNIVERSE_KEY));
     }
 
     public void onPostInit(FMLLoadCompleteEvent event) {

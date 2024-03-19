@@ -49,7 +49,7 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
     public ClientGraphWorldStorage(World clientWorld, int loadDistance) {
         this.clientWorld = clientWorld;
 
-        for (SyncedUniverseImpl universe : GraphLibSyncingImpl.SYNCED_UNIVERSE) {
+        for (SyncedUniverseImpl universe : GraphLibSyncingImpl.SYNCED_UNIVERSE.values()) {
             if (universe.getSyncProfile().isEnabled()) {
                 Identifier universeId = universe.getId();
 

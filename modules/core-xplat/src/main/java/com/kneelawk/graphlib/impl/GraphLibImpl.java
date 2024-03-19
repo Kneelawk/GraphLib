@@ -1,5 +1,8 @@
 package com.kneelawk.graphlib.impl;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.mojang.brigadier.CommandDispatcher;
 
 import net.minecraft.command.CommandBuildContext;
@@ -10,15 +13,12 @@ import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
-import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 public final class GraphLibImpl {
     private GraphLibImpl() {
     }
 
-    public static final Identifier UNIVERSE_IDENTIFIER = Constants.id("universe");
-    public static final RegistryKey<Registry<GraphUniverseImpl>> UNIVERSE_KEY =
-        RegistryKey.ofRegistry(UNIVERSE_IDENTIFIER);
+    public static final Map<Identifier, GraphUniverseImpl> UNIVERSE = new LinkedHashMap<>();
 
     public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher,
                                         CommandBuildContext context) {
@@ -26,6 +26,9 @@ public final class GraphLibImpl {
     }
 
     public static void register(GraphUniverseImpl universe) {
-        Registry.register(GraphLibPlatform.INSTANCE.getUniverseRegistry(), universe.getId(), universe);
+        if (UNIVERSE.containsKey(universe.getId())) throw new IllegalArgumentException(
+            "A graph universe is already registered with the key: " + universe.getId());
+
+        UNIVERSE.put(universe.getId(), universe);
     }
 }

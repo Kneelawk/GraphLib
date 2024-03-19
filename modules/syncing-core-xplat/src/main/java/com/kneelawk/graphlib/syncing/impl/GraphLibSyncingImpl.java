@@ -25,12 +25,9 @@
 
 package com.kneelawk.graphlib.syncing.impl;
 
-import com.mojang.serialization.Lifecycle;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -45,24 +42,17 @@ import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 
 public class GraphLibSyncingImpl {
-    private static final Identifier SYNCED_UNIVERSE_IDENTIFIER = SyncedConstants.id("synced_universe");
-    public static final RegistryKey<Registry<SyncedUniverseImpl>> SYNCED_UNIVERSE_KEY =
-        RegistryKey.ofRegistry(SYNCED_UNIVERSE_IDENTIFIER);
-
-    public static final Registry<SyncedUniverseImpl> SYNCED_UNIVERSE =
-        new SimpleRegistry<>(SYNCED_UNIVERSE_KEY, Lifecycle.stable(), false);
-
-    @SuppressWarnings("unchecked")
-    static void register() {
-        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, SYNCED_UNIVERSE_IDENTIFIER, SYNCED_UNIVERSE);
-    }
+    public static final Map<Identifier, SyncedUniverseImpl> SYNCED_UNIVERSE = new LinkedHashMap<>();
 
     public static void register(SyncedUniverseImpl universe) {
         if (!(universe.getUniverse() instanceof GraphUniverseImpl universeImpl)) throw new IllegalArgumentException(
             "Attempted to register a SyncedUniverse with a non-GraphLib GraphUniverse implementation: " +
                 universe.getClass());
 
-        Registry.register(SYNCED_UNIVERSE, universe.getId(), universe);
+        if (SYNCED_UNIVERSE.containsKey(universe.getId())) throw new IllegalArgumentException(
+            "A synced universe is already registered with the id: " + universe.getId());
+
+        SYNCED_UNIVERSE.put(universe.getId(), universe);
         universeImpl.addListener(SyncedConstants.LISTENER_KEY, universe);
     }
 

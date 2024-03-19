@@ -43,8 +43,6 @@ public interface GraphLibPlatform {
     GraphLibPlatform INSTANCE = ServiceLoader.load(GraphLibPlatform.class).findFirst()
         .orElseThrow(() -> new RuntimeException("Failed to load platform implementation"));
 
-    Registry<GraphUniverseImpl> getUniverseRegistry();
-
     void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
 
     void fireGraphCreated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);

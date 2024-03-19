@@ -43,20 +43,20 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.fabric.api.GraphLibFabric;
+import com.kneelawk.multiblocklamps.MultiblockLamps;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.CONNECTED_LAMP_BLOCK;
 import static com.kneelawk.multiblocklamps.MultiblockLamps.LAMP_CONNECTOR_BLOCK;
 
 public class MultiblockLampsFabric implements ModInitializer {
-    public static final List<Pair<Identifier, GraphUniverse>> UNIVERSES = new ObjectArrayList<>();
     public static final List<Pair<Identifier, Block>> BLOCKS = new ObjectArrayList<>();
     public static final List<Pair<Identifier, Item>> ITEMS = new ObjectArrayList<>();
     public static final List<Pair<Identifier, MapCodec<? extends Block>>> BLOCK_TYPES = new ObjectArrayList<>();
 
     @Override
     public void onInitialize() {
-        register(UNIVERSES, GraphLibFabric.UNIVERSE);
+        MultiblockLamps.initUniverse();
+        
         register(BLOCKS, Registries.BLOCK);
         register(ITEMS, Registries.ITEM);
         register(BLOCK_TYPES, Registries.BLOCK_TYPE);

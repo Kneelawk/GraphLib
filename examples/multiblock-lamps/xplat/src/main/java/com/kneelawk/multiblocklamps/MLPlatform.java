@@ -40,6 +40,4 @@ public interface MLPlatform {
 
     <T extends Block> Supplier<T> registerBlockWithItem(String path, Supplier<T> creator,
                                                         MapCodec<? extends Block> codec);
-
-    Supplier<GraphUniverse> registerUniverse(String path, Supplier<GraphUniverse> creator);
 }

@@ -42,11 +42,6 @@ import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 public class GraphLibPlatformImpl implements GraphLibPlatform {
     @Override
-    public Registry<GraphUniverseImpl> getUniverseRegistry() {
-        return GraphLibFabricMod.UNIVERSE;
-    }
-
-    @Override
     public void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
         InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.invoker().addUniverseSubcommands(universe);
     }

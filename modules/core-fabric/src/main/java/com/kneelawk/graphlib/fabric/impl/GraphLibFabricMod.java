@@ -46,16 +46,11 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 @SuppressWarnings("unused")
 public class GraphLibFabricMod implements ModInitializer {
-    public static final Registry<GraphUniverseImpl> UNIVERSE =
-        new SimpleRegistry<>(GraphLibImpl.UNIVERSE_KEY, Lifecycle.stable(), false);
-
     @Override
     public void onInitialize() {
         GLLog.setGameDir(FabricLoader.getInstance().getGameDir());
 
         GLLog.info("Initializing GraphLib...");
-
-        Registry.register((Registry<Registry<?>>) Registries.REGISTRY, GraphLibImpl.UNIVERSE_IDENTIFIER, UNIVERSE);
 
         CommandRegistrationCallback.EVENT.register(
             (dispatcher, context, environment) -> GraphLibImpl.registerCommands(dispatcher, context));
