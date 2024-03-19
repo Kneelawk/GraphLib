@@ -23,13 +23,16 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl.client;
+package com.kneelawk.graphlib.syncing.fabric.impl;
 
-import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.ModInitializer;
 
-public class GraphLibSyncingFabricModClient implements ClientModInitializer {
+import com.kneelawk.graphlib.impl.GLLog;
+
+@SuppressWarnings("unused")
+public class GraphLibSyncingFabricMod implements ModInitializer {
     @Override
-    public void onInitializeClient() {
-        ClientProxy.init();
+    public void onInitialize() {
+        GLLog.info("GraphLibSyncing Initialized.");
     }
 }

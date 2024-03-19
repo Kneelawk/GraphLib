@@ -45,7 +45,7 @@ import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
 
 @Environment(EnvType.CLIENT)
 public class ClientProxy extends CommonProxy {
-    static void init() {
+    public static void init() {
         INSTANCE = new ClientProxy();
     }
 

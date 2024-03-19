@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,16 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl;
+package com.kneelawk.graphlib.syncing.neoforge.impl;
 
-import net.fabricmc.api.ModInitializer;
+import net.neoforged.fml.common.Mod;
 
 import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.syncing.impl.SyncedConstants;
 
-@SuppressWarnings("unused")
-public class GraphLibSyncingFabricMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLibSyncing...");
-
-        GraphLibSyncingImpl.register();
-
+@Mod(SyncedConstants.MOD_ID)
+public class GraphLibSyncingNeoforgeMod {
+    public GraphLibSyncingNeoforgeMod() {
         GLLog.info("GraphLibSyncing Initialized.");
     }
 }
