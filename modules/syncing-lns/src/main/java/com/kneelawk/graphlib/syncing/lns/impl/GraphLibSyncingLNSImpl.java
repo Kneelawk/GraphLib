@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,22 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl;
+package com.kneelawk.graphlib.syncing.lns.impl;
 
-import net.fabricmc.api.ModInitializer;
+import com.kneelawk.graphlib.api.graph.GraphView;
+import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
+import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
+import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 
-import com.kneelawk.graphlib.impl.GLLog;
+public final class GraphLibSyncingLNSImpl {
+    private GraphLibSyncingLNSImpl() {}
 
-@SuppressWarnings("unused")
-public class GraphLibSyncingFabricMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLibSyncing...");
+    public static LNSSyncedUniverse getUniverse(GraphView view) {
+        SyncedUniverse universe = GraphLibSyncing.getUniverse(view);
+        if (!(universe instanceof LNSSyncedUniverse synced)) throw new IllegalStateException(
+            "Attempted to retrieve an LNSSyncedUniverse associated with " + view.getUniverse().getId() +
+                " but was actually " + universe.getClass().getName());
 
-        GraphLibSyncingImpl.register();
-
-        GLLog.info("GraphLibSyncing Initialized.");
+        return synced;
     }
 }

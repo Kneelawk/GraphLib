@@ -27,8 +27,11 @@ package com.kneelawk.graphlib.syncing.impl.graph;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
+import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.UniverseListener;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 
@@ -37,4 +40,6 @@ public interface SyncedUniverseImpl extends SyncedUniverse, UniverseListener {
     @Nullable ClientGraphWorldImpl getClientGraphView();
 
     ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance);
+
+    void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos);
 }

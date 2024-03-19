@@ -8,6 +8,7 @@ build/
 run/
 !**/src/main/**/run/
 !**/src/test/**/run/
+/.architectury-transformer/
 
 ### IntelliJ IDEA ###
 /.idea/

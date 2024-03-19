@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2023-2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl.graph;
+package com.kneelawk.graphlib.syncing.lns.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.ChunkPos;
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
+import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.GraphView;
-import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
-public interface ClientGraphWorldImpl extends GraphView {
-    void unload(ChunkPos pos);
-
-    void setChunkMapCenter(int x, int z);
-
-    void updateLoadDistance(int loadDistance);
-
-    @NotNull BlockGraphImpl getOrCreateGraph(long graphId);
-
-    @Nullable BlockGraphImpl getGraph(long id);
-
-    boolean tryCreateGraphPillar(int chunkX, int chunkZ);
-
-    boolean isInRadius(ChunkPos chunkPos);
+/**
+ * Used for decoding a {@link BlockNode} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+ */
+@FunctionalInterface
+public interface BlockNodePacketDecoder {
+    /**
+     * Decodes a {@link BlockNode} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+     * <p>
+     * The data read should be the same data written by
+     * {@link BlockNodePacketEncoder#encode(BlockNode, NetByteBuf, IMsgWriteCtx)}.
+     *
+     * @param buf the buffer to decode from.
+     * @param ctx the message context, used for reading from caches.
+     * @return the decoded block node.
+     * @throws InvalidInputDataException if a block node could not be decoded.
+     */
+    @NotNull BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }

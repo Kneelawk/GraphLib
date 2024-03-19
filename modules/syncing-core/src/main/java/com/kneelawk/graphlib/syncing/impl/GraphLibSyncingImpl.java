@@ -40,11 +40,9 @@ import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
-import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
-import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
+import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
-import com.kneelawk.graphlib.syncing.impl.graph.WorldEncoder;
 
 public class GraphLibSyncingImpl {
     private static final Identifier SYNCED_UNIVERSE_IDENTIFIER = SyncedConstants.id("synced_universe");
@@ -68,26 +66,15 @@ public class GraphLibSyncingImpl {
         universeImpl.addListener(SyncedConstants.LISTENER_KEY, universe);
     }
 
-    public static WorldEncoder getEncoder(ServerGraphWorldImpl world) {
-        WorldListener listener = world.getListener(SyncedConstants.LISTENER_KEY);
-        if (!(listener instanceof WorldEncoder synced)) throw new IllegalStateException(
-            "A SyncedUniverse was never registered with the universe: " + world.getUniverse().getId());
-
-        return synced;
-    }
-
     public static void sendChunkDataPackets(ServerWorld serverWorld, ServerPlayerEntity player, ChunkPos pos) {
         ServerGraphWorldStorage storage = StorageHelper.getStorage(serverWorld);
 
         for (ServerGraphWorldImpl world : storage.getAll().values()) {
-            WorldListener listener = world.getListener(SyncedConstants.LISTENER_KEY);
-            if (!(listener instanceof WorldEncoder encoder)) continue;
-
-            SyncedUniverse universe = encoder.getUniverse();
+            SyncedUniverseImpl universe = (SyncedUniverseImpl) GraphLibSyncing.getUniverse(world);
             if (universe.getSyncProfile().isEnabled() &&
                 universe.getSyncProfile().getPlayerFilter().shouldSync(player)) {
                 try {
-                    GLNet.sendChunkDataPacket(encoder, player, pos);
+                    universe.sendChunkDataPacket(world, player, pos);
                 } catch (Exception e) {
                     GLLog.error("Error sending GraphWorld chunk packets. World: '{}'/{}, Chunk: {}", serverWorld,
                         serverWorld.getRegistryKey().getValue(), pos, e);

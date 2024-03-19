@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,13 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl;
+package com.kneelawk.graphlib.syncing.lns.impl;
 
 import net.fabricmc.api.ModInitializer;
 
-import com.kneelawk.graphlib.impl.GLLog;
-
-@SuppressWarnings("unused")
-public class GraphLibSyncingFabricMod implements ModInitializer {
+public class GraphLibSyncingLNSFabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
-        GLLog.info("Initializing GraphLibSyncing...");
-
-        GraphLibSyncingImpl.register();
-
-        GLLog.info("GraphLibSyncing Initialized.");
+        LNSNetworking.init();
     }
 }

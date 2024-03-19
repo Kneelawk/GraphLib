@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2023-2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,41 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl.graph;
+package com.kneelawk.graphlib.syncing.lns.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.ChunkPos;
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.IMsgWriteCtx;
+import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.GraphView;
-import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
-public interface ClientGraphWorldImpl extends GraphView {
-    void unload(ChunkPos pos);
+/**
+ * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
+ *
+ * @param <N> the type of block node this encoder encodes.
+ */
+@FunctionalInterface
+public interface BlockNodePacketEncoder<N extends BlockNode> {
+    /**
+     * Returns a no-op encoder.
+     *
+     * @param <T> the type of block node to encode.
+     * @return a no-op encoder.
+     */
+    static <T extends BlockNode> BlockNodePacketEncoder<T> noOp() {
+        return (node, buf, ctx) -> {};
+    }
 
-    void setChunkMapCenter(int x, int z);
-
-    void updateLoadDistance(int loadDistance);
-
-    @NotNull BlockGraphImpl getOrCreateGraph(long graphId);
-
-    @Nullable BlockGraphImpl getGraph(long id);
-
-    boolean tryCreateGraphPillar(int chunkX, int chunkZ);
-
-    boolean isInRadius(ChunkPos chunkPos);
+    /**
+     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
+     * <p>
+     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf, IMsgReadCtx)}.
+     *
+     * @param node the node to encode.
+     * @param buf  the buffer to write to.
+     * @param ctx  the message write context.
+     */
+    void encode(@NotNull N node, @NotNull NetByteBuf buf, @NotNull IMsgWriteCtx ctx);
 }

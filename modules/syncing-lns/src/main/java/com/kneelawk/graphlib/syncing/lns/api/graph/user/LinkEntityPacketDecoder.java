@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2023-2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,28 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl;
+package com.kneelawk.graphlib.syncing.lns.api.graph.user;
 
-import net.fabricmc.api.ModInitializer;
+import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.impl.GLLog;
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
+import alexiil.mc.lib.net.NetByteBuf;
 
-@SuppressWarnings("unused")
-public class GraphLibSyncingFabricMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLibSyncing...");
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 
-        GraphLibSyncingImpl.register();
-
-        GLLog.info("GraphLibSyncing Initialized.");
-    }
+/**
+ * Used for decoding {@link LinkEntity}s from packets.
+ */
+@FunctionalInterface
+public interface LinkEntityPacketDecoder {
+    /**
+     * Decodes a {@link LinkEntity} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+     *
+     * @param buf    the buffer to read from.
+     * @param msgCtx the message context.
+     * @return a newly decoded link entity.
+     * @throws InvalidInputDataException if a link entity could not be decoded.
+     */
+    @NotNull LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }

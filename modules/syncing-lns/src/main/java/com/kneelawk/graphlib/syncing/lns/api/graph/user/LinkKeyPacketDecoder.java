@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2023-2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,28 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl;
+package com.kneelawk.graphlib.syncing.lns.api.graph.user;
 
-import net.fabricmc.api.ModInitializer;
+import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.impl.GLLog;
+import alexiil.mc.lib.net.IMsgReadCtx;
+import alexiil.mc.lib.net.InvalidInputDataException;
+import alexiil.mc.lib.net.NetByteBuf;
 
-@SuppressWarnings("unused")
-public class GraphLibSyncingFabricMod implements ModInitializer {
-    @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLibSyncing...");
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
 
-        GraphLibSyncingImpl.register();
-
-        GLLog.info("GraphLibSyncing Initialized.");
-    }
+/**
+ * Used for decoding a {@link LinkKey} from a packet.
+ */
+@FunctionalInterface
+public interface LinkKeyPacketDecoder {
+    /**
+     * Decodes a {@link LinkKey} from a {@link NetByteBuf} and {@link IMsgReadCtx}.
+     *
+     * @param buf the buffer to read from.
+     * @param ctx the message context.
+     * @return a newly decoded link key.
+     * @throws InvalidInputDataException if no link key could be decoded.
+     */
+    @NotNull LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }

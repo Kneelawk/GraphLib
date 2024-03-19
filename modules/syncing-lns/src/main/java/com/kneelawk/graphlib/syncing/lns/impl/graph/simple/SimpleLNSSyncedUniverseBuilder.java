@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2023-2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,26 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.impl;
+package com.kneelawk.graphlib.syncing.lns.impl.graph.simple;
 
-import net.fabricmc.api.ModInitializer;
+import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.impl.GLLog;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
+import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 
-@SuppressWarnings("unused")
-public class GraphLibSyncingFabricMod implements ModInitializer {
+public class SimpleLNSSyncedUniverseBuilder implements LNSSyncedUniverse.Builder {
+    SyncProfile profile = SyncProfile.SYNC_EVERYTHING;
+
     @Override
-    public void onInitialize() {
-        GLLog.info("Initializing GraphLibSyncing...");
+    public @NotNull SyncedUniverse build(@NotNull GraphUniverse universe) {
+        return new SimpleLNSSyncedUniverse(this, universe);
+    }
 
-        GraphLibSyncingImpl.register();
-
-        GLLog.info("GraphLibSyncing Initialized.");
+    @Override
+    public LNSSyncedUniverse.@NotNull Builder synchronizeToClient(@NotNull SyncProfile profile) {
+        this.profile = profile;
+        return this;
     }
 }
