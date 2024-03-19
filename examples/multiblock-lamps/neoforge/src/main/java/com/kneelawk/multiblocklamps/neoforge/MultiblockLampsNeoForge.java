@@ -38,8 +38,6 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 
-import com.kneelawk.graphlib.api.GraphLib;
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.multiblocklamps.MultiblockLamps;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.CONNECTED_LAMP_BLOCK;
@@ -54,6 +52,8 @@ public class MultiblockLampsNeoForge {
         DeferredRegister.create(RegistryKeys.BLOCK_TYPE, MultiblockLamps.MOD_ID);
 
     public MultiblockLampsNeoForge(IEventBus modBus) {
+        MultiblockLamps.init();
+
         modBus.addListener(this::onInit);
         modBus.addListener(this::onCreativeTab);
 
@@ -61,7 +61,7 @@ public class MultiblockLampsNeoForge {
         ITEMS.register(modBus);
         BLOCK_TYPES.register(modBus);
     }
-    
+
     public void onInit(FMLCommonSetupEvent event) {
         event.enqueueWork(MultiblockLamps::initUniverse);
     }

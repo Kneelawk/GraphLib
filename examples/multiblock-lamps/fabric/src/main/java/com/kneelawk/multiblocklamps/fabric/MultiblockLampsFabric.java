@@ -42,7 +42,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.multiblocklamps.MultiblockLamps;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.CONNECTED_LAMP_BLOCK;
@@ -55,8 +54,8 @@ public class MultiblockLampsFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        MultiblockLamps.initUniverse();
-        
+        MultiblockLamps.init();
+
         register(BLOCKS, Registries.BLOCK);
         register(ITEMS, Registries.ITEM);
         register(BLOCK_TYPES, Registries.BLOCK_TYPE);
@@ -65,6 +64,8 @@ public class MultiblockLampsFabric implements ModInitializer {
             entries.addItem(CONNECTED_LAMP_BLOCK.get());
             entries.addItem(LAMP_CONNECTOR_BLOCK.get());
         });
+
+        MultiblockLamps.initUniverse();
     }
 
     private static <T> void register(List<Pair<Identifier, T>> list, Registry<T> registry) {

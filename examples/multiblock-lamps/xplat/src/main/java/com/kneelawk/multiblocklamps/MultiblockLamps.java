@@ -63,6 +63,8 @@ public class MultiblockLamps {
             () -> new LampConnectorBlock(AbstractBlock.Settings.create().mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
             LampConnectorBlock.CODEC);
     
+    public static void init() {}
+    
     public static void initUniverse() {
         UNIVERSE.register();
         UNIVERSE.addNodeTypes(ConnectedLampNode.TYPE);
