@@ -38,8 +38,6 @@ base {
     archivesName.set("$archives_base_name-${project.name}-intermediary")
 }
 
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("graphlib-${project.name}") })
-
 architectury {
     val enabled_platforms: String by project
     common(enabled_platforms.split(','))

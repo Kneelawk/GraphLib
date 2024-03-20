@@ -24,19 +24,15 @@
  */
 
 plugins {
-    `maven-publish`
     id("architectury-plugin")
     id("dev.architectury.loom")
-    id("com.kneelawk.versioning")
 }
 
-val maven_group: String by project
-group = maven_group
+evaluationDependsOn(":core-xplat")
+evaluationDependsOn(":debugrender-xplat")
+evaluationDependsOn(":syncing-core-xplat")
 
-val archives_base_name: String by project
-base {
-    archivesName.set("$archives_base_name-${project.name}-intermediary")
-}
+java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("xplat") })
 
 architectury {
     val enabled_platforms: String by project
@@ -46,6 +42,8 @@ architectury {
 repositories {
     mavenCentral()
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
+    maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
+    maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
     maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
 
     mavenLocal()
@@ -57,94 +55,34 @@ dependencies {
     val quilt_mappings: String by project
     mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:intermediary-v2")
 
-    // Using modCompileOnly & modLocalRuntime so that these dependencies don't get brought into any projects that depend
-    // on this one.
-
     // Fabric Loader
     val fabric_loader_version: String by project
     modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
-    modLocalRuntime("net.fabricmc:fabric-loader:$fabric_loader_version")
-
+    
+    // modules
     compileOnly(project(":core-xplat", configuration = "namedElements"))
-
-    val kml_version: String by project
-    modImplementation("com.kneelawk:kmodlib-renderlayer:$kml_version")
-
-    testImplementation("junit:junit:4.13.2")
+    compileOnly(project(":debugrender-xplat", configuration = "namedElements"))
+    compileOnly(project(":syncing-core-xplat", configuration = "namedElements"))
 }
 
-tasks {
-    processResources {
-        inputs.property("version", project.version)
+tasks.javadoc {
+    source(project(":core-xplat").sourceSets.main.get().allJava)
+    source(project(":debugrender-xplat").sourceSets.main.get().allJava)
+    source(project(":syncing-core-xplat").sourceSets.main.get().allJava)
 
-        filesMatching("quilt.mod.json") {
-            expand(mapOf("version" to project.version))
-        }
-        filesMatching("fabric.mod.json") {
-            expand(mapOf("version" to project.version))
-        }
-    }
-
-    withType<JavaCompile> {
-        options.encoding = "UTF-8"
-        options.release.set(17)
-    }
-
-    java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-
-        withJavadocJar()
-        withSourcesJar()
-    }
-
-    jar {
-        from(rootProject.file("LICENSE")) {
-            rename { "${it}_${archives_base_name}" }
-        }
-    }
-
-    javadoc {
-        exclude("com/kneelawk/graphlib/debugrender/impl")
+    exclude("com/kneelawk/graphlib/impl")
+    exclude("com/kneelawk/graphlib/debugrender/impl")
+    exclude("com/kneelawk/graphlib/syncing/impl")
 
 //        val minecraft_version: String by project
 //        val quilt_mappings: String by project
-        val jetbrains_annotations_version: String by project
+    val jetbrains_annotations_version: String by project
 //        val lns_version: String by project
-        (options as? StandardJavadocDocletOptions)?.links = listOf(
+    (options as? StandardJavadocDocletOptions)?.links = listOf(
 //            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
-            "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/",
+        "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/",
 //            "https://alexiil.uk/javadoc/libnetworkstack/${lns_version}/"
-        )
+    )
 
-        options.optionFiles(rootProject.file("javadoc-options.txt"))
-    }
-
-    test {
-        useJUnit()
-    }
-
-    afterEvaluate {
-        named("genSources") {
-            setDependsOn(listOf("genSourcesWithVineflower"))
-        }
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            artifactId = "${project.name}-intermediary"
-            from(components["java"])
-        }
-    }
-
-    repositories {
-        if (System.getenv("PUBLISH_REPO") != null) {
-            maven {
-                name = "publishRepo"
-                url = uri(rootProject.file(System.getenv("PUBLISH_REPO")))
-            }
-        }
-    }
+    options.optionFiles(rootProject.file("javadoc-options.txt"))
 }

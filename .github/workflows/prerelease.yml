@@ -107,7 +107,7 @@ jobs:
             lines.push(`\`com.kneelawk.graphlib:core-fabric:${mavenVersion}\``);
             lines.push(`\`com.kneelawk.graphlib:core-neoforge:${mavenVersion}\``);
             lines.push(`Find more more at ${process.env.MAVEN_URL}`);
-            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/graphlib-core-xplat/javadoc/index.html`);
+            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/xplat/javadoc/index.html`);
             return lines.join('\n');
           result-encoding: string
       - name: Make Release Announcement

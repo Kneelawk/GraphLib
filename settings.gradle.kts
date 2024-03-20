@@ -58,6 +58,11 @@ fun example(name: String, vararg submodules: String) {
     }
 }
 
+fun javadoc(name: String) {
+    include("javadoc-$name")
+    project(":javadoc-$name").projectDir = File(rootDir, "javadoc/$name")
+}
+
 module("core-xplat", "mojmap")
 module("core-fabric")
 module("core-neoforge")
@@ -69,3 +74,7 @@ module("syncing-core-fabric")
 module("syncing-core-neoforge")
 module("syncing-lns")
 example("multiblock-lamps", "xplat", "fabric", "neoforge")
+
+javadoc("xplat")
+javadoc("fabric")
+javadoc("neoforge")
