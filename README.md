@@ -1,6 +1,6 @@
 # GraphLib
 
-[![Github Release Status]][Github Release] [![Maven Status]][Maven] [![Javadoc Badge]][Javadoc]
+[![Github Release Status]][Github Release] [![Maven Status]][Maven] [![Javadoc Badge]][Javadoc] [![Discord Badge]][Discord]
 
 [Github Release Status]: https://img.shields.io/github/v/release/Kneelawk/GraphLib?include_prereleases&style=flat-square
 
@@ -13,6 +13,10 @@
 [Javadoc Badge]: https://img.shields.io/badge/-javadoc-green?style=flat-square
 
 [Javadoc]: https://kneelawk.com/docs#graphlib
+
+[Discord Badge]: https://img.shields.io/discord/988299232731607110?style=flat-square&logo=discord
+
+[Discord]: https://discord.gg/6vgpHcKmxg
 
 Library for helping mods that use graph networks, like Wired Redstone.
 
