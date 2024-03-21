@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "graphlib_syncing_lns",
+  "id": "graphlib_syncing_knet",
   "version": "${version}",
-  "name": "Graph Lib Syncing LNS",
-  "description": "LibNetworkStack-based graph syncing.",
+  "name": "Graph Lib Syncing KNet",
+  "description": "KNet-based graph syncing.",
   "authors": [
     "Kneelawk"
   ],
@@ -13,17 +13,16 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/graphlib_syncing_lns/icon-128.png",
+  "icon": "assets/graphlib_syncing_knet/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [
       {
-        "value": "com.kneelawk.graphlib.syncing.lns.impl.GraphLibSyncingLNSFabricMod"
+        "value": "com.kneelawk.graphlib.syncing.knet.fabric.impl.GraphLibSyncingKNetFabricMod"
       }
     ]
   },
-  "mixins": [
-  ],
+  "mixins": [],
   "depends": {
     "graphlib": "*",
     "graphlib_syncing": "*",
