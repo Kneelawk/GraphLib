@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,23 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+package com.kneelawk.graphlib.syncing.knet.api.util;
 
-import org.jetbrains.annotations.NotNull;
-
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.channel.context.PayloadCodec;
 
 /**
- * Used for decoding a {@link BlockNode} from a custom payload.
+ * A payload that holds no information.
  */
-@FunctionalInterface
-public interface BlockNodePacketDecoder<P> {
+public class NoOpPayload {
     /**
-     * Decodes a {@link BlockNode} from a custom payload.
-     * <p>
-     * The payload read should be the same payload written by
-     * {@link BlockNodePacketEncoder#encode(BlockNode)}.
-     *
-     * @param payload the payload to decode from.
-     * @return the decoded block node.
-     * @throws PayloadHandlingException if a block node could not be decoded.
+     * The singleton instance of this payload.
      */
-    @NotNull BlockNode decode(@NotNull P payload) throws PayloadHandlingException;
+    public static final NoOpPayload INSTNACE = new NoOpPayload();
+
+    /**
+     * The codec for this payload that writes nothing and always returns the singular instance.
+     */
+    public static final PayloadCodec<NoOpPayload> CODEC = new PayloadCodec<>((buf, payload) -> {}, buf -> INSTNACE);
+
+    private NoOpPayload() {}
 }

@@ -27,34 +27,33 @@ package com.kneelawk.graphlib.syncing.knet.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.syncing.knet.api.util.NoOpPayload;
 
 /**
- * Used for encoding a {@link BlockNode} to a {@link PacketByteBuf}.
+ * Used for encoding a {@link BlockNode} to a custom payload.
  *
  * @param <N> the type of block node this encoder encodes.
  */
 @FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
+public interface BlockNodePacketEncoder<N extends BlockNode, P> {
     /**
      * Returns a no-op encoder.
      *
      * @param <T> the type of block node to encode.
      * @return a no-op encoder.
      */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noOp() {
-        return (node, buf) -> {};
+    static <T extends BlockNode> BlockNodePacketEncoder<T, NoOpPayload> noOp() {
+        return (node) -> NoOpPayload.INSTNACE;
     }
 
     /**
-     * Encodes a {@link BlockNode} to a {@link PacketByteBuf}.
+     * Encodes a {@link BlockNode} to a custom payload.
      * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(PacketByteBuf)}.
+     * This data will be decoded by {@link BlockNodePacketDecoder#decode(Object)}.
      *
      * @param node the node to encode.
-     * @param buf  the buffer to write to.
+     * @return the payload representing the encoded node.
      */
-    void encode(@NotNull N node, @NotNull PacketByteBuf buf);
+    P encode(@NotNull N node);
 }

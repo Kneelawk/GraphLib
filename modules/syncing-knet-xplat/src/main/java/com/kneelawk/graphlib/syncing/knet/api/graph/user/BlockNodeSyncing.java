@@ -30,21 +30,24 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.syncing.knet.api.util.NoOpPayload;
+import com.kneelawk.knet.api.channel.context.PayloadCodec;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
 
 /**
  * Holds a block node encoder and decoder.
  */
 public final class BlockNodeSyncing {
-    private final @NotNull BlockNodePacketEncoder<?> encoder;
-    private final @NotNull BlockNodePacketDecoder decoder;
+    private final @NotNull BlockNodePacketEncoder<?, ?> encoder;
+    private final @NotNull BlockNodePacketDecoder<?> decoder;
+    private final @NotNull PayloadCodec<?> payloadCodec;
 
-    private BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
+    private BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?, ?> encoder, @NotNull BlockNodePacketDecoder<?> decoder,
+                             @NotNull PayloadCodec<?> payloadCodec) {
         this.encoder = encoder;
         this.decoder = decoder;
+        this.payloadCodec = payloadCodec;
     }
 
     /**
@@ -55,36 +58,39 @@ public final class BlockNodeSyncing {
      * <b>Note: the block node being encoded must be of the type that the encoder expects.</b>
      *
      * @param node the block node to encode.
-     * @param buf  the buffer to encode to.
      */
     @SuppressWarnings("unchecked")
-    public void encode(@NotNull BlockNode node, @NotNull PacketByteBuf buf) {
-        ((BlockNodePacketEncoder<BlockNode>) encoder).encode(node, buf);
+    public Object encode(@NotNull BlockNode node) {
+        return ((BlockNodePacketEncoder<BlockNode, Object>) encoder).encode(node);
     }
 
     /**
      * Decodes a block node.
      *
-     * @param buf the buffer to decode from.
+     * @param payload the payload to decode from.
      * @return a newly decoded block node.
      * @throws PayloadHandlingException if the buffer contained invalid data.
      */
-    public @NotNull BlockNode decode(@NotNull PacketByteBuf buf) throws PayloadHandlingException {
-        return decoder.decode(buf);
+    @SuppressWarnings("unchecked")
+    public @NotNull BlockNode decode(@NotNull Object payload) throws PayloadHandlingException {
+        return ((BlockNodePacketDecoder<Object>) decoder).decode(payload);
     }
 
     /**
      * Makes a {@link BlockNode} syncing descriptor.
      *
-     * @param encoder the encoder.
-     * @param decoder the decoder.
-     * @param <N>     the type of block node this descriptor syncs.
+     * @param encoder      the encoder.
+     * @param decoder      the decoder.
+     * @param payloadCodec the codec for the payload.
+     * @param <N>          the type of block node this descriptor syncs.
+     * @param <P>          the type of payload encoded.
      * @return a new block node syncing descriptor.
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static <N extends BlockNode> @NotNull BlockNodeSyncing of(@NotNull BlockNodePacketEncoder<N> encoder,
-                                                                     @NotNull BlockNodePacketDecoder decoder) {
-        return new BlockNodeSyncing(encoder, decoder);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static <N extends BlockNode, P> @NotNull BlockNodeSyncing of(@NotNull BlockNodePacketEncoder<N, P> encoder,
+                                                                        @NotNull BlockNodePacketDecoder<P> decoder,
+                                                                        @NotNull PayloadCodec<P> payloadCodec) {
+        return new BlockNodeSyncing(encoder, decoder, payloadCodec);
     }
 
     /**
@@ -95,6 +101,6 @@ public final class BlockNodeSyncing {
      */
     @Contract(value = "_ -> new", pure = true)
     public static @NotNull BlockNodeSyncing ofNoOp(@NotNull Supplier<? extends BlockNode> supplier) {
-        return new BlockNodeSyncing(BlockNodePacketEncoder.noOp(), buf -> supplier.get());
+        return new BlockNodeSyncing(BlockNodePacketEncoder.noOp(), payload -> supplier.get(), NoOpPayload.CODEC);
     }
 }
