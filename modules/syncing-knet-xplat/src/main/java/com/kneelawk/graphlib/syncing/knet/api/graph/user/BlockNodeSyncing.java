@@ -30,6 +30,8 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.PacketByteBuf;
+
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.syncing.knet.api.util.NoOpPayload;
 import com.kneelawk.knet.api.channel.context.PayloadCodec;
@@ -58,6 +60,7 @@ public final class BlockNodeSyncing {
      * <b>Note: the block node being encoded must be of the type that the encoder expects.</b>
      *
      * @param node the block node to encode.
+     * @return the encoded payload.
      */
     @SuppressWarnings("unchecked")
     public Object encode(@NotNull BlockNode node) {
@@ -74,6 +77,27 @@ public final class BlockNodeSyncing {
     @SuppressWarnings("unchecked")
     public @NotNull BlockNode decode(@NotNull Object payload) throws PayloadHandlingException {
         return ((BlockNodePacketDecoder<Object>) decoder).decode(payload);
+    }
+
+    /**
+     * Encodes a block node payload.
+     *
+     * @param payload the payload to encode.
+     * @param buf     the buffer to write to.
+     */
+    @SuppressWarnings("unchecked")
+    public void encodePayload(@NotNull Object payload, @NotNull PacketByteBuf buf) {
+        ((PayloadCodec<Object>) payloadCodec).encoder().accept(buf, payload);
+    }
+
+    /**
+     * Decodes a block node payload.
+     *
+     * @param buf the buffer to read from.
+     * @return the decoded payload.
+     */
+    public Object decodePayload(@NotNull PacketByteBuf buf) {
+        return payloadCodec.decoder().apply(buf);
     }
 
     /**

@@ -34,6 +34,7 @@ import com.kneelawk.graphlib.syncing.knet.api.util.NoOpPayload;
  * Used for encoding a {@link BlockNode} to a custom payload.
  *
  * @param <N> the type of block node this encoder encodes.
+ * @param <P> the type of payload this encoder encodes to.
  */
 @FunctionalInterface
 public interface BlockNodePacketEncoder<N extends BlockNode, P> {

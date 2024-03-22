@@ -32,6 +32,8 @@ import com.kneelawk.knet.api.handling.PayloadHandlingException;
 
 /**
  * Used for decoding a {@link BlockNode} from a custom payload.
+ * 
+ * @param <P> the type of payload this decoder decodes from.
  */
 @FunctionalInterface
 public interface BlockNodePacketDecoder<P> {
