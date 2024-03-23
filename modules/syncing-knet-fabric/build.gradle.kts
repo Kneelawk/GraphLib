@@ -47,6 +47,15 @@ architectury {
     fabric()
 }
 
+loom {
+    mods {
+        create("graphlib_syncing_knet") {
+            sourceSet(sourceSets.main.get())
+            sourceSet(project(":syncing-knet-xplat").sourceSets.main.get())
+        }
+    }
+}
+
 configurations {
     val common = create("common")
     create("shadowCommon")
@@ -103,8 +112,6 @@ dependencies {
 
 tasks {
     processResources {
-        from(project(":syncing-knet-xplat").sourceSets.main.map { it.resources.asFileTree })
-
         inputs.property("version", project.version)
 
         filesMatching("quilt.mod.json") {

@@ -47,6 +47,15 @@ architectury {
     fabric()
 }
 
+loom {
+    mods {
+        create("graphlib_syncing") {
+            sourceSet(sourceSets.main.get())
+            sourceSet(project(":syncing-core-xplat").sourceSets.main.get())
+        }
+    }
+}
+
 configurations {
     val common = create("common")
     create("shadowCommon")
@@ -83,9 +92,7 @@ dependencies {
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     "common"(project(path = ":syncing-core-xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":syncing-core-xplat", configuration = "transformProductionFabric")) {
-        isTransitive = false
-    }
+    "shadowCommon"(project(path = ":syncing-core-xplat")) { isTransitive = false }
 
     // GraphLib Core
     compileOnly(project(":core-xplat", configuration = "namedElements"))
@@ -94,8 +101,6 @@ dependencies {
 
 tasks {
     processResources {
-        from(project(":syncing-core-xplat").sourceSets.main.map { it.resources.asFileTree })
-
         inputs.property("version", project.version)
 
         filesMatching("quilt.mod.json") {
