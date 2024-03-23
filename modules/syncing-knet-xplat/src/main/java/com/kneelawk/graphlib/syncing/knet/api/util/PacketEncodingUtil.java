@@ -27,12 +27,6 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import io.netty.buffer.Unpooled;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
@@ -46,6 +40,8 @@ import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 import com.kneelawk.knet.api.channel.context.PayloadCodec;
 import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.knet.api.util.Palette;
 
 /**
  * Contains various utility methods for en/decoding various types to/from packets.
@@ -65,7 +61,7 @@ public final class PacketEncodingUtil {
      * @param typeId  the node's type id.
      * @param nodeBuf the buffer holding the node's encoded data.
      */
-    public record NodePosPayload(@NotNull BlockPos pos, @NotNull Identifier typeId, @NotNull PacketByteBuf nodeBuf) {
+    public record NodePosPayload(@NotNull BlockPos pos, @NotNull Identifier typeId, @NotNull NetByteBuf nodeBuf) {
         /**
          * This payload's codec.
          */
@@ -79,7 +75,7 @@ public final class PacketEncodingUtil {
             Identifier typeId = buf.readIdentifier();
 
             int nodeBufLen = buf.readInt();
-            PacketByteBuf nodeBuf = new PacketByteBuf(Unpooled.buffer(nodeBufLen));
+            NetByteBuf nodeBuf = NetByteBuf.buffer(nodeBufLen);
             buf.readBytes(nodeBuf, nodeBufLen);
 
             return new NodePosPayload(pos, typeId, nodeBuf);
@@ -97,7 +93,7 @@ public final class PacketEncodingUtil {
                                                         @NotNull KNetSyncedUniverse universe) {
         BlockNodeType type = nodePos.node().getType();
 
-        PacketByteBuf nodeBuf = new PacketByteBuf(Unpooled.buffer());
+        NetByteBuf nodeBuf = NetByteBuf.buffer();
         universe.getNodeSyncing(type).encode(nodePos.node(), nodeBuf);
 
         return new NodePosPayload(nodePos.pos(), type.getId(), nodeBuf);
@@ -147,29 +143,20 @@ public final class PacketEncodingUtil {
     /**
      * Encodes a {@link NodePos} into a payload, while allowing node data and palette data to go in a header.
      *
-     * @param nodePos       the {@link NodePos} to encode.
-     * @param nodeBuf       a buffer for node data to be written to, to go in the header.
-     * @param palette       a palette to be filled out, to go in the header.
-     * @param paletteLookup palette reverse lookup, for keeping track of past associations.
-     * @param universe      the universe the {@link NodePos} exists in.
+     * @param nodePos  the {@link NodePos} to encode.
+     * @param nodeBuf  a buffer for node data to be written to, to go in the header.
+     * @param palette  a palette to be filled out, to go in the header.
+     * @param universe the universe the {@link NodePos} exists in.
      * @return the encoded payload.
      */
     public static @NotNull NodePosSmallPayload encodeNodePosSmall(@NotNull NodePos nodePos,
-                                                                  @NotNull PacketByteBuf nodeBuf,
-                                                                  @NotNull Int2ObjectMap<Identifier> palette,
-                                                                  @NotNull Object2IntMap<Identifier> paletteLookup,
+                                                                  @NotNull NetByteBuf nodeBuf,
+                                                                  @NotNull Palette<Identifier> palette,
                                                                   @NotNull KNetSyncedUniverse universe) {
         BlockNodeType type = nodePos.node().getType();
         Identifier typeId = type.getId();
 
-        int typeInt;
-        if (paletteLookup.containsKey(typeId)) {
-            typeInt = paletteLookup.getInt(typeId);
-        } else {
-            typeInt = paletteLookup.size();
-            paletteLookup.put(typeId, typeInt);
-            palette.put(typeInt, typeId);
-        }
+        int typeInt = palette.keyFor(typeId);
 
         universe.getNodeSyncing(type).encode(nodePos.node(), nodeBuf);
 
@@ -187,8 +174,8 @@ public final class PacketEncodingUtil {
      * @throws PayloadHandlingException if an error occurs while decoding the payload.
      */
     public static @NotNull NodePos decodeNodePosSmall(@NotNull NodePosSmallPayload payload,
-                                                      @NotNull PacketByteBuf nodeBuf,
-                                                      @NotNull Int2ObjectMap<Identifier> palette,
+                                                      @NotNull NetByteBuf nodeBuf,
+                                                      @NotNull Palette<Identifier> palette,
                                                       @NotNull KNetSyncedUniverse universe)
         throws PayloadHandlingException {
         Identifier typeId = palette.get(payload.typeId);

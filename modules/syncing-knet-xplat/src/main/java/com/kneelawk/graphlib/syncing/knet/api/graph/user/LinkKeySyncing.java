@@ -29,10 +29,9 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
  * Holds a link key encoder and decoder.
@@ -57,7 +56,7 @@ public final class LinkKeySyncing {
      * @param buf  the buffer to encode to.
      */
     @SuppressWarnings("unchecked")
-    public void encode(@NotNull LinkKey node, @NotNull PacketByteBuf buf) {
+    public void encode(@NotNull LinkKey node, @NotNull NetByteBuf buf) {
         ((LinkKeyPacketEncoder<LinkKey>) encoder).encode(node, buf);
     }
 
@@ -68,7 +67,7 @@ public final class LinkKeySyncing {
      * @return a newly decoded link key.
      * @throws PayloadHandlingException if the buffer contained invalid data.
      */
-    public @NotNull LinkKey decode(@NotNull PacketByteBuf buf) throws PayloadHandlingException {
+    public @NotNull LinkKey decode(@NotNull NetByteBuf buf) throws PayloadHandlingException {
         return decoder.decode(buf);
     }
 

@@ -30,10 +30,9 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
  * Holds a block node encoder and decoder.
@@ -58,7 +57,7 @@ public final class BlockNodeSyncing {
      * @param buf  the buffer to encode to.
      */
     @SuppressWarnings("unchecked")
-    public void encode(@NotNull BlockNode node, @NotNull PacketByteBuf buf) {
+    public void encode(@NotNull BlockNode node, @NotNull NetByteBuf buf) {
         ((BlockNodePacketEncoder<BlockNode>) encoder).encode(node, buf);
     }
 
@@ -69,7 +68,7 @@ public final class BlockNodeSyncing {
      * @return a newly decoded block node.
      * @throws PayloadHandlingException if the buffer contained invalid data.
      */
-    public @NotNull BlockNode decode(@NotNull PacketByteBuf buf) throws PayloadHandlingException {
+    public @NotNull BlockNode decode(@NotNull NetByteBuf buf) throws PayloadHandlingException {
         return decoder.decode(buf);
     }
 

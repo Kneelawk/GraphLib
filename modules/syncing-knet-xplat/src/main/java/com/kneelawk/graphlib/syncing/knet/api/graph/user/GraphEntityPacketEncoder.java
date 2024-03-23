@@ -27,12 +27,11 @@ package com.kneelawk.graphlib.syncing.knet.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
- * Used for encoding a {@link GraphEntity} to a {@link PacketByteBuf}.
+ * Used for encoding a {@link GraphEntity} to a {@link NetByteBuf}.
  *
  * @param <G> the type of graph entity this encoder encodes.
  */
@@ -49,12 +48,12 @@ public interface GraphEntityPacketEncoder<G extends GraphEntity<G>> {
     }
 
     /**
-     * Encodes a {@link GraphEntity} to a {@link PacketByteBuf}.
+     * Encodes a {@link GraphEntity} to a {@link NetByteBuf}.
      * <p>
-     * The data will be decoded by {@link GraphEntityPacketDecoder#decode(PacketByteBuf)}.
+     * The data will be decoded by {@link GraphEntityPacketDecoder#decode(NetByteBuf)}.
      *
      * @param link the graph entity to be encoded.
      * @param buf  the buffer to write to.
      */
-    void encode(@NotNull G link, @NotNull PacketByteBuf buf);
+    void encode(@NotNull G link, @NotNull NetByteBuf buf);
 }

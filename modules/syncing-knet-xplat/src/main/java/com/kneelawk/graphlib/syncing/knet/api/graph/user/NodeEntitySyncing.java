@@ -29,10 +29,9 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
  * Holds a node entity encoder and decoder.
@@ -57,7 +56,7 @@ public final class NodeEntitySyncing {
      * @param buf  the buffer to encode to.
      */
     @SuppressWarnings("unchecked")
-    public void encode(@NotNull NodeEntity node, @NotNull PacketByteBuf buf) {
+    public void encode(@NotNull NodeEntity node, @NotNull NetByteBuf buf) {
         ((NodeEntityPacketEncoder<NodeEntity>) encoder).encode(node, buf);
     }
 
@@ -68,7 +67,7 @@ public final class NodeEntitySyncing {
      * @return a newly decoded node entity.
      * @throws PayloadHandlingException if the buffer contained invalid data.
      */
-    public @NotNull NodeEntity decode(@NotNull PacketByteBuf buf) throws PayloadHandlingException {
+    public @NotNull NodeEntity decode(@NotNull NetByteBuf buf) throws PayloadHandlingException {
         return decoder.decode(buf);
     }
 
