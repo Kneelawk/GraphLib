@@ -32,7 +32,10 @@ import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
+import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
@@ -131,10 +134,10 @@ public final class PacketEncodingUtil {
          */
         public static final PayloadCodec<NodePosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
             buf.writeBlockPos(payload.pos);
-            buf.writeVarInt(payload.typeId);
+            buf.writeVarUnsignedInt(payload.typeId);
         }, buf -> {
             BlockPos pos = buf.readBlockPos();
-            int typeId = buf.readVarInt();
+            int typeId = buf.readVarUnsignedInt();
 
             return new NodePosSmallPayload(pos, typeId);
         });
@@ -154,11 +157,10 @@ public final class PacketEncodingUtil {
                                                                   @NotNull Palette<Identifier> palette,
                                                                   @NotNull KNetSyncedUniverse universe) {
         BlockNodeType type = nodePos.node().getType();
-        Identifier typeId = type.getId();
-
-        int typeInt = palette.keyFor(typeId);
 
         universe.getNodeSyncing(type).encode(nodePos.node(), nodeBuf);
+
+        int typeInt = palette.keyFor(type.getId());
 
         return new NodePosSmallPayload(nodePos.pos(), typeInt);
     }
@@ -189,5 +191,161 @@ public final class PacketEncodingUtil {
         BlockNode node = syncing.decode(nodeBuf);
 
         return new NodePos(payload.pos, node);
+    }
+
+    /**
+     * A payload representing everything for a {@link LinkPos} that would not go in a header.
+     *
+     * @param first   the payload for the first node.
+     * @param second  the payload for the second node.
+     * @param typeId  the link key's type id.
+     * @param linkBuf the buffer holding the link key's encoded data.
+     */
+    public record LinkPosPayload(@NotNull NodePosPayload first, @NotNull NodePosPayload second,
+                                 @NotNull Identifier typeId, @NotNull NetByteBuf linkBuf) {
+        /**
+         * This payload's codec.
+         */
+        public static final PayloadCodec<LinkPosPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
+            NodePosPayload.CODEC.encoder().accept(buf, payload.first);
+            NodePosPayload.CODEC.encoder().accept(buf, payload.second);
+            buf.writeIdentifier(payload.typeId);
+            buf.writeInt(payload.linkBuf.readableBytes());
+            buf.writeBytes(payload.linkBuf, payload.linkBuf.readerIndex(), payload.linkBuf.readableBytes());
+        }, buf -> {
+            NodePosPayload first = NodePosPayload.CODEC.decoder().apply(buf);
+            NodePosPayload second = NodePosPayload.CODEC.decoder().apply(buf);
+            Identifier typeId = buf.readIdentifier();
+
+            int linkBufLen = buf.readInt();
+            NetByteBuf linkBuf = NetByteBuf.buffer(linkBufLen);
+            buf.readBytes(linkBuf, linkBufLen);
+
+            return new LinkPosPayload(first, second, typeId, linkBuf);
+        });
+    }
+
+    /**
+     * Encodes a {@link LinkPos} into a payload.
+     *
+     * @param linkPos  the {@link LinkPos} to encode.
+     * @param universe the universe that the link exists in.
+     * @return the encoded payload.
+     */
+    public static @NotNull LinkPosPayload encodeLinkPos(@NotNull LinkPos linkPos,
+                                                        @NotNull KNetSyncedUniverse universe) {
+        NodePosPayload first = encodeNodePos(linkPos.first(), universe);
+        NodePosPayload second = encodeNodePos(linkPos.second(), universe);
+
+        LinkKeyType type = linkPos.key().getType();
+
+        NetByteBuf linkBuf = NetByteBuf.buffer();
+        universe.getLinkKeySyncing(type).encode(linkPos.key(), linkBuf);
+
+        return new LinkPosPayload(first, second, type.getId(), linkBuf);
+    }
+
+    /**
+     * Decodes a {@link LinkPos} from a payload.
+     *
+     * @param payload  the payload to decode.
+     * @param universe the universe the link exists in.
+     * @return the decoded {@link LinkPos}.
+     * @throws PayloadHandlingException if an error occurred while decoding the {@link LinkPos}.
+     */
+    public static @NotNull LinkPos decodeLinkPos(@NotNull LinkPosPayload payload, @NotNull KNetSyncedUniverse universe)
+        throws PayloadHandlingException {
+        NodePos first = decodeNodePos(payload.first, universe);
+        NodePos second = decodeNodePos(payload.second, universe);
+
+        LinkKeyType type = universe.getUniverse().getLinkKeyType(payload.typeId);
+        if (type == null) throw new PayloadHandlingErrorException(
+            "Invalid link key type: " + payload.typeId + " @ " + first + "-" + second);
+        LinkKeySyncing syncing = universe.getLinkKeySyncing(type);
+
+        LinkKey linkKey = syncing.decode(payload.linkBuf);
+
+        return new LinkPos(first, second, linkKey);
+    }
+
+    /**
+     * A smaller payload representing a {@link LinkPos}, while allowing node data, link key data, and palette data to be
+     * stored in a header.
+     *
+     * @param first  the node payload for the first node.
+     * @param second the node payload for the second node.
+     * @param typeId the palette'd type id of the link key.
+     */
+    public record LinkPosSmallPayload(@NotNull NodePosSmallPayload first, @NotNull NodePosSmallPayload second,
+                                      int typeId) {
+        public static final PayloadCodec<LinkPosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
+            NodePosSmallPayload.CODEC.encoder().accept(buf, payload.first);
+            NodePosSmallPayload.CODEC.encoder().accept(buf, payload.second);
+            buf.writeVarUnsignedInt(payload.typeId);
+        }, buf -> {
+            NodePosSmallPayload first = NodePosSmallPayload.CODEC.decoder().apply(buf);
+            NodePosSmallPayload second = NodePosSmallPayload.CODEC.decoder().apply(buf);
+            int typeId = buf.readVarUnsignedInt();
+            return new LinkPosSmallPayload(first, second, typeId);
+        });
+    }
+
+    /**
+     * Encodes a {@link LinkPos} into a payload, allowing node data, link key data, and palette data to go in a header.
+     *
+     * @param linkPos    the {@link LinkPos} to encode.
+     * @param nodeBuf    the buffer that node data is written to.
+     * @param linkKeyBuf the buffer that link key data is written to.
+     * @param palette    the id palette.
+     * @param universe   the universe the {@link LinkPos} exists in.
+     * @return the encoded payload.
+     */
+    public static @NotNull LinkPosSmallPayload encodeLinkPosSmall(@NotNull LinkPos linkPos, @NotNull NetByteBuf nodeBuf,
+                                                                  @NotNull NetByteBuf linkKeyBuf,
+                                                                  @NotNull Palette<Identifier> palette,
+                                                                  @NotNull KNetSyncedUniverse universe) {
+        NodePosSmallPayload first = encodeNodePosSmall(linkPos.first(), nodeBuf, palette, universe);
+        NodePosSmallPayload second = encodeNodePosSmall(linkPos.second(), nodeBuf, palette, universe);
+
+        LinkKeyType type = linkPos.key().getType();
+
+        universe.getLinkKeySyncing(type).encode(linkPos.key(), linkKeyBuf);
+
+        int typeId = palette.keyFor(type.getId());
+
+        return new LinkPosSmallPayload(first, second, typeId);
+    }
+
+    /**
+     * Decodes a {@link LinkPos} from a paylaod, allowing node data, link key data, and palette data to be read from a
+     * header.
+     *
+     * @param payload    the payload to decode.
+     * @param nodeBuf    the buffer to read node data from.
+     * @param linkKeyBuf the buffer to read link key data from.
+     * @param palette    the palette to use to decode node and link key ids from integers.
+     * @param universe   the universe the {@link LinkPos} exists within.
+     * @return the decoded {@link LinkPos}.
+     * @throws PayloadHandlingException if an error occurs while decoding the payload.
+     */
+    public static @NotNull LinkPos decodeLinkPosSmall(@NotNull LinkPosSmallPayload payload, @NotNull NetByteBuf nodeBuf,
+                                                      @NotNull NetByteBuf linkKeyBuf,
+                                                      @NotNull Palette<Identifier> palette,
+                                                      @NotNull KNetSyncedUniverse universe)
+        throws PayloadHandlingException {
+        NodePos first = decodeNodePosSmall(payload.first, nodeBuf, palette, universe);
+        NodePos second = decodeNodePosSmall(payload.second, nodeBuf, palette, universe);
+
+        Identifier typeId = palette.get(payload.typeId);
+        if (typeId == null) throw new PayloadHandlingErrorException(
+            "Invalid link key type int: " + payload.typeId + " @ " + first + "-" + second);
+        LinkKeyType type = universe.getUniverse().getLinkKeyType(typeId);
+        if (type == null)
+            throw new PayloadHandlingErrorException("Invalid link key type: " + typeId + " @ " + first + "-" + second);
+        LinkKeySyncing syncing = universe.getLinkKeySyncing(type);
+
+        LinkKey key = syncing.decode(linkKeyBuf);
+
+        return new LinkPos(first, second, key);
     }
 }
