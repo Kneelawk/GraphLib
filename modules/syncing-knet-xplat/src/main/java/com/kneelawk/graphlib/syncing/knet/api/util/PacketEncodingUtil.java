@@ -278,6 +278,9 @@ public final class PacketEncodingUtil {
      */
     public record LinkPosSmallPayload(@NotNull NodePosSmallPayload first, @NotNull NodePosSmallPayload second,
                                       int typeId) {
+        /**
+         * This payload's codec.
+         */
         public static final PayloadCodec<LinkPosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
             NodePosSmallPayload.CODEC.encoder().accept(buf, payload.first);
             NodePosSmallPayload.CODEC.encoder().accept(buf, payload.second);
