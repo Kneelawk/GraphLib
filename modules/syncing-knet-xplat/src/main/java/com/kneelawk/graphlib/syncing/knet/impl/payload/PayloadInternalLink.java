@@ -23,14 +23,35 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.impl;
+package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.util.Identifier;
+import java.util.OptionalInt;
 
-public class SyncingKNetImpl {
-    public static final String MOD_ID = "graphlib_syncing_knet";
+import com.kneelawk.knet.api.util.NetByteBuf;
 
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+public record PayloadInternalLink(int firstIndex, int secondIndex, int keyTypeId, OptionalInt entityTypeId) {
+    public static PayloadInternalLink decode(NetByteBuf buf) {
+        int firstIndex = buf.readVarUnsignedInt();
+        int secondIndex = buf.readVarUnsignedInt();
+        int keyTypeId = buf.readVarUnsignedInt();
+        OptionalInt entityTypeId;
+        if (buf.readBoolean()) {
+            entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
+        } else {
+            entityTypeId = OptionalInt.empty();
+        }
+        return new PayloadInternalLink(firstIndex, secondIndex, keyTypeId, entityTypeId);
+    }
+
+    public void encode(NetByteBuf buf) {
+        buf.writeVarUnsignedInt(firstIndex);
+        buf.writeVarUnsignedInt(secondIndex);
+        buf.writeVarUnsignedInt(keyTypeId);
+        if (entityTypeId.isPresent()) {
+            buf.writeBoolean(true);
+            buf.writeVarUnsignedInt(entityTypeId.getAsInt());
+        } else {
+            buf.writeBoolean(false);
+        }
     }
 }

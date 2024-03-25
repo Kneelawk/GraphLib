@@ -23,20 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.impl;
+package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
-import com.kneelawk.knet.api.KNetRegistrar;
-import com.kneelawk.knet.api.channel.NoContextChannel;
+import java.util.OptionalInt;
 
-public final class KNetChannels {
-    private KNetChannels() {}
+import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
-    public static void register(KNetRegistrar registrar) {
-        registrar.register(CHUNK_DATA);
+public record PayloadNode(NodePosSmallPayload nodePos, OptionalInt entityTypeId) {
+    public static PayloadNode decode(NetByteBuf buf) {
+        NodePosSmallPayload nodePos = NodePosSmallPayload.CODEC.decoder().apply(buf);
+        OptionalInt entityTypeId;
+        if (buf.readBoolean()) {
+            entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
+        } else {
+            entityTypeId = OptionalInt.empty();
+        }
+        return new PayloadNode(nodePos, entityTypeId);
     }
 
-    public static final NoContextChannel<ChunkDataPayload> CHUNK_DATA =
-        new NoContextChannel<>(SyncingKNetImpl.id("chunk_data"), ChunkDataPayload::decode).recvClient(
-            KNetDecoding::receiveChunkDataPacket);
+    public void encode(NetByteBuf buf) {
+        NodePosSmallPayload.CODEC.encoder().accept(buf, nodePos);
+        if (entityTypeId.isPresent()) {
+            buf.writeBoolean(true);
+            buf.writeVarUnsignedInt(entityTypeId.getAsInt());
+        } else {
+            buf.writeBoolean(false);
+        }
+    }
 }

@@ -23,20 +23,27 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.impl;
+package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
-import com.kneelawk.knet.api.KNetRegistrar;
-import com.kneelawk.knet.api.channel.NoContextChannel;
+import net.minecraft.util.Identifier;
 
-public final class KNetChannels {
-    private KNetChannels() {}
+import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.knet.api.util.Palette;
 
-    public static void register(KNetRegistrar registrar) {
-        registrar.register(CHUNK_DATA);
+public record PayloadHeader(Identifier universeId, Palette<Identifier> palette, NetByteBuf data) {
+    public static PayloadHeader decode(NetByteBuf buf) {
+        Identifier universeId = buf.readIdentifier();
+        Palette<Identifier> palette = Palette.decode(buf, NetByteBuf::readIdentifier);
+        int dataLen = buf.readVarUnsignedInt();
+        NetByteBuf data = NetByteBuf.buffer(dataLen);
+        buf.readBytes(data, dataLen);
+
+        return new PayloadHeader(universeId, palette, data);
     }
-
-    public static final NoContextChannel<ChunkDataPayload> CHUNK_DATA =
-        new NoContextChannel<>(SyncingKNetImpl.id("chunk_data"), ChunkDataPayload::decode).recvClient(
-            KNetDecoding::receiveChunkDataPacket);
+    
+    public void encode(NetByteBuf buf) {
+        buf.writeIdentifier(universeId);
+        palette.encode(buf, NetByteBuf::writeIdentifier);
+        buf.writeBytes(data, data.readerIndex(), data.readableBytes());
+    }
 }
