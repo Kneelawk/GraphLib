@@ -28,7 +28,6 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -37,10 +36,11 @@ import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
+import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
-import com.kneelawk.knet.api.channel.context.PayloadCodec;
 import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
 import com.kneelawk.knet.api.util.NetByteBuf;
@@ -58,31 +58,30 @@ public final class PacketEncodingUtil {
     public static final LinkKeySyncing EMPTY_KEY_SYNCING = LinkKeySyncing.ofNoOp(() -> EmptyLinkKey.INSTANCE);
 
     /**
-     * A payload representing everything for a {@link NodePos} that would not go in the header.
+     * Encodes a reference to a synced universe.
      *
-     * @param pos     the block position.
-     * @param typeId  the node's type id.
-     * @param nodeBuf the buffer holding the node's encoded data.
+     * @param universe the universe to encode a reference to.
+     * @return the payload holding a reference to the given universe.
      */
-    public record NodePosPayload(@NotNull BlockPos pos, @NotNull Identifier typeId, @NotNull NetByteBuf nodeBuf) {
-        /**
-         * This payload's codec.
-         */
-        public static final PayloadCodec<NodePosPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-            buf.writeBlockPos(payload.pos);
-            buf.writeIdentifier(payload.typeId);
-            buf.writeInt(payload.nodeBuf.readableBytes());
-            buf.writeBytes(payload.nodeBuf, payload.nodeBuf.readerIndex(), payload.nodeBuf.readableBytes());
-        }, buf -> {
-            BlockPos pos = buf.readBlockPos();
-            Identifier typeId = buf.readIdentifier();
+    public static @NotNull UniversePayload encodeUniverse(@NotNull KNetSyncedUniverse universe) {
+        return new UniversePayload(universe.getId());
+    }
 
-            int nodeBufLen = buf.readInt();
-            NetByteBuf nodeBuf = NetByteBuf.buffer(nodeBufLen);
-            buf.readBytes(nodeBuf, nodeBufLen);
-
-            return new NodePosPayload(pos, typeId, nodeBuf);
-        });
+    /**
+     * Decodes a reference to a synced universe.
+     *
+     * @param payload the payload holding a reference a synced universe.
+     * @return the referenced synced universe.
+     * @throws PayloadHandlingException if an error occurs while finding the referenced universe.
+     */
+    public static @NotNull KNetSyncedUniverse decodeUniverse(@NotNull UniversePayload payload)
+        throws PayloadHandlingException {
+        if (!GraphLibSyncing.syncingEnabled(payload.universeId()))
+            throw new PayloadHandlingErrorException("No universe present with id: " + payload.universeId());
+        SyncedUniverse universe = GraphLibSyncing.getUniverse(payload.universeId());
+        if (!(universe instanceof KNetSyncedUniverse knet)) throw new PayloadHandlingErrorException(
+            "Universe with id " + payload.universeId() + " is not a KNet universe");
+        return knet;
     }
 
     /**
@@ -112,35 +111,15 @@ public final class PacketEncodingUtil {
      */
     public static @NotNull NodePos decodeNodePos(@NotNull NodePosPayload payload, @NotNull KNetSyncedUniverse universe)
         throws PayloadHandlingException {
-        BlockNodeType type = universe.getUniverse().getNodeType(payload.typeId);
+        BlockNodeType type = universe.getUniverse().getNodeType(payload.typeId());
         if (type == null)
-            throw new PayloadHandlingErrorException("Invalid block node type: " + payload.typeId + " @ " + payload.pos);
+            throw new PayloadHandlingErrorException(
+                "Invalid block node type: " + payload.typeId() + " @ " + payload.pos());
         BlockNodeSyncing syncing = universe.getNodeSyncing(type);
 
-        BlockNode node = syncing.decode(payload.nodeBuf);
+        BlockNode node = syncing.decode(payload.nodeBuf());
 
-        return new NodePos(payload.pos, node);
-    }
-
-    /**
-     * A smaller payload representing a {@link NodePos}, while allowing node data and palette data to go in a header.
-     *
-     * @param pos    the block position of the {@link NodePos}.
-     * @param typeId the integer for the node's type id to be looked up in the palette.
-     */
-    public record NodePosSmallPayload(@NotNull BlockPos pos, int typeId) {
-        /**
-         * This payload's codec.
-         */
-        public static final PayloadCodec<NodePosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-            buf.writeBlockPos(payload.pos);
-            buf.writeVarUnsignedInt(payload.typeId);
-        }, buf -> {
-            BlockPos pos = buf.readBlockPos();
-            int typeId = buf.readVarUnsignedInt();
-
-            return new NodePosSmallPayload(pos, typeId);
-        });
+        return new NodePos(payload.pos(), node);
     }
 
     /**
@@ -180,49 +159,17 @@ public final class PacketEncodingUtil {
                                                       @NotNull Palette<Identifier> palette,
                                                       @NotNull KNetSyncedUniverse universe)
         throws PayloadHandlingException {
-        Identifier typeId = palette.get(payload.typeId);
+        Identifier typeId = palette.get(payload.typeId());
         if (typeId == null) throw new PayloadHandlingErrorException(
-            "Invalid block node type int: " + payload.typeId + " @ " + payload.pos);
+            "Invalid block node type int: " + payload.typeId() + " @ " + payload.pos());
         BlockNodeType type = universe.getUniverse().getNodeType(typeId);
         if (type == null)
-            throw new PayloadHandlingErrorException("Invalid block node type: " + typeId + " @ " + payload.pos);
+            throw new PayloadHandlingErrorException("Invalid block node type: " + typeId + " @ " + payload.pos());
         BlockNodeSyncing syncing = universe.getNodeSyncing(type);
 
         BlockNode node = syncing.decode(nodeBuf);
 
-        return new NodePos(payload.pos, node);
-    }
-
-    /**
-     * A payload representing everything for a {@link LinkPos} that would not go in a header.
-     *
-     * @param first   the payload for the first node.
-     * @param second  the payload for the second node.
-     * @param typeId  the link key's type id.
-     * @param linkBuf the buffer holding the link key's encoded data.
-     */
-    public record LinkPosPayload(@NotNull NodePosPayload first, @NotNull NodePosPayload second,
-                                 @NotNull Identifier typeId, @NotNull NetByteBuf linkBuf) {
-        /**
-         * This payload's codec.
-         */
-        public static final PayloadCodec<LinkPosPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-            NodePosPayload.CODEC.encoder().accept(buf, payload.first);
-            NodePosPayload.CODEC.encoder().accept(buf, payload.second);
-            buf.writeIdentifier(payload.typeId);
-            buf.writeInt(payload.linkBuf.readableBytes());
-            buf.writeBytes(payload.linkBuf, payload.linkBuf.readerIndex(), payload.linkBuf.readableBytes());
-        }, buf -> {
-            NodePosPayload first = NodePosPayload.CODEC.decoder().apply(buf);
-            NodePosPayload second = NodePosPayload.CODEC.decoder().apply(buf);
-            Identifier typeId = buf.readIdentifier();
-
-            int linkBufLen = buf.readInt();
-            NetByteBuf linkBuf = NetByteBuf.buffer(linkBufLen);
-            buf.readBytes(linkBuf, linkBufLen);
-
-            return new LinkPosPayload(first, second, typeId, linkBuf);
-        });
+        return new NodePos(payload.pos(), node);
     }
 
     /**
@@ -255,42 +202,17 @@ public final class PacketEncodingUtil {
      */
     public static @NotNull LinkPos decodeLinkPos(@NotNull LinkPosPayload payload, @NotNull KNetSyncedUniverse universe)
         throws PayloadHandlingException {
-        NodePos first = decodeNodePos(payload.first, universe);
-        NodePos second = decodeNodePos(payload.second, universe);
+        NodePos first = decodeNodePos(payload.first(), universe);
+        NodePos second = decodeNodePos(payload.second(), universe);
 
-        LinkKeyType type = universe.getUniverse().getLinkKeyType(payload.typeId);
+        LinkKeyType type = universe.getUniverse().getLinkKeyType(payload.typeId());
         if (type == null) throw new PayloadHandlingErrorException(
-            "Invalid link key type: " + payload.typeId + " @ " + first + "-" + second);
+            "Invalid link key type: " + payload.typeId() + " @ " + first + "-" + second);
         LinkKeySyncing syncing = universe.getLinkKeySyncing(type);
 
-        LinkKey linkKey = syncing.decode(payload.linkBuf);
+        LinkKey linkKey = syncing.decode(payload.linkBuf());
 
         return new LinkPos(first, second, linkKey);
-    }
-
-    /**
-     * A smaller payload representing a {@link LinkPos}, while allowing node data, link key data, and palette data to be
-     * stored in a header.
-     *
-     * @param first  the node payload for the first node.
-     * @param second the node payload for the second node.
-     * @param typeId the palette'd type id of the link key.
-     */
-    public record LinkPosSmallPayload(@NotNull NodePosSmallPayload first, @NotNull NodePosSmallPayload second,
-                                      int typeId) {
-        /**
-         * This payload's codec.
-         */
-        public static final PayloadCodec<LinkPosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-            NodePosSmallPayload.CODEC.encoder().accept(buf, payload.first);
-            NodePosSmallPayload.CODEC.encoder().accept(buf, payload.second);
-            buf.writeVarUnsignedInt(payload.typeId);
-        }, buf -> {
-            NodePosSmallPayload first = NodePosSmallPayload.CODEC.decoder().apply(buf);
-            NodePosSmallPayload second = NodePosSmallPayload.CODEC.decoder().apply(buf);
-            int typeId = buf.readVarUnsignedInt();
-            return new LinkPosSmallPayload(first, second, typeId);
-        });
     }
 
     /**
@@ -336,12 +258,12 @@ public final class PacketEncodingUtil {
                                                       @NotNull Palette<Identifier> palette,
                                                       @NotNull KNetSyncedUniverse universe)
         throws PayloadHandlingException {
-        NodePos first = decodeNodePosSmall(payload.first, nodeBuf, palette, universe);
-        NodePos second = decodeNodePosSmall(payload.second, nodeBuf, palette, universe);
+        NodePos first = decodeNodePosSmall(payload.first(), nodeBuf, palette, universe);
+        NodePos second = decodeNodePosSmall(payload.second(), nodeBuf, palette, universe);
 
-        Identifier typeId = palette.get(payload.typeId);
+        Identifier typeId = palette.get(payload.typeId());
         if (typeId == null) throw new PayloadHandlingErrorException(
-            "Invalid link key type int: " + payload.typeId + " @ " + first + "-" + second);
+            "Invalid link key type int: " + payload.typeId() + " @ " + first + "-" + second);
         LinkKeyType type = universe.getUniverse().getLinkKeyType(typeId);
         if (type == null)
             throw new PayloadHandlingErrorException("Invalid link key type: " + typeId + " @ " + first + "-" + second);
