@@ -65,6 +65,6 @@ public class KNetWorldListener implements WorldListener {
 
     @Override
     public void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder) {
-
+        KNetEncoding.sendNodeRemove(graph, holder);
     }
 }

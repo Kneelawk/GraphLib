@@ -29,6 +29,7 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeRemovePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.SplitPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.UnlinkPayload;
 import com.kneelawk.knet.api.KNetRegistrar;
@@ -44,6 +45,7 @@ public final class KNetChannels {
         registrar.register(LINK);
         registrar.register(UNLINK);
         registrar.register(SPLIT);
+        registrar.register(NODE_REMOVE);
     }
 
     public static final NoContextChannel<ChunkDataPayload> CHUNK_DATA =
@@ -68,4 +70,8 @@ public final class KNetChannels {
     public static final NoContextChannel<SplitPayload> SPLIT =
         new NoContextChannel<>(SyncingKNetImpl.id("split"), SplitPayload::decode).recvClient(
             KNetDecoding::receiveSplit);
+
+    public static final NoContextChannel<NodeRemovePayload> NODE_REMOVE =
+        new NoContextChannel<>(SyncingKNetImpl.id("node_remove"), NodeRemovePayload::decode).recvClient(
+            KNetDecoding::receiveNodeRemove);
 }

@@ -64,6 +64,7 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeRemovePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
@@ -345,16 +346,16 @@ public final class KNetDecoding {
         PayloadHeader header = payload.header();
         Palette<Identifier> palette = header.palette();
         NetByteBuf data = header.data();
-        
+
         KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
         ClientGraphWorldImpl world = getWorld(header.universeId(), "split");
-        
+
         BlockGraphImpl from = world.getGraph(payload.fromId());
         if (from == null) {
             // we don't know the graph being split from, so we can safely ignore this packet
             return;
         }
-        
+
         // however, the into graph is normally a newly created one
         BlockGraphImpl into = world.getOrCreateGraph(payload.intoId());
         loadGraphEntities(into, payload.graphEntityIds(), data, palette, universe);
@@ -364,9 +365,29 @@ public final class KNetDecoding {
         for (NodePosSmallPayload nodePayload : payload.toMove()) {
             toMove.add(GraphLibSyncingKNet.decodeNodePosSmall(nodePayload, data, palette, universe));
         }
-        
+
         // Split Into only moves nodes from actually knows about, so nodes that are outside the client radius get
         // discarded.
         from.splitInto(into, toMove);
+    }
+
+    public static void receiveNodeRemove(NodeRemovePayload payload, PayloadHandlingContext ctx)
+        throws PayloadHandlingException {
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(payload.universeId());
+        ClientGraphWorldImpl world = getWorld(payload.universeId(), "node remove");
+
+        BlockGraphImpl graph = world.getGraph(payload.graphId());
+        if (graph == null) {
+            GLLog.warn("Received node remove in unknown graph {}", payload.graphId());
+            return;
+        }
+
+        NodePos pos = GraphLibSyncingKNet.decodeNodePos(payload.nodePos(), universe);
+
+        NodeHolder<BlockNode> node = graph.getNodeAt(pos);
+        // ignore removals of nodes we don't know about
+        if (node == null) return;
+
+        graph.destroyNode(node, false);
     }
 }

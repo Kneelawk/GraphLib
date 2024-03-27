@@ -70,11 +70,13 @@ import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
+import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeRemovePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
@@ -425,5 +427,21 @@ public final class KNetEncoding {
                 KNetChannels.SPLIT.sendPlay(player, payload);
             }
         }
+    }
+
+    public static void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder) {
+        if (!(graph.getGraphView() instanceof GraphWorld world))
+            throw new IllegalArgumentException("sendNodeRemove should only be called on the logical server");
+
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(holder)) return;
+
+        NodePosPayload nodePos = GraphLibSyncingKNet.encodeNodePos(holder.getPos(), universe);
+        NodeRemovePayload payload = new NodeRemovePayload(universe.getId(), graph.getId(), nodePos);
+
+        sendToFilteredWatching(KNetChannels.NODE_REMOVE, payload, world.getWorld(), holder.getBlockPos(), sp);
     }
 }
