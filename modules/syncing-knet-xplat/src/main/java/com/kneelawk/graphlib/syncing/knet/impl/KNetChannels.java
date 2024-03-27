@@ -26,6 +26,7 @@
 package com.kneelawk.graphlib.syncing.knet.impl;
 
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.knet.api.KNetRegistrar;
@@ -36,6 +37,9 @@ public final class KNetChannels {
 
     public static void register(KNetRegistrar registrar) {
         registrar.register(CHUNK_DATA);
+        registrar.register(NODE_ADD);
+        registrar.register(MERGE);
+        registrar.register(LINK);
     }
 
     public static final NoContextChannel<ChunkDataPayload> CHUNK_DATA =
@@ -49,4 +53,7 @@ public final class KNetChannels {
     public static final NoContextChannel<MergePayload> MERGE =
         new NoContextChannel<>(SyncingKNetImpl.id("merge"), MergePayload::decode).recvClient(
             KNetDecoding::receiveMerge);
+
+    public static final NoContextChannel<LinkPayload> LINK =
+        new NoContextChannel<>(SyncingKNetImpl.id("link"), LinkPayload::decode).recvClient(KNetDecoding::receiveLink);
 }

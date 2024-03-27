@@ -45,12 +45,12 @@ public class KNetWorldListener implements WorldListener {
 
     @Override
     public void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
-
+        KNetEncoding.sendMerge(from, into);
     }
 
     @Override
     public void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link) {
-
+        KNetEncoding.sendLink(graph, link);
     }
 
     @Override

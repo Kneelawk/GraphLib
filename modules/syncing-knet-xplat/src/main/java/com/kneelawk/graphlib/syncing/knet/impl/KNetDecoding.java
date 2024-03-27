@@ -58,6 +58,7 @@ import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
@@ -279,5 +280,35 @@ public final class KNetDecoding {
         
         // do the merge
         into.merge(from);
+    }
+
+    public static void receiveLink(LinkPayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
+        PayloadHeader header = payload.header();
+        Palette<Identifier> palette = header.palette();
+        NetByteBuf data = header.data();
+        
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
+        ClientGraphWorldImpl world = getWorld(header.universeId(), "link");
+        
+        BlockGraphImpl graph = world.getGraph(payload.graphId());
+        if (graph == null) {
+            GLLog.warn("Received link in unknown graph {}", payload.graphId());
+            return;
+        }
+        
+        PayloadExternalLink payloadLink = payload.link();
+        
+        LinkPos linkPos = GraphLibSyncingKNet.decodeLinkPosSmall(payloadLink.linkPos(), data, data, palette, universe);
+        
+        NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
+        NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
+        if (nodeA == null || nodeB == null) {
+            // unknown nodes means they're outside our range
+            return;
+        }
+        
+        LinkEntity entity = readLinkEntity(payloadLink.entityTypeId(), data, palette, universe, linkPos);
+        
+        graph.link(nodeA, nodeB, linkPos.key(), entity, true);
     }
 }

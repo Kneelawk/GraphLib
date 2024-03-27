@@ -71,6 +71,7 @@ import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
@@ -281,7 +282,7 @@ public final class KNetEncoding {
 
     public static void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
         if (!(into.getGraphView() instanceof GraphWorld world))
-            throw new IllegalArgumentException("sendMerge shouls only be called on the logical server");
+            throw new IllegalArgumentException("sendMerge should only be called on the logical server");
 
         KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
@@ -308,6 +309,42 @@ public final class KNetEncoding {
         for (ServerPlayerEntity player : sendTo) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 KNetChannels.MERGE.sendPlay(player, payload);
+            }
+        }
+    }
+
+    public static void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link) {
+        if (!(graph.getGraphView() instanceof GraphWorld world))
+            throw new IllegalArgumentException("sendLink should only be called on the logical server");
+
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        CacheCategory<?> nodeFilter = sp.getNodeFilter();
+        if (nodeFilter != null && !(nodeFilter.matches(link.getFirst()) && nodeFilter.matches(link.getSecond())))
+            return;
+
+        Palette<Identifier> palette = new Palette<>();
+        NetByteBuf data = NetByteBuf.buffer();
+
+        LinkPosSmallPayload linkPos =
+            GraphLibSyncingKNet.encodeLinkPosSmall(link.getPos(), data, data, palette, universe);
+        OptionalInt entityId = writeLinkEntity(link.getPos(), graph, data, palette, universe);
+        LinkPayload payload = new LinkPayload(new PayloadHeader(universe.getId(), palette, data), graph.getId(),
+            new PayloadExternalLink(linkPos, entityId));
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        sendTo.addAll(
+            world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(link.getFirstBlockPos()),
+                false));
+        sendTo.addAll(
+            world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(link.getSecondBlockPos()),
+                false));
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                KNetChannels.LINK.sendPlay(player, payload);
             }
         }
     }
