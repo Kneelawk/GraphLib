@@ -55,7 +55,7 @@ public class KNetWorldListener implements WorldListener {
 
     @Override
     public void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
-
+        KNetEncoding.sendUnlink(graph, a, b, key);
     }
 
     @Override

@@ -68,6 +68,7 @@ import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
@@ -79,6 +80,7 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadInternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadNode;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.UnlinkPayload;
 import com.kneelawk.knet.api.channel.NetPayload;
 import com.kneelawk.knet.api.channel.NoContextChannel;
 import com.kneelawk.knet.api.util.NetByteBuf;
@@ -345,6 +347,33 @@ public final class KNetEncoding {
         for (ServerPlayerEntity player : sendTo) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 KNetChannels.LINK.sendPlay(player, payload);
+            }
+        }
+    }
+
+    public static void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
+        if (!(graph.getGraphView() instanceof GraphWorld world))
+            throw new IllegalArgumentException("sendUnlink should only be called on the logical server");
+
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        CacheCategory<?> nodeFilter = sp.getNodeFilter();
+        if (nodeFilter != null && !(nodeFilter.matches(a) && nodeFilter.matches(b))) return;
+
+        LinkPosPayload linkPos = GraphLibSyncingKNet.encodeLinkPos(new LinkPos(a.getPos(), b.getPos(), key), universe);
+        UnlinkPayload payload = new UnlinkPayload(universe.getId(), graph.getId(), linkPos);
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        sendTo.addAll(
+            world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(a.getBlockPos()), false));
+        sendTo.addAll(
+            world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(b.getBlockPos()), false));
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                KNetChannels.UNLINK.sendPlay(player, payload);
             }
         }
     }
