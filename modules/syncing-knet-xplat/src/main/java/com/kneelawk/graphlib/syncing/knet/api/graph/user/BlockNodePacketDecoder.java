@@ -27,25 +27,24 @@ package com.kneelawk.graphlib.syncing.knet.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
- * Used for decoding a {@link BlockNode} from a {@link PacketByteBuf}.
+ * Used for decoding a {@link BlockNode} from a {@link NetByteBuf}.
  */
 @FunctionalInterface
 public interface BlockNodePacketDecoder {
     /**
-     * Decodes a {@link BlockNode} from a {@link PacketByteBuf}.
+     * Decodes a {@link BlockNode} from a {@link NetByteBuf}.
      * <p>
      * The data read should be the same data written by
-     * {@link BlockNodePacketEncoder#encode(BlockNode, PacketByteBuf)}.
+     * {@link BlockNodePacketEncoder#encode(BlockNode, NetByteBuf)}.
      *
      * @param buf the buffer to decode from.
      * @return the decoded block node.
      * @throws PayloadHandlingException if a block node could not be decoded.
      */
-    @NotNull BlockNode decode(@NotNull PacketByteBuf buf) throws PayloadHandlingException;
+    @NotNull BlockNode decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
 }

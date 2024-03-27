@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
+import com.kneelawk.knet.api.channel.NetPayload;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-/**
- * Used for encoding a {@link NodeEntity} to a {@link NetByteBuf}.
- *
- * @param <N> the type of node entity this encoder encodes.
- */
-@FunctionalInterface
-public interface NodeEntityPacketEncoder<N extends NodeEntity> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of node entity to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noOp() {
-        return (entity, buf) -> {};
+public record NodeRemovePayload(Identifier universeId, long graphId, NodePosPayload nodePos) implements NetPayload {
+    public static NodeRemovePayload decode(NetByteBuf buf) {
+        Identifier universeId = buf.readIdentifier();
+        long graphId = buf.readVarUnsignedLong();
+        NodePosPayload nodePos = NodePosPayload.CODEC.decoder().apply(buf);
+        return new NodeRemovePayload(universeId, graphId, nodePos);
     }
 
-    /**
-     * Encodes a {@link NodeEntity} to a {@link NetByteBuf}.
-     * <p>
-     * The data will be decoded by {@link NodeEntityPacketDecoder#decode(NetByteBuf)}.
-     *
-     * @param entity the entity to be encoded.
-     * @param buf    the buffer to write to.
-     */
-    void encode(@NotNull N entity, @NotNull NetByteBuf buf);
+    @Override
+    public void write(NetByteBuf buf) {
+        buf.writeIdentifier(universeId);
+        buf.writeVarUnsignedLong(graphId);
+        NodePosPayload.CODEC.encoder().accept(buf, nodePos);
+    }
+
+    @Override
+    public Identifier id() {
+        return KNetChannels.NODE_REMOVE.getId();
+    }
 }

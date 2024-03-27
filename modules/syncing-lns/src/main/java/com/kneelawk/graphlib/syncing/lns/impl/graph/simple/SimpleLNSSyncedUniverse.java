@@ -55,13 +55,13 @@ import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.simple.SimpleClientGraphWorld;
+import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.NodeEntitySyncing;
-import com.kneelawk.graphlib.syncing.lns.api.util.PacketEncodingUtil;
 import com.kneelawk.graphlib.syncing.lns.impl.LNSNetworking;
 import com.kneelawk.graphlib.syncing.lns.impl.graph.LNSWorldListener;
 
@@ -81,7 +81,7 @@ public class SimpleLNSSyncedUniverse implements LNSSyncedUniverse, SyncedUnivers
         this.universe = universe;
         syncProfile = builder.profile;
 
-        addLinkKeySyncing(EmptyLinkKey.TYPE, PacketEncodingUtil.EMPTY_KEY_SYNCING);
+        addLinkKeySyncing(EmptyLinkKey.TYPE, GraphLibSyncingLNS.EMPTY_KEY_SYNCING);
 
         if (syncProfile.getNodeFilter() != null) {
             universe.addCacheCategory(syncProfile.getNodeFilter());

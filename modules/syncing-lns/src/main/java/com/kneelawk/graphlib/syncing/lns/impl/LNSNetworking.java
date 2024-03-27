@@ -79,8 +79,8 @@ import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
+import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
-import com.kneelawk.graphlib.syncing.lns.api.util.PacketEncodingUtil;
 
 public final class LNSNetworking {
     private LNSNetworking() {}
@@ -92,18 +92,18 @@ public final class LNSNetworking {
     public static final ParentNetId GRAPH_LIB_ID = McNetworkStack.ROOT.child(Constants.MOD_ID);
 
     public static final NetObjectCache<LNSSyncedUniverse> UNIVERSE_CACHE =
-        NetObjectCache.createMappedIdentifier(GRAPH_LIB_ID.child("universe_cache"),
-            SyncedUniverse::getId, id -> {
-                SyncedUniverseImpl universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(id);
-                if (universe == null) {
-                    GLLog.warn("Unable to decode unknown universe {}", id);
-                }
-                if (!(universe instanceof LNSSyncedUniverse lnsSynced)) {
-                    GLLog.warn("Decoded universe of wrong type! Expected LNSSyncedUniverse but found " + universe.getClass());
-                    return null;
-                }
-                return lnsSynced;
-            });
+        NetObjectCache.createMappedIdentifier(GRAPH_LIB_ID.child("universe_cache"), SyncedUniverse::getId, id -> {
+            SyncedUniverseImpl universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(id);
+            if (universe == null) {
+                GLLog.warn("Unable to decode unknown universe {}", id);
+            }
+            if (!(universe instanceof LNSSyncedUniverse lnsSynced)) {
+                GLLog.warn(
+                    "Decoded universe of wrong type! Expected LNSSyncedUniverse but found " + universe.getClass());
+                return null;
+            }
+            return lnsSynced;
+        });
     public static final NetObjectCache<Identifier> ID_CACHE =
         NetObjectCache.createMappedIdentifier(GRAPH_LIB_ID.child("id_cache"), Function.identity(), Function.identity());
 
@@ -121,7 +121,7 @@ public final class LNSNetworking {
                         "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
-                NodePos pos = PacketEncodingUtil.decodeNodePos(buffer, ctx, universe);
+                NodePos pos = GraphLibSyncingLNS.decodeNodePos(buffer, ctx, universe);
 
                 GraphView view = universe.getSidedGraphView(world);
                 if (view == null) {
@@ -142,11 +142,11 @@ public final class LNSNetworking {
             @Override
             protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, NodeEntity value) {
                 NodeEntityContext entityCtx = value.getContext();
-                LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(entityCtx.getGraphWorld());
+                LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(entityCtx.getGraphWorld());
 
                 buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
 
-                PacketEncodingUtil.encodeNodePos(entityCtx.getPos(), buffer, ctx, universe);
+                GraphLibSyncingLNS.encodeNodePos(entityCtx.getPos(), buffer, ctx, universe);
             }
         };
 
@@ -164,7 +164,7 @@ public final class LNSNetworking {
                         "Unable to decode universe from unknown universe id int " + universeIdInt);
                 }
 
-                LinkPos pos = PacketEncodingUtil.decodeLinkPos(buffer, ctx, universe);
+                LinkPos pos = GraphLibSyncingLNS.decodeLinkPos(buffer, ctx, universe);
 
                 GraphView view = universe.getSidedGraphView(world);
                 if (view == null) {
@@ -185,11 +185,11 @@ public final class LNSNetworking {
             @Override
             protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, LinkEntity value) {
                 LinkEntityContext entityCtx = value.getContext();
-                LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(entityCtx.getGraphWorld());
+                LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(entityCtx.getGraphWorld());
 
                 buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
 
-                PacketEncodingUtil.encodeLinkPos(entityCtx.getPos(), buffer, ctx, universe);
+                GraphLibSyncingLNS.encodeLinkPos(entityCtx.getPos(), buffer, ctx, universe);
             }
         };
 
@@ -242,7 +242,7 @@ public final class LNSNetworking {
             @Override
             protected void writeContext(NetByteBuf buffer, IMsgWriteCtx ctx, GraphEntity value) {
                 GraphEntityContext entityCtx = value.getContext();
-                LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(entityCtx.getGraphWorld());
+                LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(entityCtx.getGraphWorld());
 
                 buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), universe));
 
@@ -284,7 +284,8 @@ public final class LNSNetworking {
     public static void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
         ActiveConnection connection = CoreMinecraftNetUtil.getConnection(player);
         CHUNK_DATA.send(connection, (buffer, ctx) -> {
-            buffer.writeVarUnsignedInt(UNIVERSE_CACHE.getId(ctx.getConnection(), GraphLibSyncingLNSImpl.getUniverse(world)));
+            buffer.writeVarUnsignedInt(
+                UNIVERSE_CACHE.getId(ctx.getConnection(), GraphLibSyncingLNS.getUniverse(world)));
             buffer.writeVarInt(pos.x);
             buffer.writeVarInt(pos.z);
             LNSEncoding.writeChunkPillar(pos, world, buffer, ctx);
@@ -308,7 +309,7 @@ public final class LNSNetworking {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendNodeAdd should only be called on the logical server");
 
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -360,7 +361,7 @@ public final class LNSNetworking {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendMerge should only be called on the logical server");
 
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -397,7 +398,7 @@ public final class LNSNetworking {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendLink should only be called on the logical server");
 
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -434,7 +435,7 @@ public final class LNSNetworking {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendUnlink should only be called on the logical server");
 
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -470,7 +471,7 @@ public final class LNSNetworking {
         if (!(into.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendSplitInto should only be called on the logical server");
 
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -507,7 +508,7 @@ public final class LNSNetworking {
         if (!(graph.getGraphView() instanceof ServerGraphWorldImpl world))
             throw new IllegalArgumentException("sendNodeRemove should only be called on the logical server");
 
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 

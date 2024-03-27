@@ -23,22 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.lns.impl;
+package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.api.graph.GraphView;
-import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
-import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
-import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
+import net.minecraft.util.Identifier;
 
-public final class GraphLibSyncingLNSImpl {
-    private GraphLibSyncingLNSImpl() {}
+import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
+import com.kneelawk.knet.api.channel.NetPayload;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
-    public static LNSSyncedUniverse getUniverse(GraphView view) {
-        SyncedUniverse universe = GraphLibSyncing.getUniverse(view);
-        if (!(universe instanceof LNSSyncedUniverse synced)) throw new IllegalStateException(
-            "Attempted to retrieve an LNSSyncedUniverse associated with " + view.getUniverse().getId() +
-                " but was actually " + universe.getClass().getName());
+public record UnlinkPayload(Identifier universeId, long graphId, LinkPosPayload linkPos) implements NetPayload {
+    public static UnlinkPayload decode(NetByteBuf buf) {
+        Identifier universeId = buf.readIdentifier();
+        long graphId = buf.readVarUnsignedLong();
+        LinkPosPayload linkPos = LinkPosPayload.CODEC.decoder().apply(buf);
+        return new UnlinkPayload(universeId, graphId, linkPos);
+    }
+    
+    @Override
+    public void write(NetByteBuf buf) {
+        buf.writeIdentifier(universeId);
+        buf.writeVarUnsignedLong(graphId);
+        LinkPosPayload.CODEC.encoder().accept(buf, linkPos);
+    }
 
-        return synced;
+    @Override
+    public Identifier id() {
+        return KNetChannels.UNLINK.getId();
     }
 }

@@ -23,19 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.util;
+package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.api.util.EmptyLinkKey;
-import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
+import java.util.OptionalInt;
 
-/**
- * Contains various utility methods for en/decoding various types to/from packets.
- */
-public final class PacketEncodingUtil {
-    private PacketEncodingUtil() {}
+import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
-    /**
-     * Syncing for {@link EmptyLinkKey}.
-     */
-    public static final LinkKeySyncing EMPTY_KEY_SYNCING = LinkKeySyncing.ofNoOp(() -> EmptyLinkKey.INSTANCE);
+public record PayloadNode(NodePosSmallPayload nodePos, OptionalInt entityTypeId) {
+    public static PayloadNode decode(NetByteBuf buf) {
+        NodePosSmallPayload nodePos = NodePosSmallPayload.CODEC.decoder().apply(buf);
+        OptionalInt entityTypeId;
+        if (buf.readBoolean()) {
+            entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
+        } else {
+            entityTypeId = OptionalInt.empty();
+        }
+        return new PayloadNode(nodePos, entityTypeId);
+    }
+
+    public void encode(NetByteBuf buf) {
+        NodePosSmallPayload.CODEC.encoder().accept(buf, nodePos);
+        if (entityTypeId.isPresent()) {
+            buf.writeBoolean(true);
+            buf.writeVarUnsignedInt(entityTypeId.getAsInt());
+        } else {
+            buf.writeBoolean(false);
+        }
+    }
 }

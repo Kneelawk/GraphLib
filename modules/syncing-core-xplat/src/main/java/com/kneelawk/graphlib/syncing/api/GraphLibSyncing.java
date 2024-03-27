@@ -42,6 +42,26 @@ public class GraphLibSyncing {
     private GraphLibSyncing() {}
 
     /**
+     * Gets whether the given universe has syncing enabled.
+     *
+     * @param id the id of the universe to check.
+     * @return whether the given universe has syncing enabled.
+     */
+    public static boolean syncingEnabled(@NotNull Identifier id) {
+        return GraphLibSyncingImpl.SYNCED_UNIVERSE.containsKey(id);
+    }
+
+    /**
+     * Gets whether the given universe has syncing enabled.
+     *
+     * @param universe the universe to check.
+     * @return whether the given universe has syncing enabled.
+     */
+    public static boolean syncingEnabled(@NotNull GraphUniverse universe) {
+        return syncingEnabled(universe.getId());
+    }
+
+    /**
      * Gets a registered {@link SyncedUniverse} by its id.
      *
      * @param id the id of the universe to look up.

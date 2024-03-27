@@ -31,6 +31,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
+import com.kneelawk.graphlib.syncing.knet.impl.KNetEncoding;
 
 public class KNetWorldListener implements WorldListener {
     public static final KNetWorldListener INSTANCE = new KNetWorldListener();
@@ -39,31 +40,31 @@ public class KNetWorldListener implements WorldListener {
     
     @Override
     public void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node) {
-        
+        KNetEncoding.sendNodeAdd(graph, node);
     }
 
     @Override
     public void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
-
+        KNetEncoding.sendMerge(from, into);
     }
 
     @Override
     public void sendLink(BlockGraphImpl graph, LinkHolder<LinkKey> link) {
-
+        KNetEncoding.sendLink(graph, link);
     }
 
     @Override
     public void sendUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key) {
-
+        KNetEncoding.sendUnlink(graph, a, b, key);
     }
 
     @Override
     public void sendSplitInto(BlockGraphImpl from, BlockGraphImpl into) {
-
+        KNetEncoding.sendSplit(from, into);
     }
 
     @Override
     public void sendNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder) {
-
+        KNetEncoding.sendNodeRemove(graph, holder);
     }
 }

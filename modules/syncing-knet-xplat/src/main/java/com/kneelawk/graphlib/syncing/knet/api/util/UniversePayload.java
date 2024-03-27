@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,24 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.util.Identifier;
+
+import com.kneelawk.knet.api.channel.context.PayloadCodec;
 
 /**
- * Used for encoding a {@link NodeEntity} to a {@link NetByteBuf}.
+ * A payload representing a universe.
  *
- * @param <N> the type of node entity this encoder encodes.
+ * @param universeId the id of the specified universe.
  */
-@FunctionalInterface
-public interface NodeEntityPacketEncoder<N extends NodeEntity> {
+public record UniversePayload(@NotNull Identifier universeId) {
     /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of node entity to encode.
-     * @return a no-op encoder.
+     * This payload's codec.
      */
-    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noOp() {
-        return (entity, buf) -> {};
-    }
-
-    /**
-     * Encodes a {@link NodeEntity} to a {@link NetByteBuf}.
-     * <p>
-     * The data will be decoded by {@link NodeEntityPacketDecoder#decode(NetByteBuf)}.
-     *
-     * @param entity the entity to be encoded.
-     * @param buf    the buffer to write to.
-     */
-    void encode(@NotNull N entity, @NotNull NetByteBuf buf);
+    public static final PayloadCodec<UniversePayload> CODEC =
+        new PayloadCodec<>((buf, payload) -> buf.writeIdentifier(payload.universeId),
+            buf -> new UniversePayload(buf.readIdentifier()));
 }

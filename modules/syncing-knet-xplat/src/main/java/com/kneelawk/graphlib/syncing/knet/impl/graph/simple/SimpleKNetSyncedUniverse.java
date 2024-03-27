@@ -55,13 +55,14 @@ import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.simple.SimpleClientGraphWorld;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
-import com.kneelawk.graphlib.syncing.knet.api.util.PacketEncodingUtil;
+import com.kneelawk.graphlib.syncing.knet.impl.KNetEncoding;
 import com.kneelawk.graphlib.syncing.knet.impl.graph.KNetWorldListener;
 
 public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUniverseImpl {
@@ -80,7 +81,7 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
         this.universe = universe;
         syncProfile = builder.profile;
 
-        addLinkKeySyncing(EmptyLinkKey.TYPE, PacketEncodingUtil.EMPTY_KEY_SYNCING);
+        addLinkKeySyncing(EmptyLinkKey.TYPE, GraphLibSyncingKNet.EMPTY_KEY_SYNCING);
 
         if (syncProfile.getNodeFilter() != null) {
             universe.addCacheCategory(syncProfile.getNodeFilter());
@@ -230,6 +231,6 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
 
     @Override
     public void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
-//        KNetNetworking.sendChunkDataPacket(world, player, pos);
+        KNetEncoding.sendChunkData(world, player, pos);
     }
 }

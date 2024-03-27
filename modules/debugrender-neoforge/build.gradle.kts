@@ -47,6 +47,14 @@ architectury {
     neoForge()
 }
 
+loom {
+    mods {
+        named("main") {
+            sourceSet(project(":debugrender-xplat").sourceSets.main.get())
+        }
+    }
+}
+
 configurations {
     val common = create("common")
     create("shadowCommon")
@@ -94,8 +102,6 @@ dependencies {
 
 tasks {
     processResources {
-        from(project(":debugrender-xplat").sourceSets.main.map { it.resources.asFileTree })
-
         inputs.property("version", project.version)
 
         filesMatching("META-INF/mods.toml") {
@@ -105,6 +111,8 @@ tasks {
 
     shadowJar {
         exclude("architectury.common.json")
+        exclude("fabric.mod.json")
+        exclude("*-refmap.json")
         configurations = listOf(project.configurations["shadowCommon"])
         archiveClassifier = "dev-shadow"
     }

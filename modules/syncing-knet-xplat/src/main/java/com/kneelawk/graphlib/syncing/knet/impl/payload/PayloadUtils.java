@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,24 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import org.jetbrains.annotations.NotNull;
-
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-/**
- * Used for encoding a {@link NodeEntity} to a {@link NetByteBuf}.
- *
- * @param <N> the type of node entity this encoder encodes.
- */
-@FunctionalInterface
-public interface NodeEntityPacketEncoder<N extends NodeEntity> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of node entity to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noOp() {
-        return (entity, buf) -> {};
+public class PayloadUtils {
+    public static void writeVarUnsignedIntArray(int[] ints, NetByteBuf buf) {
+        buf.writeVarUnsignedInt(ints.length);
+        for (int i : ints) {
+            buf.writeVarUnsignedInt(i);
+        }
     }
 
-    /**
-     * Encodes a {@link NodeEntity} to a {@link NetByteBuf}.
-     * <p>
-     * The data will be decoded by {@link NodeEntityPacketDecoder#decode(NetByteBuf)}.
-     *
-     * @param entity the entity to be encoded.
-     * @param buf    the buffer to write to.
-     */
-    void encode(@NotNull N entity, @NotNull NetByteBuf buf);
+    public static int[] readVarUnsignedIntArray(NetByteBuf buf) {
+        int count = buf.readVarUnsignedInt();
+        int[] ints = new int[count];
+        for (int i = 0; i < count; i++) {
+            ints[i] = buf.readVarUnsignedInt();
+        }
+        return ints;
+    }
 }

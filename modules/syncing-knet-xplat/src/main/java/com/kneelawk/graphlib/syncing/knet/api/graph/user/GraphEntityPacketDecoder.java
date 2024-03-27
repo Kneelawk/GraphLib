@@ -27,10 +27,9 @@ package com.kneelawk.graphlib.syncing.knet.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
  * Used for decoding {@link GraphEntity}s from packets.
@@ -38,11 +37,11 @@ import com.kneelawk.knet.api.handling.PayloadHandlingException;
 @FunctionalInterface
 public interface GraphEntityPacketDecoder {
     /**
-     * Decodes a {@link GraphEntity} from a {@link PacketByteBuf}.
+     * Decodes a {@link GraphEntity} from a {@link NetByteBuf}.
      *
-     * @param buf    the buffer to read from.
+     * @param buf the buffer to read from.
      * @return a new graph entity.
      * @throws PayloadHandlingException if a graph entity could not be read.
      */
-    @NotNull GraphEntity<?> decode(@NotNull PacketByteBuf buf) throws PayloadHandlingException;
+    @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
 }

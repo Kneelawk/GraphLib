@@ -38,7 +38,6 @@ import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
-import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 
 public class GraphLibSyncingImpl {
@@ -59,8 +58,8 @@ public class GraphLibSyncingImpl {
     public static void sendChunkDataPackets(ServerWorld serverWorld, ServerPlayerEntity player, ChunkPos pos) {
         ServerGraphWorldStorage storage = StorageHelper.getStorage(serverWorld);
 
-        for (ServerGraphWorldImpl world : storage.getAll().values()) {
-            SyncedUniverseImpl universe = (SyncedUniverseImpl) GraphLibSyncing.getUniverse(world);
+        for (SyncedUniverseImpl universe : SYNCED_UNIVERSE.values()) {
+            ServerGraphWorldImpl world = storage.get(universe.getId());
             if (universe.getSyncProfile().isEnabled() &&
                 universe.getSyncProfile().getPlayerFilter().shouldSync(player)) {
                 try {

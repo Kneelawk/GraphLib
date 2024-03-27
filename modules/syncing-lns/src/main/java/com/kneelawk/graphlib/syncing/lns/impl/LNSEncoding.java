@@ -60,8 +60,8 @@ import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
+import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
-import com.kneelawk.graphlib.syncing.lns.api.util.PacketEncodingUtil;
 
 public final class LNSEncoding {
     private LNSEncoding() {}
@@ -69,7 +69,7 @@ public final class LNSEncoding {
     @SuppressWarnings("unchecked")
     public static void writeChunkPillar(ChunkPos chunkPos, ServerGraphWorldImpl world, NetByteBuf buf,
                                         IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
 
         // collect graphs to encode
         Long2ObjectMap<BlockGraphImpl> toEncode = new Long2ObjectLinkedOpenHashMap<>();
@@ -127,7 +127,7 @@ public final class LNSEncoding {
                     continue;
                 }
 
-                PacketEncodingUtil.encodeNodePos(holder.getPos(), buf, ctx, universe);
+                GraphLibSyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
 
                 writeNodeEntity(holder, buf, ctx, graph, universe);
 
@@ -190,7 +190,7 @@ public final class LNSEncoding {
             // write external links
             buf.writeVarUnsignedInt(externalLinks.size());
             for (LinkPos link : externalLinks) {
-                PacketEncodingUtil.encodeLinkPos(link, buf, ctx, universe);
+                GraphLibSyncingLNS.encodeLinkPos(link, buf, ctx, universe);
 
                 // quarantine link entities
                 writeLinkEntity(buf, ctx, link, graph, universe);
@@ -211,8 +211,8 @@ public final class LNSEncoding {
         }
     }
 
-    private static void writeNodeEntity(NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx,
-                                        BlockGraph graph, LNSSyncedUniverse universe) {
+    private static void writeNodeEntity(NodeHolder<BlockNode> node, NetByteBuf buf, IMsgWriteCtx ctx, BlockGraph graph,
+                                        LNSSyncedUniverse universe) {
         NodeEntity entity = graph.getNodeEntity(node.getPos());
         if (entity != null) {
             buf.writeBoolean(true);
@@ -241,9 +241,9 @@ public final class LNSEncoding {
 
     public static void writeNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node, NetByteBuf buf,
                                     IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
 
-        PacketEncodingUtil.encodeNodePos(node.getPos(), buf, ctx, universe);
+        GraphLibSyncingLNS.encodeNodePos(node.getPos(), buf, ctx, universe);
 
         buf.writeVarUnsignedLong(graph.getId());
 
@@ -253,7 +253,7 @@ public final class LNSEncoding {
     }
 
     public static void writeMerge(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(from.getGraphView());
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(from.getGraphView());
 
         buf.writeVarUnsignedLong(from.getId());
 
@@ -263,29 +263,29 @@ public final class LNSEncoding {
     }
 
     public static void writeLink(BlockGraphImpl graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
 
         buf.writeVarUnsignedLong(graph.getId());
 
         LinkPos linkPos = link.getPos();
-        PacketEncodingUtil.encodeLinkPos(linkPos, buf, ctx, universe);
+        GraphLibSyncingLNS.encodeLinkPos(linkPos, buf, ctx, universe);
 
         writeLinkEntity(buf, ctx, linkPos, graph, universe);
     }
 
     public static void writeUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key,
                                    NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
 
         buf.writeVarUnsignedLong(graph.getId());
 
         LinkPos linkPos = new LinkPos(a.getPos(), b.getPos(), key);
-        PacketEncodingUtil.encodeLinkPos(linkPos, buf, ctx, universe);
+        GraphLibSyncingLNS.encodeLinkPos(linkPos, buf, ctx, universe);
     }
 
     @SuppressWarnings("unchecked")
     public static void writeSplitInto(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(from.getGraphView());
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(from.getGraphView());
 
         buf.writeVarUnsignedLong(from.getId());
 
@@ -309,16 +309,16 @@ public final class LNSEncoding {
         buf.writeVarUnsignedInt(nodeCount);
         while (iter.hasNext()) {
             NodeHolder<BlockNode> holder = iter.next();
-            PacketEncodingUtil.encodeNodePos(holder.getPos(), buf, ctx, universe);
+            GraphLibSyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
         }
     }
 
     public static void writeNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder, NetByteBuf buf,
                                        IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
 
         buf.writeVarUnsignedLong(graph.getId());
 
-        PacketEncodingUtil.encodeNodePos(holder.getPos(), buf, ctx, universe);
+        GraphLibSyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
     }
 }

@@ -27,12 +27,11 @@ package com.kneelawk.graphlib.syncing.knet.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
- * Used for encoding a {@link BlockNode} to a {@link PacketByteBuf}.
+ * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
  *
  * @param <N> the type of block node this encoder encodes.
  */
@@ -49,12 +48,12 @@ public interface BlockNodePacketEncoder<N extends BlockNode> {
     }
 
     /**
-     * Encodes a {@link BlockNode} to a {@link PacketByteBuf}.
+     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
      * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(PacketByteBuf)}.
+     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf)}.
      *
      * @param node the node to encode.
      * @param buf  the buffer to write to.
      */
-    void encode(@NotNull N node, @NotNull PacketByteBuf buf);
+    void encode(@NotNull N node, @NotNull NetByteBuf buf);
 }

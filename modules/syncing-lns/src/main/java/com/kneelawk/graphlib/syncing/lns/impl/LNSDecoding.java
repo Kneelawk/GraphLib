@@ -56,19 +56,19 @@ import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
+import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.NodeEntitySyncing;
-import com.kneelawk.graphlib.syncing.lns.api.util.PacketEncodingUtil;
 
 public final class LNSDecoding {
     private LNSDecoding() {}
 
     public static void readChunkPillar(ClientGraphWorldImpl world, int chunkX, int chunkZ, NetByteBuf buf,
                                        IMsgReadCtx ctx) throws InvalidInputDataException {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
 
         if (!world.tryCreateGraphPillar(chunkX, chunkZ)) {
             GLLog.warn("Received pillar outside current client range at ({}, {})", chunkX, chunkZ);
@@ -93,7 +93,7 @@ public final class LNSDecoding {
             int nodeCount = buf.readInt();
             for (int i = 0; i < nodeCount; i++) {
                 // decode block node
-                NodePos nodePos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
+                NodePos nodePos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, universe);
 
                 BlockPos blockPos = nodePos.pos();
 
@@ -157,7 +157,7 @@ public final class LNSDecoding {
             // decode external links
             int eLinkCount = buf.readVarUnsignedInt();
             for (int i = 0; i < eLinkCount; i++) {
-                LinkPos link = PacketEncodingUtil.decodeLinkPos(buf, ctx, universe);
+                LinkPos link = GraphLibSyncingLNS.decodeLinkPos(buf, ctx, universe);
 
                 NodeHolder<BlockNode> holderA = graph.getNodeAt(link.first());
                 NodeHolder<BlockNode> holderB = graph.getNodeAt(link.second());
@@ -183,7 +183,7 @@ public final class LNSDecoding {
 
     private static void loadGraphEntitiesFromPacket(BlockGraphImpl graph, NetByteBuf buf, IMsgReadCtx ctx)
         throws InvalidInputDataException {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
 
         List<GraphEntity<?>> decodedEntities = new ObjectArrayList<>();
 
@@ -260,9 +260,9 @@ public final class LNSDecoding {
 
     public static void readNodeAdd(ClientGraphWorldImpl world, NetByteBuf buf, IMsgReadCtx ctx)
         throws InvalidInputDataException {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
 
-        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
+        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, universe);
 
         BlockNode node = pos.node();
         BlockPos blockPos = pos.pos();
@@ -309,7 +309,7 @@ public final class LNSDecoding {
 
     public static void readLink(ClientGraphWorldImpl world, NetByteBuf buf, IMsgReadCtx ctx)
         throws InvalidInputDataException {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
 
         long graphId = buf.readVarUnsignedLong();
         BlockGraphImpl graph = world.getGraph(graphId);
@@ -319,7 +319,7 @@ public final class LNSDecoding {
             return;
         }
 
-        LinkPos linkPos = PacketEncodingUtil.decodeLinkPos(buf, ctx, universe);
+        LinkPos linkPos = GraphLibSyncingLNS.decodeLinkPos(buf, ctx, universe);
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
@@ -336,7 +336,7 @@ public final class LNSDecoding {
 
     public static void readUnlink(ClientGraphWorldImpl world, NetByteBuf buf, IMsgReadCtx ctx)
         throws InvalidInputDataException {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
 
         long graphId = buf.readVarUnsignedLong();
         BlockGraphImpl graph = world.getGraph(graphId);
@@ -346,7 +346,7 @@ public final class LNSDecoding {
             return;
         }
 
-        LinkPos linkPos = PacketEncodingUtil.decodeLinkPos(buf, ctx, universe);
+        LinkPos linkPos = GraphLibSyncingLNS.decodeLinkPos(buf, ctx, universe);
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
@@ -361,7 +361,7 @@ public final class LNSDecoding {
 
     public static void readSplitInto(ClientGraphWorldImpl world, NetByteBuf buf, IMsgReadCtx ctx)
         throws InvalidInputDataException {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
 
         long fromId = buf.readVarUnsignedLong();
         BlockGraphImpl from = world.getGraph(fromId);
@@ -382,7 +382,7 @@ public final class LNSDecoding {
         Set<NodePos> toSplit = new ObjectLinkedOpenHashSet<>();
         int nodeCount = buf.readVarUnsignedInt();
         for (int i = 0; i < nodeCount; i++) {
-            NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
+            NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, universe);
 
             toSplit.add(pos);
         }
@@ -394,7 +394,7 @@ public final class LNSDecoding {
 
     public static void readNodeRemove(ClientGraphWorldImpl world, NetByteBuf buf, IMsgReadCtx ctx)
         throws InvalidInputDataException {
-        LNSSyncedUniverse universe = GraphLibSyncingLNSImpl.getUniverse(world);
+        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
 
         long graphId = buf.readVarUnsignedLong();
         BlockGraphImpl graph = world.getGraph(graphId);
@@ -404,7 +404,7 @@ public final class LNSDecoding {
             return;
         }
 
-        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, universe);
+        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, universe);
 
         NodeHolder<BlockNode> node = graph.getNodeAt(pos);
         // ignore removals of nodes we don't know about

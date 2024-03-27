@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,32 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.util.math.BlockPos;
+
+import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.knet.api.channel.context.PayloadCodec;
 
 /**
- * Used for encoding a {@link NodeEntity} to a {@link NetByteBuf}.
+ * A smaller payload representing a {@link NodePos}, while allowing node data and palette data to go in a header.
  *
- * @param <N> the type of node entity this encoder encodes.
+ * @param pos    the block position of the {@link NodePos}.
+ * @param typeId the integer for the node's type id to be looked up in the palette.
  */
-@FunctionalInterface
-public interface NodeEntityPacketEncoder<N extends NodeEntity> {
+public record NodePosSmallPayload(@NotNull BlockPos pos, int typeId) {
     /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of node entity to encode.
-     * @return a no-op encoder.
+     * This payload's codec.
      */
-    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noOp() {
-        return (entity, buf) -> {};
-    }
+    public static final PayloadCodec<NodePosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
+        buf.writeBlockPos(payload.pos);
+        buf.writeVarUnsignedInt(payload.typeId);
+    }, buf -> {
+        BlockPos pos = buf.readBlockPos();
+        int typeId = buf.readVarUnsignedInt();
 
-    /**
-     * Encodes a {@link NodeEntity} to a {@link NetByteBuf}.
-     * <p>
-     * The data will be decoded by {@link NodeEntityPacketDecoder#decode(NetByteBuf)}.
-     *
-     * @param entity the entity to be encoded.
-     * @param buf    the buffer to write to.
-     */
-    void encode(@NotNull N entity, @NotNull NetByteBuf buf);
+        return new NodePosSmallPayload(pos, typeId);
+    });
 }

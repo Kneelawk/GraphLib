@@ -47,6 +47,15 @@ architectury {
     fabric()
 }
 
+loom {
+    mods {
+        create("graphlib_debugrender") {
+            sourceSet(sourceSets.main.get())
+            sourceSet(project(":debugrender-xplat").sourceSets.main.get())
+        }
+    }
+}
+
 configurations {
     val common = create("common")
     create("shadowCommon")
@@ -83,7 +92,7 @@ dependencies {
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     "common"(project(path = ":debugrender-xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":debugrender-xplat", configuration = "transformProductionFabric")) {
+    "shadowCommon"(project(path = ":debugrender-xplat")) {
         isTransitive = false
     }
 
@@ -102,8 +111,6 @@ dependencies {
 
 tasks {
     processResources {
-        from(project(":debugrender-xplat").sourceSets.main.map { it.resources.asFileTree })
-
         inputs.property("version", project.version)
 
         filesMatching("quilt.mod.json") {

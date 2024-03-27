@@ -47,6 +47,15 @@ architectury {
     fabric()
 }
 
+loom {
+    mods {
+        create("graphlib") {
+            sourceSet(sourceSets.main.get())
+            sourceSet(project(":core-xplat").sourceSets.main.get())
+        }
+    }
+}
+
 configurations {
     val common = create("common")
     create("shadowCommon")
@@ -82,13 +91,11 @@ dependencies {
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     "common"(project(path = ":core-xplat", configuration = "namedElements")) { isTransitive = false }
-    "shadowCommon"(project(path = ":core-xplat", configuration = "transformProductionFabric")) { isTransitive = false }
+    "shadowCommon"(project(path = ":core-xplat")) { isTransitive = false }
 }
 
 tasks {
     processResources {
-        from(project(":core-xplat").sourceSets.main.map { it.resources.asFileTree })
-
         inputs.property("version", project.version)
 
         filesMatching("quilt.mod.json") {
