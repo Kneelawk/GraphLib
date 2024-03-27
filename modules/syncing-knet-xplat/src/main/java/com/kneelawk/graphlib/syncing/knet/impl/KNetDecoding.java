@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -57,6 +58,7 @@ import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
@@ -229,5 +231,30 @@ public final class KNetDecoding {
                 }
             }
         }
+    }
+
+    public static void receiveNodeAdd(NodeAddPayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
+        PayloadHeader header = payload.header();
+        Palette<Identifier> palette = header.palette();
+        NetByteBuf data = header.data();
+        
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
+        ClientGraphWorldImpl world = getWorld(header.universeId(), "node add");
+        
+        PayloadNode payloadNode = payload.node();
+        NodePos pos = GraphLibSyncingKNet.decodeNodePosSmall(payloadNode.nodePos(), data, palette, universe);
+        
+        BlockPos blockPos = pos.pos();
+        if (!world.isInRadius(new ChunkPos(blockPos))) {
+            GLLog.warn("Received node add @ {} that is outside client chunk radius", pos);
+            return;
+        }
+        
+        BlockGraphImpl graph = world.getOrCreateGraph(payload.graphId());
+        loadGraphEntities(graph, payload.graphEntityIds(), data, palette, universe);
+        
+        NodeEntity entity = readNodeEntity(payloadNode.entityTypeId(), data, palette, universe, pos);
+        
+        graph.createNode(blockPos, pos.node(), entity, true);
     }
 }

@@ -26,6 +26,7 @@
 package com.kneelawk.graphlib.syncing.knet.impl;
 
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.knet.api.KNetRegistrar;
 import com.kneelawk.knet.api.channel.NoContextChannel;
 
@@ -39,4 +40,8 @@ public final class KNetChannels {
     public static final NoContextChannel<ChunkDataPayload> CHUNK_DATA =
         new NoContextChannel<>(SyncingKNetImpl.id("chunk_data"), ChunkDataPayload::decode).recvClient(
             KNetDecoding::receiveChunkDataPacket);
+
+    public static final NoContextChannel<NodeAddPayload> NODE_ADD =
+        new NoContextChannel<>(SyncingKNetImpl.id("node_add"), NodeAddPayload::decode).recvClient(
+            KNetDecoding::receiveNodeAdd);
 }
