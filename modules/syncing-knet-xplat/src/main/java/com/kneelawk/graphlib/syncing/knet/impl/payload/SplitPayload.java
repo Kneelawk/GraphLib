@@ -25,30 +25,48 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
+import java.util.List;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
+import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
 import com.kneelawk.knet.api.channel.NetPayload;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-public record UnlinkPayload(Identifier universeId, long graphId, LinkPosPayload linkPos) implements NetPayload {
-    public static UnlinkPayload decode(NetByteBuf buf) {
-        Identifier universeId = buf.readIdentifier();
-        long graphId = buf.readVarUnsignedLong();
-        LinkPosPayload linkPos = LinkPosPayload.CODEC.decoder().apply(buf);
-        return new UnlinkPayload(universeId, graphId, linkPos);
+public record SplitPayload(PayloadHeader header, long fromId, long intoId, int[] graphEntityIds, List<NodePosSmallPayload> toMove) implements NetPayload {
+    public static SplitPayload decode(NetByteBuf buf) {
+        PayloadHeader header = PayloadHeader.decode(buf);
+        long fromId = buf.readVarUnsignedLong();
+        long intoId = buf.readVarUnsignedLong();
+        int[] graphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
+        
+        int nodeCount = buf.readVarUnsignedInt();
+        List<NodePosSmallPayload> toMove = new ObjectArrayList<>();
+        for (int i = 0; i < nodeCount; i++) {
+            toMove.add(NodePosSmallPayload.CODEC.decoder().apply(buf));
+        }
+        
+        return new SplitPayload(header, fromId, intoId, graphEntityIds, toMove);
     }
-    
+
     @Override
     public void write(NetByteBuf buf) {
-        buf.writeIdentifier(universeId);
-        buf.writeVarUnsignedLong(graphId);
-        LinkPosPayload.CODEC.encoder().accept(buf, linkPos);
+        header.encode(buf);
+        buf.writeVarUnsignedLong(fromId);
+        buf.writeVarUnsignedLong(intoId);
+        PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
+        
+        buf.writeVarUnsignedInt(toMove.size());
+        for (NodePosSmallPayload nodePos : toMove) {
+            NodePosSmallPayload.CODEC.encoder().accept(buf, nodePos);
+        }
     }
 
     @Override
     public Identifier id() {
-        return KNetChannels.UNLINK.getId();
+        return KNetChannels.SPLIT.getId();
     }
 }

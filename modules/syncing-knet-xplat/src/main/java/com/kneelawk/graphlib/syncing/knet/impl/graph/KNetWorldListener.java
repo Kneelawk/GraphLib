@@ -60,7 +60,7 @@ public class KNetWorldListener implements WorldListener {
 
     @Override
     public void sendSplitInto(BlockGraphImpl from, BlockGraphImpl into) {
-
+        KNetEncoding.sendSplit(from, into);
     }
 
     @Override

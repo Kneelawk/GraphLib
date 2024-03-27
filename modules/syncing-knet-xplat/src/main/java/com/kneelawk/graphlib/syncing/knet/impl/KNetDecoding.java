@@ -27,11 +27,13 @@ package com.kneelawk.graphlib.syncing.knet.impl;
 
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -57,6 +59,7 @@ import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
+import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
@@ -66,6 +69,7 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadInternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadNode;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.SplitPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.UnlinkPayload;
 import com.kneelawk.knet.api.handling.PayloadHandlingContext;
 import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
@@ -335,5 +339,34 @@ public final class KNetDecoding {
         }
 
         graph.unlink(nodeA, nodeB, linkPos.key());
+    }
+
+    public static void receiveSplit(SplitPayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
+        PayloadHeader header = payload.header();
+        Palette<Identifier> palette = header.palette();
+        NetByteBuf data = header.data();
+        
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
+        ClientGraphWorldImpl world = getWorld(header.universeId(), "split");
+        
+        BlockGraphImpl from = world.getGraph(payload.fromId());
+        if (from == null) {
+            // we don't know the graph being split from, so we can safely ignore this packet
+            return;
+        }
+        
+        // however, the into graph is normally a newly created one
+        BlockGraphImpl into = world.getOrCreateGraph(payload.intoId());
+        loadGraphEntities(into, payload.graphEntityIds(), data, palette, universe);
+
+        // load the nodes to be split off
+        Set<NodePos> toMove = new ObjectLinkedOpenHashSet<>();
+        for (NodePosSmallPayload nodePayload : payload.toMove()) {
+            toMove.add(GraphLibSyncingKNet.decodeNodePosSmall(nodePayload, data, palette, universe));
+        }
+        
+        // Split Into only moves nodes from actually knows about, so nodes that are outside the client radius get
+        // discarded.
+        from.splitInto(into, toMove);
     }
 }

@@ -80,6 +80,7 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadInternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadNode;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.SplitPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.UnlinkPayload;
 import com.kneelawk.knet.api.channel.NetPayload;
 import com.kneelawk.knet.api.channel.NoContextChannel;
@@ -374,6 +375,54 @@ public final class KNetEncoding {
         for (ServerPlayerEntity player : sendTo) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 KNetChannels.UNLINK.sendPlay(player, payload);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static void sendSplit(BlockGraphImpl from, BlockGraphImpl into) {
+        if (!(from.getGraphView() instanceof GraphWorld world))
+            throw new IllegalArgumentException("sendSplit should only be called on the logical server");
+
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        Palette<Identifier> palette = new Palette<>();
+        NetByteBuf data = NetByteBuf.buffer();
+
+        int[] graphEntityIds = writeGraphEntities(into, data, palette, universe);
+
+        Iterator<NodeHolder<BlockNode>> iter;
+        CacheCategory<BlockNode> nodeFilter = (CacheCategory<BlockNode>) universe.getSyncProfile().getNodeFilter();
+        if (nodeFilter != null) {
+            iter = into.getCachedNodes(nodeFilter).iterator();
+        } else {
+            iter = into.getNodes().iterator();
+        }
+
+        List<NodePosSmallPayload> toMove = new ObjectArrayList<>();
+        while (iter.hasNext()) {
+            toMove.add(GraphLibSyncingKNet.encodeNodePosSmall(iter.next().getPos(), data, palette, universe));
+        }
+
+        SplitPayload payload =
+            new SplitPayload(new PayloadHeader(universe.getId(), palette, data), from.getId(), into.getId(),
+                graphEntityIds, toMove);
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        for (var iter1 = into.getChunks().iterator(); iter.hasNext(); ) {
+            sendTo.addAll(
+                world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(iter1.next().toChunkPos(), false));
+        }
+        for (var iter1 = from.getChunks().iterator(); iter.hasNext(); ) {
+            sendTo.addAll(
+                world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(iter1.next().toChunkPos(), false));
+        }
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                KNetChannels.SPLIT.sendPlay(player, payload);
             }
         }
     }
