@@ -31,27 +31,26 @@ import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
 import com.kneelawk.knet.api.channel.NetPayload;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-public record NodeAddPayload(PayloadHeader header, long graphId, int[] graphEntityIds, PayloadNode node)
+public record MergePayload(PayloadHeader header, long fromId, long intoId, int[] intoGraphEntityIds)
     implements NetPayload {
-    public static NodeAddPayload decode(NetByteBuf buf) {
+    public static MergePayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
-        long graphId = buf.readVarUnsignedLong();
-        int[] graphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
-        PayloadNode node = PayloadNode.decode(buf);
-
-        return new NodeAddPayload(header, graphId, graphEntityIds, node);
+        long fromId = buf.readVarUnsignedLong();
+        long intoId = buf.readVarUnsignedLong();
+        int[] intoGraphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
+        return new MergePayload(header, fromId, intoId, intoGraphEntityIds);
     }
 
     @Override
     public void write(NetByteBuf buf) {
         header.encode(buf);
-        buf.writeVarUnsignedLong(graphId);
-        PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
-        node.encode(buf);
+        buf.writeVarUnsignedLong(fromId);
+        buf.writeVarUnsignedLong(intoId);
+        PayloadUtils.writeVarUnsignedIntArray(intoGraphEntityIds, buf);
     }
 
     @Override
     public Identifier id() {
-        return KNetChannels.NODE_ADD.getId();
+        return KNetChannels.MERGE.getId();
     }
 }

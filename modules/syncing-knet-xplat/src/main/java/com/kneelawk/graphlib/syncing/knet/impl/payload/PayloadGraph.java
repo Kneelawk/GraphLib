@@ -36,11 +36,7 @@ public record PayloadGraph(long graphId, int[] graphEntityIds, List<PayloadNode>
     public static PayloadGraph decode(NetByteBuf buf) {
         long graphId = buf.readVarUnsignedLong();
 
-        int graphEntityCount = buf.readVarUnsignedInt();
-        int[] graphEntityIds = new int[graphEntityCount];
-        for (int i = 0; i < graphEntityCount; i++) {
-            graphEntityIds[i] = buf.readVarUnsignedInt();
-        }
+        int[] graphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
 
         int nodeCount = buf.readVarUnsignedInt();
         List<PayloadNode> nodes = new ObjectArrayList<>(nodeCount);
@@ -66,10 +62,7 @@ public record PayloadGraph(long graphId, int[] graphEntityIds, List<PayloadNode>
     public void encode(NetByteBuf buf) {
         buf.writeVarUnsignedLong(graphId);
 
-        buf.writeVarUnsignedInt(graphEntityIds.length);
-        for (int graphEntityId : graphEntityIds) {
-            buf.writeVarUnsignedInt(graphEntityId);
-        }
+        PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
 
         buf.writeVarUnsignedInt(nodes.size());
         for (PayloadNode node : nodes) {

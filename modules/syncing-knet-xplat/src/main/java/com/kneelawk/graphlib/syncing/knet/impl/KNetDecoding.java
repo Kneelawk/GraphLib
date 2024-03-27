@@ -58,6 +58,7 @@ import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
@@ -256,5 +257,27 @@ public final class KNetDecoding {
         NodeEntity entity = readNodeEntity(payloadNode.entityTypeId(), data, palette, universe, pos);
         
         graph.createNode(blockPos, pos.node(), entity, true);
+    }
+
+    public static void receiveMerge(MergePayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
+        PayloadHeader header = payload.header();
+        Palette<Identifier> palette = header.palette();
+        NetByteBuf data = header.data();
+        
+        ClientGraphWorldImpl world = getWorld(header.universeId(), "merge");
+        BlockGraphImpl from = world.getGraph(payload.fromId());
+        if (from == null) {
+            // we don't know the graph being merged from, so we can safely ignore this packet
+            return;
+        }
+        
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
+        
+        // however, it is possible for a graph we do know about to get merged into one we don't know about yet
+        BlockGraphImpl into = world.getOrCreateGraph(payload.intoId());
+        loadGraphEntities(into, payload.intoGraphEntityIds(), data, palette, universe);
+        
+        // do the merge
+        into.merge(from);
     }
 }

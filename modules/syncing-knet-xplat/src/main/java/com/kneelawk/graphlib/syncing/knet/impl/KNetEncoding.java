@@ -27,6 +27,7 @@ package com.kneelawk.graphlib.syncing.knet.impl;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.PrimitiveIterator;
@@ -70,6 +71,7 @@ import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
@@ -275,5 +277,38 @@ public final class KNetEncoding {
         sendToFilteredWatching(KNetChannels.NODE_ADD,
             new NodeAddPayload(new PayloadHeader(universe.getId(), palette, data), graph.getId(), graphEntityIds,
                 new PayloadNode(nodePos, nodeEntityId)), world.getWorld(), node.getBlockPos(), sp);
+    }
+
+    public static void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
+        if (!(into.getGraphView() instanceof GraphWorld world))
+            throw new IllegalArgumentException("sendMerge shouls only be called on the logical server");
+
+        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        SyncProfile sp = universe.getSyncProfile();
+        if (!sp.isEnabled()) return;
+
+        Palette<Identifier> palette = new Palette<>();
+        NetByteBuf data = NetByteBuf.buffer();
+
+        int[] intoGraphEntityIds = writeGraphEntities(into, data, palette, universe);
+        MergePayload payload =
+            new MergePayload(new PayloadHeader(universe.getId(), palette, data), from.getId(), into.getId(),
+                intoGraphEntityIds);
+
+        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        for (var iter = into.getChunks().iterator(); iter.hasNext(); ) {
+            sendTo.addAll(
+                world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(iter.next().toChunkPos(), false));
+        }
+        for (var iter = from.getChunks().iterator(); iter.hasNext(); ) {
+            sendTo.addAll(
+                world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(iter.next().toChunkPos(), false));
+        }
+
+        for (ServerPlayerEntity player : sendTo) {
+            if (sp.getPlayerFilter().shouldSync(player)) {
+                KNetChannels.MERGE.sendPlay(player, payload);
+            }
+        }
     }
 }

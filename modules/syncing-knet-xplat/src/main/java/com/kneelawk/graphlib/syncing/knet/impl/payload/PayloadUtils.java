@@ -25,33 +25,22 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.util.Identifier;
-
-import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.knet.api.channel.NetPayload;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-public record NodeAddPayload(PayloadHeader header, long graphId, int[] graphEntityIds, PayloadNode node)
-    implements NetPayload {
-    public static NodeAddPayload decode(NetByteBuf buf) {
-        PayloadHeader header = PayloadHeader.decode(buf);
-        long graphId = buf.readVarUnsignedLong();
-        int[] graphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
-        PayloadNode node = PayloadNode.decode(buf);
-
-        return new NodeAddPayload(header, graphId, graphEntityIds, node);
+public class PayloadUtils {
+    public static void writeVarUnsignedIntArray(int[] ints, NetByteBuf buf) {
+        buf.writeVarUnsignedInt(ints.length);
+        for (int i : ints) {
+            buf.writeVarUnsignedInt(i);
+        }
     }
 
-    @Override
-    public void write(NetByteBuf buf) {
-        header.encode(buf);
-        buf.writeVarUnsignedLong(graphId);
-        PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
-        node.encode(buf);
-    }
-
-    @Override
-    public Identifier id() {
-        return KNetChannels.NODE_ADD.getId();
+    public static int[] readVarUnsignedIntArray(NetByteBuf buf) {
+        int count = buf.readVarUnsignedInt();
+        int[] ints = new int[count];
+        for (int i = 0; i < count; i++) {
+            ints[i] = buf.readVarUnsignedInt();
+        }
+        return ints;
     }
 }
