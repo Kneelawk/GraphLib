@@ -1,0 +1,25 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mods]]
+modId = "graphlib_syncing_knet"
+version = "${version}"
+displayName = "GraphLib Syncing KNet"
+authors = "Kneelawk"
+description = "KNet-based graph syncing."
+logoFile = "assets/graphlib_syncing_knet/icon-128.png"
+
+[[dependencies.graphlib_syncing_knet]]
+modId = "neoforge"
+type = "REQUIRED"
+versionRange = "[20.4.148-beta,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.graphlib_syncing_knet]]
+modId = "graphlib"
+type = "REQUIRED"
+versionRange = "[2-alpha,)"
+ordering = "NONE"
+side = "BOTH"
