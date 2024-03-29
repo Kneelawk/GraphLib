@@ -36,7 +36,7 @@ public class SimpleKNetSyncedUniverseBuilder implements KNetSyncedUniverse.Build
     SyncProfile profile = SyncProfile.SYNC_EVERYTHING;
 
     @Override
-    public @NotNull SyncedUniverse build(@NotNull GraphUniverse universe) {
+    public @NotNull KNetSyncedUniverse build(@NotNull GraphUniverse universe) {
         return new SimpleKNetSyncedUniverse(this, universe);
     }
 

@@ -195,7 +195,7 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
          * @param universe the universe that this synchronization handler is to synchronize.
          * @return a new universe synchronization handler.
          */
-        @NotNull SyncedUniverse build(@NotNull GraphUniverse universe);
+        @NotNull KNetSyncedUniverse build(@NotNull GraphUniverse universe);
 
         /**
          * Sets whether this graph universe should be synchronized to the client.
