@@ -68,7 +68,7 @@ public class TransferBeamsMod implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger(MOD_ID);
 
     public static final GraphUniverse UNIVERSE = GraphUniverse.builder().build(id("beams"));
-    public static final LNSSyncedUniverse SYNCED = (LNSSyncedUniverse) LNSSyncedUniverse.builder().build(UNIVERSE);
+    public static final LNSSyncedUniverse SYNCED = LNSSyncedUniverse.builder().build(UNIVERSE);
 
     public static final TagKey<Item> NODE_VISUALIZERS = TagKey.of(RegistryKeys.ITEM, id("node_visualizers"));
     public static final TagKey<Item> NODE_SELECTORS = TagKey.of(RegistryKeys.ITEM, id("node_selectors"));
