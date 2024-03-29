@@ -36,7 +36,7 @@ public class SimpleLNSSyncedUniverseBuilder implements LNSSyncedUniverse.Builder
     SyncProfile profile = SyncProfile.SYNC_EVERYTHING;
 
     @Override
-    public @NotNull SyncedUniverse build(@NotNull GraphUniverse universe) {
+    public @NotNull LNSSyncedUniverse build(@NotNull GraphUniverse universe) {
         return new SimpleLNSSyncedUniverse(this, universe);
     }
 
