@@ -81,11 +81,13 @@ dependencies {
 
     // GraphLib Core
     compileOnly(project(":core-xplat", configuration = "namedElements"))
+    localRuntime(project(":core-xplat", configuration = "namedElements"))
     implementation(project(":core-fabric", configuration = "namedElements"))
     include(project(":core-fabric"))
 
     // GraphLib Syncing Core
     compileOnly(project(":syncing-core-xplat", configuration = "namedElements"))
+    localRuntime(project(":syncing-core-xplat", configuration = "namedElements"))
     implementation(project(":syncing-core-fabric", configuration = "namedElements"))
     include(project(":syncing-core-fabric"))
     
@@ -94,6 +96,7 @@ dependencies {
     include(project(":syncing-lns"))
     
     // We need the debug-renderer at runtime
+    localRuntime(project(":debugrender-xplat", configuration = "namedElements"))
     runtimeOnly(project(":debugrender-fabric", configuration = "namedElements"))
     include(project(":debugrender-fabric"))
 
