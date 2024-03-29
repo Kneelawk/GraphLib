@@ -1,5 +1,8 @@
 name: prerelease
 
+env:
+  MAVEN_URL: 'https://kneelawk.com/maven#com/kneelawk/graphlib'
+
 on:
   push:
     tags:
@@ -70,7 +73,7 @@ jobs:
       - name: Create Docs Directory
         run: mkdir -p deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}
       - name: Copy To Deployment Repository Javadocs
-        run: cp -rf build/docs/javadoc deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}/
+        run: cp -rf build/docs/* deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}/
       - name: Commit Deployment Repository Changes
         run: |
           git config --global user.name "github-actions[bot]"
@@ -98,8 +101,13 @@ jobs:
             let mavenVersion = fullVersion.substring(1);
             let lines = [];
             lines.push(`**GraphLib prerelease ${versions[0]} has been published for Minecraft ${versions[1]}!**`);
-            lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", `With the identifier: \`com.kneelawk:graphlib:${mavenVersion}\``);
-            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/javadoc/index.html`);
+            lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", "With identifiers:");
+            lines.push(`\`com.kneelawk.graphlib:core-xplat-intermediary:${mavenVersion}\``);
+            lines.push(`\`com.kneelawk.graphlib:core-xplat-mojmap:${mavenVersion}\``);
+            lines.push(`\`com.kneelawk.graphlib:core-fabric:${mavenVersion}\``);
+            lines.push(`\`com.kneelawk.graphlib:core-neoforge:${mavenVersion}\``);
+            lines.push(`Find more more at ${process.env.MAVEN_URL}`);
+            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/xplat/javadoc/index.html`);
             return lines.join('\n');
           result-encoding: string
       - name: Make Release Announcement
