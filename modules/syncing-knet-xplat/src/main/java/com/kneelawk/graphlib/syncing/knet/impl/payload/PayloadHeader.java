@@ -44,6 +44,7 @@ public record PayloadHeader(Identifier universeId, Palette<Identifier> palette, 
     public void encode(NetByteBuf buf) {
         buf.writeIdentifier(universeId);
         palette.encode(buf, NetByteBuf::writeIdentifier);
+        buf.writeVarUnsignedInt(data.readableBytes());
         buf.writeBytes(data, data.readerIndex(), data.readableBytes());
     }
 }
