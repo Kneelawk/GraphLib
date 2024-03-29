@@ -42,7 +42,7 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.syncing.api.util.PacketEncodingUtil;
+import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.graph.TransferNodeEntity;
 import com.kneelawk.transferbeams.item.LinkToolItem;
@@ -63,11 +63,11 @@ public class TBNet {
 
     public static void sendNodeActivate(NodePos pos) {
         NODE_ACTIVATE.send(CoreMinecraftNetUtil.getClientConnection(),
-            (buf, ctx) -> PacketEncodingUtil.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+            (buf, ctx) -> GraphLibSyncingLNS.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
     }
 
     private static void receiveNodeActivate(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
 
         if (!(ctx.getConnection().getPlayer() instanceof ServerPlayerEntity player)) return;
 
@@ -91,11 +91,11 @@ public class TBNet {
 
     public static void sendNodeRemove(NodePos pos) {
         NODE_REMOVE.send(CoreMinecraftNetUtil.getClientConnection(),
-            (buf, ctx) -> PacketEncodingUtil.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+            (buf, ctx) -> GraphLibSyncingLNS.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
     }
 
     private static void receiveNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
 
         if (!(ctx.getConnection().getPlayer() instanceof ServerPlayerEntity player)) return;
 
@@ -121,11 +121,11 @@ public class TBNet {
 
     public static void sendNodeLink(NodePos pos) {
         NODE_LINK.send(CoreMinecraftNetUtil.getClientConnection(),
-            (buf, ctx) -> PacketEncodingUtil.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+            (buf, ctx) -> GraphLibSyncingLNS.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
     }
 
     private static void receiveNodeLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        NodePos pos = PacketEncodingUtil.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
 
         PlayerEntity player = ctx.getConnection().getPlayer();
 

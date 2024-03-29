@@ -52,7 +52,7 @@ import net.minecraft.util.math.Direction;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
-import com.kneelawk.graphlib.syncing.api.graph.user.NodeEntitySyncing;
+import com.kneelawk.graphlib.syncing.lns.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 import com.kneelawk.transferbeams.util.DropHandler;

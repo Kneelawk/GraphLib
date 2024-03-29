@@ -32,7 +32,7 @@ import net.minecraft.nbt.NbtElement;
 
 import com.kneelawk.graphlib.api.graph.user.AbstractLinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkEntitySyncing;
+import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkEntitySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 

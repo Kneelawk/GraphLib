@@ -36,15 +36,17 @@ import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractGraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.syncing.api.graph.user.GraphEntitySyncing;
+import com.kneelawk.graphlib.syncing.lns.api.graph.user.GraphEntitySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class TransferGraphEntity extends AbstractGraphEntity<TransferGraphEntity> {
     private static final int TICKS_PER_UPDATE = 4;
 
-    public static final GraphEntityType<TransferGraphEntity> TYPE = GraphEntityType.of(id("transfer"), TransferGraphEntity::new);
-    public static final GraphEntitySyncing<TransferGraphEntity> SYNCING = GraphEntitySyncing.ofNoOp(TransferGraphEntity::new);
+    public static final GraphEntityType<TransferGraphEntity> TYPE =
+        GraphEntityType.of(id("transfer"), TransferGraphEntity::new);
+    public static final GraphEntitySyncing<TransferGraphEntity> SYNCING =
+        GraphEntitySyncing.ofNoOp(TransferGraphEntity::new);
 
     private int tickCounter = 0;
 

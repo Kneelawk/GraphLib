@@ -34,7 +34,7 @@ import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
-import com.kneelawk.graphlib.syncing.api.graph.user.LinkKeySyncing;
+import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkKeySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 

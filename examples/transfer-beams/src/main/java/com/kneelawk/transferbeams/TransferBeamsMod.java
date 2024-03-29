@@ -34,7 +34,6 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 
 import net.minecraft.block.Block;
-import net.minecraft.feature_flags.FeatureFlags;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -42,7 +41,6 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
@@ -50,8 +48,8 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
+import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
 import com.kneelawk.transferbeams.graph.TransferGraphEntity;
@@ -70,7 +68,7 @@ public class TransferBeamsMod implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger(MOD_ID);
 
     public static final GraphUniverse UNIVERSE = GraphUniverse.builder().build(id("beams"));
-    public static final SyncedUniverse SYNCED = SyncedUniverse.builder().build(UNIVERSE);
+    public static final LNSSyncedUniverse SYNCED = (LNSSyncedUniverse) LNSSyncedUniverse.builder().build(UNIVERSE);
 
     public static final TagKey<Item> NODE_VISUALIZERS = TagKey.of(RegistryKeys.ITEM, id("node_visualizers"));
     public static final TagKey<Item> NODE_SELECTORS = TagKey.of(RegistryKeys.ITEM, id("node_selectors"));

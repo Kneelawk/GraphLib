@@ -1,6 +1,5 @@
 plugins {
     id("fabric-loom")
-    id("io.github.juuxel.loom-quiltflower")
     id("com.kneelawk.versioning")
 }
 
@@ -79,17 +78,29 @@ dependencies {
     modLocalRuntime("net.fabricmc.fabric-api:fabric-api:$fapi_version")
 
     // GraphLib
-    implementation(project(":core", configuration = "namedElements"))
-    include(project(":core", configuration = "namedElements"))
-    implementation(project(":syncing", configuration = "namedElements"))
-    include(project(":syncing", configuration = "namedElements"))
+
+    // GraphLib Core
+    compileOnly(project(":core-xplat", configuration = "namedElements"))
+    implementation(project(":core-fabric", configuration = "namedElements"))
+    include(project(":core-fabric"))
+
+    // GraphLib Syncing Core
+    compileOnly(project(":syncing-core-xplat", configuration = "namedElements"))
+    implementation(project(":syncing-core-fabric", configuration = "namedElements"))
+    include(project(":syncing-core-fabric"))
+    
+    // GraphLib Syncing LNS
+    implementation(project(":syncing-lns", configuration = "namedElements"))
+    include(project(":syncing-lns"))
+    
     // We need the debug-renderer at runtime
-    runtimeOnly(project(":debugrender", configuration = "namedElements"))
+    runtimeOnly(project(":debugrender-fabric", configuration = "namedElements"))
+    include(project(":debugrender-fabric"))
 
     // We actually use KModLib Overlay in order to make nodes visible through blocks
     val kml_version: String by project
-    modImplementation("com.kneelawk:kmodlib-overlay:$kml_version")
-    include("com.kneelawk:kmodlib-overlay:$kml_version")
+    modImplementation("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
+    include("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
 
     // LibNetworkStack
     val lns_version: String by project

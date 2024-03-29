@@ -40,7 +40,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.HalfLink;
-import com.kneelawk.graphlib.syncing.api.graph.user.BlockNodeSyncing;
+import com.kneelawk.graphlib.syncing.lns.api.graph.user.BlockNodeSyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
