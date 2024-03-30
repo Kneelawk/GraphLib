@@ -2,11 +2,11 @@
 
 [![Github Release Status]][Github Release] [![Maven Status]][Maven] [![Javadoc Badge]][Javadoc] [![Discord Badge]][Discord] [![Ko-fi Badge]][Ko-fi]
 
-[Github Release Status]: https://img.shields.io/github/v/release/Kneelawk/GraphLib?include_prereleases&style=flat-square
+[Github Release Status]: https://img.shields.io/github/v/release/Kneelawk/GraphLib?include_prereleases&sort=semver&style=flat-square&logo=github
 
 [Github Release]: https://github.com/Kneelawk/GraphLib/releases/latest
 
-[Maven Status]: https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fkneelawk.com%2Fmaven%2Fcom%2Fkneelawk%2Fgraphlib%2Fcore-xplat-intermediary%2Fmaven-metadata.xml&style=flat-square
+[Maven Status]: https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fkneelawk.com%2Fmaven%2Fcom%2Fkneelawk%2Fgraphlib%2Fcore-xplat-intermediary%2Fmaven-metadata.xml&style=flat-square&logo=apachemaven&logoColor=blue
 
 [Maven]: https://kneelawk.com/maven#com/kneelawk/graphlib
 
