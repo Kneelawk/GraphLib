@@ -58,7 +58,7 @@ public interface SyncedUniverse {
      * Gets the {@link GraphView} for the given {@link World}.
      * <p>
      * This works on both the logical server and the logical client, unlike
-     * {@link GraphUniverse#getServerGraphWorld(ServerWorld)} which only works on the logical server.
+     * {@link GraphUniverse#getGraphWorld(ServerWorld)} which only works on the logical server.
      *
      * @param world the world to get the graph view associated with.
      * @return the graph view associated with the given world.

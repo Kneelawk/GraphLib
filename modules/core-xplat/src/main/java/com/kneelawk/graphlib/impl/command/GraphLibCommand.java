@@ -14,7 +14,6 @@ import net.minecraft.command.CommandBuildContext;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.ClickEvent;
@@ -108,7 +107,7 @@ public class GraphLibCommand {
         GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
-        universe.getServerGraphWorld(world).updateNodes(BlockPos.stream(from, to));
+        universe.getGraphWorld(world).updateNodes(BlockPos.stream(from, to));
 
         source.sendFeedback(
             () -> Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
@@ -122,7 +121,7 @@ public class GraphLibCommand {
         GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
-        int result = universe.getServerGraphWorld(source.getWorld()).removeEmptyGraphs();
+        int result = universe.getGraphWorld(source.getWorld()).removeEmptyGraphs();
 
         source.sendFeedback(() -> Constants.command("graphlib.removeemptygraphs.success", result), true);
 
@@ -143,7 +142,7 @@ public class GraphLibCommand {
             ChunkSectionPos.stream(fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(),
                 toSection.getY(), toSection.getZ()).toList();
 
-        universe.getServerGraphWorld(world).rebuildChunks(toRebuild, new RebuildChunksListener() {
+        universe.getGraphWorld(world).rebuildChunks(toRebuild, new RebuildChunksListener() {
             @Override
             public void onAlreadyRunning(double progress, int graphCount, int chunkCount) {
                 source.sendFeedback(

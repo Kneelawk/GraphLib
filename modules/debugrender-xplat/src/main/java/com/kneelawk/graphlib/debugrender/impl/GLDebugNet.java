@@ -142,7 +142,7 @@ public final class GLDebugNet {
         Object2IntMap<Identifier> paletteLookup = new Object2IntOpenHashMap<>();
 
         MinecraftServer server = world.getServer();
-        GraphWorld graphWorld = universe.getServerGraphWorld(world);
+        GraphWorld graphWorld = universe.getGraphWorld(world);
         int viewDistance = server.getPlayerManager().getViewDistance();
 
         ChunkSectionPos playerPos = player.getWatchedSection();
