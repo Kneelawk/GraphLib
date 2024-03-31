@@ -44,7 +44,7 @@ import com.kneelawk.transferbeams.util.PositionDropHandler;
 
 public class BlockBreakHandler {
     public static void onBlockChanged(BlockPos pos, BlockState newBlock, ServerWorld world) {
-        GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getServerGraphWorld(world);
+        GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getGraphWorld(world);
         PrimitiveIterator.OfLong iter = graphWorld.getAllGraphIdsAt(pos).iterator();
         if (iter.hasNext()) {
             List<NodeHolder<BlockNode>> collected = new ObjectArrayList<>();

@@ -78,7 +78,7 @@ public class NodeItem extends Item implements InteractionCancellerItem {
                 return ActionResult.FAIL;
             } else {
                 // the editable graph world only exists on the server
-                GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
+                GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getGraphWorld(serverWorld);
 
                 graphWorld.addBlockNode(nodePos, new ItemTransferNodeEntity());
 

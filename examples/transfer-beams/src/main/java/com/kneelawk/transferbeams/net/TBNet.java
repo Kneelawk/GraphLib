@@ -78,7 +78,7 @@ public class TBNet {
 
         // FIXME: no claim detection
 
-        GraphWorld world = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
+        GraphWorld world = TransferBeamsMod.UNIVERSE.getGraphWorld(serverWorld);
 
         NodeHolder<BlockNode> holder = world.getNodeAt(pos);
         if (holder == null) return;
@@ -106,7 +106,7 @@ public class TBNet {
 
         // FIXME: no claim detection
 
-        GraphWorld world = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
+        GraphWorld world = TransferBeamsMod.UNIVERSE.getGraphWorld(serverWorld);
 
         NodeHolder<BlockNode> holder = world.getNodeAt(pos);
         if (holder == null) return;
@@ -137,7 +137,7 @@ public class TBNet {
 
         // FIXME: no claim detection
 
-        GraphWorld world = TransferBeamsMod.UNIVERSE.getServerGraphWorld(serverWorld);
+        GraphWorld world = TransferBeamsMod.UNIVERSE.getGraphWorld(serverWorld);
 
         LinkToolItem.onNodeClick(player, world, pos);
     }
