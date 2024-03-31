@@ -16,7 +16,7 @@ import com.kneelawk.graphlib.impl.graph.listener.UniverseListener;
 
 public interface GraphUniverseImpl extends GraphUniverse {
     @Override
-    @NotNull ServerGraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world);
+    @NotNull ServerGraphWorldImpl getGraphWorld(@NotNull ServerWorld world);
 
     ServerGraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites);
 

@@ -60,7 +60,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull ServerGraphWorldImpl getServerGraphWorld(@NotNull ServerWorld world) {
+    public @NotNull ServerGraphWorldImpl getGraphWorld(@NotNull ServerWorld world) {
         return StorageHelper.getStorage(world).get(id);
     }
 

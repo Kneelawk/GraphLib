@@ -42,7 +42,7 @@ public interface GraphUniverse {
      * @param world the world whose graph world is to be obtained.
      * @return the GraphWorld of the given world.
      */
-    @NotNull GraphWorld getServerGraphWorld(@NotNull ServerWorld world);
+    @NotNull GraphWorld getGraphWorld(@NotNull ServerWorld world);
 
     /**
      * Gets the unique id of this universe.
