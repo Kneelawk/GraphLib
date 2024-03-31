@@ -259,10 +259,10 @@ public final class KNetDecoding {
             return;
         }
 
+        NodeEntity entity = readNodeEntity(payloadNode.entityTypeId(), data, palette, universe, pos);
+
         BlockGraphImpl graph = world.getOrCreateGraph(payload.graphId());
         loadGraphEntities(graph, payload.graphEntityIds(), data, palette, universe);
-
-        NodeEntity entity = readNodeEntity(payloadNode.entityTypeId(), data, palette, universe, pos);
 
         graph.createNode(blockPos, pos.node(), entity, true);
     }

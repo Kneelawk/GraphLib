@@ -276,13 +276,15 @@ public final class KNetEncoding {
         Palette<Identifier> palette = new Palette<>();
         NetByteBuf data = NetByteBuf.buffer();
 
-        int[] graphEntityIds = writeGraphEntities(graph, data, palette, universe);
+        // write node-pos first, so we can discard everything quickly if it's outside the client's range
         NodePosSmallPayload nodePos = GraphLibSyncingKNet.encodeNodePosSmall(node.getPos(), data, palette, universe);
         OptionalInt nodeEntityId = writeNodeEntity(node, graph, data, palette, universe);
+        
+        int[] graphEntityIds = writeGraphEntities(graph, data, palette, universe);
 
         sendToFilteredWatching(KNetChannels.NODE_ADD,
-            new NodeAddPayload(new PayloadHeader(universe.getId(), palette, data), graph.getId(), graphEntityIds,
-                new PayloadNode(nodePos, nodeEntityId)), world.getWorld(), node.getBlockPos(), sp);
+            new NodeAddPayload(new PayloadHeader(universe.getId(), palette, data), graph.getId(),
+                new PayloadNode(nodePos, nodeEntityId), graphEntityIds), world.getWorld(), node.getBlockPos(), sp);
     }
 
     public static void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
