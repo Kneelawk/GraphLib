@@ -649,7 +649,10 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
 
         world.markDirty(id);
 
-        world.sendNodeAdd(this, graphNode);
+        // we only send an update to the client if this node is *new*, otherwise it should get synced with chunks
+        if (newlyAdded) {
+            world.sendNodeAdd(this, graphNode);
+        }
 
         return graphNode;
     }
