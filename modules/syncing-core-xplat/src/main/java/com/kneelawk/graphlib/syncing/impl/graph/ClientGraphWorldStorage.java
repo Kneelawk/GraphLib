@@ -106,4 +106,14 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
             }
         }
     }
+    
+    public void tick() {
+        for (ClientGraphWorldImpl impl : worlds.values()) {
+            try {
+                impl.tick();
+            } catch (Exception e) {
+                GLLog.error("Error ticking client graph world. World: '{}'/{}", clientWorld, clientWorld.getRegistryKey().getValue(), e);
+            }
+        }
+    }
 }

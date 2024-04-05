@@ -106,6 +106,11 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
+    public void tick() {
+        tickGraphs();
+    }
+
+    @Override
     public @NotNull GraphUniverse getUniverse() {
         return universe.getUniverse();
     }
@@ -262,6 +267,12 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             } else {
                 GLLog.warn("Tried to unload graph that does not exist. Id: {}", graphId);
             }
+        }
+    }
+    
+    private void tickGraphs() {
+        for (SimpleBlockGraph graph : graphs.values()) {
+            graph.onTick();
         }
     }
 

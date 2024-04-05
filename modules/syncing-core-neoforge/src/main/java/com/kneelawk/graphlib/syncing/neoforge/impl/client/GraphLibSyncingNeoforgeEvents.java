@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,25 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.fabric.impl.client;
+package com.kneelawk.graphlib.syncing.neoforge.impl.client;
 
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.TickEvent;
 
-import com.kneelawk.graphlib.syncing.impl.client.ClientProxy;
+import net.minecraft.client.world.ClientWorld;
+
 import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
 
-public class GraphLibSyncingFabricModClient implements ClientModInitializer {
-    @Override
-    public void onInitializeClient() {
-        ClientProxy.init();
-
-        ClientTickEvents.END_WORLD_TICK.register(world -> ClientStorageHelper.getStorage(world).tick());
+@Mod.EventBusSubscriber(value = Dist.CLIENT)
+public class GraphLibSyncingNeoforgeEvents {
+    @SubscribeEvent
+    public static void onLevelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase == TickEvent.Phase.END) {
+            if (event.level instanceof ClientWorld world) {
+                ClientStorageHelper.getStorage(world).tick();
+            }
+        }
     }
 }

@@ -102,12 +102,15 @@ public class GraphLibNeoForgeMod {
     }
 
     public void onLevelTick(TickEvent.LevelTickEvent event) {
-        if (event.level instanceof ServerWorld world) {
-            try {
-                StorageHelper.getStorage(world).tick();
-            } catch (Exception e) {
-                GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world, world.getRegistryKey().getValue(),
-                    e);
+        if (event.phase == TickEvent.Phase.END) {
+            if (event.level instanceof ServerWorld world) {
+                try {
+                    StorageHelper.getStorage(world).tick();
+                } catch (Exception e) {
+                    GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world,
+                        world.getRegistryKey().getValue(),
+                        e);
+                }
             }
         }
     }

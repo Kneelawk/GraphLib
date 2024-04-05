@@ -40,6 +40,8 @@ public interface ClientGraphWorldImpl extends GraphView {
 
     void updateLoadDistance(int loadDistance);
 
+    void tick();
+
     @NotNull BlockGraphImpl getOrCreateGraph(long graphId);
 
     @Nullable BlockGraphImpl getGraph(long id);
