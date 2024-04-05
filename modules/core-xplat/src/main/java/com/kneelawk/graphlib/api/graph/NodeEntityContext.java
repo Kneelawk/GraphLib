@@ -1,11 +1,17 @@
 package com.kneelawk.graphlib.api.graph;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -96,5 +102,20 @@ public interface NodeEntityContext {
      */
     default @Nullable BlockEntity getBlockEntity() {
         return getBlockWorld().getBlockEntity(getBlockPos());
+    }
+
+    /**
+     * Gets a collection of all the players tracking this node entity.
+     * <p>
+     * Note: this returns an empty collection on the client side.
+     *
+     * @return a collection of all the players tracking this node entity.
+     */
+    default @NotNull Collection<ServerPlayerEntity> getTrackingPlayers() {
+        if (getBlockWorld() instanceof ServerWorld world) {
+            return world.getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(getBlockPos()), false);
+        } else {
+            return List.of();
+        }
     }
 }

@@ -1,11 +1,20 @@
 package com.kneelawk.graphlib.api.graph;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -208,5 +217,25 @@ public interface LinkEntityContext {
             return entityClass.cast(entity);
         }
         return null;
+    }
+
+    /**
+     * Gets a collection of all the players tracking this link.
+     * <p>
+     * Note: returns an empty collection on the client side.
+     *
+     * @return a collection of all the players tracking this link.
+     */
+    default @NotNull Collection<ServerPlayerEntity> getTrackingPlayers() {
+        if (getBlockWorld() instanceof ServerWorld world) {
+            Set<ServerPlayerEntity> players = new ObjectLinkedOpenHashSet<>();
+            players.addAll(
+                world.getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(getFirstBlockPos()), false));
+            players.addAll(
+                world.getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(getSecondBlockPos()), false));
+            return players;
+        } else {
+            return List.of();
+        }
     }
 }
