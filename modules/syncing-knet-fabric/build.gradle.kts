@@ -44,6 +44,7 @@ base {
 base.libsDirectory.set(rootProject.layout.buildDirectory.map { it.dir("libs") })
 
 architectury {
+    platformSetupLoomIde()
     fabric()
 }
 
@@ -99,10 +100,14 @@ dependencies {
     // GraphLib Core
     compileOnly(project(":core-xplat", configuration = "namedElements"))
     implementation(project(":core-fabric", configuration = "namedElements"))
+    localRuntime(project(":core-xplat", configuration = "namedElements"))
+    localRuntime(project(":core-fabric", configuration = "namedElements"))
 
     // GraphLib Syncing Core
     compileOnly(project(":syncing-core-xplat", configuration = "namedElements"))
     implementation(project(":syncing-core-fabric", configuration = "namedElements"))
+    localRuntime(project(":syncing-core-xplat", configuration = "namedElements"))
+    localRuntime(project(":syncing-core-fabric", configuration = "namedElements"))
     
     // KNet
     val knet_version: String by project

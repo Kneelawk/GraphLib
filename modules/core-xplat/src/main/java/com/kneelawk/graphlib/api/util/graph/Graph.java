@@ -226,6 +226,16 @@ public final class Graph<T, L> implements Iterable<Node<T, L>> {
         return true;
     }
 
+    /**
+     * Checks to see if this graph contains the given link.
+     *
+     * @param link the link to check.
+     * @return whether this graph contains the given link.
+     */
+    public boolean containsLink(@NotNull Link<T, L> link) {
+        return link.first().connections().contains(link) && link.second().connections().contains(link);
+    }
+
     @NotNull
     @Override
     public Iterator<Node<T, L>> iterator() {

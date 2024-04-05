@@ -591,6 +591,11 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             return (SimpleNodeHolder<BlockNode>) nodesToHolders.get(nodePos);
         }
 
+        // Notify the graph entities that a node is about to be added
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onPreNodeCreated(nodePos, entity);
+        }
+
         // Actually create the node entity
         SimpleNodeHolder<BlockNode> graphNode = new SimpleNodeHolder<>(world.getWorld(), world,
             graph.add(new SimpleNodeWrapper(pos, node, id)));
@@ -643,22 +648,28 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             }
         }
 
-        for (GraphEntity<?> graphEntity : graphEntities.values()) {
-            graphEntity.onNodeCreated(graphNode, nodeEntity);
-        }
-
-        world.markDirty(id);
-
         // we only send an update to the client if this node is *new*, otherwise it should get synced with chunks
         if (newlyAdded) {
             world.sendNodeAdd(this, graphNode);
         }
+
+        // Notify the graph entities that a node has been created
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onPostNodeCreated(graphNode, nodeEntity);
+        }
+
+        world.markDirty(id);
 
         return graphNode;
     }
 
     @Override
     public void destroyNode(@NotNull NodeHolder<BlockNode> holder, boolean doSplit) {
+        // Notify the graph entities that a node is about to be destroyed
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onPreNodeDestroyed(holder);
+        }
+
         // send the node remove packet before any of the removing has actually happened
         world.sendNodeRemove(this, holder);
 
@@ -737,7 +748,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
 
         // notify the graph entities that a node was destroyed
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
-            graphEntity.onNodeDestroyed(holder, nodeEntity, removedLinks);
+            graphEntity.onPostNodeDestroyed(holder, nodeEntity, removedLinks);
         }
 
         rebuildCaches();
@@ -758,16 +769,24 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                                              @Nullable LinkEntity entity, boolean newlyAdded) {
         Link<SimpleNodeWrapper, LinkKey> rawLink =
             new Link<>(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
+        boolean duplicate = graph.containsLink(rawLink);
+
         LinkHolder<LinkKey> link = new SimpleLinkHolder<>(world.getWorld(), world, rawLink);
-        boolean unique = graph.link(rawLink);
+        LinkPos linkPos = link.getPos();
 
         // Handle duplicate link calls (can happen sometimes, especially on client)
-        if (!unique) {
+        if (duplicate) {
             if (entity != null) entity.onDiscard();
             return link;
         }
 
-        LinkPos linkPos = link.getPos();
+        // Notify graph entities that a link is about to be created
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onPreLink(linkPos, entity);
+        }
+
+        // actually create the link
+        graph.link(rawLink);
 
         // Get the proper node entity and determine whether it needs to be initialized
         LinkEntity linkEntity;
@@ -810,36 +829,51 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             }
         }
 
+        // we only send an update to the client if this link is *new*, otherwise it should get synced with chunks
+        if (newlyAdded) {
+            world.sendLink(this, link);
+        }
+
+        // Notify graph entities that a link was created
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
-            graphEntity.onLink(a, b, linkEntity);
+            graphEntity.onPostLink(a, b, linkEntity);
         }
 
         world.markDirty(id);
-
-        world.sendLink(this, link);
 
         return link;
     }
 
     @Override
     public boolean unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key) {
+        Link<SimpleNodeWrapper, LinkKey> rawLink =
+            new Link<>(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
+
+        // Don't bother doing the whole unlinking thing if the link never existed in the first place
+        if (!graph.containsLink(rawLink)) return false;
+
+        // Notify graph entities that the link is about to be destroyed
+        for (GraphEntity<?> graphEntity : graphEntities.values()) {
+            graphEntity.onPreUnlink(new SimpleLinkHolder<>(world.getWorld(), world, rawLink));
+        }
+
+        // send the unlink packet
         world.sendUnlink(this, a, b, key);
 
-        boolean linkRemoved =
-            graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
+        // actually do the unlink
+        graph.unlink(((SimpleNodeHolder<BlockNode>) a).node, ((SimpleNodeHolder<BlockNode>) b).node, key);
 
         LinkEntity entity = linkEntities.remove(new LinkPos(a.getPos(), b.getPos(), key));
         if (entity != null) {
             entity.onDelete();
         }
 
-        if (!linkRemoved) return false;
-
         world.scheduleCallbackUpdate(a, true);
         world.scheduleCallbackUpdate(b, true);
 
+        // Notify graph entities that the link has been destroyed
         for (GraphEntity<?> graphEntity : graphEntities.values()) {
-            graphEntity.onUnlink(a, b, entity);
+            graphEntity.onPostUnlink(a, b, entity);
         }
 
         world.markDirty(id);

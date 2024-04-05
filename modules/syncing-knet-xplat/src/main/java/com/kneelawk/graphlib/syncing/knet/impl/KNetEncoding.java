@@ -165,6 +165,9 @@ public final class KNetEncoding {
             }
         }
 
+        // Don't send anything if there's nothing to send
+        if (toEncode.isEmpty()) return;
+
         // write graphs
         List<PayloadGraph> graphs = new ObjectArrayList<>(toEncode.size());
         for (BlockGraphImpl graph : toEncode.values()) {
@@ -415,11 +418,11 @@ public final class KNetEncoding {
                 graphEntityIds, toMove);
 
         Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
-        for (var iter1 = into.getChunks().iterator(); iter.hasNext(); ) {
+        for (var iter1 = into.getChunks().iterator(); iter1.hasNext(); ) {
             sendTo.addAll(
                 world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(iter1.next().toChunkPos(), false));
         }
-        for (var iter1 = from.getChunks().iterator(); iter.hasNext(); ) {
+        for (var iter1 = from.getChunks().iterator(); iter1.hasNext(); ) {
             sendTo.addAll(
                 world.getWorld().getChunkManager().delegate.getPlayersWatchingChunk(iter1.next().toChunkPos(), false));
         }

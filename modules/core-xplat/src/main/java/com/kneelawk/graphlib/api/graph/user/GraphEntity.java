@@ -8,8 +8,10 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.nbt.NbtElement;
 
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
+import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
+import com.kneelawk.graphlib.api.util.NodePos;
 
 /**
  * Arbitrary data that can be stored in a graph.
@@ -47,6 +49,9 @@ public interface GraphEntity<G extends GraphEntity<G>> {
 
     /**
      * Called right before this entity's associated graph is deleted.
+     * <p>
+     * Syncing note: This is called after all nodes have been removed, meaning that client-side versions of this graph
+     * will already be gone.
      */
     default void onDestroy() {}
 
@@ -64,50 +69,103 @@ public interface GraphEntity<G extends GraphEntity<G>> {
     default void onDiscard() {}
 
     /**
-     * Called when a new node is created in this graph.
+     * Called before a new node is created on this graph.
+     * <p>
+     * This cannot be canceled.
+     *
+     * @param node   the node position that the new node will be at.
+     * @param entity the entity that will be added to the new node, if any entity is present.
+     */
+    default void onPreNodeCreated(@NotNull NodePos node, @Nullable NodeEntity entity) {}
+
+    /**
+     * Called after a new node is created in this graph, as soon as the node is valid.
      * <p>
      * Note: often adding a new node to this graph will first involve creating a new graph for that node and then
      * merging that graph into this one.
+     * <p>
+     * Syncing note: this is called just after the {@code NODE_ADD} message has been sent to the client.
      *
      * @param node       the new node added to the graph.
      * @param nodeEntity the node's entity, if any.
      */
-    default void onNodeCreated(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity) {onUpdate();}
+    default void onPostNodeCreated(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity) {onValidUpdate();}
 
     /**
-     * Called when a node in this graph is destroyed.
+     * Called before a node in this graph is destroyed.
+     * <p>
+     * This cannot be canceled.
+     * <p>
+     * Syncing note: this is called just before the {@code NODE_REMOVE} message is sent to the client.
+     *
+     * @param node the node that is about to be destroyed.
+     */
+    default void onPreNodeDestroyed(@NotNull NodeHolder<BlockNode> node) {onValidUpdate();}
+
+    /**
+     * Called after a node in this graph is destroyed.
+     * <p>
+     * Syncing note: this is called after the {@code NODE_REMOVE} message is sent to the client. If this node was the
+     * last node in this graph entity's graph, then the associated graph will no longer exist on the client.
      *
      * @param node         the node destroyed.
      * @param nodeEntity   the node's entity, if any.
      * @param linkEntities any link entities that were removed.
      */
-    default void onNodeDestroyed(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity,
-                                 Map<LinkPos, LinkEntity> linkEntities) {onUpdate();}
+    default void onPostNodeDestroyed(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity,
+                                     Map<LinkPos, LinkEntity> linkEntities) {}
 
     /**
-     * Called when two nodes in the graph are linked.
+     * Called before a new link between nodes in this graph is created.
+     * <p>
+     * This cannot be canceled.
+     * <p>
+     * Syncing note: this ic called just before the {@code LINK} message is sent to the client.
+     *
+     * @param link   the link to be created.
+     * @param entity the link's entity, if any.
+     */
+    default void onPreLink(@NotNull LinkPos link, @Nullable LinkEntity entity) {}
+
+    /**
+     * Called after two nodes in the graph are linked, as soon as the link is valid.
+     * <p>
+     * Syncing note: this is called just after the {@code LINK} message has been sent the client.
      *
      * @param a      the first node in the link.
      * @param b      the second node in the link.
      * @param entity the link entity that was added, if any.
      */
-    default void onLink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
-                        @Nullable LinkEntity entity) {onUpdate();}
+    default void onPostLink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
+                            @Nullable LinkEntity entity) {onValidUpdate();}
 
     /**
-     * Called when two nodes in the graph ar unlinked.
+     * Called before two nodes in the graph are unlinked.
+     * <p>
+     * This cannot be canceled.
+     * <p>
+     * Syncing note: this is called just before the {@code UNLINK} message is sent to the client.
+     *
+     * @param link the link that is about to be destroyed.
+     */
+    default void onPreUnlink(@NotNull LinkHolder<LinkKey> link) {onValidUpdate();}
+
+    /**
+     * Called after two nodes in the graph ar unlinked.
+     * <p>
+     * Syncing note: This is called just before the {@code UNLINK} message is sent to the client.
      *
      * @param a      the first node in the link.
      * @param b      the second node in the link.
      * @param entity the link entity that was removed, if any.
      */
-    default void onUnlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
-                          @Nullable LinkEntity entity) {onUpdate();}
+    default void onPostUnlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
+                              @Nullable LinkEntity entity) {}
 
     /**
-     * Called by the default implementations of the node update methods.
+     * Called during an update when this graph entity's graph is in a valid state.
      */
-    default void onUpdate() {}
+    default void onValidUpdate() {}
 
     /**
      * Called when this graph's graph world is ticked, if this graph is loaded.
