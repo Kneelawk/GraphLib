@@ -89,7 +89,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      * @param node       the new node added to the graph.
      * @param nodeEntity the node's entity, if any.
      */
-    default void onPostNodeCreated(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity) {onValidUpdate();}
+    default void onPostNodeCreated(@NotNull NodeHolder<BlockNode> node, @Nullable NodeEntity nodeEntity) {onUpdate();}
 
     /**
      * Called before a node in this graph is destroyed.
@@ -100,7 +100,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      *
      * @param node the node that is about to be destroyed.
      */
-    default void onPreNodeDestroyed(@NotNull NodeHolder<BlockNode> node) {onValidUpdate();}
+    default void onPreNodeDestroyed(@NotNull NodeHolder<BlockNode> node) {onUpdate();}
 
     /**
      * Called after a node in this graph is destroyed.
@@ -137,7 +137,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      * @param entity the link entity that was added, if any.
      */
     default void onPostLink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b,
-                            @Nullable LinkEntity entity) {onValidUpdate();}
+                            @Nullable LinkEntity entity) {onUpdate();}
 
     /**
      * Called before two nodes in the graph are unlinked.
@@ -148,7 +148,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      *
      * @param link the link that is about to be destroyed.
      */
-    default void onPreUnlink(@NotNull LinkHolder<LinkKey> link) {onValidUpdate();}
+    default void onPreUnlink(@NotNull LinkHolder<LinkKey> link) {onUpdate();}
 
     /**
      * Called after two nodes in the graph ar unlinked.
@@ -165,7 +165,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
     /**
      * Called during an update when this graph entity's graph is in a valid state.
      */
-    default void onValidUpdate() {}
+    default void onUpdate() {}
 
     /**
      * Called when this graph's graph world is ticked, if this graph is loaded.
