@@ -253,6 +253,12 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             SimpleBlockGraph graph = graphs.get(graphId);
             if (graph != null) {
                 graph.unloadInChunk(pillar.x, pillar.z);
+                
+                // actually unload the graph
+                if (graph.isEmpty()) {
+                    graphs.remove(graphId);
+                    graph.onUnload();
+                }
             } else {
                 GLLog.warn("Tried to unload graph that does not exist. Id: {}", graphId);
             }
