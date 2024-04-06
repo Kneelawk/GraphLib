@@ -70,12 +70,17 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                     BlockNodeType type = universe.getNodeType(typeId);
 
                     if (type == null) {
-                        GLLog.error("Chunk tried to load unknown NodeKey type: {} @ {}.", typeId, keyPos);
+                        GLLog.error("Chunk tried to load unknown BlockNode type: {} @ {}.", typeId, keyPos);
                         continue;
                     }
 
                     NbtElement dataTag = keyCom.get("data");
                     BlockNode data = type.getDecoder().decode(dataTag);
+                    
+                    if (data == null) {
+                        GLLog.error("Unable to decode chunk BlockNode with type: {} @ {}.", typeId, keyPos);
+                        continue;
+                    }
 
                     if (blockNodes == null) {
                         blockNodes = new Short2ObjectLinkedOpenHashMap<>();
