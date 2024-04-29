@@ -63,8 +63,13 @@ class SubmodulePlugin : Plugin<Project> {
         val archivesBaseName = project.getProperty<String>("archives_base_name")
         baseEx.archivesName.set("${archivesBaseName}-${project.name}")
 
+        val javaVersion = if (System.getenv("JAVA_VERSION") != null) {
+            System.getenv("JAVA_VERSION")
+        } else {
+            project.getProperty<String>("java_version")
+        }
+
         javaEx.apply {
-            val javaVersion = project.getProperty<String>("java_version")
             sourceCompatibility = JavaVersion.toVersion(javaVersion)
             targetCompatibility = JavaVersion.toVersion(javaVersion)
 
@@ -107,7 +112,6 @@ class SubmodulePlugin : Plugin<Project> {
 
             withType<JavaCompile>().configureEach {
                 options.encoding = "UTF-8"
-                val javaVersion = project.getProperty<String>("java_version")
                 options.release.set(javaVersion.toInt())
             }
 
