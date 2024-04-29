@@ -34,11 +34,13 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.jvm.tasks.Jar
 import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.project
 import org.gradle.kotlin.dsl.withType
 import org.gradle.language.jvm.tasks.ProcessResources
 
 abstract class SubmoduleExtension(private val project: Project) {
     lateinit var xplatName: String
+    val transitiveProjectDependencies = mutableListOf<String>()
 
     fun setLibsDirectory() {
         val baseEx = project.extensions.getByType(BasePluginExtension::class.java)
@@ -90,6 +92,7 @@ abstract class SubmoduleExtension(private val project: Project) {
 
         val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class.java)
         val xplatLoom = xplatProject.extensions.getByType(LoomGradleExtensionAPI::class.java)
+        val xplatSubmodule = xplatProject.extensions.getByType(SubmoduleExtension::class.java)
         val xplatSourceSets = xplatProject.extensions.getByType(SourceSetContainer::class.java)
         val mainSource = xplatSourceSets.named("main")
 
@@ -109,7 +112,15 @@ abstract class SubmoduleExtension(private val project: Project) {
         }
 
         project.dependencies.apply {
-            add("compileOnly", project.project(xplatName))
+            add("compileOnly", project(xplatName, configuration = "namedElements"))
+        }
+        
+        for (transitiveDep in xplatSubmodule.transitiveProjectDependencies) {
+            if (onNeoForge) {
+                neoforgeProjectDependency(transitiveDep)
+            } else {
+                fabricProjectDependency(transitiveDep)
+            }
         }
 
         project.tasks.apply {
@@ -172,7 +183,36 @@ abstract class SubmoduleExtension(private val project: Project) {
         project.tasks.named("assemble").configure { dependsOn(jarExt) }
     }
 
-    fun xplatDependency(projectBase: String) {
-        project.dependencies.add("compileOnly", project.project("${projectBase}-xplat"))
+    fun xplatProjectDependency(projectBase: String, transitive: Boolean = true) {
+        project.dependencies.apply {
+            add("compileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
+            add("testCompileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
+        }
+
+        if (transitive) {
+            transitiveProjectDependencies.add(projectBase)
+        }
+    }
+
+    fun fabricProjectDependency(projectBase: String) {
+        project.dependencies.apply {
+            add("compileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
+            add("implementation", project("${projectBase}-fabric", configuration = "namedElements"))
+            add("include", project("${projectBase}-fabric"))
+            add("testCompileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
+            add("testImplementation", project("${projectBase}-fabric", configuration = "namedElements"))
+        }
+    }
+
+    fun neoforgeProjectDependency(projectBase: String) {
+        project.dependencies.apply {
+            add("compileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
+            add("compileOnly", project("${projectBase}-neoforge", configuration = "namedElements"))
+            add("runtimeOnly", project("${projectBase}-neoforge", configuration = "dev"))
+            add("include", project("${projectBase}-neoforge"))
+            add("testCompileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
+            add("testCompileOnly", project("${projectBase}-neoforge", configuration = "namedElements"))
+            add("testRuntimeOnly", project("${projectBase}-neoforge", configuration = "dev"))
+        }
     }
 }

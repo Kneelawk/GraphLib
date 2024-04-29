@@ -28,6 +28,7 @@ package com.kneelawk.kpublish
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.kotlin.dsl.get
 
 abstract class KPublishExtension(private val project: Project) {
     fun createPublication(extension: String? = null, name: String = project.name) {
@@ -39,6 +40,7 @@ abstract class KPublishExtension(private val project: Project) {
             } else {
                 artifactId = "${name}-${extension}"
             }
+            from(project.components["java"])
         }
     }
 }

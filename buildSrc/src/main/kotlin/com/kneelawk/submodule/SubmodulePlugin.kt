@@ -37,6 +37,7 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.jvm.tasks.Jar
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.withType
 import org.gradle.language.jvm.tasks.ProcessResources
 
@@ -74,14 +75,10 @@ class SubmodulePlugin : Plugin<Project> {
 
         project.repositories.apply {
             mavenCentral()
-            maven {
-                url = project.uri("https://maven.quiltmc.org/repository/release")
-                name = "Quilt"
-            }
-            maven {
-                url = project.uri("https://maven.neoforged.net/releases/")
-                name = "NeoForged"
-            }
+            maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
+            maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
+            maven("https://maven.firstdark.dev/snapshots") { name = "FirstDark" }
+            maven("https://kneelawk.com/maven") { name = "Kneelawk" }
 
             mavenLocal()
         }
