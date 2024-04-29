@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,10 @@
  *
  */
 
-package com.kneelawk.versioning
+package com.kneelawk
 
-import org.gradle.api.Plugin
 import org.gradle.api.Project
-import com.kneelawk.getProperty
 
-class VersioningPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        val ext = target.extensions
-
-        val releaseTag = System.getenv("RELEASE_TAG")
-        val modVersion = if (releaseTag != null) {
-            val modVersion = releaseTag.substring(1)
-            println("Detected Release Version: $modVersion")
-            modVersion
-        } else {
-            val modVersion = target.getProperty<String>("mod_version")
-            println("Detected Local Version: $modVersion")
-            modVersion
-        }
-
-        if (modVersion.isEmpty()) {
-            throw IllegalStateException("Failed to detect version")
-        }
-
-        ext.extraProperties.set("modVersion", modVersion)
-        target.version = modVersion
-    }
+inline fun <reified T> Project.getProperty(propertyName: String): T {
+    return property(propertyName) as? T ?: throw IllegalStateException("No property '$propertyName' found")
 }

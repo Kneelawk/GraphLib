@@ -15,8 +15,6 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        val loom_version: String by settings
-        id("fabric-loom") version loom_version
         val architectury_version: String by settings
         id("architectury-plugin") version architectury_version
         val architectury_loom_version: String by settings

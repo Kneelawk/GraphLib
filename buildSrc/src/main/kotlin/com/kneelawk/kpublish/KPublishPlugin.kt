@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,26 @@
  *
  */
 
-package com.kneelawk.versioning
+package com.kneelawk.kpublish
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import com.kneelawk.getProperty
+import org.gradle.api.publish.PublishingExtension
 
-class VersioningPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        val ext = target.extensions
+class KPublishPlugin : Plugin<Project> {
+    override fun apply(project: Project) {
+        project.plugins.apply("org.gradle.maven-publish")
 
-        val releaseTag = System.getenv("RELEASE_TAG")
-        val modVersion = if (releaseTag != null) {
-            val modVersion = releaseTag.substring(1)
-            println("Detected Release Version: $modVersion")
-            modVersion
-        } else {
-            val modVersion = target.getProperty<String>("mod_version")
-            println("Detected Local Version: $modVersion")
-            modVersion
+        project.extensions.create("kpublish", KPublishExtension::class.java, project)
+
+        val publishingEx = project.extensions.getByType(PublishingExtension::class.java)
+
+        val publishRepo = System.getenv("PUBLISH_REPO")
+        if (publishRepo != null) {
+            publishingEx.repositories.maven {
+                name = "publishRepo"
+                url = project.uri(project.rootProject.file(publishRepo))
+            }
         }
-
-        if (modVersion.isEmpty()) {
-            throw IllegalStateException("Failed to detect version")
-        }
-
-        ext.extraProperties.set("modVersion", modVersion)
-        target.version = modVersion
     }
 }

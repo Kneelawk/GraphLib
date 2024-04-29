@@ -1,6 +1,6 @@
 plugins {
     `maven-publish`
-    id("fabric-loom")
+    id("dev.architectury.loom")
     id("com.kneelawk.versioning")
 }
 
