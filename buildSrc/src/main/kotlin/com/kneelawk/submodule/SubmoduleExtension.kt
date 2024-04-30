@@ -33,6 +33,7 @@ import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
 import org.gradle.jvm.tasks.Jar
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.project
 import org.gradle.kotlin.dsl.withType
@@ -43,14 +44,14 @@ abstract class SubmoduleExtension(private val project: Project) {
     val transitiveProjectDependencies = mutableListOf<String>()
 
     fun setLibsDirectory() {
-        val baseEx = project.extensions.getByType(BasePluginExtension::class.java)
+        val baseEx = project.extensions.getByType(BasePluginExtension::class)
         baseEx.libsDirectory.set(project.rootProject.layout.buildDirectory.dir("libs"))
     }
 
     fun setRefmaps(basename: String) {
         val refmapName = "${basename}.refmap.json"
 
-        val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class.java)
+        val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class)
         loomEx.mixin.defaultRefmapName.set(refmapName)
 
         project.tasks.named("processResources", ProcessResources::class).configure {
@@ -90,17 +91,17 @@ abstract class SubmoduleExtension(private val project: Project) {
 
         val xplatProject = project.evaluationDependsOn(xplatName)
 
-        val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class.java)
-        val xplatLoom = xplatProject.extensions.getByType(LoomGradleExtensionAPI::class.java)
-        val xplatSubmodule = xplatProject.extensions.getByType(SubmoduleExtension::class.java)
-        val xplatSourceSets = xplatProject.extensions.getByType(SourceSetContainer::class.java)
+        val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class)
+        val xplatLoom = xplatProject.extensions.getByType(LoomGradleExtensionAPI::class)
+        val xplatSubmodule = xplatProject.extensions.getByType(SubmoduleExtension::class)
+        val xplatSourceSets = xplatProject.extensions.getByType(SourceSetContainer::class)
         val mainSource = xplatSourceSets.named("main")
 
         if (loomEx.mods.findByName("main") != null) {
             loomEx.mods.named("main").configure { sourceSet(mainSource.get()) }
         } else {
             loomEx.mods.create("main") {
-                sourceSet(project.extensions.getByType(SourceSetContainer::class.java).named("main").get())
+                sourceSet(project.extensions.getByType(SourceSetContainer::class).named("main").get())
                 sourceSet(mainSource.get())
             }
         }

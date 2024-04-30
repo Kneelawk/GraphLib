@@ -28,14 +28,16 @@ package com.kneelawk.kpublish
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.getByType
 
 class KPublishPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.plugins.apply("org.gradle.maven-publish")
 
-        project.extensions.create("kpublish", KPublishExtension::class.java, project)
+        project.extensions.create("kpublish", KPublishExtension::class, project)
 
-        val publishingEx = project.extensions.getByType(PublishingExtension::class.java)
+        val publishingEx = project.extensions.getByType(PublishingExtension::class)
 
         val publishRepo = System.getenv("PUBLISH_REPO")
         if (publishRepo != null) {

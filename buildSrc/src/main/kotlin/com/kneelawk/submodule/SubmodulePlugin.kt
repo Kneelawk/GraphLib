@@ -37,6 +37,8 @@ import org.gradle.api.tasks.testing.Test
 import org.gradle.external.javadoc.StandardJavadocDocletOptions
 import org.gradle.jvm.tasks.Jar
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.maven
 import org.gradle.kotlin.dsl.withType
 import org.gradle.language.jvm.tasks.ProcessResources
@@ -53,10 +55,10 @@ class SubmodulePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.plugins.apply("dev.architectury.loom")
 
-        val baseEx = project.extensions.getByType(BasePluginExtension::class.java)
-        val javaEx = project.extensions.getByType(JavaPluginExtension::class.java)
+        val baseEx = project.extensions.getByType(BasePluginExtension::class)
+        val javaEx = project.extensions.getByType(JavaPluginExtension::class)
 
-        project.extensions.create("submodule", SubmoduleExtension::class.java, project)
+        project.extensions.create("submodule", SubmoduleExtension::class, project)
 
         val mavenGroup = project.getProperty<String>("maven_group")
         project.group = mavenGroup

@@ -26,21 +26,30 @@
 package com.kneelawk.kpublish
 
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.getByType
 
 abstract class KPublishExtension(private val project: Project) {
-    fun createPublication(extension: String? = null, name: String = project.name) {
-        val publishingEx = project.extensions.getByType(PublishingExtension::class.java)
+    fun createPublication(extension: String? = null, name: String = project.name, vararg tasks: TaskProvider<out Task>) {
+        val publishingEx = project.extensions.getByType(PublishingExtension::class)
 
-        publishingEx.publications.create("mavenJava", MavenPublication::class.java) {
-            if (extension == null) {
-                artifactId = name
+        publishingEx.publications.create("mavenJava", MavenPublication::class) {
+            artifactId = if (extension == null) {
+                name
             } else {
-                artifactId = "${name}-${extension}"
+                "${name}-${extension}"
             }
-            from(project.components["java"])
+            
+            if (tasks.isEmpty()) {
+                from(project.components["java"])
+            } else {
+                tasks.forEach { artifact(it) }
+            }
         }
     }
 }

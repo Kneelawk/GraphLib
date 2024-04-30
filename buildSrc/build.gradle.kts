@@ -31,5 +31,9 @@ gradlePlugin {
             id = "com.kneelawk.kpublish"
             implementationClass = "com.kneelawk.kpublish.KPublishPlugin"
         }
+        create("mojmapPlugin") {
+            id = "com.kneelawk.mojmap"
+            implementationClass = "com.kneelawk.mojmap.MojmapPlugin"
+        }
     }
 }
