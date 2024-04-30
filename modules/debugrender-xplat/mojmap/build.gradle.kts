@@ -12,5 +12,5 @@ mojmap {
 }
 
 kpublish {
-    createPublication("mojmap", project.parent!!.name, mojmap.jar, mojmap.sourcesJar)
+    createPublication("mojmap", parent!!.name, mojmap.jar, mojmap.sourcesJar)
 }

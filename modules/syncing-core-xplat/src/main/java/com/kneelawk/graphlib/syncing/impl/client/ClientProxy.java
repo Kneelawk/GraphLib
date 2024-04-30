@@ -28,9 +28,6 @@ package com.kneelawk.graphlib.syncing.impl.client;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.server.world.ServerWorld;
@@ -43,7 +40,6 @@ import com.kneelawk.graphlib.syncing.impl.CommonProxy;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
 
-@Environment(EnvType.CLIENT)
 public class ClientProxy extends CommonProxy {
     public static void init() {
         INSTANCE = new ClientProxy();
