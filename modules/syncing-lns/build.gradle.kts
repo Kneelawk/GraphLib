@@ -13,10 +13,6 @@ submodule {
     fabricProjectDependency(":syncing-core")
 }
 
-repositories {
-    maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
-}
-
 dependencies {
     // LibNetworkStack
     val lns_version: String by project

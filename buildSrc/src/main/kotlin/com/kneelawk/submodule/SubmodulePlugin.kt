@@ -26,6 +26,7 @@
 package com.kneelawk.submodule
 
 import com.kneelawk.getProperty
+import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -57,6 +58,7 @@ class SubmodulePlugin : Plugin<Project> {
 
         val baseEx = project.extensions.getByType(BasePluginExtension::class)
         val javaEx = project.extensions.getByType(JavaPluginExtension::class)
+        val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class)
 
         project.extensions.create("submodule", SubmoduleExtension::class, project)
 
@@ -86,6 +88,7 @@ class SubmodulePlugin : Plugin<Project> {
             maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
             maven("https://maven.firstdark.dev/snapshots") { name = "FirstDark" }
             maven("https://kneelawk.com/maven") { name = "Kneelawk" }
+            maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
 
             mavenLocal()
         }
@@ -93,8 +96,12 @@ class SubmodulePlugin : Plugin<Project> {
         project.dependencies.apply {
             val minecraftVersion = project.getProperty<String>("minecraft_version")
             add("minecraft", "com.mojang:minecraft:$minecraftVersion")
-            val mappingsVersion = project.getProperty<String>("quilt_mappings")
-            add("mappings", "org.quiltmc:quilt-mappings:$minecraftVersion+build.$mappingsVersion:intermediary-v2")
+            val mappingsVersion = project.getProperty<String>("mappings_version")
+            val neoforgePatch = project.getProperty<String>("neoforge_patch")
+            add("mappings", loomEx.layered { 
+                mappings("net.fabricmc:yarn:$minecraftVersion+build.$mappingsVersion:v2")
+                mappings("dev.architectury:yarn-mappings-patch-neoforge:$neoforgePatch")
+            })
 
             add("testImplementation", "junit:junit:4.13.2")
         }

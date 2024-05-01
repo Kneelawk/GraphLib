@@ -24,35 +24,21 @@
  */
 
 plugins {
-    id("dev.architectury.loom")
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
 }
 
 evaluationDependsOn(":core-xplat")
 evaluationDependsOn(":debugrender-xplat")
 evaluationDependsOn(":syncing-core-xplat")
 
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("xplat") })
-
-repositories {
-    mavenCentral()
-    maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
-    maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
-    maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
-    maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
-
-    mavenLocal()
+submodule {
+    applyFabricLoaderDependency()
 }
 
-dependencies {
-    val minecraft_version: String by project
-    minecraft("com.mojang:minecraft:$minecraft_version")
-    val quilt_mappings: String by project
-    mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:intermediary-v2")
+java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("xplat") })
 
-    // Fabric Loader
-    val fabric_loader_version: String by project
-    modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
-    
+dependencies {
     // modules
     compileOnly(project(":core-xplat", configuration = "namedElements"))
     compileOnly(project(":debugrender-xplat", configuration = "namedElements"))

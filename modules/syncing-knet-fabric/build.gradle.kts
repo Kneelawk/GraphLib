@@ -39,8 +39,8 @@ submodule {
 dependencies {
     // KNet
     val knet_version: String by project
-    modApi("com.kneelawk.knet:fabric:$knet_version")
-    include("com.kneelawk.knet:fabric:$knet_version")
+    modApi("com.kneelawk:knet-fabric:$knet_version")
+    include("com.kneelawk:knet-fabric:$knet_version")
 }
 
 java {

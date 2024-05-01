@@ -24,7 +24,8 @@
  */
 
 plugins {
-    id("dev.architectury.loom")
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
 }
 
 evaluationDependsOn(":core-xplat")
@@ -35,32 +36,14 @@ evaluationDependsOn(":syncing-core-xplat")
 evaluationDependsOn(":syncing-core-fabric")
 evaluationDependsOn(":syncing-lns")
 
-java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("fabric") })
-
-repositories {
-    mavenCentral()
-    maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
-    maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
-    maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
-    maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
-
-    mavenLocal()
+submodule {
+    applyFabricLoaderDependency()
+    applyFabricApiDependency()
 }
 
+java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("fabric") })
+
 dependencies {
-    val minecraft_version: String by project
-    minecraft("com.mojang:minecraft:$minecraft_version")
-    val quilt_mappings: String by project
-    mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:intermediary-v2")
-
-    // Fabric Loader
-    val fabric_loader_version: String by project
-    modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
-
-    // Fabric Api
-    val fapi_version: String by project
-    modCompileOnly("net.fabricmc.fabric-api:fabric-api:$fapi_version")
-    
     // modules
     compileOnly(project(":core-xplat", configuration = "namedElements"))
     compileOnly(project(":core-fabric", configuration = "namedElements"))

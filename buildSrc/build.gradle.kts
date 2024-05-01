@@ -11,10 +11,12 @@ repositories {
     maven("https://maven.architectury.dev/") { name = "Architectury" }
     maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
     maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
+    maven("https://kneelawk.com/maven") { name = "Kneelawk" }
 }
 
 dependencies {
-    implementation("dev.architectury.loom:dev.architectury.loom.gradle.plugin:1.6-SNAPSHOT")
+    val architectury_loom_version: String by project
+    implementation("dev.architectury.loom:dev.architectury.loom.gradle.plugin:$architectury_loom_version")
 }
 
 gradlePlugin {
