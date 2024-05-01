@@ -158,6 +158,19 @@ abstract class SubmoduleExtension(private val project: Project) {
             }
         }
     }
+    
+    fun generateRuns() {
+        val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class);
+        loomEx.runs { 
+            named("client") {
+                ideConfigGenerated(true)
+                programArgs("--width", "1280", "--height", "720")
+            }
+            named("server") {
+                ideConfigGenerated(true)
+            }
+        }
+    }
 
     fun createDevExport() {
         project.configurations.apply {

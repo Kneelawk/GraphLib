@@ -24,7 +24,6 @@
  */
 
 plugins {
-    id("architectury-plugin")
     id("dev.architectury.loom")
 }
 
@@ -36,10 +35,6 @@ evaluationDependsOn(":syncing-core-xplat")
 evaluationDependsOn(":syncing-core-neoforge")
 
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("neoforge") })
-
-architectury {
-    neoForge()
-}
 
 repositories {
     mavenCentral()

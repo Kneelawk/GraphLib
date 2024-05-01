@@ -24,7 +24,6 @@
  */
 
 plugins {
-    id("architectury-plugin")
     id("dev.architectury.loom")
 }
 
@@ -33,11 +32,6 @@ evaluationDependsOn(":debugrender-xplat")
 evaluationDependsOn(":syncing-core-xplat")
 
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("xplat") })
-
-architectury {
-    val enabled_platforms: String by project
-    common(enabled_platforms.split(','))
-}
 
 repositories {
     mavenCentral()
