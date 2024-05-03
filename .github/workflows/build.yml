@@ -7,10 +7,9 @@ jobs:
     strategy:
       matrix:
         java: [
-          17,    # Minimum supported by Minecraft
           21     # Current LTS
         ]
-        os: [ ubuntu-20.04, windows-2022 ]
+        os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -38,7 +37,7 @@ jobs:
         env: 
           JAVA_VERSION: ${{ matrix.java }} # override default toolchain version
       - name: Capture Build Artifacts
-        if: ${{ runner.os == 'Linux' && matrix.java == '17' }}
+        if: ${{ runner.os == 'Linux' && matrix.java == '21' }}
         uses: actions/upload-artifact@v2
         with:
           name: Artifacts
