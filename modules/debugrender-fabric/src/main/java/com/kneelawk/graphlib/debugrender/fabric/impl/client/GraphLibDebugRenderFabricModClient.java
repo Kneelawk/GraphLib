@@ -72,7 +72,7 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
         RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
             new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.getExpectedBufferSize()));
         RenderToOverlay.EVENT.register(
-            ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.camera().getPos(), ctx.consumers()));
+            ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.positionMatrix(), ctx.camera().getPos(), ctx.consumers()));
 
         // packet receivers
         PayloadTypeRegistry.playS2C().register(GraphUpdatePayload.ID, GraphUpdatePayload.CODEC);

@@ -38,6 +38,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import org.joml.Matrix4f;
+
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexConsumer;
@@ -100,12 +102,13 @@ public final class DebugRenderer {
                     .cull(RenderPhase.DISABLE_CULLING).build(false));
     }
 
-    public static void render(MatrixStack stack, Vec3d camPos, VertexConsumerProvider consumers) {
+    public static void render(MatrixStack stack, Matrix4f modelViewMatrix, Vec3d camPos, VertexConsumerProvider consumers) {
         if (DEBUG_GRAPHS.isEmpty()) {
             return;
         }
 
         stack.push();
+        stack.multiplyPositionMatrix(modelViewMatrix);
         stack.translate(-camPos.x, -camPos.y, -camPos.z);
 
         renderGraphs(stack, consumers);
