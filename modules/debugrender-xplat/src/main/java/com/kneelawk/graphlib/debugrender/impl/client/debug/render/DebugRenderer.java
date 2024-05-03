@@ -38,13 +38,12 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormats;
-
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -87,36 +86,18 @@ public final class DebugRenderer {
             super(string, runnable, runnable2);
         }
 
-        public static final RenderLayer DEBUG_LINES = RenderLayerHelper.of(
-            "debug_lines",
-            VertexFormats.LINES,
-            VertexFormat.DrawMode.LINES,
-            256,
-            false,
-            false,
-            RenderLayer.MultiPhaseParameters.builder()
-                .shader(RenderPhase.LINES_SHADER)
-                .lineWidth(new RenderPhase.LineWidth(OptionalDouble.empty()))
-                .transparency(RenderPhase.TRANSLUCENT_TRANSPARENCY)
-                .writeMaskState(RenderPhase.ALL_MASK)
-                .cull(RenderPhase.DISABLE_CULLING)
-                .build(false)
-        );
+        public static final RenderLayer DEBUG_LINES =
+            RenderLayerHelper.of("debug_lines", VertexFormats.LINES, VertexFormat.DrawMode.LINES, 256, false, false,
+                RenderLayer.MultiPhaseParameters.builder().program(RenderPhase.LINES_PROGRAM)
+                    .lineWidth(new RenderPhase.LineWidth(OptionalDouble.empty()))
+                    .transparency(RenderPhase.TRANSLUCENT_TRANSPARENCY).writeMaskState(RenderPhase.ALL_MASK)
+                    .cull(RenderPhase.DISABLE_CULLING).build(false));
 
-        public static final RenderLayer DEBUG_QUADS = RenderLayerHelper.of(
-            "debug_quads",
-            VertexFormats.POSITION_COLOR,
-            VertexFormat.DrawMode.QUADS,
-            256,
-            false,
-            false,
-            RenderLayer.MultiPhaseParameters.builder()
-                .shader(RenderPhase.COLOR_SHADER)
-                .transparency(RenderPhase.TRANSLUCENT_TRANSPARENCY)
-                .writeMaskState(RenderPhase.ALL_MASK)
-                .cull(RenderPhase.DISABLE_CULLING)
-                .build(false)
-        );
+        public static final RenderLayer DEBUG_QUADS =
+            RenderLayerHelper.of("debug_quads", VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.QUADS, 256, false,
+                false, RenderLayer.MultiPhaseParameters.builder().program(RenderPhase.COLOR_PROGRAM)
+                    .transparency(RenderPhase.TRANSLUCENT_TRANSPARENCY).writeMaskState(RenderPhase.ALL_MASK)
+                    .cull(RenderPhase.DISABLE_CULLING).build(false));
     }
 
     public static void render(MatrixStack stack, Vec3d camPos, VertexConsumerProvider consumers) {
@@ -175,9 +156,8 @@ public final class DebugRenderer {
                     // should never be null unless GraphLibClient.DEBUG_GRAPHS was modified by another thread
                     NPosData data = nodeEndpoints.get(pos);
 
-                    Vec3d endpoint =
-                        renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(),
-                            data.endpoints);
+                    Vec3d endpoint = renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(),
+                        data.endpoints);
                     endpoints.put(node, endpoint);
                     data.endpoints.add(endpoint);
 
@@ -207,9 +187,9 @@ public final class DebugRenderer {
                     BlockPos posB = nodeB.data().pos();
 
                     RenderUtils.drawLine(stack, consumer, (float) (posA.getX() + endpointA.x),
-                        (float) (posA.getY() + endpointA.y),
-                        (float) (posA.getZ() + endpointA.z), (float) (posB.getX() + endpointB.x),
-                        (float) (posB.getY() + endpointB.y), (float) (posB.getZ() + endpointB.z), graphColor);
+                        (float) (posA.getY() + endpointA.y), (float) (posA.getZ() + endpointA.z),
+                        (float) (posB.getX() + endpointB.x), (float) (posB.getY() + endpointB.y),
+                        (float) (posB.getZ() + endpointB.z), graphColor);
                 }
             }
         }

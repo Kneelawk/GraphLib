@@ -25,14 +25,18 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
-import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.knet.api.channel.NetPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
 public record NodeAddPayload(PayloadHeader header, long graphId, PayloadNode node, int[] graphEntityIds)
-    implements NetPayload {
+    implements CustomPayload {
+    public static final Id<NodeAddPayload> ID = new Id<>(SyncingKNetImpl.id("node_add"));
+    public static final PacketCodec<NetByteBuf, NodeAddPayload> CODEC =
+        PacketCodec.of(NodeAddPayload::encode, NodeAddPayload::decode);
+
     public static NodeAddPayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
         long graphId = buf.readVarUnsignedLong();
@@ -42,8 +46,7 @@ public record NodeAddPayload(PayloadHeader header, long graphId, PayloadNode nod
         return new NodeAddPayload(header, graphId, node, graphEntityIds);
     }
 
-    @Override
-    public void write(NetByteBuf buf) {
+    public void encode(NetByteBuf buf) {
         header.encode(buf);
         buf.writeVarUnsignedLong(graphId);
         PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
@@ -51,7 +54,7 @@ public record NodeAddPayload(PayloadHeader header, long graphId, PayloadNode nod
     }
 
     @Override
-    public Identifier id() {
-        return KNetChannels.NODE_ADD.getId();
+    public Id<?> getId() {
+        return ID;
     }
 }

@@ -52,7 +52,7 @@ public class ConnectedLampBlock extends Block implements ConnectableBlock {
     // Vanilla Stuff
     //
 
-    public static final MapCodec<ConnectedLampBlock> CODEC = method_54094(ConnectedLampBlock::new);
+    public static final MapCodec<ConnectedLampBlock> CODEC = createCodec(ConnectedLampBlock::new);
     public static final BooleanProperty LIT = RedstoneTorchBlock.LIT;
 
     public ConnectedLampBlock(Settings settings) {

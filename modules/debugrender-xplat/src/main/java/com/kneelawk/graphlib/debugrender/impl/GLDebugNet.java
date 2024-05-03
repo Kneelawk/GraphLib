@@ -45,7 +45,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -154,7 +154,7 @@ public final class GLDebugNet {
         LongSet graphIds = new LongLinkedOpenHashSet();
         for (int z = minZ; z <= maxZ; z++) {
             for (int x = minX; x <= maxX; x++) {
-                if (player.method_52372().method_52356(x, z)) {
+                if (player.getChunkFilter().isWithinDistance(x, z)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
                     graphWorld.getAllGraphIdsInChunk(pos).forEach(graphIds::add);
@@ -204,7 +204,7 @@ public final class GLDebugNet {
 
         Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
         graph.getChunks().forEachOrdered(section -> {
-            for (ServerPlayerEntity player : world.getChunkManager().delegate.getPlayersWatchingChunk(
+            for (ServerPlayerEntity player : world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
                 section.toChunkPos(), false)) {
                 if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse().getId())) {
                     sendTo.add(player);

@@ -60,9 +60,9 @@ public class MultiblockLampsFabric implements ModInitializer {
         register(ITEMS, Registries.ITEM);
         register(BLOCK_TYPES, Registries.BLOCK_TYPE);
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE_BLOCKS).register(entries -> {
-            entries.addItem(CONNECTED_LAMP_BLOCK.get());
-            entries.addItem(LAMP_CONNECTOR_BLOCK.get());
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.REDSTONE).register(entries -> {
+            entries.add(CONNECTED_LAMP_BLOCK.get());
+            entries.add(LAMP_CONNECTOR_BLOCK.get());
         });
 
         MultiblockLamps.initUniverse();

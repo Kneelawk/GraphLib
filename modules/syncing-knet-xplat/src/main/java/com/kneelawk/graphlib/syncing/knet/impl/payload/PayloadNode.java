@@ -32,7 +32,7 @@ import com.kneelawk.knet.api.util.NetByteBuf;
 
 public record PayloadNode(NodePosSmallPayload nodePos, OptionalInt entityTypeId) {
     public static PayloadNode decode(NetByteBuf buf) {
-        NodePosSmallPayload nodePos = NodePosSmallPayload.CODEC.decoder().apply(buf);
+        NodePosSmallPayload nodePos = NodePosSmallPayload.decode(buf);
         OptionalInt entityTypeId;
         if (buf.readBoolean()) {
             entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
@@ -43,7 +43,7 @@ public record PayloadNode(NodePosSmallPayload nodePos, OptionalInt entityTypeId)
     }
 
     public void encode(NetByteBuf buf) {
-        NodePosSmallPayload.CODEC.encoder().accept(buf, nodePos);
+        nodePos.encode(buf);
         if (entityTypeId.isPresent()) {
             buf.writeBoolean(true);
             buf.writeVarUnsignedInt(entityTypeId.getAsInt());

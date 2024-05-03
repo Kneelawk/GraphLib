@@ -25,9 +25,8 @@
 
 package com.kneelawk.graphlib.debugrender.impl.mixin.api;
 
-import com.mojang.blaze3d.vertex.VertexFormat;
-
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexFormat;
 
 import com.kneelawk.graphlib.debugrender.impl.mixin.impl.RenderLayerAccessor;
 

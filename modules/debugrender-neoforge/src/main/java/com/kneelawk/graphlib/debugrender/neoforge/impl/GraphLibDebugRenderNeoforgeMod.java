@@ -26,6 +26,7 @@
 package com.kneelawk.graphlib.debugrender.neoforge.impl;
 
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -40,7 +41,7 @@ import com.kneelawk.graphlib.neoforge.api.event.GraphUpdatedEvent;
 import com.kneelawk.graphlib.neoforge.impl.event.AddUniverseSubcommandsEvent;
 
 @Mod(GraphLibDebugRenderImpl.MOD_ID)
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class GraphLibDebugRenderNeoforgeMod {
     @SubscribeEvent
     public static void onServerStart(ServerStartingEvent event) {

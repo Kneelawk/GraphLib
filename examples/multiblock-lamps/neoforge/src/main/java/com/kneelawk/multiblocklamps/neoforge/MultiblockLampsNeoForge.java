@@ -67,9 +67,9 @@ public class MultiblockLampsNeoForge {
     }
 
     public void onCreativeTab(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == ItemGroups.REDSTONE_BLOCKS) {
-            event.addStack(new ItemStack(CONNECTED_LAMP_BLOCK.get().asItem()));
-            event.addStack(new ItemStack(LAMP_CONNECTOR_BLOCK.get().asItem()));
+        if (event.getTabKey() == ItemGroups.REDSTONE) {
+            event.add(new ItemStack(CONNECTED_LAMP_BLOCK.get().asItem()));
+            event.add(new ItemStack(LAMP_CONNECTOR_BLOCK.get().asItem()));
         }
     }
 }

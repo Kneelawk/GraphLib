@@ -34,21 +34,24 @@ public interface NodeEntityContext {
      *
      * @return the block node holder associated with this entity.
      */
-    @NotNull NodeHolder<BlockNode> getHolder();
+    @NotNull
+    NodeHolder<BlockNode> getHolder();
 
     /**
      * Gets the block world that this node entity exists in.
      *
      * @return the block world that this node entity exists in.
      */
-    @NotNull World getBlockWorld();
+    @NotNull
+    World getBlockWorld();
 
     /**
      * Gets a view of the graph world this node entity exists in.
      *
      * @return a view of the graph world this node entity exists in.
      */
-    @NotNull GraphView getGraphWorld();
+    @NotNull
+    GraphView getGraphWorld();
 
     /**
      * Gets this node entity's position.
@@ -113,7 +116,8 @@ public interface NodeEntityContext {
      */
     default @NotNull Collection<ServerPlayerEntity> getTrackingPlayers() {
         if (getBlockWorld() instanceof ServerWorld world) {
-            return world.getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(getBlockPos()), false);
+            return world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
+                new ChunkPos(getBlockPos()), false);
         } else {
             return List.of();
         }

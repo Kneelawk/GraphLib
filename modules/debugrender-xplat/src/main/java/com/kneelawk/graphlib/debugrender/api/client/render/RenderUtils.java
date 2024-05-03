@@ -36,8 +36,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
-
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -174,8 +173,8 @@ public final class RenderUtils {
      */
     public static void drawLine(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x0, float y0,
                                 float z0, float x1, float y1, float z1, int color) {
-        Matrix4f model = stack.peek().getModel();
-        Matrix3f normal = stack.peek().getNormal();
+        Matrix4f model = stack.peek().getPositionMatrix();
+        Matrix3f normal = stack.peek().getNormalMatrix();
 
         float dx = x1 - x0;
         float dy = y1 - y0;
@@ -279,7 +278,7 @@ public final class RenderUtils {
     public static void fillRect(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
                                 float radX0, float radY0, float radZ0, float radX1, float radY1, float radZ1,
                                 int color) {
-        Matrix4f model = stack.peek().getModel();
+        Matrix4f model = stack.peek().getPositionMatrix();
 
         Vector4f pos = model.transform(new Vector4f(x - radX0 + radX1, y - radY0 + radY1, z - radZ0 + radZ1, 1f));
         consumer.vertex(pos.x, pos.y, pos.z).color(color).next();

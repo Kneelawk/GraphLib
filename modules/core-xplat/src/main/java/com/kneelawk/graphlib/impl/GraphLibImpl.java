@@ -5,9 +5,7 @@ import java.util.Map;
 
 import com.mojang.brigadier.CommandDispatcher;
 
-import net.minecraft.command.CommandBuildContext;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 
@@ -21,7 +19,7 @@ public final class GraphLibImpl {
     public static final Map<Identifier, GraphUniverseImpl> UNIVERSE = new LinkedHashMap<>();
 
     public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher,
-                                        CommandBuildContext context) {
+                                        CommandRegistryAccess context) {
         GraphLibCommand.register(dispatcher, context);
     }
 

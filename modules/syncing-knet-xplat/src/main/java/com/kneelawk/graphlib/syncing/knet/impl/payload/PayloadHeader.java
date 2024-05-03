@@ -27,6 +27,7 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import net.minecraft.util.Identifier;
 
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 import com.kneelawk.knet.api.util.Palette;
 
@@ -35,7 +36,7 @@ public record PayloadHeader(Identifier universeId, Palette<Identifier> palette, 
         Identifier universeId = buf.readIdentifier();
         Palette<Identifier> palette = Palette.decode(buf, NetByteBuf::readIdentifier);
         int dataLen = buf.readVarUnsignedInt();
-        NetByteBuf data = NetByteBuf.buffer(dataLen);
+        NetByteBuf data = NetBufs.netBuf(dataLen);
         buf.readBytes(data, dataLen);
 
         return new PayloadHeader(universeId, palette, data);

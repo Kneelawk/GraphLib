@@ -10,7 +10,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 
-import net.minecraft.command.CommandBuildContext;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
@@ -39,7 +39,7 @@ public class GraphLibCommand {
     public static final DynamicCommandExceptionType UNKNOWN_UNIVERSE =
         new DynamicCommandExceptionType(arg -> new LiteralMessage("Unknown universe: " + arg));
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandBuildContext buildContext) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess buildContext) {
         RequiredArgumentBuilder<ServerCommandSource, Identifier> universeBuilder =
             argument("universe", IdentifierArgumentType.identifier())
                 .suggests((context, builder) -> {
@@ -76,7 +76,7 @@ public class GraphLibCommand {
         GraphLibPlatform.INSTANCE.fireAddUniverseSubcommands(universeBuilder);
 
         dispatcher.register(literal("graphlib")
-            .requires(source -> source.hasPermission(2))
+            .requires(source -> source.hasPermissionLevel(2))
             .then(literal("list").executes(context -> listUniverses(context.getSource())))
             .then(universeBuilder)
         );

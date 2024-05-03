@@ -25,30 +25,34 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
-import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.knet.api.channel.NetPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-public record NodeRemovePayload(Identifier universeId, long graphId, NodePosPayload nodePos) implements NetPayload {
+public record NodeRemovePayload(Identifier universeId, long graphId, NodePosPayload nodePos) implements CustomPayload {
+    public static final Id<NodeRemovePayload> ID = new Id<>(SyncingKNetImpl.id("node_remove"));
+    public static final PacketCodec<NetByteBuf, NodeRemovePayload> CODEC =
+        PacketCodec.of(NodeRemovePayload::encode, NodeRemovePayload::decode);
+
     public static NodeRemovePayload decode(NetByteBuf buf) {
         Identifier universeId = buf.readIdentifier();
         long graphId = buf.readVarUnsignedLong();
-        NodePosPayload nodePos = NodePosPayload.CODEC.decoder().apply(buf);
+        NodePosPayload nodePos = NodePosPayload.decode(buf);
         return new NodeRemovePayload(universeId, graphId, nodePos);
     }
 
-    @Override
-    public void write(NetByteBuf buf) {
+    public void encode(NetByteBuf buf) {
         buf.writeIdentifier(universeId);
         buf.writeVarUnsignedLong(graphId);
-        NodePosPayload.CODEC.encoder().accept(buf, nodePos);
+        nodePos.encode(buf);
     }
 
     @Override
-    public Identifier id() {
-        return KNetChannels.NODE_REMOVE.getId();
+    public Id<?> getId() {
+        return ID;
     }
 }

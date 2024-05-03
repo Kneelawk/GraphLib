@@ -29,15 +29,19 @@ import java.util.List;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.math.ChunkPos;
 
-import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.knet.api.channel.NetPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
 public record ChunkDataPayload(PayloadHeader header, ChunkPos chunkPos, List<PayloadGraph> graphs)
-    implements NetPayload {
+    implements CustomPayload {
+    public static final Id<ChunkDataPayload> ID = new Id<>(SyncingKNetImpl.id("chunk_data"));
+    public static final PacketCodec<NetByteBuf, ChunkDataPayload> CODEC =
+        PacketCodec.of(ChunkDataPayload::encode, ChunkDataPayload::decode);
+
     public static ChunkDataPayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
         ChunkPos chunkPos = new ChunkPos(buf.readVarInt(), buf.readVarInt());
@@ -51,8 +55,7 @@ public record ChunkDataPayload(PayloadHeader header, ChunkPos chunkPos, List<Pay
         return new ChunkDataPayload(header, chunkPos, graphs);
     }
 
-    @Override
-    public void write(NetByteBuf buf) {
+    public void encode(NetByteBuf buf) {
         header.encode(buf);
 
         buf.writeVarInt(chunkPos.x);
@@ -65,7 +68,7 @@ public record ChunkDataPayload(PayloadHeader header, ChunkPos chunkPos, List<Pay
     }
 
     @Override
-    public Identifier id() {
-        return KNetChannels.CHUNK_DATA.getId();
+    public Id<?> getId() {
+        return ID;
     }
 }

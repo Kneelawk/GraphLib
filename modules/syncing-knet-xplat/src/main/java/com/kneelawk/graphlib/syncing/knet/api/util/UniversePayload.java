@@ -27,9 +27,10 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.Identifier;
 
-import com.kneelawk.knet.api.channel.context.PayloadCodec;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
  * A payload representing a universe.
@@ -40,7 +41,21 @@ public record UniversePayload(@NotNull Identifier universeId) {
     /**
      * This payload's codec.
      */
-    public static final PayloadCodec<UniversePayload> CODEC =
-        new PayloadCodec<>((buf, payload) -> buf.writeIdentifier(payload.universeId),
-            buf -> new UniversePayload(buf.readIdentifier()));
+    public static final PacketCodec<NetByteBuf, UniversePayload> CODEC =
+        PacketCodec.of(UniversePayload::encode, UniversePayload::decode);
+
+    /**
+     * Decodes a payload from the buffer.
+     *
+     * @param buf the buffer to decode from.
+     * @return the decoded payload.
+     */
+    public static UniversePayload decode(NetByteBuf buf) {return new UniversePayload(buf.readIdentifier());}
+
+    /**
+     * Encodes this payload to the buffer.
+     *
+     * @param buf the buffer to encode to.
+     */
+    public void encode(NetByteBuf buf) {buf.writeIdentifier(universeId);}
 }

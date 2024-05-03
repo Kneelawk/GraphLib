@@ -27,8 +27,10 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.codec.PacketCodec;
+
 import com.kneelawk.graphlib.api.util.LinkPos;
-import com.kneelawk.knet.api.channel.context.PayloadCodec;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
  * A smaller payload representing a {@link LinkPos}, while allowing node data, link key data, and palette data to be
@@ -43,14 +45,30 @@ public record LinkPosSmallPayload(@NotNull NodePosSmallPayload first, @NotNull N
     /**
      * This payload's codec.
      */
-    public static final PayloadCodec<LinkPosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-        NodePosSmallPayload.CODEC.encoder().accept(buf, payload.first);
-        NodePosSmallPayload.CODEC.encoder().accept(buf, payload.second);
-        buf.writeVarUnsignedInt(payload.typeId);
-    }, buf -> {
-        NodePosSmallPayload first = NodePosSmallPayload.CODEC.decoder().apply(buf);
-        NodePosSmallPayload second = NodePosSmallPayload.CODEC.decoder().apply(buf);
+    public static final PacketCodec<NetByteBuf, LinkPosSmallPayload> CODEC = PacketCodec.of(
+        LinkPosSmallPayload::encode, LinkPosSmallPayload::decode);
+
+    /**
+     * Decodes a payload from the buffer.
+     *
+     * @param buf the buffer to decode from.
+     * @return the decoded payload.
+     */
+    public static LinkPosSmallPayload decode(NetByteBuf buf) {
+        NodePosSmallPayload first = NodePosSmallPayload.CODEC.decode(buf);
+        NodePosSmallPayload second = NodePosSmallPayload.CODEC.decode(buf);
         int typeId = buf.readVarUnsignedInt();
         return new LinkPosSmallPayload(first, second, typeId);
-    });
+    }
+
+    /**
+     * Encodes this payload to the buffer.
+     *
+     * @param buf the buffer to encode to.
+     */
+    public void encode(NetByteBuf buf) {
+        NodePosSmallPayload.CODEC.encode(buf, first);
+        NodePosSmallPayload.CODEC.encode(buf, second);
+        buf.writeVarUnsignedInt(typeId);
+    }
 }

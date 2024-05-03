@@ -39,7 +39,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtTagSizeTracker;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -1377,7 +1377,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         try (InputStream is = Files.newInputStream(graphFile)) {
-            NbtCompound root = NbtIo.method_10629(is, NbtTagSizeTracker.method_53898());
+            NbtCompound root = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
             NbtCompound data = root.getCompound("data");
             SimpleBlockGraph graph = SimpleBlockGraph.fromTag(this, id, data);
             if (graph.isEmpty()) {
@@ -1440,7 +1440,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     private void loadState() {
         if (Files.exists(stateFile)) {
             try (InputStream is = Files.newInputStream(stateFile)) {
-                NbtCompound root = NbtIo.method_10629(is, NbtTagSizeTracker.method_53898());
+                NbtCompound root = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
                 NbtCompound data = root.getCompound("data");
                 prevGraphId = data.getLong("prevGraphId");
             } catch (Exception e) {

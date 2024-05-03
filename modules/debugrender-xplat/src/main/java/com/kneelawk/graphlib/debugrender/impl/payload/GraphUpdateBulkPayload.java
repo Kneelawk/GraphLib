@@ -30,13 +30,15 @@ import java.util.List;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
 public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> graphs) implements CustomPayload {
-    public static final Identifier ID = GraphLibDebugRenderImpl.id("graph_update_bulk");
+    public static final Id<GraphUpdateBulkPayload> ID = new Id<>(GraphLibDebugRenderImpl.id("graph_update_bulk"));
+    public static final PacketCodec<PacketByteBuf, GraphUpdateBulkPayload> CODEC =
+        PacketCodec.of(GraphUpdateBulkPayload::write, GraphUpdateBulkPayload::decode);
 
     public static GraphUpdateBulkPayload decode(PacketByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
@@ -50,7 +52,6 @@ public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> gr
         return new GraphUpdateBulkPayload(header, graphs);
     }
 
-    @Override
     public void write(PacketByteBuf buf) {
         header.write(buf);
 
@@ -61,7 +62,7 @@ public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> gr
     }
 
     @Override
-    public Identifier id() {
+    public Id<?> getId() {
         return ID;
     }
 }

@@ -39,21 +39,24 @@ public interface LinkEntityContext {
      *
      * @return the link holder associated with this link entity.
      */
-    @NotNull LinkHolder<LinkKey> getHolder();
+    @NotNull
+    LinkHolder<LinkKey> getHolder();
 
     /**
      * Gets the world of blocks that this link entity exists within.
      *
      * @return the world of blocks that this link entity exists within.
      */
-    @NotNull World getBlockWorld();
+    @NotNull
+    World getBlockWorld();
 
     /**
      * Gets the world of graphs that this link entity exists within.
      *
      * @return the world of graphs that this link entity exists within.
      */
-    @NotNull GraphView getGraphWorld();
+    @NotNull
+    GraphView getGraphWorld();
 
     /**
      * Gets the holder for the first node in this link entity's link.
@@ -229,10 +232,10 @@ public interface LinkEntityContext {
     default @NotNull Collection<ServerPlayerEntity> getTrackingPlayers() {
         if (getBlockWorld() instanceof ServerWorld world) {
             Set<ServerPlayerEntity> players = new ObjectLinkedOpenHashSet<>();
-            players.addAll(
-                world.getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(getFirstBlockPos()), false));
-            players.addAll(
-                world.getChunkManager().delegate.getPlayersWatchingChunk(new ChunkPos(getSecondBlockPos()), false));
+            players.addAll(world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
+                new ChunkPos(getFirstBlockPos()), false));
+            players.addAll(world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
+                new ChunkPos(getSecondBlockPos()), false));
             return players;
         } else {
             return List.of();

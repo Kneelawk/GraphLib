@@ -25,13 +25,18 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
 import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.knet.api.channel.NetPayload;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-public record LinkPayload(PayloadHeader header, long graphId, PayloadExternalLink link) implements NetPayload {
+public record LinkPayload(PayloadHeader header, long graphId, PayloadExternalLink link) implements CustomPayload {
+    public static final Id<LinkPayload> ID = new Id<>(SyncingKNetImpl.id("link"));
+    public static final PacketCodec<NetByteBuf, LinkPayload> CODEC =
+        PacketCodec.of(LinkPayload::encode, LinkPayload::decode);
+    
     public static LinkPayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
         long graphId = buf.readVarUnsignedLong();
@@ -39,15 +44,14 @@ public record LinkPayload(PayloadHeader header, long graphId, PayloadExternalLin
         return new LinkPayload(header, graphId, link);
     }
 
-    @Override
-    public void write(NetByteBuf buf) {
+    public void encode(NetByteBuf buf) {
         header.encode(buf);
         buf.writeVarUnsignedLong(graphId);
         link.encode(buf);
     }
 
     @Override
-    public Identifier id() {
+    public Id<?> getId() {
         return KNetChannels.LINK.getId();
     }
 }

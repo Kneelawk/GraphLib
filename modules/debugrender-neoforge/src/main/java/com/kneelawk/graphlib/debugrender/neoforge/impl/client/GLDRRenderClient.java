@@ -27,16 +27,12 @@ package com.kneelawk.graphlib.debugrender.neoforge.impl.client;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
-import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 import com.kneelawk.kmodlib.client.overlay.RenderToOverlayEvent;
 
-@Mod.EventBusSubscriber(Dist.CLIENT)
+@EventBusSubscriber(Dist.CLIENT)
 public class GLDRRenderClient {
     @SubscribeEvent
     public static void onRenderToOverlay(RenderToOverlayEvent event) {

@@ -27,7 +27,7 @@ package com.kneelawk.graphlib.debugrender.impl;
 
 import java.util.ServiceLoader;
 
-import net.minecraft.network.packet.payload.CustomPayload;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 public interface GLDRPlatform {

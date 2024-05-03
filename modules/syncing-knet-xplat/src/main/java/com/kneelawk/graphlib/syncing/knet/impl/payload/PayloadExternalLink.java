@@ -32,7 +32,7 @@ import com.kneelawk.knet.api.util.NetByteBuf;
 
 public record PayloadExternalLink(LinkPosSmallPayload linkPos, OptionalInt entityTypeId) {
     public static PayloadExternalLink decode(NetByteBuf buf) {
-        LinkPosSmallPayload linkPos = LinkPosSmallPayload.CODEC.decoder().apply(buf);
+        LinkPosSmallPayload linkPos = LinkPosSmallPayload.decode(buf);
         OptionalInt entityTypeId;
         if (buf.readBoolean()) {
             entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
@@ -43,7 +43,7 @@ public record PayloadExternalLink(LinkPosSmallPayload linkPos, OptionalInt entit
     }
 
     public void encode(NetByteBuf buf) {
-        LinkPosSmallPayload.CODEC.encoder().accept(buf, linkPos);
+        linkPos.encode(buf);
         if (entityTypeId.isPresent()) {
             buf.writeBoolean(true);
             buf.writeVarUnsignedInt(entityTypeId.getAsInt());

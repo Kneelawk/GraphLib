@@ -31,22 +31,15 @@ import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.TickEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
-import net.neoforged.neoforge.registries.NewRegistryEvent;
-import net.neoforged.neoforge.registries.RegisterEvent;
-import net.neoforged.neoforge.registries.RegistryBuilder;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
-import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 
-import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
@@ -101,16 +94,14 @@ public class GraphLibNeoForgeMod {
         }
     }
 
-    public void onLevelTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            if (event.level instanceof ServerWorld world) {
-                try {
-                    StorageHelper.getStorage(world).tick();
-                } catch (Exception e) {
-                    GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world,
-                        world.getRegistryKey().getValue(),
-                        e);
-                }
+    public void onLevelTick(LevelTickEvent.Post event) {
+        if (event.getLevel() instanceof ServerWorld world) {
+            try {
+                StorageHelper.getStorage(world).tick();
+            } catch (Exception e) {
+                GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world,
+                    world.getRegistryKey().getValue(),
+                    e);
             }
         }
     }

@@ -26,26 +26,28 @@
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
 public record GraphDestroyPayload(Identifier universeId, long graphId) implements CustomPayload {
-    public static final Identifier ID = GraphLibDebugRenderImpl.id("graph_destroy");
+    public static final Id<GraphDestroyPayload> ID = new Id<>(GraphLibDebugRenderImpl.id("graph_destroy"));
+    public static final PacketCodec<PacketByteBuf, GraphDestroyPayload> CODEC =
+        PacketCodec.of(GraphDestroyPayload::write, GraphDestroyPayload::new);
 
     public GraphDestroyPayload(PacketByteBuf buf) {
         this(buf.readIdentifier(), buf.readLong());
     }
 
-    @Override
     public void write(PacketByteBuf buf) {
         buf.writeIdentifier(universeId);
         buf.writeLong(graphId);
     }
 
     @Override
-    public Identifier id() {
+    public Id<?> getId() {
         return ID;
     }
 }

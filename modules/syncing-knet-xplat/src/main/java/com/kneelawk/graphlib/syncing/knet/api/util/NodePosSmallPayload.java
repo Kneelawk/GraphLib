@@ -27,10 +27,11 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.knet.api.channel.context.PayloadCodec;
+import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
  * A smaller payload representing a {@link NodePos}, while allowing node data and palette data to go in a header.
@@ -42,13 +43,29 @@ public record NodePosSmallPayload(@NotNull BlockPos pos, int typeId) {
     /**
      * This payload's codec.
      */
-    public static final PayloadCodec<NodePosSmallPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-        buf.writeBlockPos(payload.pos);
-        buf.writeVarUnsignedInt(payload.typeId);
-    }, buf -> {
+    public static final PacketCodec<NetByteBuf, NodePosSmallPayload> CODEC = PacketCodec.of(
+        NodePosSmallPayload::encode, NodePosSmallPayload::decode);
+
+    /**
+     * Decodes a payload from the buffer.
+     *
+     * @param buf the buffer to decode from.
+     * @return the decoded payload.
+     */
+    public static NodePosSmallPayload decode(NetByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
         int typeId = buf.readVarUnsignedInt();
 
         return new NodePosSmallPayload(pos, typeId);
-    });
+    }
+
+    /**
+     * Encodes this payload to the buffer.
+     *
+     * @param buf the buffer to encode to.
+     */
+    public void encode(NetByteBuf buf) {
+        buf.writeBlockPos(pos);
+        buf.writeVarUnsignedInt(typeId);
+    }
 }

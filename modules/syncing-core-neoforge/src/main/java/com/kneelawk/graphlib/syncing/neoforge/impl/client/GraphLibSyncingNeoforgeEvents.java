@@ -27,21 +27,19 @@ package com.kneelawk.graphlib.syncing.neoforge.impl.client;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.LevelTickEvent;
 
 import net.minecraft.client.world.ClientWorld;
 
 import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(value = Dist.CLIENT)
 public class GraphLibSyncingNeoforgeEvents {
     @SubscribeEvent
-    public static void onLevelTick(TickEvent.LevelTickEvent event) {
-        if (event.phase == TickEvent.Phase.END) {
-            if (event.level instanceof ClientWorld world) {
-                ClientStorageHelper.getStorage(world).tick();
-            }
+    public static void onLevelTick(LevelTickEvent.Post event) {
+        if (event.getLevel() instanceof ClientWorld world) {
+            ClientStorageHelper.getStorage(world).tick();
         }
     }
 }

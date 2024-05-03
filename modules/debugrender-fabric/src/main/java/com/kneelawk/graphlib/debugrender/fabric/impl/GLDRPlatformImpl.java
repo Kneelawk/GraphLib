@@ -25,11 +25,9 @@
 
 package com.kneelawk.graphlib.debugrender.fabric.impl;
 
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 
 import com.kneelawk.graphlib.debugrender.impl.GLDRPlatform;
@@ -37,8 +35,6 @@ import com.kneelawk.graphlib.debugrender.impl.GLDRPlatform;
 public class GLDRPlatformImpl implements GLDRPlatform {
     @Override
     public void sendPlayPayload(ServerPlayerEntity player, CustomPayload payload) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        payload.write(buf);
-        ServerPlayNetworking.send(player, payload.id(), buf);
+        ServerPlayNetworking.send(player, payload);
     }
 }

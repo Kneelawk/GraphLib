@@ -28,21 +28,24 @@ public interface GraphEntityContext {
      *
      * @return the block world that this graph entity exists within.
      */
-    @NotNull World getBlockWorld();
+    @NotNull
+    World getBlockWorld();
 
     /**
      * Gets the graph world that this graph entity exists within.
      *
      * @return the graph world that this graph entity exists within.
      */
-    @NotNull GraphView getGraphWorld();
+    @NotNull
+    GraphView getGraphWorld();
 
     /**
      * Gets the graph that this graph entity is associated with.
      *
      * @return the graph that this graph entity is associated with.
      */
-    @NotNull BlockGraph getGraph();
+    @NotNull
+    BlockGraph getGraph();
 
     /**
      * Gets a collection of all the players tracking this graph.
@@ -56,7 +59,8 @@ public interface GraphEntityContext {
             Set<ServerPlayerEntity> players = new ObjectLinkedOpenHashSet<>();
             for (Iterator<ChunkSectionPos> iter = getGraph().getChunks().iterator(); iter.hasNext(); ) {
                 players.addAll(
-                    world.getChunkManager().delegate.getPlayersWatchingChunk(iter.next().toChunkPos(), false));
+                    world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(iter.next().toChunkPos(),
+                        false));
             }
             return players;
         } else {

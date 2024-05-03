@@ -26,13 +26,15 @@
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
 public record GraphUpdatePayload(PayloadHeader header, PayloadGraph graph) implements CustomPayload {
-    public static final Identifier ID = GraphLibDebugRenderImpl.id("graph_update");
+    public static final Id<GraphUpdatePayload> ID = new Id<>(GraphLibDebugRenderImpl.id("graph_update"));
+    public static final PacketCodec<PacketByteBuf, GraphUpdatePayload> CODEC =
+        PacketCodec.of(GraphUpdatePayload::write, GraphUpdatePayload::decode);
 
     public static GraphUpdatePayload decode(PacketByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
@@ -41,14 +43,13 @@ public record GraphUpdatePayload(PayloadHeader header, PayloadGraph graph) imple
         return new GraphUpdatePayload(header, graph);
     }
 
-    @Override
     public void write(PacketByteBuf buf) {
         header.write(buf);
         graph.write(buf);
     }
 
     @Override
-    public Identifier id() {
+    public Id<?> getId() {
         return ID;
     }
 }

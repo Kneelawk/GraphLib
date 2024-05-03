@@ -27,12 +27,12 @@ package com.kneelawk.graphlib.syncing.neoforge.impl.client;
 
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 import com.kneelawk.graphlib.syncing.impl.client.ClientProxy;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class GraphLibSyncingNeoforgeModClient {
     @SubscribeEvent
     public static void onClientStartup(FMLClientSetupEvent event) {

@@ -27,6 +27,7 @@ package com.kneelawk.graphlib.syncing.knet.api;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
@@ -53,12 +54,11 @@ import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.UniversePayload;
-import com.kneelawk.knet.api.channel.context.ChannelContext;
-import com.kneelawk.knet.api.channel.context.ChildChannelContext;
-import com.kneelawk.knet.api.channel.context.PayloadCodec;
-import com.kneelawk.knet.api.channel.context.RootChannelContext;
+import com.kneelawk.knet.api.channel.context.PlayChannelContext;
+import com.kneelawk.knet.api.channel.context.RootPlayChannelContext;
 import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 import com.kneelawk.knet.api.util.Palette;
 
@@ -71,15 +71,15 @@ public final class GraphLibSyncingKNet {
     /**
      * Channel context for referencing a specific universe.
      */
-    public static final ChannelContext<KNetSyncedUniverse> UNIVERSE_CONTEXT =
-        new RootChannelContext<>(UniversePayload.CODEC, (payload, ctx) -> decodeUniverse(payload),
+    public static final PlayChannelContext<KNetSyncedUniverse> UNIVERSE_CONTEXT =
+        RootPlayChannelContext.ofNetCodec(UniversePayload.CODEC, (payload, ctx) -> decodeUniverse(payload),
             GraphLibSyncingKNet::encodeUniverse);
 
     /**
      * Channel context for referencing a node entity.
      */
-    public static final ChannelContext<NodeEntity> NODE_ENTITY_CONTEXT =
-        new ChildChannelContext<>(UNIVERSE_CONTEXT, NodePosPayload.CODEC, (universe, nodePosPayload, ctx) -> {
+    public static final PlayChannelContext<NodeEntity> NODE_ENTITY_CONTEXT =
+        UNIVERSE_CONTEXT.netChild(NodePosPayload.CODEC, (universe, nodePosPayload, ctx) -> {
             NodePos pos = decodeNodePos(nodePosPayload, universe);
 
             GraphView world = universe.getSidedGraphView(ctx.mustGetWorld());
@@ -101,8 +101,8 @@ public final class GraphLibSyncingKNet {
     /**
      * Channel context for referencing a link entity.
      */
-    public static final ChannelContext<LinkEntity> LINK_ENTITY_CONTEXT =
-        new ChildChannelContext<>(UNIVERSE_CONTEXT, LinkPosPayload.CODEC, (universe, linkPosPayload, ctx) -> {
+    public static final PlayChannelContext<LinkEntity> LINK_ENTITY_CONTEXT =
+        UNIVERSE_CONTEXT.netChild(LinkPosPayload.CODEC, (universe, linkPosPayload, ctx) -> {
             LinkPos pos = decodeLinkPos(linkPosPayload, universe);
 
             GraphView world = universe.getSidedGraphView(ctx.mustGetWorld());
@@ -124,21 +124,21 @@ public final class GraphLibSyncingKNet {
     /**
      * Channel context for referencing a graph entity.
      */
-    public static final ChannelContext<GraphEntity<?>> GRAPH_ENTITY_CONTEXT =
-        new ChildChannelContext<>(UNIVERSE_CONTEXT, GraphEntityPayload.CODEC, (universe, payload, ctx) -> {
-            GraphView world = universe.getSidedGraphView(ctx.mustGetWorld());
-            if (world == null) throw new PayloadHandlingErrorException(
-                "Unable to get the graph view associated with: " + ctx.mustGetWorld());
+    public static final PlayChannelContext<GraphEntity<?>> GRAPH_ENTITY_CONTEXT =
+        UNIVERSE_CONTEXT.netChild(GraphEntityPayload.CODEC, (universe, payload, ctx) -> {
+                GraphView world = universe.getSidedGraphView(ctx.mustGetWorld());
+                if (world == null) throw new PayloadHandlingErrorException(
+                    "Unable to get the graph view associated with: " + ctx.mustGetWorld());
 
-            BlockGraph graph = world.getGraph(payload.graphId());
-            if (graph == null) throw new PayloadHandlingErrorException("No graph with id: " + payload.graphId());
+                BlockGraph graph = world.getGraph(payload.graphId());
+                if (graph == null) throw new PayloadHandlingErrorException("No graph with id: " + payload.graphId());
 
-            GraphEntityType<?> type = universe.getUniverse().getGraphEntityType(payload.typeId());
-            if (type == null)
-                throw new PayloadHandlingErrorException("No graph entity type with id: " + payload.typeId());
+                GraphEntityType<?> type = universe.getUniverse().getGraphEntityType(payload.typeId());
+                if (type == null)
+                    throw new PayloadHandlingErrorException("No graph entity type with id: " + payload.typeId());
 
-            return graph.getGraphEntity(type);
-        }, context -> new GraphEntityPayload(context.getContext().getGraph().getId(), context.getType().getId()),
+                return graph.getGraphEntity(type);
+            }, context -> new GraphEntityPayload(context.getContext().getGraph().getId(), context.getType().getId()),
             graphEntity -> getUniverse(graphEntity.getContext().getGraphWorld()));
 
     /**
@@ -217,7 +217,7 @@ public final class GraphLibSyncingKNet {
                                                         @NotNull KNetSyncedUniverse universe) {
         BlockNodeType type = nodePos.node().getType();
 
-        NetByteBuf nodeBuf = NetByteBuf.buffer();
+        NetByteBuf nodeBuf = NetBufs.netBuf();
         universe.getNodeSyncing(type).encode(nodePos.node(), nodeBuf);
 
         return new NodePosPayload(nodePos.pos(), type.getId(), nodeBuf);
@@ -305,7 +305,7 @@ public final class GraphLibSyncingKNet {
 
         LinkKeyType type = linkPos.key().getType();
 
-        NetByteBuf linkBuf = NetByteBuf.buffer();
+        NetByteBuf linkBuf = NetBufs.netBuf();
         universe.getLinkKeySyncing(type).encode(linkPos.key(), linkBuf);
 
         return new LinkPosPayload(first, second, type.getId(), linkBuf);
@@ -394,7 +394,7 @@ public final class GraphLibSyncingKNet {
     }
 
     private record GraphEntityPayload(long graphId, Identifier typeId) {
-        public static final PayloadCodec<GraphEntityPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
+        public static final PacketCodec<NetByteBuf, GraphEntityPayload> CODEC = PacketCodec.ofStatic((buf, payload) -> {
             buf.writeVarUnsignedLong(payload.graphId);
             buf.writeIdentifier(payload.typeId);
         }, buf -> {

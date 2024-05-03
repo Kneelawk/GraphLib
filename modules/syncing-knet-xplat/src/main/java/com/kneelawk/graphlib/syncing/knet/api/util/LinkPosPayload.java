@@ -27,10 +27,11 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.Identifier;
 
 import com.kneelawk.graphlib.api.util.LinkPos;
-import com.kneelawk.knet.api.channel.context.PayloadCodec;
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
@@ -46,21 +47,37 @@ public record LinkPosPayload(@NotNull NodePosPayload first, @NotNull NodePosPayl
     /**
      * This payload's codec.
      */
-    public static final PayloadCodec<LinkPosPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-        NodePosPayload.CODEC.encoder().accept(buf, payload.first);
-        NodePosPayload.CODEC.encoder().accept(buf, payload.second);
-        buf.writeIdentifier(payload.typeId);
-        buf.writeInt(payload.linkBuf.readableBytes());
-        buf.writeBytes(payload.linkBuf, payload.linkBuf.readerIndex(), payload.linkBuf.readableBytes());
-    }, buf -> {
-        NodePosPayload first = NodePosPayload.CODEC.decoder().apply(buf);
-        NodePosPayload second = NodePosPayload.CODEC.decoder().apply(buf);
+    public static final PacketCodec<NetByteBuf, LinkPosPayload> CODEC =
+        PacketCodec.of(LinkPosPayload::encode, LinkPosPayload::decode);
+
+    /**
+     * Decodes a payload from the buffer.
+     *
+     * @param buf the buffer to decode from.
+     * @return the decoded payload.
+     */
+    public static LinkPosPayload decode(NetByteBuf buf) {
+        NodePosPayload first = NodePosPayload.CODEC.decode(buf);
+        NodePosPayload second = NodePosPayload.CODEC.decode(buf);
         Identifier typeId = buf.readIdentifier();
 
         int linkBufLen = buf.readInt();
-        NetByteBuf linkBuf = NetByteBuf.buffer(linkBufLen);
+        NetByteBuf linkBuf = NetBufs.netBuf(linkBufLen);
         buf.readBytes(linkBuf, linkBufLen);
 
         return new LinkPosPayload(first, second, typeId, linkBuf);
-    });
+    }
+
+    /**
+     * Encodes this payload to the buffer.
+     *
+     * @param buf the buffer to encode to.
+     */
+    public void encode(NetByteBuf buf) {
+        NodePosPayload.CODEC.encode(buf, first);
+        NodePosPayload.CODEC.encode(buf, second);
+        buf.writeIdentifier(typeId);
+        buf.writeInt(linkBuf.readableBytes());
+        buf.writeBytes(linkBuf, linkBuf.readerIndex(), linkBuf.readableBytes());
+    }
 }

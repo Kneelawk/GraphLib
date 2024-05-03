@@ -60,7 +60,7 @@ public class MultiblockLamps {
             ConnectedLampBlock.CODEC);
     public static final Supplier<Block> LAMP_CONNECTOR_BLOCK =
         MLPlatform.INSTANCE.registerBlockWithItem("lamp_connector",
-            () -> new LampConnectorBlock(AbstractBlock.Settings.create().mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
+            () -> new LampConnectorBlock(AbstractBlock.Settings.create().mapColor(MapColor.STONE_GRAY).strength(1.5f, 6.0f)),
             LampConnectorBlock.CODEC);
     
     public static void init() {}

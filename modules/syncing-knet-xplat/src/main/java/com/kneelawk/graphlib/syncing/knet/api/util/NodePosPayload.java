@@ -27,11 +27,12 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.knet.api.channel.context.PayloadCodec;
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
 /**
@@ -45,19 +46,35 @@ public record NodePosPayload(@NotNull BlockPos pos, @NotNull Identifier typeId, 
     /**
      * This payload's codec.
      */
-    public static final PayloadCodec<NodePosPayload> CODEC = new PayloadCodec<>((buf, payload) -> {
-        buf.writeBlockPos(payload.pos);
-        buf.writeIdentifier(payload.typeId);
-        buf.writeInt(payload.nodeBuf.readableBytes());
-        buf.writeBytes(payload.nodeBuf, payload.nodeBuf.readerIndex(), payload.nodeBuf.readableBytes());
-    }, buf -> {
+    public static final PacketCodec<NetByteBuf, NodePosPayload> CODEC =
+        PacketCodec.of(NodePosPayload::encode, NodePosPayload::decode);
+
+    /**
+     * Decodes a payload from the buffer.
+     *
+     * @param buf the buffer to decode from.
+     * @return the decoded payload.
+     */
+    public static NodePosPayload decode(NetByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
         Identifier typeId = buf.readIdentifier();
 
         int nodeBufLen = buf.readInt();
-        NetByteBuf nodeBuf = NetByteBuf.buffer(nodeBufLen);
+        NetByteBuf nodeBuf = NetBufs.netBuf(nodeBufLen);
         buf.readBytes(nodeBuf, nodeBufLen);
 
         return new NodePosPayload(pos, typeId, nodeBuf);
-    });
+    }
+
+    /**
+     * Encodes this payload to the buffer.
+     *
+     * @param buf the buffer to encode to.
+     */
+    public void encode(NetByteBuf buf) {
+        buf.writeBlockPos(pos);
+        buf.writeIdentifier(typeId);
+        buf.writeInt(nodeBuf.readableBytes());
+        buf.writeBytes(nodeBuf, nodeBuf.readerIndex(), nodeBuf.readableBytes());
+    }
 }
