@@ -45,6 +45,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.world.storage.StorageKey;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -120,10 +122,12 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     private boolean closed = false;
 
-    public SimpleServerGraphWorld(SimpleGraphUniverse universe, @NotNull ServerWorld world, @NotNull Path path,
-                                  boolean syncChunkWrites) {
+    public SimpleServerGraphWorld(SimpleGraphUniverse universe, @NotNull LevelStorage.Session session,
+                                  @NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
         this.universe = universe;
-        this.chunks = new UnloadingRegionBasedStorage<>(world, path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
+        this.chunks = new UnloadingRegionBasedStorage<>(
+            new StorageKey(session.getDirectoryName(), world.getRegistryKey(), universe.getId() + "/chunks"), world,
+            path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
             (compound, pos, markDirty) -> new SimpleBlockGraphChunk(compound, pos, markDirty, universe),
             SimpleBlockGraphChunk::new, universe.saveMode);
         this.world = world;

@@ -21,6 +21,7 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.level.storage.LevelStorage;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -148,8 +149,8 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public ServerGraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites) {
-        return new SimpleServerGraphWorld(this, world, path, syncChunkWrites);
+    public ServerGraphWorldImpl createGraphWorld(LevelStorage.Session session, ServerWorld world, Path path, boolean syncChunkWrites) {
+        return new SimpleServerGraphWorld(this, session, world, path, syncChunkWrites);
     }
 
     @Override

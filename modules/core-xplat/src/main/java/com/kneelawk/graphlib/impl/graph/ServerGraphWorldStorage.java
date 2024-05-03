@@ -11,6 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.level.storage.LevelStorage;
 
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
@@ -19,14 +20,14 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     private final Map<Identifier, ServerGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
     private final ServerWorld serverWorld;
 
-    public ServerGraphWorldStorage(ServerWorld world, Path dataDir, boolean syncChunkWrites) {
+    public ServerGraphWorldStorage(LevelStorage.Session session, ServerWorld world, Path dataDir, boolean syncChunkWrites) {
         this.serverWorld = world;
 
         for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSE.values()) {
             Identifier universeId = universe.getId();
             Path path = dataDir.resolve(universeId.getNamespace()).resolve(universeId.getPath());
 
-            worlds.put(universeId, universe.createGraphWorld(world, path, syncChunkWrites));
+            worlds.put(universeId, universe.createGraphWorld(session, world, path, syncChunkWrites));
         }
     }
 

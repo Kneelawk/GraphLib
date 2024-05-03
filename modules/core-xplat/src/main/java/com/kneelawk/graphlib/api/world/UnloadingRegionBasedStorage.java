@@ -22,6 +22,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.storage.StorageIoWorker;
+import net.minecraft.world.storage.StorageKey;
 
 import com.kneelawk.graphlib.api.util.ChunkPillarUnloadTimer;
 import com.kneelawk.graphlib.impl.GLLog;
@@ -67,15 +68,12 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
      * @param createNew       the function for creating a new, empty chunk section.
      * @param saveMode        how often storage chunks should be saved.
      */
-    public UnloadingRegionBasedStorage(@NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites,
-                                       @NotNull TrackingChunkDecoder<@NotNull R> loadFromNbt,
-                                       @NotNull TrackingChunkFactory<@NotNull R> createNew,
-                                       @NotNull SaveMode saveMode) {
+    public UnloadingRegionBasedStorage(@NotNull StorageKey storageKey, @NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites, @NotNull TrackingChunkDecoder<@NotNull R> loadFromNbt, @NotNull TrackingChunkFactory<@NotNull R> createNew, @NotNull SaveMode saveMode) {
         this.world = world;
         this.loadFromNbt = loadFromNbt;
         this.createNew = createNew;
         this.saveMode = saveMode;
-        worker = StorageHelper.newWorker(path, syncChunkWrites, path.getFileName().toString());
+        worker = StorageHelper.newWorker(storageKey, path, syncChunkWrites);
     }
 
     @Override

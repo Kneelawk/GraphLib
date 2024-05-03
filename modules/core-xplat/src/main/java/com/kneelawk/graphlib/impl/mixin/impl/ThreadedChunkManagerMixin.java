@@ -48,7 +48,7 @@ public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
                           ChunkStatusChangeListener chunkStatusChangeListener,
                           Supplier<PersistentStateManager> persistentStateManagerFactory, int viewDistance,
                           boolean dsync, CallbackInfo ci) {
-        storage = new ServerGraphWorldStorage(world,
+        storage = new ServerGraphWorldStorage(session, world,
             session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME), dsync);
     }
 

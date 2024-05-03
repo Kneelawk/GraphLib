@@ -9,6 +9,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.level.storage.LevelStorage;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -18,7 +19,7 @@ public interface GraphUniverseImpl extends GraphUniverse {
     @Override
     @NotNull ServerGraphWorldImpl getGraphWorld(@NotNull ServerWorld world);
 
-    ServerGraphWorldImpl createGraphWorld(ServerWorld world, Path path, boolean syncChunkWrites);
+    ServerGraphWorldImpl createGraphWorld(LevelStorage.Session session, ServerWorld world, Path path, boolean syncChunkWrites);
 
     void addListener(Identifier key, UniverseListener listener);
 
