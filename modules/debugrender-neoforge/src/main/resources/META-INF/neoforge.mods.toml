@@ -29,3 +29,10 @@ type = "REQUIRED"
 versionRange = "[2-alpha,)"
 ordering = "NONE"
 side = "BOTH"
+
+[[dependencies.graphlib_debugrender]]
+modId = "kmodlib_overlay"
+type = "REQUIRED"
+versionRange = "[0,)"
+ordering = "NONE"
+side = "CLIENT"
