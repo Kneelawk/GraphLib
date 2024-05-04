@@ -36,12 +36,12 @@ import org.gradle.kotlin.dsl.getByType
 
 abstract class KPublishExtension(private val project: Project) {
     fun createPublication(
-        extension: String? = null, name: String = project.name, vararg tasks: TaskProvider<out Task>,
+        extension: String? = null, name: String = project.name, publicationName: String = "mavenJava", vararg tasks: TaskProvider<out Task>,
         configure: MavenPublication.() -> Unit = {}
     ) {
         val publishingEx = project.extensions.getByType(PublishingExtension::class)
 
-        publishingEx.publications.create("mavenJava", MavenPublication::class) {
+        publishingEx.publications.create(publicationName, MavenPublication::class) {
             artifactId = if (extension == null) {
                 name
             } else {

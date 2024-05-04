@@ -128,6 +128,7 @@ class SubmodulePlugin : Plugin<Project> {
                 from(project.rootProject.file("LICENSE")) {
                     rename { "${it}_${project.rootProject.name}" }
                 }
+                archiveClassifier.set("")
             }
 
             named("sourcesJar", Jar::class.java).configure {
