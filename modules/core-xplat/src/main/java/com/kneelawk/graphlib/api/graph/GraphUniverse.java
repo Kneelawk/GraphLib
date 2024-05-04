@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
@@ -90,7 +89,7 @@ public interface GraphUniverse {
     void addDiscoverers(@NotNull Collection<BlockNodeDiscoverer> discoverers);
 
     /**
-     * Registers a {@link BlockNodeDecoder} for the given block node type id.
+     * Registers a {@link BlockNodeType}.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated block
      * node's {@link BlockNode#getType()}.
@@ -100,7 +99,7 @@ public interface GraphUniverse {
     void addNodeType(@NotNull BlockNodeType type);
 
     /**
-     * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+     * Registers a set of {@link BlockNodeType}.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated block
      * node's {@link BlockNode#getType()}.
@@ -114,7 +113,7 @@ public interface GraphUniverse {
     }
 
     /**
-     * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+     * Registers a set of {@link BlockNodeType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated block
      * node's {@link BlockNode#getType()}.

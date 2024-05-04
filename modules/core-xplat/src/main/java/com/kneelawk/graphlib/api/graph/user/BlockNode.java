@@ -50,12 +50,12 @@ public interface BlockNode {
     }
 
     /**
-     * Gets this block node's type ID, associated with its decoder.
+     * Gets this block node's type.
      * <p>
-     * A block node's {@link BlockNodeDecoder} must always be registered with
+     * A block node's {@link BlockNodeType} must always be registered with
      * {@link GraphUniverse#addNodeType(BlockNodeType)} under the same ID as returned here.
      *
-     * @return the id of this block node.
+     * @return the type of this block node.
      */
     @NotNull
     BlockNodeType getType();
