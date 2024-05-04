@@ -30,6 +30,9 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.util.ObjectType;
@@ -39,11 +42,11 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  */
 public class BlockNodeType implements ObjectType {
     private final @NotNull ResourceLocation id;
-    private final @NotNull BlockNodeDecoder decoder;
+    private final @NotNull Codec<? extends BlockNode> codec;
 
-    private BlockNodeType(@NotNull ResourceLocation id, @NotNull BlockNodeDecoder decoder) {
+    private BlockNodeType(@NotNull ResourceLocation id, @NotNull Codec<? extends BlockNode> codec) {
         this.id = id;
-        this.decoder = decoder;
+        this.codec = codec;
     }
 
     /**
@@ -61,8 +64,8 @@ public class BlockNodeType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull BlockNodeDecoder getDecoder() {
-        return decoder;
+    public @NotNull Codec<? extends BlockNode> getCodec() {
+        return codec;
     }
 
     @Override
@@ -91,12 +94,12 @@ public class BlockNodeType implements ObjectType {
      * Creates a new block node type, without packet decoder.
      *
      * @param id      the id of the new type.
-     * @param decoder the decoder for the new type.
+     * @param codec the codec for the new type.
      * @return a new block node type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull BlockNodeDecoder decoder) {
-        return new BlockNodeType(id, decoder);
+    public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull Codec<? extends BlockNode> codec) {
+        return new BlockNodeType(id, codec);
     }
 
     /**
@@ -108,6 +111,6 @@ public class BlockNodeType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull Supplier<BlockNode> supplier) {
-        return new BlockNodeType(id, nbt -> supplier.get());
+        return new BlockNodeType(id, Codec.unit(supplier));
     }
 }

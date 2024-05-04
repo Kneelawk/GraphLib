@@ -61,7 +61,7 @@ public final class SimpleNodeWrapper {
         }
 
         Tag nodeTag = tag.get("node");
-        BlockNode node = type.getDecoder().decode(nodeTag);
+        BlockNode node = type.getCodec().decode(nodeTag);
 
         if (node == null) {
             GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);

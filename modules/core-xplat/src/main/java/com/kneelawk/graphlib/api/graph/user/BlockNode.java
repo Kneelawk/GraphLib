@@ -5,12 +5,17 @@ import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.api.util.codec.CustomKeyDispatchCodec;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 
 /**
@@ -27,6 +32,23 @@ import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
  * @see WireConnectionDiscoverers
  */
 public interface BlockNode {
+    /**
+     * Gets the block node map codec for nodes in the given universe.
+     *
+     * @param universe the universe to find block nodes in.
+     * @return a map codec for block nodes in the given universe.
+     */
+    static MapCodec<BlockNode> mapCodec(GraphUniverse universe) {
+        return new CustomKeyDispatchCodec<>("type", "node", ResourceLocation.CODEC,
+            node -> DataResult.success(node.getType().getId()), typeId -> {
+            BlockNodeType type = universe.getNodeType(typeId);
+            if (type == null) {
+                return DataResult.error(() -> "No block node exists with type '" + typeId + "'");
+            }
+            return DataResult.success(type.getCodec());
+        });
+    }
+
     /**
      * Gets this block node's type ID, associated with its decoder.
      * <p>

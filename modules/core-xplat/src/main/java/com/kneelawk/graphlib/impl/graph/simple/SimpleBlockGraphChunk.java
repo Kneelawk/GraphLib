@@ -75,7 +75,7 @@ public class SimpleBlockGraphChunk implements StorageChunk {
                     }
 
                     Tag dataTag = keyCom.get("data");
-                    BlockNode data = type.getDecoder().decode(dataTag);
+                    BlockNode data = type.getCodec().decode(dataTag);
 
                     if (data == null) {
                         GLLog.error("Unable to decode chunk BlockNode with type: {} @ {}.", typeId, keyPos);
