@@ -26,21 +26,18 @@
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import java.util.List;
-
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
 public record SplitPayload(PayloadHeader header, long fromId, long intoId, int[] graphEntityIds,
-                           List<NodePosSmallPayload> toMove) implements CustomPayload {
-    public static final Id<SplitPayload> ID = new Id<>(SyncingKNetImpl.id("split"));
-    public static final PacketCodec<NetByteBuf, SplitPayload> CODEC =
-        PacketCodec.of(SplitPayload::encode, SplitPayload::decode);
+                           List<NodePosSmallPayload> toMove) implements CustomPacketPayload {
+    public static final Type<SplitPayload> ID = new Type<>(SyncingKNetImpl.id("split"));
+    public static final StreamCodec<NetByteBuf, SplitPayload> CODEC =
+        StreamCodec.ofMember(SplitPayload::encode, SplitPayload::decode);
 
     public static SplitPayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
@@ -63,7 +60,7 @@ public record SplitPayload(PayloadHeader header, long fromId, long intoId, int[]
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

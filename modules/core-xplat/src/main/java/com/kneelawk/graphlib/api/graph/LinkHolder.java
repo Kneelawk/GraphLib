@@ -1,15 +1,12 @@
 package com.kneelawk.graphlib.api.graph;
 
 import java.util.Objects;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -29,7 +26,7 @@ public interface LinkHolder<K extends LinkKey> {
      *
      * @return the world of blocks that this link is associated with.
      */
-    @NotNull World getBlockWorld();
+    @NotNull Level getBlockWorld();
 
     /**
      * Gets the world of graphs that this link is associated with.

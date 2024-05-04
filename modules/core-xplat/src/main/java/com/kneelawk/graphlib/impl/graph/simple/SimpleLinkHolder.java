@@ -1,12 +1,8 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
 import java.util.Objects;
-
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -16,18 +12,18 @@ import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
 
 public class SimpleLinkHolder<K extends LinkKey> implements LinkHolder<K> {
-    private final World blockWorld;
+    private final Level blockWorld;
     private final GraphView graphWorld;
     private final Link<SimpleNodeWrapper, K> link;
 
-    public SimpleLinkHolder(World blockWorld, GraphView graphWorld, Link<SimpleNodeWrapper, K> link) {
+    public SimpleLinkHolder(Level blockWorld, GraphView graphWorld, Link<SimpleNodeWrapper, K> link) {
         this.blockWorld = blockWorld;
         this.graphWorld = graphWorld;
         this.link = link;
     }
 
     @Override
-    public @NotNull World getBlockWorld() {
+    public @NotNull Level getBlockWorld() {
         return blockWorld;
     }
 

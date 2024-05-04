@@ -25,17 +25,16 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 public record MergePayload(PayloadHeader header, long fromId, long intoId, int[] intoGraphEntityIds)
-    implements CustomPayload {
-    public static final Id<MergePayload> ID = new Id<>(SyncingKNetImpl.id("merge"));
-    public static final PacketCodec<NetByteBuf, MergePayload> CODEC =
-        PacketCodec.of(MergePayload::encode, MergePayload::decode);
+    implements CustomPacketPayload {
+    public static final Type<MergePayload> ID = new Type<>(SyncingKNetImpl.id("merge"));
+    public static final StreamCodec<NetByteBuf, MergePayload> CODEC =
+        StreamCodec.ofMember(MergePayload::encode, MergePayload::decode);
 
     public static MergePayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
@@ -53,7 +52,7 @@ public record MergePayload(PayloadHeader header, long fromId, long intoId, int[]
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

@@ -26,15 +26,12 @@
 package com.kneelawk.multiblocklamps.neoforge;
 
 import java.util.function.Supplier;
-
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.registries.DeferredBlock;
 
 import com.mojang.serialization.MapCodec;
-
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.multiblocklamps.MLPlatform;
 
@@ -43,7 +40,7 @@ public class MLPlatformImpl implements MLPlatform {
     public <T extends Block> Supplier<T> registerBlockWithItem(String path, Supplier<T> creator,
                                                                MapCodec<? extends Block> codec) {
         DeferredBlock<T> block = MultiblockLampsNeoForge.BLOCKS.register(path, creator);
-        MultiblockLampsNeoForge.ITEMS.register(path, () -> new BlockItem(block.get(), new Item.Settings()));
+        MultiblockLampsNeoForge.ITEMS.register(path, () -> new BlockItem(block.get(), new Item.Properties()));
         MultiblockLampsNeoForge.BLOCK_TYPES.register(path, () -> codec);
         return block;
     }

@@ -31,7 +31,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
-
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -39,18 +44,6 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import org.joml.Matrix4f;
-
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.util.graph.Link;
@@ -62,12 +55,16 @@ import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 import com.kneelawk.graphlib.debugrender.api.graph.SidedDebugBlockNode;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.mixin.api.RenderLayerHelper;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
 public final class DebugRenderer {
     /**
      * Map of graph id long to graph for all currently debugging graphs.
      */
-    public static final Map<Identifier, Long2ObjectMap<DebugBlockGraph>> DEBUG_GRAPHS = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, Long2ObjectMap<DebugBlockGraph>> DEBUG_GRAPHS = new LinkedHashMap<>();
 
     private DebugRenderer() {
     }
@@ -80,43 +77,43 @@ public final class DebugRenderer {
 
     private static class NPosData {
         int nodeCount = 0;
-        List<Vec3d> endpoints = new ArrayList<>();
+        List<Vec3> endpoints = new ArrayList<>();
     }
 
-    public static final class Layers extends RenderPhase {
+    public static final class Layers extends RenderStateShard {
         private Layers(String string, Runnable runnable, Runnable runnable2) {
             super(string, runnable, runnable2);
         }
 
-        public static final RenderLayer DEBUG_LINES =
-            RenderLayerHelper.of("debug_lines", VertexFormats.LINES, VertexFormat.DrawMode.LINES, 256, false, false,
-                RenderLayer.MultiPhaseParameters.builder().program(RenderPhase.LINES_PROGRAM)
-                    .lineWidth(new RenderPhase.LineWidth(OptionalDouble.empty()))
-                    .transparency(RenderPhase.TRANSLUCENT_TRANSPARENCY).writeMaskState(RenderPhase.ALL_MASK)
-                    .cull(RenderPhase.DISABLE_CULLING).build(false));
+        public static final RenderType DEBUG_LINES =
+            RenderLayerHelper.of("debug_lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, false, false,
+                RenderType.CompositeState.builder().setShaderState(RenderStateShard.RENDERTYPE_LINES_SHADER)
+                    .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY).setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
+                    .setCullState(RenderStateShard.NO_CULL).createCompositeState(false));
 
-        public static final RenderLayer DEBUG_QUADS =
-            RenderLayerHelper.of("debug_quads", VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.QUADS, 256, false,
-                false, RenderLayer.MultiPhaseParameters.builder().program(RenderPhase.COLOR_PROGRAM)
-                    .transparency(RenderPhase.TRANSLUCENT_TRANSPARENCY).writeMaskState(RenderPhase.ALL_MASK)
-                    .cull(RenderPhase.DISABLE_CULLING).build(false));
+        public static final RenderType DEBUG_QUADS =
+            RenderLayerHelper.of("debug_quads", DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.QUADS, 256, false,
+                false, RenderType.CompositeState.builder().setShaderState(RenderStateShard.POSITION_COLOR_SHADER)
+                    .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY).setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
+                    .setCullState(RenderStateShard.NO_CULL).createCompositeState(false));
     }
 
-    public static void render(MatrixStack stack, Matrix4f modelViewMatrix, Vec3d camPos, VertexConsumerProvider consumers) {
+    public static void render(PoseStack stack, Matrix4f modelViewMatrix, Vec3 camPos, MultiBufferSource consumers) {
         if (DEBUG_GRAPHS.isEmpty()) {
             return;
         }
 
-        stack.push();
-        stack.multiplyPositionMatrix(modelViewMatrix);
+        stack.pushPose();
+        stack.mulPose(modelViewMatrix);
         stack.translate(-camPos.x, -camPos.y, -camPos.z);
 
         renderGraphs(stack, consumers);
 
-        stack.pop();
+        stack.popPose();
     }
 
-    private static void renderGraphs(MatrixStack stack, VertexConsumerProvider consumers) {
+    private static void renderGraphs(PoseStack stack, MultiBufferSource consumers) {
         Map<NPos, NPosData> nodeEndpoints = new HashMap<>();
 
         for (Long2ObjectMap<DebugBlockGraph> universe : DEBUG_GRAPHS.values()) {
@@ -139,7 +136,7 @@ public final class DebugRenderer {
         for (Long2ObjectMap<DebugBlockGraph> universe : DEBUG_GRAPHS.values()) {
             for (DebugBlockGraph graph : universe.values()) {
                 int graphColor = RenderUtils.graphColor(graph.graphId());
-                Object2ObjectMap<Node<ClientBlockNodeHolder, EmptyLinkKey>, Vec3d> endpoints =
+                Object2ObjectMap<Node<ClientBlockNodeHolder, EmptyLinkKey>, Vec3> endpoints =
                     new Object2ObjectLinkedOpenHashMap<>(graph.graph().size());
                 ObjectSet<Link<ClientBlockNodeHolder, EmptyLinkKey>> links = new ObjectLinkedOpenHashSet<>();
 
@@ -159,19 +156,19 @@ public final class DebugRenderer {
                     // should never be null unless GraphLibClient.DEBUG_GRAPHS was modified by another thread
                     NPosData data = nodeEndpoints.get(pos);
 
-                    Vec3d endpoint = renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(),
+                    Vec3 endpoint = renderer.getLineEndpoint(cbn, node, graph, data.nodeCount, data.endpoints.size(),
                         data.endpoints);
                     endpoints.put(node, endpoint);
                     data.endpoints.add(endpoint);
 
                     BlockPos origin = node.data().pos();
 
-                    stack.push();
+                    stack.pushPose();
                     stack.translate(origin.getX(), origin.getY(), origin.getZ());
 
                     renderer.render(cbn, node, consumers, stack, graph, endpoint, graphColor);
 
-                    stack.pop();
+                    stack.popPose();
 
                     links.addAll(node.connections());
                 }
@@ -184,8 +181,8 @@ public final class DebugRenderer {
 
                     if (!endpoints.containsKey(nodeA) || !endpoints.containsKey(nodeB)) continue;
 
-                    Vec3d endpointA = endpoints.get(nodeA);
-                    Vec3d endpointB = endpoints.get(nodeB);
+                    Vec3 endpointA = endpoints.get(nodeA);
+                    Vec3 endpointB = endpoints.get(nodeB);
                     BlockPos posA = nodeA.data().pos();
                     BlockPos posB = nodeB.data().pos();
 

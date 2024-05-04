@@ -1,8 +1,7 @@
 package com.kneelawk.graphlib.api.world;
 
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.nbt.NbtCompound;
 
 /**
  * Represents a chunk section of storage, stored in a {@link UnloadingRegionBasedStorage}.
@@ -13,5 +12,5 @@ public interface StorageChunk {
      *
      * @param nbt the NBT Compound to write this to.
      */
-    void toNbt(@NotNull NbtCompound nbt);
+    void toNbt(@NotNull CompoundTag nbt);
 }

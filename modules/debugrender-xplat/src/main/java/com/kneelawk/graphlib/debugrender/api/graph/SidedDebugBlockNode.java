@@ -26,11 +26,8 @@
 package com.kneelawk.graphlib.debugrender.api.graph;
 
 import java.util.List;
-
+import net.minecraft.core.Direction;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.util.math.Direction;
-
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
 import com.kneelawk.graphlib.debugrender.api.client.render.BlockNodeDebugRenderer;

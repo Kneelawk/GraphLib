@@ -26,15 +26,13 @@
 package com.kneelawk.graphlib.debugrender.fabric.impl;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import com.kneelawk.graphlib.debugrender.impl.GLDRPlatform;
 
 public class GLDRPlatformImpl implements GLDRPlatform {
     @Override
-    public void sendPlayPayload(ServerPlayerEntity player, CustomPayload payload) {
+    public void sendPlayPayload(ServerPlayer player, CustomPacketPayload payload) {
         ServerPlayNetworking.send(player, payload);
     }
 }

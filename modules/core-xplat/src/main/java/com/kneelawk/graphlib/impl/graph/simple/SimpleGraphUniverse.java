@@ -10,19 +10,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.LevelStorageSource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.level.storage.LevelStorage;
-
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
@@ -41,19 +38,19 @@ import com.kneelawk.graphlib.impl.graph.listener.UniverseListener;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
-    private final Identifier id;
+    private final ResourceLocation id;
     private final List<BlockNodeDiscoverer> discoverers = new ArrayList<>();
-    private final Map<Identifier, BlockNodeType> nodeTypes = new LinkedHashMap<>();
-    private final Object2IntMap<Identifier> typeIndices = new Object2IntLinkedOpenHashMap<>();
-    private final Map<Identifier, NodeEntityType> nodeEntityTypes = new LinkedHashMap<>();
-    private final Map<Identifier, LinkKeyType> linkKeyTypes = new LinkedHashMap<>();
-    private final Map<Identifier, LinkEntityType> linkEntityTypes = new LinkedHashMap<>();
-    private final Map<Identifier, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
+    private final Map<ResourceLocation, BlockNodeType> nodeTypes = new LinkedHashMap<>();
+    private final Object2IntMap<ResourceLocation> typeIndices = new Object2IntLinkedOpenHashMap<>();
+    private final Map<ResourceLocation, NodeEntityType> nodeEntityTypes = new LinkedHashMap<>();
+    private final Map<ResourceLocation, LinkKeyType> linkKeyTypes = new LinkedHashMap<>();
+    private final Map<ResourceLocation, LinkEntityType> linkEntityTypes = new LinkedHashMap<>();
+    private final Map<ResourceLocation, GraphEntityType<?>> graphEntityTypes = new LinkedHashMap<>();
     private final Set<CacheCategory<?>> cacheCategories = new ObjectLinkedOpenHashSet<>();
-    final Map<Identifier, UniverseListener> listeners = new LinkedHashMap<>();
+    final Map<ResourceLocation, UniverseListener> listeners = new LinkedHashMap<>();
     final SaveMode saveMode;
 
-    public SimpleGraphUniverse(Identifier universeId, SimpleGraphUniverseBuilder builder) {
+    public SimpleGraphUniverse(ResourceLocation universeId, SimpleGraphUniverseBuilder builder) {
         this.id = universeId;
         saveMode = builder.saveMode;
 
@@ -61,12 +58,12 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull ServerGraphWorldImpl getGraphWorld(@NotNull ServerWorld world) {
+    public @NotNull ServerGraphWorldImpl getGraphWorld(@NotNull ServerLevel world) {
         return StorageHelper.getStorage(world).get(id);
     }
 
     @Override
-    public @NotNull Identifier getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
@@ -139,7 +136,7 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public int getNodeTypeIndex(@NotNull Identifier typeId) {
+    public int getNodeTypeIndex(@NotNull ResourceLocation typeId) {
         return typeIndices.getInt(typeId);
     }
 
@@ -149,12 +146,12 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public ServerGraphWorldImpl createGraphWorld(LevelStorage.Session session, ServerWorld world, Path path, boolean syncChunkWrites) {
+    public ServerGraphWorldImpl createGraphWorld(LevelStorageSource.LevelStorageAccess session, ServerLevel world, Path path, boolean syncChunkWrites) {
         return new SimpleServerGraphWorld(this, session, world, path, syncChunkWrites);
     }
 
     @Override
-    public void addListener(Identifier key, UniverseListener listener) {
+    public void addListener(ResourceLocation key, UniverseListener listener) {
         if (listeners.containsKey(key)) throw new IllegalArgumentException(
             "Attempted to register a listener of type " + key + " with the universe " + id +
                 " but one was already registered.");
@@ -163,34 +160,34 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public @NotNull Set<BlockNode> discoverNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos) {
+    public @NotNull Set<BlockNode> discoverNodesInBlock(@NotNull ServerLevel world, @NotNull BlockPos pos) {
         return discoverers.stream()
             .flatMap(discoverer -> discoverer.getNodesInBlock(world, pos).stream())
             .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
-    public @Nullable BlockNodeType getNodeType(@NotNull Identifier typeId) {
+    public @Nullable BlockNodeType getNodeType(@NotNull ResourceLocation typeId) {
         return nodeTypes.get(typeId);
     }
 
     @Override
-    public @Nullable NodeEntityType getNodeEntityType(@NotNull Identifier typeId) {
+    public @Nullable NodeEntityType getNodeEntityType(@NotNull ResourceLocation typeId) {
         return nodeEntityTypes.get(typeId);
     }
 
     @Override
-    public @Nullable LinkKeyType getLinkKeyType(@NotNull Identifier typeId) {
+    public @Nullable LinkKeyType getLinkKeyType(@NotNull ResourceLocation typeId) {
         return linkKeyTypes.get(typeId);
     }
 
     @Override
-    public @Nullable LinkEntityType getLinkEntityType(@NotNull Identifier typeId) {
+    public @Nullable LinkEntityType getLinkEntityType(@NotNull ResourceLocation typeId) {
         return linkEntityTypes.get(typeId);
     }
 
     @Override
-    public @Nullable GraphEntityType<?> getGraphEntityType(@NotNull Identifier typeId) {
+    public @Nullable GraphEntityType<?> getGraphEntityType(@NotNull ResourceLocation typeId) {
         return graphEntityTypes.get(typeId);
     }
 

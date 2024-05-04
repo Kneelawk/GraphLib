@@ -27,15 +27,12 @@ package com.kneelawk.graphlib.impl.graph;
 
 import java.util.Collection;
 import java.util.List;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
-
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -47,7 +44,7 @@ import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.NodePos;
 
 public interface BlockGraphImpl extends BlockGraph {
-    @NotNull NbtCompound toTag();
+    @NotNull CompoundTag toTag();
 
     void initializeGraphEntities(List<GraphEntity<?>> newGraphEntities);
 

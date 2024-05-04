@@ -26,14 +26,12 @@
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import java.util.List;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
-
 public record PayloadGraph(long graphId, List<PayloadNode> nodes, List<PayloadLink> links) {
-    public static PayloadGraph decode(PacketByteBuf buf) {
+    public static PayloadGraph decode(FriendlyByteBuf buf) {
         long graphId = buf.readLong();
 
         int nodeCount = buf.readVarInt();
@@ -55,7 +53,7 @@ public record PayloadGraph(long graphId, List<PayloadNode> nodes, List<PayloadLi
         return new PayloadGraph(graphId, nodes, links);
     }
 
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeLong(graphId);
 
         buf.writeVarInt(nodes.size());

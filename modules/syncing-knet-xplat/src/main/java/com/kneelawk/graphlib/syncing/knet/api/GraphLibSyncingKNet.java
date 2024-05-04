@@ -26,10 +26,6 @@
 package com.kneelawk.graphlib.syncing.knet.api;
 
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -61,6 +57,8 @@ import com.kneelawk.knet.api.handling.PayloadHandlingException;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 import com.kneelawk.knet.api.util.Palette;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * KNet-based synchronization library.
@@ -152,7 +150,7 @@ public final class GraphLibSyncingKNet {
      * @param universeId the id of the universe to get the KNet synced universe for.
      * @return the KNet synced universe with the given universe id.
      */
-    public static @NotNull KNetSyncedUniverse getUniverse(@NotNull Identifier universeId) {
+    public static @NotNull KNetSyncedUniverse getUniverse(@NotNull ResourceLocation universeId) {
         SyncedUniverse universe = GraphLibSyncing.getUniverse(universeId);
         if (!(universe instanceof KNetSyncedUniverse knet)) throw new IllegalArgumentException(
             "Given universe " + universeId + " is not a KNetSyncedUniverse but is instead a " + universe.getClass());
@@ -253,7 +251,7 @@ public final class GraphLibSyncingKNet {
      * @return the encoded payload.
      */
     public static @NotNull NodePosSmallPayload encodeNodePosSmall(@NotNull NodePos nodePos, @NotNull NetByteBuf nodeBuf,
-                                                                  @NotNull Palette<Identifier> palette,
+                                                                  @NotNull Palette<ResourceLocation> palette,
                                                                   @NotNull KNetSyncedUniverse universe) {
         BlockNodeType type = nodePos.node().getType();
 
@@ -275,10 +273,10 @@ public final class GraphLibSyncingKNet {
      * @throws PayloadHandlingException if an error occurs while decoding the payload.
      */
     public static @NotNull NodePos decodeNodePosSmall(@NotNull NodePosSmallPayload payload, @NotNull NetByteBuf nodeBuf,
-                                                      @NotNull Palette<Identifier> palette,
+                                                      @NotNull Palette<ResourceLocation> palette,
                                                       @NotNull KNetSyncedUniverse universe)
         throws PayloadHandlingException {
-        Identifier typeId = palette.get(payload.typeId());
+        ResourceLocation typeId = palette.get(payload.typeId());
         if (typeId == null) throw new PayloadHandlingErrorException(
             "Invalid block node type int: " + payload.typeId() + " @ " + payload.pos());
         BlockNodeType type = universe.getUniverse().getNodeType(typeId);
@@ -346,7 +344,7 @@ public final class GraphLibSyncingKNet {
      */
     public static @NotNull LinkPosSmallPayload encodeLinkPosSmall(@NotNull LinkPos linkPos, @NotNull NetByteBuf nodeBuf,
                                                                   @NotNull NetByteBuf linkKeyBuf,
-                                                                  @NotNull Palette<Identifier> palette,
+                                                                  @NotNull Palette<ResourceLocation> palette,
                                                                   @NotNull KNetSyncedUniverse universe) {
         NodePosSmallPayload first = encodeNodePosSmall(linkPos.first(), nodeBuf, palette, universe);
         NodePosSmallPayload second = encodeNodePosSmall(linkPos.second(), nodeBuf, palette, universe);
@@ -374,13 +372,13 @@ public final class GraphLibSyncingKNet {
      */
     public static @NotNull LinkPos decodeLinkPosSmall(@NotNull LinkPosSmallPayload payload, @NotNull NetByteBuf nodeBuf,
                                                       @NotNull NetByteBuf linkKeyBuf,
-                                                      @NotNull Palette<Identifier> palette,
+                                                      @NotNull Palette<ResourceLocation> palette,
                                                       @NotNull KNetSyncedUniverse universe)
         throws PayloadHandlingException {
         NodePos first = decodeNodePosSmall(payload.first(), nodeBuf, palette, universe);
         NodePos second = decodeNodePosSmall(payload.second(), nodeBuf, palette, universe);
 
-        Identifier typeId = palette.get(payload.typeId());
+        ResourceLocation typeId = palette.get(payload.typeId());
         if (typeId == null) throw new PayloadHandlingErrorException(
             "Invalid link key type int: " + payload.typeId() + " @ " + first + "-" + second);
         LinkKeyType type = universe.getUniverse().getLinkKeyType(typeId);
@@ -393,13 +391,13 @@ public final class GraphLibSyncingKNet {
         return new LinkPos(first, second, key);
     }
 
-    private record GraphEntityPayload(long graphId, Identifier typeId) {
-        public static final PacketCodec<NetByteBuf, GraphEntityPayload> CODEC = PacketCodec.ofStatic((buf, payload) -> {
+    private record GraphEntityPayload(long graphId, ResourceLocation typeId) {
+        public static final StreamCodec<NetByteBuf, GraphEntityPayload> CODEC = StreamCodec.of((buf, payload) -> {
             buf.writeVarUnsignedLong(payload.graphId);
-            buf.writeIdentifier(payload.typeId);
+            buf.writeResourceLocation(payload.typeId);
         }, buf -> {
             long graphId = buf.readVarUnsignedLong();
-            Identifier typeId = buf.readIdentifier();
+            ResourceLocation typeId = buf.readResourceLocation();
             return new GraphEntityPayload(graphId, typeId);
         });
     }

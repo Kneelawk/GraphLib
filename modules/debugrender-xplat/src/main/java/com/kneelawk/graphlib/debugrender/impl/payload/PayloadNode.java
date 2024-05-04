@@ -25,7 +25,7 @@
 
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 public record PayloadNode(int typeId, BlockPos pos) {
 }

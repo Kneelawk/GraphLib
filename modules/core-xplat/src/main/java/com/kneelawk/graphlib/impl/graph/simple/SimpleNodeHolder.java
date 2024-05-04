@@ -4,13 +4,9 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -23,7 +19,7 @@ import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
-    final World blockWorld;
+    final Level blockWorld;
     final GraphView graphWorld;
     public final Node<SimpleNodeWrapper, LinkKey> node;
 
@@ -32,7 +28,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
      * @param graphWorld the graph world.
      * @param node       treat this as if it were parameterized on <code>&lt;T&gt;</code>.
      */
-    public SimpleNodeHolder(World blockWorld, GraphView graphWorld,
+    public SimpleNodeHolder(Level blockWorld, GraphView graphWorld,
                             Node<SimpleNodeWrapper, LinkKey> node) {
         this.blockWorld = blockWorld;
         this.graphWorld = graphWorld;
@@ -56,7 +52,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public World getBlockWorld() {
+    public Level getBlockWorld() {
         return blockWorld;
     }
 

@@ -26,21 +26,18 @@
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import java.util.List;
-
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
-public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> graphs) implements CustomPayload {
-    public static final Id<GraphUpdateBulkPayload> ID = new Id<>(GraphLibDebugRenderImpl.id("graph_update_bulk"));
-    public static final PacketCodec<PacketByteBuf, GraphUpdateBulkPayload> CODEC =
-        PacketCodec.of(GraphUpdateBulkPayload::write, GraphUpdateBulkPayload::decode);
+public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> graphs) implements CustomPacketPayload {
+    public static final Type<GraphUpdateBulkPayload> ID = new Type<>(GraphLibDebugRenderImpl.id("graph_update_bulk"));
+    public static final StreamCodec<FriendlyByteBuf, GraphUpdateBulkPayload> CODEC =
+        StreamCodec.ofMember(GraphUpdateBulkPayload::write, GraphUpdateBulkPayload::decode);
 
-    public static GraphUpdateBulkPayload decode(PacketByteBuf buf) {
+    public static GraphUpdateBulkPayload decode(FriendlyByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
 
         int graphCount = buf.readVarInt();
@@ -52,7 +49,7 @@ public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> gr
         return new GraphUpdateBulkPayload(header, graphs);
     }
 
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         header.write(buf);
 
         buf.writeVarInt(graphs.size());
@@ -62,7 +59,7 @@ public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> gr
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

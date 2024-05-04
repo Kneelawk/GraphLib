@@ -1,9 +1,8 @@
 package com.kneelawk.graphlib.api.util;
 
+import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.util.math.Direction;
 
 /**
  * Simple {@link Direction} utilities.
@@ -27,7 +26,7 @@ public final class DirectionUtils {
                 }
             }
 
-            PERPENDICULARS[side.getId()] = array;
+            PERPENDICULARS[side.get3DDataValue()] = array;
         }
     }
 
@@ -39,6 +38,6 @@ public final class DirectionUtils {
      */
     @Contract(pure = true)
     public static @NotNull Direction[] perpendiculars(@NotNull Direction side) {
-        return PERPENDICULARS[side.getId()];
+        return PERPENDICULARS[side.get3DDataValue()];
     }
 }

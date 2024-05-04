@@ -27,9 +27,7 @@ package com.kneelawk.graphlib.fabric.api.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-
-import net.minecraft.server.world.ServerWorld;
-
+import net.minecraft.server.level.ServerLevel;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 
@@ -97,7 +95,7 @@ public final class GraphLibEvents {
          * @param graphWorld the graph-world in which the graph was created.
          * @param graph      the graph that was created.
          */
-        void graphCreated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+        void graphCreated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph);
     }
 
     /**
@@ -111,7 +109,7 @@ public final class GraphLibEvents {
          * @param graphWorld the graph-world in which the graph was changed.
          * @param graph      the graph that was changed.
          */
-        void graphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+        void graphUpdated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph);
     }
 
     /**
@@ -129,7 +127,7 @@ public final class GraphLibEvents {
          * @param graphWorld the graph-world in which the graph is being unloaded.
          * @param graph      the graph that is being unloaded.
          */
-        void graphUnloading(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+        void graphUnloading(ServerLevel world, GraphWorld graphWorld, BlockGraph graph);
     }
 
     /**
@@ -143,6 +141,6 @@ public final class GraphLibEvents {
          * @param graphWorld the graph-world in which the graph was destroyed.
          * @param id         the id of the graph that was destroyed.
          */
-        void graphDestroyed(ServerWorld world, GraphWorld graphWorld, long id);
+        void graphDestroyed(ServerLevel world, GraphWorld graphWorld, long id);
     }
 }

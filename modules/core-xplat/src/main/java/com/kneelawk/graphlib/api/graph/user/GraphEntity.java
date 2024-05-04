@@ -1,12 +1,9 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.Map;
-
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -45,7 +42,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      *
      * @return this graph entity as an NBT tag.
      */
-    @Nullable NbtElement toTag();
+    @Nullable Tag toTag();
 
     /**
      * Called right before this entity's associated graph is deleted.

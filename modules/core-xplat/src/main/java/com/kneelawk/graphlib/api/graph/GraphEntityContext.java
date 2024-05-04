@@ -4,15 +4,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
+import net.minecraft.core.SectionPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
 
 /**
  * Context for a graph entity.
@@ -29,7 +27,7 @@ public interface GraphEntityContext {
      * @return the block world that this graph entity exists within.
      */
     @NotNull
-    World getBlockWorld();
+    Level getBlockWorld();
 
     /**
      * Gets the graph world that this graph entity exists within.
@@ -54,12 +52,12 @@ public interface GraphEntityContext {
      *
      * @return a collection of all the players tracking this graph.
      */
-    default @NotNull Collection<ServerPlayerEntity> getTrackingPlayers() {
-        if (getBlockWorld() instanceof ServerWorld world) {
-            Set<ServerPlayerEntity> players = new ObjectLinkedOpenHashSet<>();
-            for (Iterator<ChunkSectionPos> iter = getGraph().getChunks().iterator(); iter.hasNext(); ) {
+    default @NotNull Collection<ServerPlayer> getTrackingPlayers() {
+        if (getBlockWorld() instanceof ServerLevel world) {
+            Set<ServerPlayer> players = new ObjectLinkedOpenHashSet<>();
+            for (Iterator<SectionPos> iter = getGraph().getChunks().iterator(); iter.hasNext(); ) {
                 players.addAll(
-                    world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(iter.next().toChunkPos(),
+                    world.getChunkSource().chunkMap.getPlayers(iter.next().chunk(),
                         false));
             }
             return players;

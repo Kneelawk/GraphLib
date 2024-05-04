@@ -27,16 +27,13 @@ package com.kneelawk.graphlib.syncing.lns.impl;
 
 import java.util.List;
 import java.util.Set;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
@@ -190,7 +187,7 @@ public final class LNSDecoding {
         int entityCount = buf.readVarUnsignedInt();
         for (int entityIndex = 0; entityIndex < entityCount; entityIndex++) {
             int typeIdInt = buf.readVarUnsignedInt();
-            Identifier typeId = LNSNetworking.ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
+            ResourceLocation typeId = LNSNetworking.ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
             if (typeId == null) {
                 GLLog.warn("Unable to decode graph entity type id int as id. Int: {}", typeIdInt);
                 throw new InvalidInputDataException(

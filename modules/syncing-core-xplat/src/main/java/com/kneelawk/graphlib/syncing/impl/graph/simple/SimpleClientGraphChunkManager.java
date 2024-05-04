@@ -26,23 +26,20 @@
 package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
-
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphChunk;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphPillar;
 
 public class SimpleClientGraphChunkManager {
     volatile ClientPillarMap pillars;
-    final World world;
+    final Level world;
     private final UnloadListener unloadListener;
 
-    public SimpleClientGraphChunkManager(int loadDistance, World world, UnloadListener unloadListener) {
+    public SimpleClientGraphChunkManager(int loadDistance, Level world, UnloadListener unloadListener) {
         pillars = new ClientPillarMap(getChunkMapRadius(loadDistance));
         this.world = world;
         this.unloadListener = unloadListener;
@@ -115,7 +112,7 @@ public class SimpleClientGraphChunkManager {
         return pillar.get(chunkY);
     }
 
-    public @Nullable SimpleBlockGraphChunk getIfExists(ChunkSectionPos pos) {
+    public @Nullable SimpleBlockGraphChunk getIfExists(SectionPos pos) {
         return getIfExists(pos.getX(), pos.getY(), pos.getZ());
     }
 
@@ -126,7 +123,7 @@ public class SimpleClientGraphChunkManager {
         return pillar.getOrCreate(chunkY);
     }
 
-    public @Nullable SimpleBlockGraphChunk getOrCreate(ChunkSectionPos pos) {
+    public @Nullable SimpleBlockGraphChunk getOrCreate(SectionPos pos) {
         return getOrCreate(pos.getX(), pos.getY(), pos.getZ());
     }
 

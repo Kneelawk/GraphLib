@@ -26,11 +26,9 @@
 package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.network.codec.PacketCodec;
-
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 /**
  * A smaller payload representing a {@link LinkPos}, while allowing node data, link key data, and palette data to be
@@ -45,7 +43,7 @@ public record LinkPosSmallPayload(@NotNull NodePosSmallPayload first, @NotNull N
     /**
      * This payload's codec.
      */
-    public static final PacketCodec<NetByteBuf, LinkPosSmallPayload> CODEC = PacketCodec.of(
+    public static final StreamCodec<NetByteBuf, LinkPosSmallPayload> CODEC = StreamCodec.ofMember(
         LinkPosSmallPayload::encode, LinkPosSmallPayload::decode);
 
     /**

@@ -28,9 +28,7 @@ package com.kneelawk.graphlib.impl.graph.simple;
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.longs.LongIterable;
-
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;

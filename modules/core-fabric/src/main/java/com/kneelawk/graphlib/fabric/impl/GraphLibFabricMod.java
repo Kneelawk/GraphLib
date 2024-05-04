@@ -33,11 +33,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.loader.api.FabricLoader;
 
 import com.mojang.serialization.Lifecycle;
-
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.SimpleRegistry;
-
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -60,7 +55,7 @@ public class GraphLibFabricMod implements ModInitializer {
                 StorageHelper.getStorage(world).onWorldChunkLoad(chunk.getPos());
             } catch (Exception e) {
                 GLLog.error("Error loading chunk in GraphWorldStorage. World: '{}'/{}, Chunk: {}", world,
-                    world.getRegistryKey().getValue(), chunk.getPos(), e);
+                    world.dimension().location(), chunk.getPos(), e);
             }
         });
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
@@ -70,7 +65,7 @@ public class GraphLibFabricMod implements ModInitializer {
                 storage.onWorldChunkUnload(chunk.getPos());
             } catch (Exception e) {
                 GLLog.error("Error unloading chunk in GraphWorldStorage. World: '{}'/{}, Chunk: {}", world,
-                    world.getRegistryKey().getValue(), chunk.getPos(), e);
+                    world.dimension().location(), chunk.getPos(), e);
             }
         });
         ServerTickEvents.END_WORLD_TICK.register(world -> {
@@ -78,7 +73,7 @@ public class GraphLibFabricMod implements ModInitializer {
                 StorageHelper.getStorage(world).tick();
             } catch (Exception e) {
                 GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world,
-                    world.getRegistryKey().getValue(), e);
+                    world.dimension().location(), e);
             }
         });
         ServerWorldEvents.UNLOAD.register((server, world) -> {
@@ -86,7 +81,7 @@ public class GraphLibFabricMod implements ModInitializer {
                 StorageHelper.getStorage(world).close();
             } catch (Exception e) {
                 GLLog.error("Error closing GraphWorldStorage. World: '{}'/{}", world,
-                    world.getRegistryKey().getValue(), e);
+                    world.dimension().location(), e);
             }
         });
 

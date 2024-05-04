@@ -25,23 +25,22 @@
 
 package com.kneelawk.graphlib.debugrender.impl.mixin.impl;
 
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderType;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexFormat;
-
-@Mixin(RenderLayer.class)
+@Mixin(RenderType.class)
 public interface RenderLayerAccessor {
     @Invoker
-    static RenderLayer.MultiPhase callOf(
+    static RenderType.CompositeRenderType callCreate(
         String name,
         VertexFormat vertexFormat,
-        VertexFormat.DrawMode drawMode,
+        VertexFormat.Mode drawMode,
         int expectedBufferSize,
         boolean hasCrumbling,
         boolean translucent,
-        RenderLayer.MultiPhaseParameters phases
+        RenderType.CompositeState phases
     ) {
         throw new RuntimeException("RenderLayerAccessor Mixin Failure");
     }

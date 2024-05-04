@@ -25,16 +25,14 @@
 
 package com.kneelawk.graphlib.debugrender.neoforge.impl;
 
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.PacketDistributor;
-
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-
 import com.kneelawk.graphlib.debugrender.impl.GLDRPlatform;
 
 public class GLDRPlatformImpl implements GLDRPlatform {
     @Override
-    public void sendPlayPayload(ServerPlayerEntity player, CustomPayload payload) {
+    public void sendPlayPayload(ServerPlayer player, CustomPacketPayload payload) {
         PacketDistributor.sendToPlayer(player, payload);
     }
 }

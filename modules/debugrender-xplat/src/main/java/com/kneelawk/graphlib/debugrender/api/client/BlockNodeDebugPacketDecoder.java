@@ -27,25 +27,23 @@ package com.kneelawk.graphlib.debugrender.api.client;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.network.PacketByteBuf;
-
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
 import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
+import net.minecraft.network.FriendlyByteBuf;
 
 /**
- * Used for decoding a {@link DebugBlockNode} from a {@link PacketByteBuf}.
+ * Used for decoding a {@link DebugBlockNode} from a {@link FriendlyByteBuf}.
  */
 public interface BlockNodeDebugPacketDecoder {
     /**
-     * Decodes a {@link DebugBlockNode} from a {@link PacketByteBuf}.
+     * Decodes a {@link DebugBlockNode} from a {@link FriendlyByteBuf}.
      *
      * @param buf a buffer for reading the data written by
-     *            {@link BlockNodeDebugPacketEncoder#encode(BlockNode, NodeHolder, PacketByteBuf)}.
+     *            {@link BlockNodeDebugPacketEncoder#encode(BlockNode, NodeHolder, FriendlyByteBuf)}.
      *            Note: this buffer will contain other data besides this node's data.
-     * @return a {@link DebugBlockNode} containing the data decoded from the {@link PacketByteBuf}.
+     * @return a {@link DebugBlockNode} containing the data decoded from the {@link FriendlyByteBuf}.
      */
-    @Nullable DebugBlockNode fromPacket(@NotNull PacketByteBuf buf);
+    @Nullable DebugBlockNode fromPacket(@NotNull FriendlyByteBuf buf);
 }

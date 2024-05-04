@@ -1,11 +1,9 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.Collection;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
 
 /**
  * Used to get the {@link BlockNode}s that a block <b>should</b> have.
@@ -23,5 +21,5 @@ public interface BlockNodeDiscoverer {
      * @param pos   the position to check at.
      * @return all the {@link BlockNode}s that should be here.
      */
-    @NotNull Collection<BlockNode> getNodesInBlock(@NotNull ServerWorld world, @NotNull BlockPos pos);
+    @NotNull Collection<BlockNode> getNodesInBlock(@NotNull ServerLevel world, @NotNull BlockPos pos);
 }

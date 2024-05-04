@@ -3,15 +3,12 @@ package com.kneelawk.graphlib.api.graph;
 import java.util.Objects;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -37,7 +34,7 @@ public interface GraphView {
      *
      * @return the block world associated with this graph view.
      */
-    @NotNull World getWorld();
+    @NotNull Level getWorld();
 
     /**
      * Gets the nodes in the given block-position.
@@ -161,18 +158,18 @@ public interface GraphView {
      * @param pos the position of the chunk section to get the graphs in.
      * @return a stream of all graph ids in the given chunk section.
      */
-    @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull ChunkSectionPos pos);
+    @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull SectionPos pos);
 
     /**
      * Gets all graphs in the given chunk section.
      * <p>
      * Note: this loads all graphs in the given chunk section, which may not be what you want. If you only want the
-     * loaded graphs, {@link #getLoadedGraphsInChunkSection(ChunkSectionPos)} may be a better fit.
+     * loaded graphs, {@link #getLoadedGraphsInChunkSection(SectionPos)} may be a better fit.
      *
      * @param pos the position of the chunk section to get the graphs in.
      * @return a stream of all the graphs in the given chunk section.
      */
-    default @NotNull Stream<BlockGraph> getAllGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+    default @NotNull Stream<BlockGraph> getAllGraphsInChunkSection(@NotNull SectionPos pos) {
         return getAllGraphIdsInChunkSection(pos).mapToObj(this::getGraph).filter(Objects::nonNull);
     }
 
@@ -182,7 +179,7 @@ public interface GraphView {
      * @param pos the position of the chunk section to get the loaded graphs in.
      * @return a stream of all the loaded graphs in the given chunk section.
      */
-    @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull ChunkSectionPos pos);
+    @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull SectionPos pos);
 
     /**
      * Gets all graph ids in the given chunk.

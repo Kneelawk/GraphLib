@@ -2,13 +2,10 @@ package com.kneelawk.graphlib.impl;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.resources.ResourceLocation;
 import com.mojang.brigadier.CommandDispatcher;
-
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
@@ -16,10 +13,10 @@ public final class GraphLibImpl {
     private GraphLibImpl() {
     }
 
-    public static final Map<Identifier, GraphUniverseImpl> UNIVERSE = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, GraphUniverseImpl> UNIVERSE = new LinkedHashMap<>();
 
-    public static void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher,
-                                        CommandRegistryAccess context) {
+    public static void registerCommands(CommandDispatcher<CommandSourceStack> dispatcher,
+                                        CommandBuildContext context) {
         GraphLibCommand.register(dispatcher, context);
     }
 

@@ -1,15 +1,13 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import net.minecraft.world.level.Level;
 
-public record SimpleLinkEntityContext(LinkHolder<LinkKey> holder, World blockWorld, SimpleGraphCollection graphWorld)
+public record SimpleLinkEntityContext(LinkHolder<LinkKey> holder, Level blockWorld, SimpleGraphCollection graphWorld)
     implements LinkEntityContext {
     @Override
     public void markDirty() {
@@ -22,7 +20,7 @@ public record SimpleLinkEntityContext(LinkHolder<LinkKey> holder, World blockWor
     }
 
     @Override
-    public @NotNull World getBlockWorld() {
+    public @NotNull Level getBlockWorld() {
         return blockWorld;
     }
 

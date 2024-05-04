@@ -25,34 +25,33 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record NodeRemovePayload(Identifier universeId, long graphId, NodePosPayload nodePos) implements CustomPayload {
-    public static final Id<NodeRemovePayload> ID = new Id<>(SyncingKNetImpl.id("node_remove"));
-    public static final PacketCodec<NetByteBuf, NodeRemovePayload> CODEC =
-        PacketCodec.of(NodeRemovePayload::encode, NodeRemovePayload::decode);
+public record NodeRemovePayload(ResourceLocation universeId, long graphId, NodePosPayload nodePos) implements CustomPacketPayload {
+    public static final Type<NodeRemovePayload> ID = new Type<>(SyncingKNetImpl.id("node_remove"));
+    public static final StreamCodec<NetByteBuf, NodeRemovePayload> CODEC =
+        StreamCodec.ofMember(NodeRemovePayload::encode, NodeRemovePayload::decode);
 
     public static NodeRemovePayload decode(NetByteBuf buf) {
-        Identifier universeId = buf.readIdentifier();
+        ResourceLocation universeId = buf.readResourceLocation();
         long graphId = buf.readVarUnsignedLong();
         NodePosPayload nodePos = NodePosPayload.decode(buf);
         return new NodeRemovePayload(universeId, graphId, nodePos);
     }
 
     public void encode(NetByteBuf buf) {
-        buf.writeIdentifier(universeId);
+        buf.writeResourceLocation(universeId);
         buf.writeVarUnsignedLong(graphId);
         nodePos.encode(buf);
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

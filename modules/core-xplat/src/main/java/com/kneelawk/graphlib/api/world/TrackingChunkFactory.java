@@ -1,8 +1,7 @@
 package com.kneelawk.graphlib.api.world;
 
+import net.minecraft.core.SectionPos;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.util.math.ChunkSectionPos;
 
 /**
  * Creates a storage chunk that can alert its holder when it has changed.
@@ -18,5 +17,5 @@ public interface TrackingChunkFactory<R extends StorageChunk> {
      * @param markDirty used to signal when the created storage chunk has changed.
      * @return the newly created storage chunk.
      */
-    @NotNull R createNew(@NotNull ChunkSectionPos pos, @NotNull Runnable markDirty);
+    @NotNull R createNew(@NotNull SectionPos pos, @NotNull Runnable markDirty);
 }

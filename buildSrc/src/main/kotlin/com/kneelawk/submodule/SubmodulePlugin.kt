@@ -89,6 +89,7 @@ class SubmodulePlugin : Plugin<Project> {
             maven("https://maven.firstdark.dev/snapshots") { name = "FirstDark" }
             maven("https://kneelawk.com/maven") { name = "Kneelawk" }
             maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
+            maven("https://maven.parchmentmc.org") { name = "ParchmentMC" }
 
             mavenLocal()
         }
@@ -96,11 +97,10 @@ class SubmodulePlugin : Plugin<Project> {
         project.dependencies.apply {
             val minecraftVersion = project.getProperty<String>("minecraft_version")
             add("minecraft", "com.mojang:minecraft:$minecraftVersion")
-            val mappingsVersion = project.getProperty<String>("mappings_version")
-            val neoforgePatch = project.getProperty<String>("neoforge_patch")
-            add("mappings", loomEx.layered { 
-                mappings("net.fabricmc:yarn:$minecraftVersion+build.$mappingsVersion:v2")
-                mappings("dev.architectury:yarn-mappings-patch-neoforge:$neoforgePatch")
+            val parchmentVersion = project.getProperty<String>("parchment_version")
+            add("mappings", loomEx.layered {
+                officialMojangMappings()
+                parchment("org.parchmentmc.data:parchment-$minecraftVersion:$parchmentVersion@zip")
             })
 
             add("testImplementation", "junit:junit:4.13.2")

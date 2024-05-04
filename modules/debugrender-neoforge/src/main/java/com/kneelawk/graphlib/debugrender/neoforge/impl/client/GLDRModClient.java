@@ -31,9 +31,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-
-import net.minecraft.client.render.BufferBuilder;
-
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
@@ -43,6 +40,7 @@ import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
 import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
 @EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class GLDRModClient {
@@ -53,9 +51,9 @@ public class GLDRModClient {
 
             // Render to overlay stuff
             RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_LINES,
-                new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.getExpectedBufferSize()));
+                new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.bufferSize()));
             RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
-                new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.getExpectedBufferSize()));
+                new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.bufferSize()));
         });
     }
 

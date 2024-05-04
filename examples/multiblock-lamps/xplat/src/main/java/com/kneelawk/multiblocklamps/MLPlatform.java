@@ -27,11 +27,8 @@ package com.kneelawk.multiblocklamps;
 
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
-
+import net.minecraft.world.level.block.Block;
 import com.mojang.serialization.MapCodec;
-
-import net.minecraft.block.Block;
-
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 
 public interface MLPlatform {

@@ -26,14 +26,10 @@
 package com.kneelawk.graphlib.impl.platform;
 
 import java.util.ServiceLoader;
-
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-
-import net.minecraft.registry.Registry;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
@@ -43,13 +39,13 @@ public interface GraphLibPlatform {
     GraphLibPlatform INSTANCE = ServiceLoader.load(GraphLibPlatform.class).findFirst()
         .orElseThrow(() -> new RuntimeException("Failed to load platform implementation"));
 
-    void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
+    void fireAddUniverseSubcommands(RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe);
 
-    void fireGraphCreated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+    void fireGraphCreated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph);
 
-    void fireGraphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+    void fireGraphUpdated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph);
 
-    void fireGraphUnloading(ServerWorld world, GraphWorld graphWorld, BlockGraph graph);
+    void fireGraphUnloading(ServerLevel world, GraphWorld graphWorld, BlockGraph graph);
 
-    void fireGraphDestroyed(ServerWorld world, GraphWorld graphWorld, long id);
+    void fireGraphDestroyed(ServerLevel world, GraphWorld graphWorld, long id);
 }

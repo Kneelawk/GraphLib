@@ -26,18 +26,16 @@
 package com.kneelawk.graphlib.debugrender.impl.client.debug.graph;
 
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-
 import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 import com.kneelawk.graphlib.debugrender.api.graph.SidedDebugBlockNode;
 import com.kneelawk.graphlib.impl.Constants;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 
 public record SimpleDebugSidedBlockNode(int hash, int color, @NotNull Direction side)
     implements DebugBlockNode, SidedDebugBlockNode {
     @Override
-    public @NotNull Identifier getRenderId() {
+    public @NotNull ResourceLocation getRenderId() {
         return Constants.id("simple_sided");
     }
 

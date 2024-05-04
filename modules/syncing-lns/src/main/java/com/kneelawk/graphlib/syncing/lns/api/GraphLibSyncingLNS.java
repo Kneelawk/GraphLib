@@ -26,10 +26,6 @@
 package com.kneelawk.graphlib.syncing.lns.api;
 
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
@@ -55,6 +51,8 @@ import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.lns.impl.LNSNetworking;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * LibNetworkStack-based synchronization library.
@@ -95,7 +93,7 @@ public final class GraphLibSyncingLNS {
      * @param universeId the id of the universe to get the LNS synced universe for.
      * @return the LNS synced universe with the given universe id.
      */
-    public static @NotNull LNSSyncedUniverse getUniverse(@NotNull Identifier universeId) {
+    public static @NotNull LNSSyncedUniverse getUniverse(@NotNull ResourceLocation universeId) {
         SyncedUniverse universe = GraphLibSyncing.getUniverse(universeId);
         if (!(universe instanceof LNSSyncedUniverse lns)) throw new IllegalArgumentException(
             "Given universe " + universeId + " is not a LNSSyncedUniverse but is instead a " + universe.getClass());
@@ -185,7 +183,7 @@ public final class GraphLibSyncingLNS {
         BlockPos pos = buf.readBlockPos();
 
         int idInt = buf.readVarUnsignedInt();
-        Identifier typeId = LNSNetworking.ID_CACHE.getObj(ctx.getConnection(), idInt);
+        ResourceLocation typeId = LNSNetworking.ID_CACHE.getObj(ctx.getConnection(), idInt);
         if (typeId == null) {
             GLLog.warn("Unable to decode block node type id from unknown identifier int {} @ {}", idInt, pos);
             throw new InvalidInputDataException(
@@ -247,7 +245,7 @@ public final class GraphLibSyncingLNS {
         NodePos second = decodeNodePos(buf, ctx, universe);
 
         int idInt = buf.readVarUnsignedInt();
-        Identifier typeId = LNSNetworking.ID_CACHE.getObj(ctx.getConnection(), idInt);
+        ResourceLocation typeId = LNSNetworking.ID_CACHE.getObj(ctx.getConnection(), idInt);
         if (typeId == null) {
             GLLog.warn("Unable to decode link key type id from unknown identifier int {} @ {}-{}", idInt, first,
                 second);

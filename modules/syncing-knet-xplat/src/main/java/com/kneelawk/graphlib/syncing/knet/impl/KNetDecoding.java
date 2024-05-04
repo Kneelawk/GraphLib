@@ -29,16 +29,13 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
@@ -81,7 +78,7 @@ import com.kneelawk.knet.api.util.Palette;
 public final class KNetDecoding {
     private KNetDecoding() {}
 
-    private static ClientGraphWorldImpl getWorld(Identifier universeId, String packetName)
+    private static ClientGraphWorldImpl getWorld(ResourceLocation universeId, String packetName)
         throws PayloadHandlingException {
         SyncedUniverseImpl universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(universeId);
         if (universe == null)
@@ -94,9 +91,9 @@ public final class KNetDecoding {
         return world;
     }
 
-    private static <T> T getType(int typeIdInt, Palette<Identifier> palette, Function<Identifier, T> getter,
+    private static <T> T getType(int typeIdInt, Palette<ResourceLocation> palette, Function<ResourceLocation, T> getter,
                                  String name, Object position) throws PayloadHandlingException {
-        Identifier typeId = palette.get(typeIdInt);
+        ResourceLocation typeId = palette.get(typeIdInt);
         if (typeId == null) throw new PayloadHandlingErrorException(
             "Unable to decode " + name + " type id int as id. Int: " + typeIdInt + " @ " + position);
 
@@ -109,7 +106,7 @@ public final class KNetDecoding {
     }
 
     private static void loadGraphEntities(BlockGraphImpl graph, int[] graphEntityIds, NetByteBuf data,
-                                          Palette<Identifier> palette, KNetSyncedUniverse universe)
+                                          Palette<ResourceLocation> palette, KNetSyncedUniverse universe)
         throws PayloadHandlingException {
         List<GraphEntity<?>> decodedEntities = new ObjectArrayList<>();
 
@@ -127,7 +124,7 @@ public final class KNetDecoding {
     }
 
     private static @Nullable NodeEntity readNodeEntity(OptionalInt entityId, NetByteBuf data,
-                                                       Palette<Identifier> palette, KNetSyncedUniverse universe,
+                                                       Palette<ResourceLocation> palette, KNetSyncedUniverse universe,
                                                        NodePos pos) throws PayloadHandlingException {
         if (entityId.isPresent()) {
             NodeEntityType entityType =
@@ -138,7 +135,7 @@ public final class KNetDecoding {
     }
 
     private static @Nullable LinkEntity readLinkEntity(OptionalInt entityId, NetByteBuf data,
-                                                       Palette<Identifier> palette, KNetSyncedUniverse universe,
+                                                       Palette<ResourceLocation> palette, KNetSyncedUniverse universe,
                                                        LinkPos pos) throws PayloadHandlingException {
         if (entityId.isPresent()) {
             LinkEntityType entityType =
@@ -151,7 +148,7 @@ public final class KNetDecoding {
     public static void receiveChunkDataPacket(ChunkDataPayload payload, PayloadHandlingContext ctx)
         throws PayloadHandlingException {
         PayloadHeader header = payload.header();
-        Palette<Identifier> palette = header.palette();
+        Palette<ResourceLocation> palette = header.palette();
         NetByteBuf data = header.data();
 
         KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
@@ -244,7 +241,7 @@ public final class KNetDecoding {
     public static void receiveNodeAdd(NodeAddPayload payload, PayloadHandlingContext ctx)
         throws PayloadHandlingException {
         PayloadHeader header = payload.header();
-        Palette<Identifier> palette = header.palette();
+        Palette<ResourceLocation> palette = header.palette();
         NetByteBuf data = header.data();
 
         KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
@@ -269,7 +266,7 @@ public final class KNetDecoding {
 
     public static void receiveMerge(MergePayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
         PayloadHeader header = payload.header();
-        Palette<Identifier> palette = header.palette();
+        Palette<ResourceLocation> palette = header.palette();
         NetByteBuf data = header.data();
 
         ClientGraphWorldImpl world = getWorld(header.universeId(), "merge");
@@ -291,7 +288,7 @@ public final class KNetDecoding {
 
     public static void receiveLink(LinkPayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
         PayloadHeader header = payload.header();
-        Palette<Identifier> palette = header.palette();
+        Palette<ResourceLocation> palette = header.palette();
         NetByteBuf data = header.data();
 
         KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
@@ -344,7 +341,7 @@ public final class KNetDecoding {
 
     public static void receiveSplit(SplitPayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
         PayloadHeader header = payload.header();
-        Palette<Identifier> palette = header.palette();
+        Palette<ResourceLocation> palette = header.palette();
         NetByteBuf data = header.data();
 
         KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());

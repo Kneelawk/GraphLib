@@ -27,9 +27,6 @@ package com.kneelawk.multiblocklamps.node;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -37,6 +34,7 @@ import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
 import com.kneelawk.multiblocklamps.LampLogic;
 import com.kneelawk.multiblocklamps.MultiblockLamps;
 import com.kneelawk.multiblocklamps.block.ConnectedLampBlock;
+import net.minecraft.nbt.Tag;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
 
@@ -52,7 +50,7 @@ public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInpu
     }
 
     @Override
-    public @Nullable NbtElement toTag() {
+    public @Nullable Tag toTag() {
         // This node is a singleton so no data needs to be encoded
         return null;
     }
@@ -68,14 +66,14 @@ public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInpu
 
     @Override
     public boolean isPowered(NodeHolder<LampInputNode> self) {
-        return self.getBlockWorld().isReceivingRedstonePower(self.getBlockPos());
+        return self.getBlockWorld().hasNeighborSignal(self.getBlockPos());
     }
 
     @Override
     public void setLit(NodeHolder<LampNode> self, boolean lit) {
-        if (self.getBlockState().isOf(MultiblockLamps.CONNECTED_LAMP_BLOCK.get())) {
-            self.getBlockWorld().setBlockState(self.getBlockPos(),
-                MultiblockLamps.CONNECTED_LAMP_BLOCK.get().getDefaultState().with(ConnectedLampBlock.LIT, lit));
+        if (self.getBlockState().is(MultiblockLamps.CONNECTED_LAMP_BLOCK.get())) {
+            self.getBlockWorld().setBlockAndUpdate(self.getBlockPos(),
+                MultiblockLamps.CONNECTED_LAMP_BLOCK.get().defaultBlockState().setValue(ConnectedLampBlock.LIT, lit));
         }
     }
 }

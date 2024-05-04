@@ -54,7 +54,7 @@ public class GraphLibDebugRenderNeoforgeMod {
     }
 
     public static void onPlayerDisconnect(PlayerEvent.PlayerLoggedOutEvent event) {
-        GLDebugNet.onDisconnect(event.getEntity().getUuid());
+        GLDebugNet.onDisconnect(event.getEntity().getUUID());
     }
 
     @SubscribeEvent

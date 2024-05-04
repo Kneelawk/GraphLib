@@ -4,7 +4,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
+import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.storage.IOWorker;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,15 +21,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.storage.StorageIoWorker;
-import net.minecraft.world.storage.StorageKey;
-
 import com.kneelawk.graphlib.api.util.ChunkPillarUnloadTimer;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
@@ -41,14 +38,14 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
     private static final int MAX_CHUNK_AGE = 20 * 60;
     private static final int INCREMENTAL_SAVE_FACTOR = 10;
 
-    private final ServerWorld world;
+    private final ServerLevel world;
 
     private final TrackingChunkDecoder<R> loadFromNbt;
     private final TrackingChunkFactory<R> createNew;
 
     private final SaveMode saveMode;
 
-    private final StorageIoWorker worker;
+    private final IOWorker worker;
 
     private final ChunkPillarUnloadTimer timer = new ChunkPillarUnloadTimer(MAX_CHUNK_AGE);
 
@@ -69,7 +66,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
      * @param createNew       the function for creating a new, empty chunk section.
      * @param saveMode        how often storage chunks should be saved.
      */
-    public UnloadingRegionBasedStorage(@NotNull StorageKey storageKey, @NotNull ServerWorld world, @NotNull Path path,
+    public UnloadingRegionBasedStorage(@NotNull RegionStorageInfo storageKey, @NotNull ServerLevel world, @NotNull Path path,
                                        boolean syncChunkWrites, @NotNull TrackingChunkDecoder<@NotNull R> loadFromNbt,
                                        @NotNull TrackingChunkFactory<@NotNull R> createNew,
                                        @NotNull SaveMode saveMode) {
@@ -110,8 +107,8 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
     }
 
     @Override
-    public @NotNull R getOrCreate(@NotNull ChunkSectionPos pos) {
-        ChunkPos chunkPos = pos.toChunkPos();
+    public @NotNull R getOrCreate(@NotNull SectionPos pos) {
+        ChunkPos chunkPos = pos.chunk();
         timer.onChunkUse(chunkPos);
         long longPos = chunkPos.toLong();
         Int2ObjectMap<R> pillar = loadedChunks.get(longPos);
@@ -123,7 +120,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
             pillar = new Int2ObjectOpenHashMap<>();
             try {
                 // blocking here isn't great, but often we *need* this data in order to continue
-                Optional<NbtCompound> root = worker.readChunkData(chunkPos).join();
+                Optional<CompoundTag> root = worker.loadAsync(chunkPos).join();
                 if (root.isPresent()) {
                     loadChunkPillar(chunkPos, pillar, root.get());
 
@@ -150,14 +147,14 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
         }
     }
 
-    private @NotNull R createNew(@NotNull ChunkSectionPos pos, ChunkPos chunkPos) {
+    private @NotNull R createNew(@NotNull SectionPos pos, ChunkPos chunkPos) {
         markDirty(chunkPos);
         return createNew.createNew(pos, () -> markDirty(chunkPos));
     }
 
     @Override
-    public @Nullable R getIfExists(@NotNull ChunkSectionPos pos) {
-        ChunkPos chunkPos = pos.toChunkPos();
+    public @Nullable R getIfExists(@NotNull SectionPos pos) {
+        ChunkPos chunkPos = pos.chunk();
         Int2ObjectMap<R> pillar = loadedChunks.get(chunkPos.toLong());
         if (pillar != null) {
             timer.onChunkUse(chunkPos);
@@ -165,7 +162,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
         } else {
             // try and load the pillar
             try {
-                Optional<NbtCompound> root = worker.readChunkData(chunkPos).join();
+                Optional<CompoundTag> root = worker.loadAsync(chunkPos).join();
                 if (root.isPresent()) {
                     timer.onChunkUse(chunkPos);
                     pillar = new Int2ObjectOpenHashMap<>();
@@ -188,7 +185,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
     private CompletableFuture<Void> loadChunkPillar(@NotNull ChunkPos chunkPos) {
         if (!loadedChunks.containsKey(chunkPos.toLong())) {
             // try and load the pillar
-            return worker.readChunkData(chunkPos).thenAcceptAsync(root -> {
+            return worker.loadAsync(chunkPos).thenAcceptAsync(root -> {
                 try {
                     // double check that the chunk hasn't already been loaded
                     if (!loadedChunks.containsKey(chunkPos.toLong())) {
@@ -210,13 +207,13 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
     }
 
     private void loadChunkPillar(@NotNull ChunkPos chunkPos, @NotNull Int2ObjectMap<R> pillar,
-                                 @NotNull NbtCompound root) {
-        NbtCompound sectionsTag = root.getCompound("Sections");
-        for (int sectionY = world.getBottomSectionCoord(); sectionY < world.getTopSectionCoord(); sectionY++) {
-            if (sectionsTag.contains(String.valueOf(sectionY), NbtElement.COMPOUND_TYPE)) {
-                NbtCompound sectionTag = sectionsTag.getCompound(String.valueOf(sectionY));
+                                 @NotNull CompoundTag root) {
+        CompoundTag sectionsTag = root.getCompound("Sections");
+        for (int sectionY = world.getMinSection(); sectionY < world.getMaxSection(); sectionY++) {
+            if (sectionsTag.contains(String.valueOf(sectionY), Tag.TAG_COMPOUND)) {
+                CompoundTag sectionTag = sectionsTag.getCompound(String.valueOf(sectionY));
                 try {
-                    R section = loadFromNbt.decode(sectionTag, ChunkSectionPos.from(chunkPos.x, sectionY, chunkPos.z),
+                    R section = loadFromNbt.decode(sectionTag, SectionPos.of(chunkPos.x, sectionY, chunkPos.z),
                         () -> markDirty(chunkPos));
                     pillar.put(sectionY, section);
                 } catch (Exception e) {
@@ -274,14 +271,14 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
     public void saveChunk(@NotNull ChunkPos pos) {
         Int2ObjectMap<R> sections = loadedChunks.get(pos.toLong());
         if (sections != null && !sections.isEmpty()) {
-            NbtCompound root = new NbtCompound();
+            CompoundTag root = new CompoundTag();
 
-            NbtCompound sectionsTag = new NbtCompound();
-            for (int sectionY = world.getBottomSectionCoord(); sectionY < world.getTopSectionCoord(); sectionY++) {
+            CompoundTag sectionsTag = new CompoundTag();
+            for (int sectionY = world.getMinSection(); sectionY < world.getMaxSection(); sectionY++) {
                 R section = sections.get(sectionY);
                 if (section != null) {
                     try {
-                        NbtCompound nbt = new NbtCompound();
+                        CompoundTag nbt = new CompoundTag();
                         section.toNbt(nbt);
                         sectionsTag.put(String.valueOf(sectionY), nbt);
                     } catch (Exception e) {
@@ -291,9 +288,9 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
             }
             root.put("Sections", sectionsTag);
 
-            worker.setResult(pos, root);
+            worker.store(pos, root);
         } else {
-            worker.setResult(pos, null);
+            worker.store(pos, null);
         }
     }
 }

@@ -1,12 +1,9 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.Collection;
-
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -44,7 +41,7 @@ public interface BlockNode {
      *
      * @return a (possibly null) NBT element describing this block node's data.
      */
-    @Nullable NbtElement toTag();
+    @Nullable Tag toTag();
 
     /**
      * Checks if this block node should be automatically removed.

@@ -25,17 +25,15 @@
 
 package com.kneelawk.graphlib.neoforge.api.event;
 
+import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.Event;
-
-import net.minecraft.server.world.ServerWorld;
-
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 
 /**
  * Fired after a graph has been destroyed.
  */
 public class GraphDestroyedEvent extends Event {
-    private final ServerWorld world;
+    private final ServerLevel world;
     private final GraphWorld graphWorld;
     private final long graphId;
 
@@ -46,7 +44,7 @@ public class GraphDestroyedEvent extends Event {
      * @param graphWorld the graph world.
      * @param graphId    the id of the graph that was destroyed.
      */
-    public GraphDestroyedEvent(ServerWorld world, GraphWorld graphWorld, long graphId) {
+    public GraphDestroyedEvent(ServerLevel world, GraphWorld graphWorld, long graphId) {
         this.world = world;
         this.graphWorld = graphWorld;
         this.graphId = graphId;
@@ -57,7 +55,7 @@ public class GraphDestroyedEvent extends Event {
      *
      * @return the block world.
      */
-    public ServerWorld getWorld() {
+    public ServerLevel getWorld() {
         return world;
     }
 

@@ -1,13 +1,10 @@
 package com.kneelawk.graphlib.api.graph;
 
 import java.util.stream.Stream;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -27,7 +24,7 @@ public interface GraphWorld extends GraphView {
      * @return the server world associated with this graph world.
      */
     @Override
-    @NotNull ServerWorld getWorld();
+    @NotNull ServerLevel getWorld();
 
     /**
      * Adds a block node and optional node entity at the given position.

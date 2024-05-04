@@ -3,20 +3,17 @@ package com.kneelawk.graphlib.api.graph;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
@@ -48,7 +45,7 @@ public interface LinkEntityContext {
      * @return the world of blocks that this link entity exists within.
      */
     @NotNull
-    World getBlockWorld();
+    Level getBlockWorld();
 
     /**
      * Gets the world of graphs that this link entity exists within.
@@ -229,12 +226,12 @@ public interface LinkEntityContext {
      *
      * @return a collection of all the players tracking this link.
      */
-    default @NotNull Collection<ServerPlayerEntity> getTrackingPlayers() {
-        if (getBlockWorld() instanceof ServerWorld world) {
-            Set<ServerPlayerEntity> players = new ObjectLinkedOpenHashSet<>();
-            players.addAll(world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
+    default @NotNull Collection<ServerPlayer> getTrackingPlayers() {
+        if (getBlockWorld() instanceof ServerLevel world) {
+            Set<ServerPlayer> players = new ObjectLinkedOpenHashSet<>();
+            players.addAll(world.getChunkSource().chunkMap.getPlayers(
                 new ChunkPos(getFirstBlockPos()), false));
-            players.addAll(world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
+            players.addAll(world.getChunkSource().chunkMap.getPlayers(
                 new ChunkPos(getSecondBlockPos()), false));
             return players;
         } else {

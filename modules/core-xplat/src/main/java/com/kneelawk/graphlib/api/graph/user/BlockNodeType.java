@@ -26,23 +26,20 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.function.Supplier;
-
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of block node.
  */
 public class BlockNodeType implements ObjectType {
-    private final @NotNull Identifier id;
+    private final @NotNull ResourceLocation id;
     private final @NotNull BlockNodeDecoder decoder;
 
-    private BlockNodeType(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder) {
+    private BlockNodeType(@NotNull ResourceLocation id, @NotNull BlockNodeDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
     }
@@ -53,7 +50,7 @@ public class BlockNodeType implements ObjectType {
      * @return this type's id.
      */
     @Override
-    public @NotNull Identifier getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
@@ -96,7 +93,7 @@ public class BlockNodeType implements ObjectType {
      * @return a new block node type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull BlockNodeDecoder decoder) {
+    public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull BlockNodeDecoder decoder) {
         return new BlockNodeType(id, decoder);
     }
 
@@ -108,7 +105,7 @@ public class BlockNodeType implements ObjectType {
      * @return a new block node type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull BlockNodeType of(@NotNull Identifier id, @NotNull Supplier<BlockNode> supplier) {
+    public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull Supplier<BlockNode> supplier) {
         return new BlockNodeType(id, nbt -> supplier.get());
     }
 }

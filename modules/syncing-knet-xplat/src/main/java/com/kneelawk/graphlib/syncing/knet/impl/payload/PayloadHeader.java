@@ -25,16 +25,15 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 import com.kneelawk.knet.api.util.Palette;
+import net.minecraft.resources.ResourceLocation;
 
-public record PayloadHeader(Identifier universeId, Palette<Identifier> palette, NetByteBuf data) {
+public record PayloadHeader(ResourceLocation universeId, Palette<ResourceLocation> palette, NetByteBuf data) {
     public static PayloadHeader decode(NetByteBuf buf) {
-        Identifier universeId = buf.readIdentifier();
-        Palette<Identifier> palette = Palette.decode(buf, NetByteBuf::readIdentifier);
+        ResourceLocation universeId = buf.readResourceLocation();
+        Palette<ResourceLocation> palette = Palette.decode(buf, NetByteBuf::readResourceLocation);
         int dataLen = buf.readVarUnsignedInt();
         NetByteBuf data = NetBufs.netBuf(dataLen);
         buf.readBytes(data, dataLen);
@@ -43,8 +42,8 @@ public record PayloadHeader(Identifier universeId, Palette<Identifier> palette, 
     }
     
     public void encode(NetByteBuf buf) {
-        buf.writeIdentifier(universeId);
-        palette.encode(buf, NetByteBuf::writeIdentifier);
+        buf.writeResourceLocation(universeId);
+        palette.encode(buf, NetByteBuf::writeResourceLocation);
         buf.writeVarUnsignedInt(data.readableBytes());
         buf.writeBytes(data, data.readerIndex(), data.readableBytes());
     }

@@ -9,7 +9,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.LongTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
@@ -23,16 +30,6 @@ import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtLong;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -66,29 +63,29 @@ import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
  */
 public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
     static @NotNull SimpleBlockGraph fromTag(@NotNull SimpleServerGraphWorld controller, long id,
-                                             @NotNull NbtCompound tag) {
-        NbtList chunksTag = tag.getList("chunks", NbtElement.LONG_TYPE);
+                                             @NotNull CompoundTag tag) {
+        ListTag chunksTag = tag.getList("chunks", Tag.TAG_LONG);
         LongSet chunks = new LongLinkedOpenHashSet();
 
-        for (NbtElement chunkElement : chunksTag) {
-            chunks.add(((NbtLong) chunkElement).longValue());
+        for (Tag chunkElement : chunksTag) {
+            chunks.add(((LongTag) chunkElement).getAsLong());
         }
 
         SimpleBlockGraph graph = new SimpleBlockGraph(controller, id, chunks);
 
-        NbtList nodesTag = tag.getList("nodes", NbtElement.COMPOUND_TYPE);
-        NbtList linksTag = tag.getList("links", NbtElement.COMPOUND_TYPE);
-        NbtCompound graphEntities = tag.getCompound("graphEntities");
+        ListTag nodesTag = tag.getList("nodes", Tag.TAG_COMPOUND);
+        ListTag linksTag = tag.getList("links", Tag.TAG_COMPOUND);
+        CompoundTag graphEntities = tag.getCompound("graphEntities");
 
         List<@Nullable NodeHolder<BlockNode>> nodes = new ArrayList<>();
 
-        for (NbtElement nodeElement : nodesTag) {
-            NbtCompound com = (NbtCompound) nodeElement;
+        for (Tag nodeElement : nodesTag) {
+            CompoundTag com = (CompoundTag) nodeElement;
             SimpleNodeWrapper node = SimpleNodeWrapper.fromTag(controller.universe, com, id);
             if (node != null) {
                 NodeEntity entity = null;
-                if (com.contains("entityType", NbtElement.STRING_TYPE)) {
-                    Identifier entityTypeId = new Identifier(com.getString("entityType"));
+                if (com.contains("entityType", Tag.TAG_STRING)) {
+                    ResourceLocation entityTypeId = new ResourceLocation(com.getString("entityType"));
                     NodeEntityType type = controller.universe.getNodeEntityType(entityTypeId);
                     if (type != null) {
                         entity = type.getDecoder().decode(com.get("entity"));
@@ -104,15 +101,15 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             }
         }
 
-        for (NbtElement linkElement : linksTag) {
-            NbtCompound linkTag = (NbtCompound) linkElement;
+        for (Tag linkElement : linksTag) {
+            CompoundTag linkTag = (CompoundTag) linkElement;
             var first = nodes.get(linkTag.getInt("first"));
             var second = nodes.get(linkTag.getInt("second"));
 
             if (first != null && second != null) {
                 LinkKey key = EmptyLinkKey.INSTANCE;
-                if (linkTag.contains("keyType", NbtElement.STRING_TYPE)) {
-                    Identifier keyTypeId = new Identifier(linkTag.getString("keyType"));
+                if (linkTag.contains("keyType", Tag.TAG_STRING)) {
+                    ResourceLocation keyTypeId = new ResourceLocation(linkTag.getString("keyType"));
                     LinkKeyType type = controller.universe.getLinkKeyType(keyTypeId);
                     if (type != null) {
                         LinkKey decodedKey = type.getDecoder().decode(linkTag.get("key"));
@@ -125,8 +122,8 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                 }
 
                 LinkEntity entity = null;
-                if (linkTag.contains("entityType", NbtElement.STRING_TYPE)) {
-                    Identifier entityTypeId = new Identifier(linkTag.getString("entityType"));
+                if (linkTag.contains("entityType", Tag.TAG_STRING)) {
+                    ResourceLocation entityTypeId = new ResourceLocation(linkTag.getString("entityType"));
                     LinkEntityType type = controller.universe.getLinkEntityType(entityTypeId);
                     if (type != null) {
                         entity = type.getDecoder().decode(linkTag.get("entity"));
@@ -142,8 +139,8 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
         // decode the graph entities
         for (GraphEntityType<?> type : controller.universe.getAllGraphEntityTypes()) {
             SimpleGraphEntityContext ctx = new SimpleGraphEntityContext(controller.world, controller, graph);
-            if (graphEntities.contains(type.getId().toString(), NbtElement.COMPOUND_TYPE)) {
-                NbtCompound entityCom = graphEntities.getCompound(type.getId().toString());
+            if (graphEntities.contains(type.getId().toString(), Tag.TAG_COMPOUND)) {
+                CompoundTag entityCom = graphEntities.getCompound(type.getId().toString());
                 GraphEntity<?> entity = type.getDecoder().decode(entityCom.get("entity"));
                 if (entity == null) {
                     entity = type.getFactory().createNew();
@@ -200,31 +197,31 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
     }
 
     @Override
-    public @NotNull NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public @NotNull CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
 
-        NbtList chunksTag = new NbtList();
+        ListTag chunksTag = new ListTag();
 
         for (long chunk : chunks) {
-            chunksTag.add(NbtLong.of(chunk));
+            chunksTag.add(LongTag.valueOf(chunk));
         }
 
         tag.put("chunks", chunksTag);
 
         var nodes = graph.stream().toList();
-        var nodeIndexMap = IntStream.range(0, nodes.size()).mapToObj(i -> new Pair<>(nodes.get(i), i))
-            .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+        var nodeIndexMap = IntStream.range(0, nodes.size()).mapToObj(i -> new Tuple<>(nodes.get(i), i))
+            .collect(Collectors.toMap(Tuple::getA, Tuple::getB));
 
-        NbtList nodesTag = new NbtList();
+        ListTag nodesTag = new ListTag();
 
         for (var node : nodes) {
-            NbtCompound com = node.data().toTag();
+            CompoundTag com = node.data().toTag();
 
             NodePos key = new NodePos(node.data().getPos(), node.data().getNode());
             NodeEntity entity = nodeEntities.get(key);
             if (entity != null) {
                 com.putString("entityType", entity.getType().getId().toString());
-                NbtElement entityTag = entity.toTag();
+                Tag entityTag = entity.toTag();
                 if (entityTag != null) {
                     com.put("entity", entityTag);
                 }
@@ -235,7 +232,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
 
         tag.put("nodes", nodesTag);
 
-        NbtList linksTag = new NbtList();
+        ListTag linksTag = new ListTag();
 
         for (var link : nodes.stream().flatMap(node -> node.connections().stream()).distinct().toList()) {
             if (!nodeIndexMap.containsKey(link.first())) {
@@ -251,13 +248,13 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                 continue;
             }
 
-            NbtCompound linkTag = new NbtCompound();
+            CompoundTag linkTag = new CompoundTag();
             linkTag.putInt("first", nodeIndexMap.get(link.first()));
             linkTag.putInt("second", nodeIndexMap.get(link.second()));
 
             LinkKey key = link.key();
             linkTag.putString("keyType", key.getType().getId().toString());
-            NbtElement keyTag = key.toTag();
+            Tag keyTag = key.toTag();
             if (keyTag != null) {
                 linkTag.put("key", keyTag);
             }
@@ -267,7 +264,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                     link.second().data().getNode(), link.key()));
             if (entity != null) {
                 linkTag.putString("entityType", entity.getType().getId().toString());
-                NbtElement entityTag = entity.toTag();
+                Tag entityTag = entity.toTag();
                 if (entityTag != null) {
                     linkTag.put("entity", entityTag);
                 }
@@ -278,12 +275,12 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
 
         tag.put("links", linksTag);
 
-        NbtCompound graphEntitiesCom = new NbtCompound();
+        CompoundTag graphEntitiesCom = new CompoundTag();
 
         for (Map.Entry<GraphEntityType<?>, GraphEntity<?>> entry : graphEntities.entrySet()) {
-            NbtCompound graphEntityCom = new NbtCompound();
+            CompoundTag graphEntityCom = new CompoundTag();
 
-            NbtElement entityTag = entry.getValue().toTag();
+            Tag entityTag = entry.getValue().toTag();
             if (entityTag != null) {
                 graphEntityCom.put("entity", entityTag);
             }
@@ -442,7 +439,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
      * @return a stream of all nodes in the given chunk section.
      */
     @Override
-    public @NotNull Stream<NodeHolder<BlockNode>> getNodesInChunkSection(ChunkSectionPos pos) {
+    public @NotNull Stream<NodeHolder<BlockNode>> getNodesInChunkSection(SectionPos pos) {
         Set<NodeHolder<BlockNode>> inChunk = nodesInChunk.get(pos.asLong());
         if (inChunk != null) {
             return inChunk.stream();
@@ -511,8 +508,8 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
      * @return a stream of all the chunk sections this graph is in.
      */
     @Override
-    public @NotNull Stream<ChunkSectionPos> getChunks() {
-        return chunks.longStream().mapToObj(ChunkSectionPos::from);
+    public @NotNull Stream<SectionPos> getChunks() {
+        return chunks.longStream().mapToObj(SectionPos::of);
     }
 
     /**
@@ -562,7 +559,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             SimpleNodeWrapper data = node.data();
             data.graphId = id;
             BlockPos pos = data.getPos();
-            long sectionPos = ChunkSectionPos.from(pos).asLong();
+            long sectionPos = SectionPos.of(pos).asLong();
             chunks.add(sectionPos);
             NodeHolder<BlockNode> holder = new SimpleNodeHolder<>(world.getWorld(), world, node);
             nodesInPos.put(pos, holder);
@@ -582,7 +579,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
     @Override
     public @NotNull SimpleNodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
                                                            @Nullable NodeEntity entity, boolean newlyAdded) {
-        BlockPos pos = blockPos.toImmutable();
+        BlockPos pos = blockPos.immutable();
         NodePos nodePos = new NodePos(pos, node);
 
         // Handle duplicate createNode calls (sometimes happens, especially on client when receiving chunks)
@@ -629,7 +626,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
         }
 
         nodesInPos.put(pos, graphNode);
-        long sectionPos = ChunkSectionPos.from(pos).asLong();
+        long sectionPos = SectionPos.of(pos).asLong();
         nodesInChunk.computeIfAbsent(sectionPos, posLong -> new ObjectLinkedOpenHashSet<>()).add(graphNode);
         nodesToHolders.put(nodePos, graphNode);
         chunks.add(sectionPos);
@@ -677,7 +674,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
         SimpleNodeHolder<BlockNode> node = (SimpleNodeHolder<BlockNode>) holder;
         NodePos removedNode = node.getPos();
         BlockPos removedPos = node.getBlockPos();
-        ChunkSectionPos removedChunk = ChunkSectionPos.from(removedPos);
+        SectionPos removedChunk = SectionPos.of(removedPos);
         nodesInPos.remove(removedPos, node);
         Set<NodeHolder<BlockNode>> inRemovedChunk = nodesInChunk.get(removedChunk.asLong());
         if (inRemovedChunk != null) {
@@ -718,7 +715,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                 removedChunk = null;
                 break;
             }
-            if (ChunkSectionPos.from(pos).equals(removedChunk)) {
+            if (SectionPos.of(pos).equals(removedChunk)) {
                 removedChunk = null;
             }
         }
@@ -949,7 +946,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                     NodePos nodePos = new NodePos(pos, node.data().getNode());
                     removedNodes.add(nodePos);
                     removedPoses.add(pos);
-                    long sectionPos = ChunkSectionPos.from(pos).asLong();
+                    long sectionPos = SectionPos.of(pos).asLong();
                     removedChunks.add(sectionPos);
 
                     // the node is in a new graph, so it obviously isn't in our graph anymore
@@ -968,7 +965,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             for (var node : graph) {
                 var data = node.data();
                 removedPoses.remove(data.getPos());
-                removedChunks.remove(ChunkSectionPos.from(data.getPos()).asLong());
+                removedChunks.remove(SectionPos.of(data.getPos()).asLong());
             }
 
             // do this stuff instead of rebuilding-refs later
@@ -1065,7 +1062,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                 BlockPos pos = nodePos.pos();
                 removedNodes.add(nodePos);
                 removedPoses.add(pos);
-                long sectionPos = ChunkSectionPos.from(pos).asLong();
+                long sectionPos = SectionPos.of(pos).asLong();
                 removedChunks.add(sectionPos);
 
                 nodesInPos.remove(pos, holder);
@@ -1089,7 +1086,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
         for (var node : graph) {
             var data = node.data();
             removedPoses.remove(data.getPos());
-            removedChunks.remove(ChunkSectionPos.from(data.getPos()).asLong());
+            removedChunks.remove(SectionPos.of(data.getPos()).asLong());
         }
 
         // do this stuff instead of rebuilding-refs later
@@ -1145,9 +1142,9 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
         Set<BlockPos> removedPoses = new LinkedHashSet<>();
         LongSet removedChunks = new LongLinkedOpenHashSet();
 
-        for (int sectionY = world.getWorld().getBottomSectionCoord();
-             sectionY < world.getWorld().getTopSectionCoord(); sectionY++) {
-            long longPos = ChunkSectionPos.asLong(chunkX, sectionY, chunkZ);
+        for (int sectionY = world.getWorld().getMinSection();
+             sectionY < world.getWorld().getMaxSection(); sectionY++) {
+            long longPos = SectionPos.asLong(chunkX, sectionY, chunkZ);
             Set<NodeHolder<BlockNode>> inRemovedChunk = nodesInChunk.get(longPos);
             if (inRemovedChunk != null) {
                 removedChunks.add(longPos);

@@ -25,25 +25,24 @@
 
 package com.kneelawk.graphlib.debugrender.impl.mixin.api;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexFormat;
-
 import com.kneelawk.graphlib.debugrender.impl.mixin.impl.RenderLayerAccessor;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderType;
 
 public final class RenderLayerHelper {
     private RenderLayerHelper() {
     }
 
-    public static RenderLayer of(
+    public static RenderType of(
         String name,
         VertexFormat vertexFormat,
-        VertexFormat.DrawMode drawMode,
+        VertexFormat.Mode drawMode,
         int expectedBufferSize,
         boolean hasCrumbling,
         boolean translucent,
-        RenderLayer.MultiPhaseParameters phases
+        RenderType.CompositeState phases
     ) {
-        return RenderLayerAccessor.callOf(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent,
+        return RenderLayerAccessor.callCreate(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent,
             phases);
     }
 }

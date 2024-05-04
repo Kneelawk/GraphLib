@@ -27,14 +27,12 @@ package com.kneelawk.multiblocklamps.node;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
 import com.kneelawk.multiblocklamps.LampLogic;
+import net.minecraft.nbt.Tag;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
 
@@ -50,7 +48,7 @@ public class LampConnectorNode implements BlockNode, FullWireBlockNode, LampInpu
     }
 
     @Override
-    public @Nullable NbtElement toTag() {
+    public @Nullable Tag toTag() {
         // This node is a singleton so no data needs to be encoded
         return null;
     }
@@ -62,6 +60,6 @@ public class LampConnectorNode implements BlockNode, FullWireBlockNode, LampInpu
 
     @Override
     public boolean isPowered(NodeHolder<LampInputNode> self) {
-        return self.getBlockWorld().isReceivingRedstonePower(self.getBlockPos());
+        return self.getBlockWorld().hasNeighborSignal(self.getBlockPos());
     }
 }

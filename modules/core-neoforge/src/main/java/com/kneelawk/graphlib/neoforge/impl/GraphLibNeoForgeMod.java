@@ -25,6 +25,8 @@
 
 package com.kneelawk.graphlib.neoforge.impl;
 
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent;
@@ -34,10 +36,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.ChunkPos;
-
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
@@ -69,19 +67,19 @@ public class GraphLibNeoForgeMod {
     }
 
     public void onChunkLoad(ChunkEvent.Load event) {
-        if (event.getLevel() instanceof ServerWorld world) {
+        if (event.getLevel() instanceof ServerLevel world) {
             ChunkPos chunk = event.getChunk().getPos();
             try {
                 StorageHelper.getStorage(world).onWorldChunkLoad(chunk);
             } catch (Exception e) {
                 GLLog.error("Error loading chunk in GraphWorldStorage. World: '{}'/{}, Chunk: {}", world,
-                    world.getRegistryKey().getValue(), chunk, e);
+                    world.dimension().location(), chunk, e);
             }
         }
     }
 
     public void onChunkUnload(ChunkEvent.Unload event) {
-        if (event.getLevel() instanceof ServerWorld world) {
+        if (event.getLevel() instanceof ServerLevel world) {
             ChunkPos chunk = event.getChunk().getPos();
             try {
                 ServerGraphWorldStorage storage = StorageHelper.getStorage(world);
@@ -89,29 +87,29 @@ public class GraphLibNeoForgeMod {
                 storage.onWorldChunkUnload(chunk);
             } catch (Exception e) {
                 GLLog.error("Error unloading chunk in GraphWorldStorage. World: '{}'/{}, Chunk: {}", world,
-                    world.getRegistryKey().getValue(), chunk, e);
+                    world.dimension().location(), chunk, e);
             }
         }
     }
 
     public void onLevelTick(LevelTickEvent.Post event) {
-        if (event.getLevel() instanceof ServerWorld world) {
+        if (event.getLevel() instanceof ServerLevel world) {
             try {
                 StorageHelper.getStorage(world).tick();
             } catch (Exception e) {
                 GLLog.error("Error ticking GraphWorldStorage. World: '{}'/{}", world,
-                    world.getRegistryKey().getValue(),
+                    world.dimension().location(),
                     e);
             }
         }
     }
 
     public void onLevelUnload(LevelEvent.Unload event) {
-        if (event.getLevel() instanceof ServerWorld world) {
+        if (event.getLevel() instanceof ServerLevel world) {
             try {
                 StorageHelper.getStorage(world).close();
             } catch (Exception e) {
-                GLLog.error("Error closing GraphWorldStorage. World: '{}'/{}", world, world.getRegistryKey().getValue(),
+                GLLog.error("Error closing GraphWorldStorage. World: '{}'/{}", world, world.dimension().location(),
                     e);
             }
         }

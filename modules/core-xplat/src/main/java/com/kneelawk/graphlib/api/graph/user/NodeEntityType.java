@@ -26,23 +26,20 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.function.Supplier;
-
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of node entity.
  */
 public class NodeEntityType implements ObjectType {
-    private final @NotNull Identifier id;
+    private final @NotNull ResourceLocation id;
     private final @NotNull NodeEntityDecoder decoder;
 
-    private NodeEntityType(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder) {
+    private NodeEntityType(@NotNull ResourceLocation id, @NotNull NodeEntityDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
     }
@@ -53,7 +50,7 @@ public class NodeEntityType implements ObjectType {
      * @return this type's id.
      */
     @Override
-    public @NotNull Identifier getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
@@ -96,7 +93,7 @@ public class NodeEntityType implements ObjectType {
      * @return a new node entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull NodeEntityDecoder decoder) {
+    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull NodeEntityDecoder decoder) {
         return new NodeEntityType(id, decoder);
     }
 
@@ -108,7 +105,7 @@ public class NodeEntityType implements ObjectType {
      * @return a new node entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull NodeEntityType of(@NotNull Identifier id, @NotNull Supplier<NodeEntity> supplier) {
+    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<NodeEntity> supplier) {
         return new NodeEntityType(id, nbt -> supplier.get());
     }
 }

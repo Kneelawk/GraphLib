@@ -27,18 +27,16 @@ package com.kneelawk.graphlib.syncing.impl.client;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 import com.kneelawk.graphlib.syncing.impl.CommonProxy;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 
 public class ClientProxy extends CommonProxy {
     public static void init() {
@@ -46,17 +44,17 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
-    public @Nullable World getClientWorld() {
-        return MinecraftClient.getInstance().world;
+    public @Nullable Level getClientWorld() {
+        return Minecraft.getInstance().level;
     }
 
     @Override
     @Deprecated
-    public @NotNull GraphWorldStorage getStorage(@NotNull World world) {
-        if (world instanceof ServerWorld serverWorld) {
+    public @NotNull GraphWorldStorage getStorage(@NotNull Level world) {
+        if (world instanceof ServerLevel serverWorld) {
             return StorageHelper.getStorage(serverWorld);
         }
-        if (world instanceof ClientWorld clientWorld) {
+        if (world instanceof ClientLevel clientWorld) {
             return ClientStorageHelper.getStorage(clientWorld);
         }
 
@@ -65,12 +63,12 @@ public class ClientProxy extends CommonProxy {
     }
 
     @Override
-    public @Nullable GraphWorldStorage getSidedStorage(@NotNull World world) {
+    public @Nullable GraphWorldStorage getSidedStorage(@NotNull Level world) {
         // Turns out it is more common than you might think for a world to be neither a ServerWorld nor a ClientWorld.
-        if (world instanceof ServerWorld serverWorld) {
+        if (world instanceof ServerLevel serverWorld) {
             return StorageHelper.getStorage(serverWorld);
         }
-        if (world instanceof ClientWorld clientWorld) {
+        if (world instanceof ClientLevel clientWorld) {
             return ClientStorageHelper.getStorage(clientWorld);
         }
 
@@ -79,7 +77,7 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public @Nullable ClientGraphWorldStorage getClientStorage() {
-        ClientWorld world = MinecraftClient.getInstance().world;
+        ClientLevel world = Minecraft.getInstance().level;
         if (world == null) {
             GLLog.warn("Attempted to get client storage before the client had loaded a world.",
                 new RuntimeException("Stack Trace"));

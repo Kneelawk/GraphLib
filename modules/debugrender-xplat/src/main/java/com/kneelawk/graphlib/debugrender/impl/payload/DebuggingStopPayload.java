@@ -25,28 +25,27 @@
 
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record DebuggingStopPayload(Identifier universeId) implements CustomPayload {
-    public static final Id<DebuggingStopPayload> ID = new Id<>(GraphLibDebugRenderImpl.id("debugging_stop"));
-    public static final PacketCodec<PacketByteBuf, DebuggingStopPayload> CODEC =
-        PacketCodec.of(DebuggingStopPayload::write, DebuggingStopPayload::new);
+public record DebuggingStopPayload(ResourceLocation universeId) implements CustomPacketPayload {
+    public static final Type<DebuggingStopPayload> ID = new Type<>(GraphLibDebugRenderImpl.id("debugging_stop"));
+    public static final StreamCodec<FriendlyByteBuf, DebuggingStopPayload> CODEC =
+        StreamCodec.ofMember(DebuggingStopPayload::write, DebuggingStopPayload::new);
 
-    public DebuggingStopPayload(PacketByteBuf buf) {
-        this(buf.readIdentifier());
+    public DebuggingStopPayload(FriendlyByteBuf buf) {
+        this(buf.readResourceLocation());
     }
 
-    public void write(PacketByteBuf buf) {
-        buf.writeIdentifier(universeId);
+    public void write(FriendlyByteBuf buf) {
+        buf.writeResourceLocation(universeId);
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

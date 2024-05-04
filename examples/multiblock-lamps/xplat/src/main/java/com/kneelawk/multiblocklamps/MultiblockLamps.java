@@ -27,13 +27,11 @@ package com.kneelawk.multiblocklamps;
 
 import java.util.List;
 import java.util.function.Supplier;
-
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.MapColor;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.multiblocklamps.block.ConnectableBlock;
@@ -55,12 +53,12 @@ public class MultiblockLamps {
 
     public static final Supplier<Block> CONNECTED_LAMP_BLOCK =
         MLPlatform.INSTANCE.registerBlockWithItem("connected_lamp", () -> new ConnectedLampBlock(
-                AbstractBlock.Settings.create().luminance(state -> state.get(ConnectedLampBlock.LIT) ? 15 : 0)
-                    .strength(0.3f).sounds(BlockSoundGroup.GLASS).allowsSpawning((_state, _view, _pos, _type) -> true)),
+                BlockBehaviour.Properties.of().lightLevel(state -> state.getValue(ConnectedLampBlock.LIT) ? 15 : 0)
+                    .strength(0.3f).sound(SoundType.GLASS).isValidSpawn((_state, _view, _pos, _type) -> true)),
             ConnectedLampBlock.CODEC);
     public static final Supplier<Block> LAMP_CONNECTOR_BLOCK =
         MLPlatform.INSTANCE.registerBlockWithItem("lamp_connector",
-            () -> new LampConnectorBlock(AbstractBlock.Settings.create().mapColor(MapColor.STONE_GRAY).strength(1.5f, 6.0f)),
+            () -> new LampConnectorBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
             LampConnectorBlock.CODEC);
     
     public static void init() {}
@@ -74,7 +72,7 @@ public class MultiblockLamps {
                 connectable.createNodes() : List.of());
     }
 
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 }

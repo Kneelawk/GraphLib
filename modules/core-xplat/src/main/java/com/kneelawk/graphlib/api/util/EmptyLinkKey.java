@@ -2,15 +2,13 @@ package com.kneelawk.graphlib.api.util;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.wire.LinkKeyFactory;
 import com.kneelawk.graphlib.impl.Constants;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * An empty link key.
@@ -21,7 +19,7 @@ public class EmptyLinkKey implements LinkKey {
     /**
      * The type of the empty link key.
      */
-    public static final Identifier TYPE_ID = Constants.id("empty");
+    public static final ResourceLocation TYPE_ID = Constants.id("empty");
 
     /**
      * The empty link key is a singleton. Here is its instance.
@@ -51,7 +49,7 @@ public class EmptyLinkKey implements LinkKey {
     }
 
     @Override
-    public @Nullable NbtElement toTag() {
+    public @Nullable Tag toTag() {
         return null;
     }
 }

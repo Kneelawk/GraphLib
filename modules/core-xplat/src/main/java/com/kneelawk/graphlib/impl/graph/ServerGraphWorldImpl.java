@@ -1,15 +1,12 @@
 package com.kneelawk.graphlib.impl.graph;
 
 import java.util.List;
-
+import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
 
@@ -41,12 +38,12 @@ public interface ServerGraphWorldImpl extends GraphWorld, AutoCloseable {
      * @param toRebuild the chunks to rebuild.
      * @param listener  progress and completion listeners.
      */
-    void rebuildChunks(List<ChunkSectionPos> toRebuild, RebuildChunksListener listener);
+    void rebuildChunks(List<SectionPos> toRebuild, RebuildChunksListener listener);
 
     @Override
-    @NotNull ServerWorld getWorld();
+    @NotNull ServerLevel getWorld();
 
-    @Nullable WorldListener getListener(Identifier id);
+    @Nullable WorldListener getListener(ResourceLocation id);
 
     @Override
     @Nullable BlockGraphImpl getGraph(long id);

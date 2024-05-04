@@ -2,13 +2,10 @@ package com.kneelawk.graphlib.api.graph;
 
 import java.util.Collection;
 import java.util.stream.Stream;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
@@ -109,7 +106,7 @@ public interface BlockGraph {
      * @param pos the position of the chunk section to get all nodes from.
      * @return a stream of all nodes in the given chunk section.
      */
-    @NotNull Stream<NodeHolder<BlockNode>> getNodesInChunkSection(ChunkSectionPos pos);
+    @NotNull Stream<NodeHolder<BlockNode>> getNodesInChunkSection(SectionPos pos);
 
     /**
      * Gets all the nodes in this graph.
@@ -146,7 +143,7 @@ public interface BlockGraph {
      *
      * @return a stream of all the chunk sections this graph is in.
      */
-    @NotNull Stream<ChunkSectionPos> getChunks();
+    @NotNull Stream<SectionPos> getChunks();
 
     /**
      * Gets a graph entity attached to this graph.

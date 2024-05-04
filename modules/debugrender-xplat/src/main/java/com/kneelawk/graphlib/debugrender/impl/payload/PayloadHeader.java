@@ -29,36 +29,35 @@ import io.netty.buffer.Unpooled;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-
-public record PayloadHeader(Identifier universeId, Int2ObjectMap<Identifier> palette, PacketByteBuf nodeData) {
-    public static PayloadHeader decode(PacketByteBuf buf) {
-        Identifier universeId = buf.readIdentifier();
+public record PayloadHeader(ResourceLocation universeId, Int2ObjectMap<ResourceLocation> palette, FriendlyByteBuf nodeData) {
+    public static PayloadHeader decode(FriendlyByteBuf buf) {
+        ResourceLocation universeId = buf.readResourceLocation();
 
         int paletteLen = buf.readVarInt();
-        Int2ObjectMap<Identifier> palette = new Int2ObjectLinkedOpenHashMap<>();
+        Int2ObjectMap<ResourceLocation> palette = new Int2ObjectLinkedOpenHashMap<>();
         for (int i = 0; i < paletteLen; i++) {
             int key = buf.readVarInt();
-            Identifier value = buf.readIdentifier();
+            ResourceLocation value = buf.readResourceLocation();
             palette.put(key, value);
         }
 
         int nodeDataLen = buf.readInt();
-        PacketByteBuf nodeData = new PacketByteBuf(Unpooled.buffer(nodeDataLen));
+        FriendlyByteBuf nodeData = new FriendlyByteBuf(Unpooled.buffer(nodeDataLen));
         buf.readBytes(nodeData, nodeDataLen);
 
         return new PayloadHeader(universeId, palette, nodeData);
     }
 
-    public void write(PacketByteBuf buf) {
-        buf.writeIdentifier(universeId);
+    public void write(FriendlyByteBuf buf) {
+        buf.writeResourceLocation(universeId);
 
         buf.writeVarInt(palette.size());
-        for (Int2ObjectMap.Entry<Identifier> entry : palette.int2ObjectEntrySet()) {
+        for (Int2ObjectMap.Entry<ResourceLocation> entry : palette.int2ObjectEntrySet()) {
             buf.writeVarInt(entry.getIntKey());
-            buf.writeIdentifier(entry.getValue());
+            buf.writeResourceLocation(entry.getValue());
         }
 
         buf.writeInt(nodeData.readableBytes());

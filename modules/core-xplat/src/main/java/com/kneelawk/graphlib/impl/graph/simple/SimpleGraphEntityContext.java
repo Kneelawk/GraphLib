@@ -1,22 +1,19 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.GraphView;
+import net.minecraft.world.level.Level;
 
-public record SimpleGraphEntityContext(World blockWorld, SimpleGraphCollection graphWorld, BlockGraph graph) implements GraphEntityContext {
+public record SimpleGraphEntityContext(Level blockWorld, SimpleGraphCollection graphWorld, BlockGraph graph) implements GraphEntityContext {
     @Override
     public void markDirty() {
         graphWorld.markDirty(graph.getId());
     }
 
     @Override
-    public @NotNull World getBlockWorld() {
+    public @NotNull Level getBlockWorld() {
         return blockWorld;
     }
 

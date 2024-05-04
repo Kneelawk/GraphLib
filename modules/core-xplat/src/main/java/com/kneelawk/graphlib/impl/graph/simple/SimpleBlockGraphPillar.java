@@ -25,11 +25,10 @@
 
 package com.kneelawk.graphlib.impl.graph.simple;
 
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
 
 public class SimpleBlockGraphPillar {
     public final int x;
@@ -37,9 +36,9 @@ public class SimpleBlockGraphPillar {
     public final @Nullable SimpleBlockGraphChunk @NotNull [] pillar;
     public final int bottomSectionCoord;
 
-    public SimpleBlockGraphPillar(int x, int z, World world) {
-        this(x, z, new SimpleBlockGraphChunk[world.getTopSectionCoord() - world.getBottomSectionCoord()],
-            world.getBottomSectionCoord());
+    public SimpleBlockGraphPillar(int x, int z, Level world) {
+        this(x, z, new SimpleBlockGraphChunk[world.getMaxSection() - world.getMinSection()],
+            world.getMinSection());
     }
 
     public SimpleBlockGraphPillar(int x, int z, @Nullable SimpleBlockGraphChunk @NotNull [] pillar,
@@ -58,7 +57,7 @@ public class SimpleBlockGraphPillar {
         int i = y - bottomSectionCoord;
         SimpleBlockGraphChunk chunk = pillar[i];
         if (chunk == null) {
-            chunk = new SimpleBlockGraphChunk(ChunkSectionPos.from(x, y, z), () -> {});
+            chunk = new SimpleBlockGraphChunk(SectionPos.of(x, y, z), () -> {});
             pillar[i] = chunk;
         }
         return chunk;

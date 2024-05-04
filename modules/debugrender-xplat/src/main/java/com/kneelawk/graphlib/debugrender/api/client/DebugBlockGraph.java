@@ -26,9 +26,7 @@
 package com.kneelawk.graphlib.debugrender.api.client;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import net.minecraft.util.Identifier;
-
+import net.minecraft.resources.ResourceLocation;
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 
@@ -41,7 +39,7 @@ public interface DebugBlockGraph {
      *
      * @return this graph's universe's id.
      */
-    Identifier universeId();
+    ResourceLocation universeId();
 
     /**
      * This graph's id.

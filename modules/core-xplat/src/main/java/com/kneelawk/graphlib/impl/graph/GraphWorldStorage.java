@@ -26,15 +26,12 @@
 package com.kneelawk.graphlib.impl.graph;
 
 import java.util.Map;
-
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
-
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.graph.GraphView;
 
 public interface GraphWorldStorage {
-    @NotNull GraphView get(@NotNull Identifier universeId);
+    @NotNull GraphView get(@NotNull ResourceLocation universeId);
 
-    @NotNull Map<Identifier, ? extends GraphView> getAll();
+    @NotNull Map<ResourceLocation, ? extends GraphView> getAll();
 }
