@@ -5,10 +5,10 @@ import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -34,6 +34,8 @@ import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 public interface BlockNode {
     /**
      * Gets the block node map codec for nodes in the given universe.
+     * <p>
+     * Note: this uses the {@code type} and {@code node} map keys.
      *
      * @param universe the universe to find block nodes in.
      * @return a map codec for block nodes in the given universe.
@@ -43,10 +45,20 @@ public interface BlockNode {
             node -> DataResult.success(node.getType().getId()), typeId -> {
             BlockNodeType type = universe.getNodeType(typeId);
             if (type == null) {
-                return DataResult.error(() -> "No block node exists with type '" + typeId + "'");
+                return DataResult.error(() -> "No block node exists with type '" + typeId + "' in universe '" + universe.getId() + "'");
             }
             return DataResult.success(type.getCodec());
         });
+    }
+
+    /**
+     * Gets the block node codec for nodes in the given universe.
+     *
+     * @param universe the universe to find block nodes in.
+     * @return a codec for block nodes in the given universe.
+     */
+    static Codec<BlockNode> codec(GraphUniverse universe) {
+        return mapCodec(universe).codec();
     }
 
     /**
@@ -59,16 +71,6 @@ public interface BlockNode {
      */
     @NotNull
     BlockNodeType getType();
-
-    /**
-     * Encodes this block node's data to an NBT element.
-     * <p>
-     * This can return null if this block node's type is all the data that needs to be stored.
-     *
-     * @return a (possibly null) NBT element describing this block node's data.
-     */
-    @Nullable
-    Tag toTag();
 
     /**
      * Checks if this block node should be automatically removed.

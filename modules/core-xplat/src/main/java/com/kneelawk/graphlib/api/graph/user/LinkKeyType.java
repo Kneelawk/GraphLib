@@ -30,6 +30,8 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.util.ObjectType;
@@ -39,11 +41,11 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  */
 public class LinkKeyType implements ObjectType {
     private final @NotNull ResourceLocation id;
-    private final @NotNull LinkKeyDecoder decoder;
+    private final @NotNull Codec<? extends LinkKey> codec;
 
-    private LinkKeyType(@NotNull ResourceLocation id, @NotNull LinkKeyDecoder decoder) {
+    private LinkKeyType(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkKey> codec) {
         this.id = id;
-        this.decoder = decoder;
+        this.codec = codec;
     }
 
     /**
@@ -61,8 +63,8 @@ public class LinkKeyType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull LinkKeyDecoder getDecoder() {
-        return decoder;
+    public @NotNull Codec<? extends LinkKey> getCodec() {
+        return codec;
     }
 
     @Override
@@ -91,12 +93,12 @@ public class LinkKeyType implements ObjectType {
      * Creates a new link key type.
      *
      * @param id      the id of the type.
-     * @param decoder the decoder of the type.
+     * @param codec the codec of the type.
      * @return a new link key type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull LinkKeyDecoder decoder) {
-        return new LinkKeyType(id, decoder);
+    public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkKey> codec) {
+        return new LinkKeyType(id, codec);
     }
 
     /**

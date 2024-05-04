@@ -3,6 +3,9 @@ package com.kneelawk.graphlib.api.util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -24,6 +27,20 @@ import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
  * @param key    the key of this link that makes it unique among all the links between the same two nodes.
  */
 public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull LinkKey key) {
+    /**
+     * Gets a link pos codec for link poses in the given universe.
+     *
+     * @param universe the universe to find link poses in.
+     * @return a link pos codec for link poses in the given universe.
+     */
+    public static Codec<LinkPos> codec(GraphUniverse universe) {
+        return RecordCodecBuilder.create(instance -> instance.group(
+            NodePos.codec(universe).fieldOf("first").forGetter(LinkPos::first),
+            NodePos.codec(universe).fieldOf("second").forGetter(LinkPos::second),
+            LinkKey.mapCodec(universe).forGetter(LinkPos::key)
+        ).apply(instance, LinkPos::new));
+    }
+
     /**
      * Creates a new link pos from raw positions, nodes, and the link key.
      *
@@ -122,7 +139,7 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
         ResourceLocation typeId = new ResourceLocation(nbt.getString("keyType"));
         LinkKeyType type = universe.getLinkKeyType(typeId);
         if (type == null) return null;
-        LinkKey key = type.getDecoder().decode(nbt.get("key"));
+        LinkKey key = type.getCodec().decode(nbt.get("key"));
         if (key == null) return null;
 
         return new LinkPos(first, second, key);

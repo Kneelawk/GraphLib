@@ -115,7 +115,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                     ResourceLocation keyTypeId = new ResourceLocation(linkTag.getString("keyType"));
                     LinkKeyType type = controller.universe.getLinkKeyType(keyTypeId);
                     if (type != null) {
-                        LinkKey decodedKey = type.getDecoder().decode(linkTag.get("key"));
+                        LinkKey decodedKey = type.getCodec().decode(linkTag.get("key"));
                         if (decodedKey != null) {
                             key = decodedKey;
                         }

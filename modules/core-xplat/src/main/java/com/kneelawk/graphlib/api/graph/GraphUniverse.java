@@ -18,7 +18,6 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
@@ -183,7 +182,7 @@ public interface GraphUniverse {
     NodeEntityType getNodeEntityType(@NotNull ResourceLocation typeId);
 
     /**
-     * Registers a {@link LinkKeyDecoder} for the given link type id.
+     * Registers a {@link LinkKeyType}.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated link key's
      * {@link LinkKey#getType()}.
@@ -193,7 +192,7 @@ public interface GraphUniverse {
     void addLinkKeyType(@NotNull LinkKeyType type);
 
     /**
-     * Registers a set of {@link LinkKeyDecoder}s with associated link key type ids.
+     * Registers a set of {@link LinkKeyType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link key's
      * {@link LinkKey#getType()}.
@@ -207,7 +206,7 @@ public interface GraphUniverse {
     }
 
     /**
-     * Registers a set of {@link LinkKeyDecoder}s with associated link key type ids.
+     * Registers a set of {@link LinkKeyType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link key's
      * {@link LinkKey#getType()}.

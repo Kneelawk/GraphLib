@@ -3,11 +3,12 @@ package com.kneelawk.graphlib.api.util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.wire.LinkKeyFactory;
 import com.kneelawk.graphlib.impl.Constants;
@@ -31,7 +32,7 @@ public class EmptyLinkKey implements LinkKey {
     /**
      * Decoder for the empty link key. Always returns this singleton's instance.
      */
-    public static final LinkKeyDecoder DECODER = tag -> INSTANCE;
+    public static final Codec<EmptyLinkKey> CODEC = Codec.unit(INSTANCE);
 
     /**
      * Always returns this singleton's link key instance.
@@ -41,17 +42,12 @@ public class EmptyLinkKey implements LinkKey {
     /**
      * The link key type for the empty link key.
      */
-    public static final LinkKeyType TYPE = LinkKeyType.of(TYPE_ID, DECODER);
+    public static final LinkKeyType TYPE = LinkKeyType.of(TYPE_ID, CODEC);
 
     private EmptyLinkKey() {}
 
     @Override
     public @NotNull LinkKeyType getType() {
         return TYPE;
-    }
-
-    @Override
-    public @Nullable Tag toTag() {
-        return null;
     }
 }
