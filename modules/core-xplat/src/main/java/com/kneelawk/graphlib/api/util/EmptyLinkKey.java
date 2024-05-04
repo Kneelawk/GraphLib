@@ -18,7 +18,7 @@ import com.kneelawk.graphlib.impl.Constants;
  * <p>
  * This is the default link key.
  */
-public class EmptyLinkKey implements LinkKey {
+public final class EmptyLinkKey implements LinkKey {
     /**
      * The type of the empty link key.
      */
