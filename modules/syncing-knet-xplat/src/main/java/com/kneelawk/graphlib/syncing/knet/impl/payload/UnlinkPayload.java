@@ -28,11 +28,13 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
+
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record UnlinkPayload(ResourceLocation universeId, long graphId, LinkPosPayload linkPos) implements CustomPacketPayload {
+public record UnlinkPayload(ResourceLocation universeId, long graphId, LinkPosPayload linkPos)
+    implements CustomPacketPayload {
     public static final Type<UnlinkPayload> ID = new Type<>(SyncingKNetImpl.id("unlink"));
     public static final StreamCodec<NetByteBuf, UnlinkPayload> CODEC =
         StreamCodec.ofMember(UnlinkPayload::encode, UnlinkPayload::decode);

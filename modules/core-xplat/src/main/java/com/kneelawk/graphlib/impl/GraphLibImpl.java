@@ -2,10 +2,13 @@ package com.kneelawk.graphlib.impl;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import com.mojang.brigadier.CommandDispatcher;
+
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceLocation;
-import com.mojang.brigadier.CommandDispatcher;
+
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 

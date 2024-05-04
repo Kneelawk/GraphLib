@@ -2,14 +2,17 @@ package com.kneelawk.graphlib.impl.graph;
 
 import java.nio.file.Path;
 import java.util.Map;
+
+import org.jetbrains.annotations.NotNull;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.storage.LevelStorageSource;
-import org.jetbrains.annotations.NotNull;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 
@@ -17,7 +20,8 @@ public class ServerGraphWorldStorage implements GraphWorldStorage, AutoCloseable
     private final Map<ResourceLocation, ServerGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
     private final ServerLevel serverWorld;
 
-    public ServerGraphWorldStorage(LevelStorageSource.LevelStorageAccess session, ServerLevel world, Path dataDir, boolean syncChunkWrites) {
+    public ServerGraphWorldStorage(LevelStorageSource.LevelStorageAccess session, ServerLevel world, Path dataDir,
+                                   boolean syncChunkWrites) {
         this.serverWorld = world;
 
         for (GraphUniverseImpl universe : GraphLibImpl.UNIVERSE.values()) {

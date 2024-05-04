@@ -1,11 +1,13 @@
 package com.kneelawk.graphlib.api;
 
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * Graph Lib public API. This class contains static methods and fields for interacting with Graph Lib, like obtaining a

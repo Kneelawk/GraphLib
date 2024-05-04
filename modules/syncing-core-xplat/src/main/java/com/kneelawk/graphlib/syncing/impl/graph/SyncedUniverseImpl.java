@@ -26,16 +26,19 @@
 package com.kneelawk.graphlib.syncing.impl.graph;
 
 import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.UniverseListener;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 
 public interface SyncedUniverseImpl extends SyncedUniverse, UniverseListener {
     @Override
-    @Nullable ClientGraphWorldImpl getClientGraphView();
+    @Nullable
+    ClientGraphWorldImpl getClientGraphView();
 
     ClientGraphWorldImpl createClientGraphWorld(Level world, int loadDistance);
 

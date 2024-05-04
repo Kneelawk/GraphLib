@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -103,6 +104,7 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      */
     public static Codec<SidedPos> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         BlockPos.CODEC.fieldOf("pos").forGetter(SidedPos::pos),
-        Codec.BYTE.xmap(Direction::from3DDataValue, side -> (byte) side.get3DDataValue()).fieldOf("side").forGetter(SidedPos::side)
+        Codec.BYTE.xmap(Direction::from3DDataValue, side -> (byte) side.get3DDataValue()).fieldOf("side")
+            .forGetter(SidedPos::side)
     ).apply(instance, SidedPos::new));
 }

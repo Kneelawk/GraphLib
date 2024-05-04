@@ -2,8 +2,10 @@ package com.kneelawk.graphlib.api.graph;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
+
 import net.minecraft.core.BlockPos;
+
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
  * Immutable version of {@link NodeHolder}, holding only a node and its position.

@@ -26,9 +26,11 @@
 package com.kneelawk.graphlib.debugrender.api.client.render;
 
 import java.math.RoundingMode;
+
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+
 import com.google.common.math.IntMath;
 
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +39,9 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
 import com.kneelawk.graphlib.api.util.ColorUtils;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
@@ -311,7 +315,7 @@ public final class RenderUtils {
      * @return the visual position of the block-node.
      */
     public static Vec3 distributedEndpoint(int nodesAtPos, int indexAmongNodes, Direction side, double verticalOffset,
-                                            double spacing, double verticalSpacing) {
+                                           double spacing, double verticalSpacing) {
         Vec3[] spacings = PLANAR_VECTORS[side.ordinal() >> 1];
         return distributedEndpoint(
             nodesAtPos, indexAmongNodes,
@@ -337,7 +341,7 @@ public final class RenderUtils {
      * @return the visual position of the block-node.
      */
     public static Vec3 distributedEndpoint(int nodesAtPos, int indexAmongNodes, double spacing,
-                                            double verticalSpacing) {
+                                           double verticalSpacing) {
         return distributedEndpoint(nodesAtPos, indexAmongNodes, 0.5, 0.5, 0.5, spacing, 0.0, 0.0, 0.0, 0.0, spacing,
             0.0, verticalSpacing, 0.0);
     }
@@ -362,9 +366,9 @@ public final class RenderUtils {
      * @return the visual position of the block-node.
      */
     public static Vec3 distributedEndpoint(int nodesAtPos, int indexAmongNodes, double centerX, double centerY,
-                                            double centerZ, double spaceX0, double spaceY0, double spaceZ0,
-                                            double spaceX1, double spaceY1, double spaceZ1, double offsetX,
-                                            double offsetY, double offsetZ) {
+                                           double centerZ, double spaceX0, double spaceY0, double spaceZ0,
+                                           double spaceX1, double spaceY1, double spaceZ1, double offsetX,
+                                           double offsetY, double offsetZ) {
         if (nodesAtPos < 2) {
             return new Vec3(centerX, centerY, centerZ);
         }

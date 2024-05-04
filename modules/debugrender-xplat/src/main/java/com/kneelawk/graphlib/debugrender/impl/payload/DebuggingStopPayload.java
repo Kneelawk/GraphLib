@@ -26,6 +26,7 @@
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

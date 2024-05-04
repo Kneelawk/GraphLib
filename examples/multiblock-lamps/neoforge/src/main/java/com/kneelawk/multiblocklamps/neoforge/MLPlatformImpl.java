@@ -26,13 +26,15 @@
 package com.kneelawk.multiblocklamps.neoforge;
 
 import java.util.function.Supplier;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
+
 import net.neoforged.neoforge.registries.DeferredBlock;
 
 import com.mojang.serialization.MapCodec;
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
+
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+
 import com.kneelawk.multiblocklamps.MLPlatform;
 
 public class MLPlatformImpl implements MLPlatform {

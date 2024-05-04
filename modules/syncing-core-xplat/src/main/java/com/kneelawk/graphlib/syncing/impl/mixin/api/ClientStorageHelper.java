@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.syncing.impl.mixin.api;
 
 import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
+
 import net.minecraft.client.multiplayer.ClientLevel;
 
 public class ClientStorageHelper {

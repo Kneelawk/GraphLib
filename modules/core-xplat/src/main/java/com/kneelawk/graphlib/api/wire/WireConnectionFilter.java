@@ -2,10 +2,12 @@ package com.kneelawk.graphlib.api.wire;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.Direction;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.HalfLink;
-import net.minecraft.core.Direction;
 
 /**
  * More general wire connection filter, designed only to determine if two types of block nodes should be allowed to

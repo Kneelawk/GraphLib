@@ -26,10 +26,12 @@
 package com.kneelawk.graphlib.syncing.api;
 
 import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
+
 import net.minecraft.resources.ResourceLocation;
 
 /**

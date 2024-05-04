@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.debugrender.api.client;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 

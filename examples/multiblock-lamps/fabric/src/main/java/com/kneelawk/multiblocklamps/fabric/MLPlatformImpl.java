@@ -26,12 +26,15 @@
 package com.kneelawk.multiblocklamps.fabric;
 
 import java.util.function.Supplier;
+
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
-import com.mojang.serialization.MapCodec;
+
 import com.kneelawk.multiblocklamps.MLPlatform;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.id;

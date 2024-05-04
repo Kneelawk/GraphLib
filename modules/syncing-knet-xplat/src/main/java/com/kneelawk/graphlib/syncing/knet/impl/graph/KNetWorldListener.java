@@ -35,9 +35,9 @@ import com.kneelawk.graphlib.syncing.knet.impl.KNetEncoding;
 
 public class KNetWorldListener implements WorldListener {
     public static final KNetWorldListener INSTANCE = new KNetWorldListener();
-    
+
     private KNetWorldListener() {}
-    
+
     @Override
     public void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node) {
         KNetEncoding.sendNodeAdd(graph, node);

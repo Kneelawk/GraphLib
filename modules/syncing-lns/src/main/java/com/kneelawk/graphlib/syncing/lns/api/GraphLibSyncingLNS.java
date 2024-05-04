@@ -26,6 +26,10 @@
 package com.kneelawk.graphlib.syncing.lns.api;
 
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
@@ -51,8 +55,6 @@ import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.lns.impl.LNSNetworking;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * LibNetworkStack-based synchronization library.

@@ -1,10 +1,13 @@
 package com.kneelawk.graphlib.api.graph;
 
 import java.util.stream.Stream;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -24,7 +27,8 @@ public interface GraphWorld extends GraphView {
      * @return the server world associated with this graph world.
      */
     @Override
-    @NotNull ServerLevel getWorld();
+    @NotNull
+    ServerLevel getWorld();
 
     /**
      * Adds a block node and optional node entity at the given position.
@@ -67,7 +71,8 @@ public interface GraphWorld extends GraphView {
      * @param entity the node's entity, if any.
      * @return the node created.
      */
-    @NotNull NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @Nullable NodeEntity entity);
+    @NotNull
+    NodeHolder<BlockNode> addBlockNode(@NotNull NodePos pos, @Nullable NodeEntity entity);
 
     /**
      * Removes a block node at a position.
@@ -129,8 +134,9 @@ public interface GraphWorld extends GraphView {
      * @param entity the link's entity, if any.
      * @return the link created, or <code>null</code> if no link could be created.
      */
-    @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
-                                               @Nullable LinkEntity entity);
+    @Nullable
+    LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
+                                     @Nullable LinkEntity entity);
 
     /**
      * Connects two nodes to each other.

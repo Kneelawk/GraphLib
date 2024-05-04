@@ -1,8 +1,9 @@
 package com.kneelawk.graphlib.api.util;
 
-import net.minecraft.core.Direction;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.core.Direction;
 
 /**
  * Simple {@link Direction} utilities.

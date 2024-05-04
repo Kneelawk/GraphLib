@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.debugrender.impl.mixin.api;
 
 import com.kneelawk.graphlib.debugrender.impl.mixin.impl.RenderLayerAccessor;
+
 import com.mojang.blaze3d.vertex.VertexFormat;
+
 import net.minecraft.client.renderer.RenderType;
 
 public final class RenderLayerHelper {
@@ -42,7 +44,8 @@ public final class RenderLayerHelper {
         boolean translucent,
         RenderType.CompositeState phases
     ) {
-        return RenderLayerAccessor.callCreate(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent,
+        return RenderLayerAccessor.callCreate(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling,
+            translucent,
             phases);
     }
 }

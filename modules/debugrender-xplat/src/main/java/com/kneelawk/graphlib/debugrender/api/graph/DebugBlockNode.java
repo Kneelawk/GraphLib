@@ -26,9 +26,12 @@
 package com.kneelawk.graphlib.debugrender.api.graph;
 
 import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.debugrender.api.client.GraphLibDebugRenderClient;
 import com.kneelawk.graphlib.debugrender.api.client.render.BlockNodeDebugRenderer;
+
 import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
 /**
@@ -45,5 +48,6 @@ public interface DebugBlockNode {
      *
      * @return the id of the renderer to use to render this block node.
      */
-    @NotNull ResourceLocation getRenderId();
+    @NotNull
+    ResourceLocation getRenderId();
 }

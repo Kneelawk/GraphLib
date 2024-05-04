@@ -2,11 +2,13 @@ package com.kneelawk.graphlib.api.util;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import net.minecraft.world.level.ChunkPos;
+
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
+
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * Chunk-Pillar variant of {@link ChunkUnloadTimer}, for keeping track of chunk-pillars.

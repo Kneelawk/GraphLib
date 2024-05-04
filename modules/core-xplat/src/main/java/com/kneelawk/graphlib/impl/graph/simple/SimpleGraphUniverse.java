@@ -10,16 +10,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.storage.LevelStorageSource;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.storage.LevelStorageSource;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
@@ -146,7 +149,8 @@ public class SimpleGraphUniverse implements GraphUniverse, GraphUniverseImpl {
     }
 
     @Override
-    public ServerGraphWorldImpl createGraphWorld(LevelStorageSource.LevelStorageAccess session, ServerLevel world, Path path, boolean syncChunkWrites) {
+    public ServerGraphWorldImpl createGraphWorld(LevelStorageSource.LevelStorageAccess session, ServerLevel world,
+                                                 Path path, boolean syncChunkWrites) {
         return new SimpleServerGraphWorld(this, session, world, path, syncChunkWrites);
     }
 

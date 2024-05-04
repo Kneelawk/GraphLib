@@ -1,10 +1,13 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.function.Supplier;
-import net.minecraft.resources.ResourceLocation;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
@@ -142,7 +145,8 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull ResourceLocation id,
-                                                                            @NotNull Supplier<GraphEntity<G>> supplier) {
+                                                                            @NotNull
+                                                                            Supplier<GraphEntity<G>> supplier) {
         return new GraphEntityType<>(id, supplier::get, tag -> supplier.get(),
             (original, originalGraph, newGraph) -> supplier.get());
     }

@@ -26,9 +26,12 @@
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import java.util.List;
+
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;

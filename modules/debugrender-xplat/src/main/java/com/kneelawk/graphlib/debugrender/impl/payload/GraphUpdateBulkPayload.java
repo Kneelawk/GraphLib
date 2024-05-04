@@ -26,10 +26,13 @@
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import java.util.List;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
 public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> graphs) implements CustomPacketPayload {

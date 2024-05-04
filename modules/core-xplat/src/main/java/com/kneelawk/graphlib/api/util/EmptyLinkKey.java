@@ -2,13 +2,15 @@ package com.kneelawk.graphlib.api.util;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.wire.LinkKeyFactory;
 import com.kneelawk.graphlib.impl.Constants;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * An empty link key.

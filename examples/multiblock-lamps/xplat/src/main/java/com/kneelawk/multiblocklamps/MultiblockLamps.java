@@ -27,11 +27,13 @@ package com.kneelawk.multiblocklamps;
 
 import java.util.List;
 import java.util.function.Supplier;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.multiblocklamps.block.ConnectableBlock;
@@ -60,9 +62,9 @@ public class MultiblockLamps {
         MLPlatform.INSTANCE.registerBlockWithItem("lamp_connector",
             () -> new LampConnectorBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
             LampConnectorBlock.CODEC);
-    
+
     public static void init() {}
-    
+
     public static void initUniverse() {
         UNIVERSE.register();
         UNIVERSE.addNodeTypes(ConnectedLampNode.TYPE);

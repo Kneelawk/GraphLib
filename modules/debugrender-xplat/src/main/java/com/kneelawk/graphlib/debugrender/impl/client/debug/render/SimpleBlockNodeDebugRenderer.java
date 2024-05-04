@@ -26,9 +26,12 @@
 package com.kneelawk.graphlib.debugrender.impl.client.debug.render;
 
 import java.util.List;
+
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.phys.Vec3;
+
 import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.debugrender.api.client.ClientBlockNodeHolder;
@@ -36,6 +39,7 @@ import com.kneelawk.graphlib.debugrender.api.client.render.BlockNodeDebugRendere
 import com.kneelawk.graphlib.debugrender.api.client.render.RenderUtils;
 import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.graph.SimpleDebugBlockNode;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 
 public final class SimpleBlockNodeDebugRenderer implements BlockNodeDebugRenderer<SimpleDebugBlockNode> {
@@ -55,9 +59,9 @@ public final class SimpleBlockNodeDebugRenderer implements BlockNodeDebugRendere
 
     @Override
     public @NotNull Vec3 getLineEndpoint(@NotNull SimpleDebugBlockNode node,
-                                          @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
-                                          @NotNull DebugBlockGraph graph, int nodesAtPos, int indexAmongNodes,
-                                          @NotNull List<Vec3> otherEndpoints) {
+                                         @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
+                                         @NotNull DebugBlockGraph graph, int nodesAtPos, int indexAmongNodes,
+                                         @NotNull List<Vec3> otherEndpoints) {
         return RenderUtils.distributedEndpoint(nodesAtPos, indexAmongNodes, 1.0 / 8.0, 1.0 / 16.0);
     }
 }

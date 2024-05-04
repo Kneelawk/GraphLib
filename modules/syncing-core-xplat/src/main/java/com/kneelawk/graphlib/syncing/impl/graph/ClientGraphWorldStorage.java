@@ -26,9 +26,11 @@
 package com.kneelawk.graphlib.syncing.impl.graph;
 
 import java.util.Map;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
@@ -101,13 +103,14 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
             }
         }
     }
-    
+
     public void tick() {
         for (ClientGraphWorldImpl impl : worlds.values()) {
             try {
                 impl.tick();
             } catch (Exception e) {
-                GLLog.error("Error ticking client graph world. World: '{}'/{}", clientWorld, clientWorld.dimension().location(), e);
+                GLLog.error("Error ticking client graph world. World: '{}'/{}", clientWorld,
+                    clientWorld.dimension().location(), e);
             }
         }
     }

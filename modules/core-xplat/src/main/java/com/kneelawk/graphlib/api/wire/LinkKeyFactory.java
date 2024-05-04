@@ -17,5 +17,6 @@ public interface LinkKeyFactory {
      * @param other the node the link is being created to.
      * @return a new link key for the given context.
      */
-    @NotNull LinkKey createLinkKey(@NotNull NodeHolder<BlockNode> self, NodeHolder<BlockNode> other);
+    @NotNull
+    LinkKey createLinkKey(@NotNull NodeHolder<BlockNode> self, NodeHolder<BlockNode> other);
 }

@@ -26,15 +26,15 @@
 package com.kneelawk.graphlib.fabric.impl.platform;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.fabric.api.event.GraphLibEvents;
-import com.kneelawk.graphlib.fabric.impl.GraphLibFabricMod;
 import com.kneelawk.graphlib.fabric.impl.event.InternalEvents;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 public class GraphLibPlatformImpl implements GraphLibPlatform {

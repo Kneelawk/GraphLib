@@ -29,10 +29,12 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +43,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -255,7 +258,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             SimpleBlockGraph graph = graphs.get(graphId);
             if (graph != null) {
                 graph.unloadInChunk(pillar.x, pillar.z);
-                
+
                 // actually unload the graph
                 if (graph.isEmpty()) {
                     graphs.remove(graphId);
@@ -266,7 +269,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             }
         }
     }
-    
+
     private void tickGraphs() {
         for (SimpleBlockGraph graph : graphs.values()) {
             graph.onTick();

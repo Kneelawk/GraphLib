@@ -27,6 +27,7 @@ package com.kneelawk.graphlib.neoforge.impl.event;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceLocation;
+
 import net.neoforged.bus.api.Event;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;

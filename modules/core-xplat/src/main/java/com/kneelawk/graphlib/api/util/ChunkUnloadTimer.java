@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import net.minecraft.world.level.ChunkPos;
 
 /**

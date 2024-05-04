@@ -26,9 +26,11 @@
 package com.kneelawk.graphlib.debugrender.impl.client.debug.graph;
 
 import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 import com.kneelawk.graphlib.debugrender.api.graph.SidedDebugBlockNode;
 import com.kneelawk.graphlib.impl.Constants;
+
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 

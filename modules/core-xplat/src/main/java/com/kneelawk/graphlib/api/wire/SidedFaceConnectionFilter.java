@@ -26,10 +26,12 @@
 package com.kneelawk.graphlib.api.wire;
 
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.core.Direction;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.HalfLink;
-import net.minecraft.core.Direction;
 
 /**
  * Allows an external object to filter the connections connecting to a sided face block node.

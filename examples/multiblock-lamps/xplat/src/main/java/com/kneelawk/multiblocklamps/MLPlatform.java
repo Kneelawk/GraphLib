@@ -27,9 +27,10 @@ package com.kneelawk.multiblocklamps;
 
 import java.util.ServiceLoader;
 import java.util.function.Supplier;
-import net.minecraft.world.level.block.Block;
+
 import com.mojang.serialization.MapCodec;
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
+
+import net.minecraft.world.level.block.Block;
 
 public interface MLPlatform {
     MLPlatform INSTANCE = ServiceLoader.load(MLPlatform.class).findFirst()

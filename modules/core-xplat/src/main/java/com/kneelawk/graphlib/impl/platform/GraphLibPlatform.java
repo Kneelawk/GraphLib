@@ -26,14 +26,15 @@
 package com.kneelawk.graphlib.impl.platform;
 
 import java.util.ServiceLoader;
+
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+
 import com.kneelawk.graphlib.api.graph.BlockGraph;
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
 public interface GraphLibPlatform {
     GraphLibPlatform INSTANCE = ServiceLoader.load(GraphLibPlatform.class).findFirst()

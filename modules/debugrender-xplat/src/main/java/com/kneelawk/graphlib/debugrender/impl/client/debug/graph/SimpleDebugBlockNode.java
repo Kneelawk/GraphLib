@@ -26,8 +26,10 @@
 package com.kneelawk.graphlib.debugrender.impl.client.debug.graph;
 
 import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 import com.kneelawk.graphlib.impl.Constants;
+
 import net.minecraft.resources.ResourceLocation;
 
 public record SimpleDebugBlockNode(int hash, int color) implements DebugBlockNode {

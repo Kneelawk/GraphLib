@@ -28,6 +28,7 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 import com.kneelawk.knet.api.util.Palette;
+
 import net.minecraft.resources.ResourceLocation;
 
 public record PayloadHeader(ResourceLocation universeId, Palette<ResourceLocation> palette, NetByteBuf data) {
@@ -40,7 +41,7 @@ public record PayloadHeader(ResourceLocation universeId, Palette<ResourceLocatio
 
         return new PayloadHeader(universeId, palette, data);
     }
-    
+
     public void encode(NetByteBuf buf) {
         buf.writeResourceLocation(universeId);
         palette.encode(buf, NetByteBuf::writeResourceLocation);

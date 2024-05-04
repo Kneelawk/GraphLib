@@ -26,11 +26,14 @@
 package com.kneelawk.graphlib.syncing.impl.graph.simple;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
+
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphChunk;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleBlockGraphPillar;
 

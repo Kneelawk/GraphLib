@@ -26,6 +26,7 @@
 package com.kneelawk.graphlib.debugrender.impl;
 
 import java.util.ServiceLoader;
+
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 

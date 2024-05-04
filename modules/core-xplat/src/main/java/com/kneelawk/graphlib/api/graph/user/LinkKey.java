@@ -2,10 +2,12 @@ package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.nbt.Tag;
+
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.NodePos;
-import net.minecraft.nbt.Tag;
 
 /**
  * The data stored in a link between nodes.
@@ -19,14 +21,16 @@ public interface LinkKey {
      *
      * @return this link key's type id.
      */
-    @NotNull LinkKeyType getType();
+    @NotNull
+    LinkKeyType getType();
 
     /**
      * Encodes this link key as an NBT tag.
      *
      * @return this link key as an NBT tag.
      */
-    @Nullable Tag toTag();
+    @Nullable
+    Tag toTag();
 
     /**
      * Checks whether this specific link should have a link entity associated with it.

@@ -31,6 +31,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
@@ -40,6 +41,7 @@ import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
 import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
 
 @EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)

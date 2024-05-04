@@ -30,6 +30,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+
 import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
@@ -38,6 +39,7 @@ import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
 import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
+
 import com.mojang.blaze3d.vertex.BufferBuilder;
 
 @SuppressWarnings("unused")
@@ -70,7 +72,8 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
         RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
             new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.bufferSize()));
         RenderToOverlay.EVENT.register(
-            ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.positionMatrix(), ctx.camera().getPosition(), ctx.consumers()));
+            ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.positionMatrix(), ctx.camera().getPosition(),
+                ctx.consumers()));
 
         // packet receivers
         PayloadTypeRegistry.playS2C().register(GraphUpdatePayload.ID, GraphUpdatePayload.CODEC);

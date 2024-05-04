@@ -1,12 +1,15 @@
 package com.kneelawk.graphlib.api.graph;
 
 import java.util.Collection;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
@@ -39,21 +42,24 @@ public interface GraphUniverse {
      * @param world the world whose graph world is to be obtained.
      * @return the GraphWorld of the given world.
      */
-    @NotNull GraphWorld getGraphWorld(@NotNull ServerLevel world);
+    @NotNull
+    GraphWorld getGraphWorld(@NotNull ServerLevel world);
 
     /**
      * Gets the unique id of this universe.
      *
      * @return this universe's unique id.
      */
-    @NotNull ResourceLocation getId();
+    @NotNull
+    ResourceLocation getId();
 
     /**
      * Gets the save-mode this universe was built with.
      *
      * @return the save-mode this universe was built with.
      */
-    @NotNull SaveMode getSaveMode();
+    @NotNull
+    SaveMode getSaveMode();
 
     /**
      * Adds a {@link BlockNodeDiscoverer} to this graph universe.
@@ -127,7 +133,8 @@ public interface GraphUniverse {
      * @param typeId the type id of the block node decoder.
      * @return the block node decoder for the given type id.
      */
-    @Nullable BlockNodeType getNodeType(@NotNull ResourceLocation typeId);
+    @Nullable
+    BlockNodeType getNodeType(@NotNull ResourceLocation typeId);
 
     /**
      * Registers a {@link NodeEntityDecoder} for the given node entity type id.
@@ -173,7 +180,8 @@ public interface GraphUniverse {
      * @param typeId the type id of the node entity decoder.
      * @return the node entity decoder for the given type id.
      */
-    @Nullable NodeEntityType getNodeEntityType(@NotNull ResourceLocation typeId);
+    @Nullable
+    NodeEntityType getNodeEntityType(@NotNull ResourceLocation typeId);
 
     /**
      * Registers a {@link LinkKeyDecoder} for the given link type id.
@@ -219,7 +227,8 @@ public interface GraphUniverse {
      * @param typeId the type id of the link key decoder.
      * @return the link key decoder for the given type id.
      */
-    @Nullable LinkKeyType getLinkKeyType(@NotNull ResourceLocation typeId);
+    @Nullable
+    LinkKeyType getLinkKeyType(@NotNull ResourceLocation typeId);
 
     /**
      * Registers a {@link LinkEntityDecoder} for the given link type id.
@@ -265,7 +274,8 @@ public interface GraphUniverse {
      * @param typeId the type id of the link entity decoder.
      * @return the link entity decoder for the given type id.
      */
-    @Nullable LinkEntityType getLinkEntityType(@NotNull ResourceLocation typeId);
+    @Nullable
+    LinkEntityType getLinkEntityType(@NotNull ResourceLocation typeId);
 
     /**
      * Registers a {@link GraphEntityType}.
@@ -302,14 +312,16 @@ public interface GraphUniverse {
      * @param typeId the type id of the graph entity type.
      * @return the graph entity type for the given type id.
      */
-    @Nullable GraphEntityType<?> getGraphEntityType(@NotNull ResourceLocation typeId);
+    @Nullable
+    GraphEntityType<?> getGraphEntityType(@NotNull ResourceLocation typeId);
 
     /**
      * Gets all the graph entity types registered.
      *
      * @return all the graph entity types currently registered.
      */
-    @NotNull Collection<GraphEntityType<?>> getAllGraphEntityTypes();
+    @NotNull
+    Collection<GraphEntityType<?>> getAllGraphEntityTypes();
 
     /**
      * Registers a cache category to be auto-initialized on all graphs.
@@ -345,7 +357,8 @@ public interface GraphUniverse {
      *
      * @return all cache categories currently registered.
      */
-    @NotNull Iterable<CacheCategory<?>> getCacheCatetories();
+    @NotNull
+    Iterable<CacheCategory<?>> getCacheCatetories();
 
     /**
      * Registers this graph universe so that it can be found by its id.
@@ -397,7 +410,8 @@ public interface GraphUniverse {
          * @param universeId the unique id of the universe to be built.
          * @return the newly created {@link GraphUniverse}.
          */
-        @NotNull GraphUniverse build(@NotNull ResourceLocation universeId);
+        @NotNull
+        GraphUniverse build(@NotNull ResourceLocation universeId);
 
         /**
          * Determines how often graphs and chunks should be saved.
@@ -407,6 +421,7 @@ public interface GraphUniverse {
          * @param saveMode the save mode for this universe.
          * @return this builder for call chaining.
          */
-        @NotNull Builder saveMode(@NotNull SaveMode saveMode);
+        @NotNull
+        Builder saveMode(@NotNull SaveMode saveMode);
     }
 }

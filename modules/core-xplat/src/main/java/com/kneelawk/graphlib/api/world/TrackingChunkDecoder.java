@@ -1,8 +1,9 @@
 package com.kneelawk.graphlib.api.world;
 
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Decodes a storage chunk that can alert its holder when it has changed.
@@ -19,5 +20,6 @@ public interface TrackingChunkDecoder<R extends StorageChunk> {
      * @param markDirty used to signal when the decoded chunk has changed.
      * @return a newly decoded storage chunk.
      */
-    @NotNull R decode(@NotNull CompoundTag compound, @NotNull SectionPos pos, @NotNull Runnable markDirty);
+    @NotNull
+    R decode(@NotNull CompoundTag compound, @NotNull SectionPos pos, @NotNull Runnable markDirty);
 }

@@ -27,12 +27,14 @@ package com.kneelawk.multiblocklamps.node;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.nbt.Tag;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.wire.FullWireBlockNode;
 import com.kneelawk.multiblocklamps.LampLogic;
-import net.minecraft.nbt.Tag;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
 

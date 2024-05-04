@@ -43,6 +43,7 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -52,6 +53,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.ChunkPos;
+
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
@@ -265,7 +267,8 @@ public final class GLDebugNet {
         return new PayloadGraph(graph.getId(), nodes, links);
     }
 
-    private static void sendToDebuggingPlayers(ServerLevel world, ResourceLocation universe, CustomPacketPayload payload) {
+    private static void sendToDebuggingPlayers(ServerLevel world, ResourceLocation universe,
+                                               CustomPacketPayload payload) {
         PlayerList manager = world.getServer().getPlayerList();
         for (UUID playerId : debuggingPlayers.keySet()) {
             if (debuggingPlayers.containsEntry(playerId, universe)) {

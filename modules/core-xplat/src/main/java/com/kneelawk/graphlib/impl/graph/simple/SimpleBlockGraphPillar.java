@@ -25,10 +25,11 @@
 
 package com.kneelawk.graphlib.impl.graph.simple;
 
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.Level;
 
 public class SimpleBlockGraphPillar {
     public final int x;

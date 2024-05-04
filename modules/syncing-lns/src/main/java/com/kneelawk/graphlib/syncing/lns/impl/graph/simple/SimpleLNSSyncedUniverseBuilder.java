@@ -28,7 +28,6 @@ package com.kneelawk.graphlib.syncing.lns.impl.graph.simple;
 import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 

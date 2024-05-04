@@ -4,13 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import net.minecraft.core.SectionPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.storage.IOWorker;
-import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +15,15 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
+import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.storage.IOWorker;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+
 import com.kneelawk.graphlib.api.util.ChunkPillarUnloadTimer;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
@@ -66,7 +69,8 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
      * @param createNew       the function for creating a new, empty chunk section.
      * @param saveMode        how often storage chunks should be saved.
      */
-    public UnloadingRegionBasedStorage(@NotNull RegionStorageInfo storageKey, @NotNull ServerLevel world, @NotNull Path path,
+    public UnloadingRegionBasedStorage(@NotNull RegionStorageInfo storageKey, @NotNull ServerLevel world,
+                                       @NotNull Path path,
                                        boolean syncChunkWrites, @NotNull TrackingChunkDecoder<@NotNull R> loadFromNbt,
                                        @NotNull TrackingChunkFactory<@NotNull R> createNew,
                                        @NotNull SaveMode saveMode) {

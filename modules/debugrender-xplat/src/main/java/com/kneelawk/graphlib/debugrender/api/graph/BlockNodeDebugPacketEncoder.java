@@ -29,6 +29,7 @@ import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.debugrender.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.debugrender.api.client.GraphLibDebugRenderClient;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 

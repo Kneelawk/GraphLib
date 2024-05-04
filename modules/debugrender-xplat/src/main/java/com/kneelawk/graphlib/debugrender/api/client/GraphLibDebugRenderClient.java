@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.debugrender.api.client;
 
 import java.util.HashMap;
+
 import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.debugrender.api.GraphLibDebugRender;
 import com.kneelawk.graphlib.debugrender.api.client.render.BlockNodeDebugRenderer;
 import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
@@ -71,7 +73,8 @@ public final class GraphLibDebugRenderClient {
      * @param renderer   the renderer.
      * @param <N>        the type of the {@link DebugBlockNode} that this renderer expects.
      */
-    public static <N extends DebugBlockNode> void registerDebugRenderer(ResourceLocation universeId, ResourceLocation renderId,
+    public static <N extends DebugBlockNode> void registerDebugRenderer(ResourceLocation universeId,
+                                                                        ResourceLocation renderId,
                                                                         Class<N> clazz,
                                                                         BlockNodeDebugRenderer<N> renderer) {
         GraphLibDebugRenderClientImpl.DEBUG_RENDERERS.computeIfAbsent(universeId, _id -> new HashMap<>())

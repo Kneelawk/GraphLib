@@ -27,7 +27,9 @@ package com.kneelawk.graphlib.debugrender.neoforge.impl;
 
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
+
 import net.neoforged.neoforge.network.PacketDistributor;
+
 import com.kneelawk.graphlib.debugrender.impl.GLDRPlatform;
 
 public class GLDRPlatformImpl implements GLDRPlatform {

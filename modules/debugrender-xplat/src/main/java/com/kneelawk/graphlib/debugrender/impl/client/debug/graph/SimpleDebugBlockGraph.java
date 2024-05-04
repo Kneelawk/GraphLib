@@ -28,7 +28,9 @@ package com.kneelawk.graphlib.debugrender.impl.client.debug.graph;
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.debugrender.api.client.ClientBlockNodeHolder;

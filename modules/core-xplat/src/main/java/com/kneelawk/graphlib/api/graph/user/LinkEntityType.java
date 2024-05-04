@@ -26,10 +26,12 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.function.Supplier;
-import net.minecraft.resources.ResourceLocation;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**

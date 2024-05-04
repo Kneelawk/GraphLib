@@ -27,10 +27,12 @@ package com.kneelawk.graphlib.debugrender.api.client;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
 import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
+
 import net.minecraft.network.FriendlyByteBuf;
 
 /**
@@ -45,5 +47,6 @@ public interface BlockNodeDebugPacketDecoder {
      *            Note: this buffer will contain other data besides this node's data.
      * @return a {@link DebugBlockNode} containing the data decoded from the {@link FriendlyByteBuf}.
      */
-    @Nullable DebugBlockNode fromPacket(@NotNull FriendlyByteBuf buf);
+    @Nullable
+    DebugBlockNode fromPacket(@NotNull FriendlyByteBuf buf);
 }

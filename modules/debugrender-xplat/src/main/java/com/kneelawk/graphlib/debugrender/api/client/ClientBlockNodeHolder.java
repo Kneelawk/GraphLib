@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.debugrender.api.client;
 
 import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
+
 import net.minecraft.core.BlockPos;
 
 /**

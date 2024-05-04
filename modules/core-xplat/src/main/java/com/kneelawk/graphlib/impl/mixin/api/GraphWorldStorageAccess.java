@@ -5,5 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 
 public interface GraphWorldStorageAccess {
-    @NotNull ServerGraphWorldStorage graphlib_getGraphWorldStorage();
+    @NotNull
+    ServerGraphWorldStorage graphlib_getGraphWorldStorage();
 }

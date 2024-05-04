@@ -1,7 +1,8 @@
 package com.kneelawk.graphlib.api.world;
 
-import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.nbt.CompoundTag;
 
 /**
  * Represents a chunk section of storage, stored in a {@link UnloadingRegionBasedStorage}.

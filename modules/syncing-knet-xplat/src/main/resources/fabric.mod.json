@@ -22,7 +22,7 @@
       }
     ]
   },
-  "mixins": [],
+  "mixins": [ ],
   "depends": {
     "graphlib": "*",
     "graphlib_syncing": "*",

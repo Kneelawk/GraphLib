@@ -28,11 +28,13 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
+
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record NodeRemovePayload(ResourceLocation universeId, long graphId, NodePosPayload nodePos) implements CustomPacketPayload {
+public record NodeRemovePayload(ResourceLocation universeId, long graphId, NodePosPayload nodePos)
+    implements CustomPacketPayload {
     public static final Type<NodeRemovePayload> ID = new Type<>(SyncingKNetImpl.id("node_remove"));
     public static final StreamCodec<NetByteBuf, NodeRemovePayload> CODEC =
         StreamCodec.ofMember(NodeRemovePayload::encode, NodeRemovePayload::decode);

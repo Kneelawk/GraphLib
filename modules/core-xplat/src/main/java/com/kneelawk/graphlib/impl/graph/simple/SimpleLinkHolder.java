@@ -1,8 +1,11 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
 import java.util.Objects;
-import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.world.level.Level;
+
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;

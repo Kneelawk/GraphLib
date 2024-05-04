@@ -26,10 +26,13 @@
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import java.util.List;
+
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.level.ChunkPos;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 

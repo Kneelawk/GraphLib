@@ -26,10 +26,12 @@
 package com.kneelawk.graphlib.syncing.neoforge.impl.client;
 
 import net.minecraft.client.multiplayer.ClientLevel;
+
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+
 import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
 
 @EventBusSubscriber(value = Dist.CLIENT)

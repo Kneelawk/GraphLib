@@ -27,9 +27,11 @@ package com.kneelawk.graphlib.debugrender.impl.command;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;

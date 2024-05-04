@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.neoforge.api.event;
 
 import net.minecraft.server.level.ServerLevel;
+
 import net.neoforged.bus.api.Event;
+
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 
 /**

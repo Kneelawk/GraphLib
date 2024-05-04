@@ -27,13 +27,16 @@ package com.kneelawk.multiblocklamps.block;
 
 import java.util.Collection;
 import java.util.List;
+
+import com.mojang.serialization.MapCodec;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import com.mojang.serialization.MapCodec;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -62,7 +65,8 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
     //
 
     @Override
-    public void updateIndirectNeighbourShapes(BlockState state, LevelAccessor world, BlockPos pos, int flags, int maxUpdateDepth) {
+    public void updateIndirectNeighbourShapes(BlockState state, LevelAccessor world, BlockPos pos, int flags,
+                                              int maxUpdateDepth) {
         // only update nodes on the server
         if (world instanceof ServerLevel serverWorld) {
             MultiblockLamps.UNIVERSE.getGraphWorld(serverWorld).updateNodes(pos);
@@ -71,7 +75,7 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
 
     @Override
     public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos fromPos,
-                               boolean notify) {
+                                boolean notify) {
         if (world instanceof ServerLevel serverWorld) {
             // grab a node holder for the node that *should* be at our current position and update it
             NodeHolder<BlockNode> node = MultiblockLamps.UNIVERSE.getGraphWorld(serverWorld)

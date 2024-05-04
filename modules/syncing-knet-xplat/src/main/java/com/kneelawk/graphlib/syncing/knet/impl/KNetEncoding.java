@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.OptionalInt;
 import java.util.PrimitiveIterator;
 import java.util.Set;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -39,12 +40,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.ChunkPos;
+
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -127,9 +130,10 @@ public final class KNetEncoding {
         }
     }
 
-    private static <P extends CustomPacketPayload> void sendToFilteredWatching(NoContextPlayChannel<P> channel, P payload,
-                                                                         ServerLevel world, BlockPos blockPos,
-                                                                         SyncProfile sp) {
+    private static <P extends CustomPacketPayload> void sendToFilteredWatching(NoContextPlayChannel<P> channel,
+                                                                               P payload,
+                                                                               ServerLevel world, BlockPos blockPos,
+                                                                               SyncProfile sp) {
         Collection<ServerPlayer> watching =
             world.getChunkSource().chunkMap.getPlayers(new ChunkPos(blockPos), false);
 

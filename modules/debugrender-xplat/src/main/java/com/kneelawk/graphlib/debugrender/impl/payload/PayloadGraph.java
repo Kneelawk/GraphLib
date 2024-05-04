@@ -26,8 +26,10 @@
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import java.util.List;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public record PayloadGraph(long graphId, List<PayloadNode> nodes, List<PayloadLink> links) {

@@ -29,14 +29,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.ChunkPos;
+
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
 import com.kneelawk.graphlib.debugrender.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
 import com.kneelawk.graphlib.debugrender.api.client.GraphLibDebugRenderClient;
@@ -54,19 +57,22 @@ public class GraphLibDebugRenderClientImpl {
 
     private static final LongSet loadedChunks = new LongLinkedOpenHashSet();
 
-    public static final Map<ResourceLocation, Map<ResourceLocation, BlockNodeDebugPacketDecoder>> DEBUG_DECODERS = new HashMap<>();
+    public static final Map<ResourceLocation, Map<ResourceLocation, BlockNodeDebugPacketDecoder>> DEBUG_DECODERS =
+        new HashMap<>();
 
     public static final Map<ResourceLocation, Map<ResourceLocation, BlockNodeDebugRendererHolder<?>>> DEBUG_RENDERERS =
         new HashMap<>();
 
-    public static final Map<ResourceLocation, BlockNodeDebugRendererHolder<?>> ALL_UNIVERSE_DEBUG_RENDERERS = new HashMap<>();
+    public static final Map<ResourceLocation, BlockNodeDebugRendererHolder<?>> ALL_UNIVERSE_DEBUG_RENDERERS =
+        new HashMap<>();
 
     /**
      * Map of {@link ChunkPos#toLong()} to a set of graphs in that chunk for all currently debugging graphs.
      */
     public static final Long2ObjectMap<Set<DebugBlockGraph>> GRAPHS_PER_CHUNK = new Long2ObjectLinkedOpenHashMap<>();
 
-    public static @Nullable BlockNodeDebugPacketDecoder getDebugDecoder(ResourceLocation universeId, ResourceLocation typeId) {
+    public static @Nullable BlockNodeDebugPacketDecoder getDebugDecoder(ResourceLocation universeId,
+                                                                        ResourceLocation typeId) {
         Map<ResourceLocation, BlockNodeDebugPacketDecoder> universeDecoders = DEBUG_DECODERS.get(universeId);
         if (universeDecoders == null) return null;
         return universeDecoders.get(typeId);

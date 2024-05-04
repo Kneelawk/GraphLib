@@ -1,10 +1,11 @@
 package com.kneelawk.graphlib.impl.graph.simple;
 
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.world.SaveMode;
-import com.kneelawk.graphlib.impl.GraphLibImpl;
-import net.minecraft.resources.ResourceLocation;
 
 public class SimpleGraphUniverseBuilder implements GraphUniverse.Builder {
     SaveMode saveMode = SaveMode.UNLOAD;

@@ -27,8 +27,10 @@ package com.kneelawk.graphlib.syncing.impl.graph;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
+
 import net.minecraft.world.level.ChunkPos;
 
 public interface ClientGraphWorldImpl extends GraphView {
@@ -40,9 +42,11 @@ public interface ClientGraphWorldImpl extends GraphView {
 
     void tick();
 
-    @NotNull BlockGraphImpl getOrCreateGraph(long graphId);
+    @NotNull
+    BlockGraphImpl getOrCreateGraph(long graphId);
 
-    @Nullable BlockGraphImpl getGraph(long id);
+    @Nullable
+    BlockGraphImpl getGraph(long id);
 
     boolean tryCreateGraphPillar(int chunkX, int chunkZ);
 

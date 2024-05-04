@@ -46,5 +46,6 @@ public interface BlockNodePacketDecoder {
      * @return the decoded block node.
      * @throws PayloadHandlingException if a block node could not be decoded.
      */
-    @NotNull BlockNode decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
+    @NotNull
+    BlockNode decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
 }

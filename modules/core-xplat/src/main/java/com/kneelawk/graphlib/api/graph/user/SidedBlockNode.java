@@ -1,10 +1,12 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
+
+import net.minecraft.core.Direction;
+
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.util.SidedPos;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
-import net.minecraft.core.Direction;
 
 /**
  * Describes a block node that is positioned on the side of a block.
@@ -27,5 +29,6 @@ public interface SidedBlockNode extends BlockNode {
      *
      * @return the side of the block this node is positioned at.
      */
-    @NotNull Direction getSide();
+    @NotNull
+    Direction getSide();
 }

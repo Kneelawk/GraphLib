@@ -43,5 +43,6 @@ public interface NodeEntityPacketDecoder {
      * @return a newly decoded node entity.
      * @throws PayloadHandlingException if a node entity could not be decoded.
      */
-    @NotNull NodeEntity decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
+    @NotNull
+    NodeEntity decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
 }

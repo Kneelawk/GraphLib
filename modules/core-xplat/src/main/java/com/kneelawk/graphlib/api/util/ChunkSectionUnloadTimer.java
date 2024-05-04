@@ -2,15 +2,17 @@ package com.kneelawk.graphlib.api.util;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
 /**
  * Chunk-Section variant of {@link ChunkUnloadTimer} for keeping track of chunk sections.

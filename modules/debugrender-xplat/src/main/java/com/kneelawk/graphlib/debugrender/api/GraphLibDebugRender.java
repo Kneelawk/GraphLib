@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.debugrender.api;
 
 import java.util.HashMap;
+
 import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.graphlib.debugrender.api.graph.BlockNodeDebugPacketEncoder;
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 

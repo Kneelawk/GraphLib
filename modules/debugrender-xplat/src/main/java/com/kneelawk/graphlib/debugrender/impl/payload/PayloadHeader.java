@@ -29,10 +29,12 @@ import io.netty.buffer.Unpooled;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 
-public record PayloadHeader(ResourceLocation universeId, Int2ObjectMap<ResourceLocation> palette, FriendlyByteBuf nodeData) {
+public record PayloadHeader(ResourceLocation universeId, Int2ObjectMap<ResourceLocation> palette,
+                            FriendlyByteBuf nodeData) {
     public static PayloadHeader decode(FriendlyByteBuf buf) {
         ResourceLocation universeId = buf.readResourceLocation();
 

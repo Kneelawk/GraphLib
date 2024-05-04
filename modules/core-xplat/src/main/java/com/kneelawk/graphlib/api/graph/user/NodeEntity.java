@@ -2,9 +2,11 @@ package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.nbt.Tag;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
-import net.minecraft.nbt.Tag;
 
 /**
  * Mutable data associated with a block node, similar to a BlockEntity.
@@ -22,7 +24,8 @@ public interface NodeEntity {
      *
      * @return this node entity's context.
      */
-    @NotNull NodeEntityContext getContext();
+    @NotNull
+    NodeEntityContext getContext();
 
     /**
      * Get this node entity's type id.
@@ -32,14 +35,16 @@ public interface NodeEntity {
      *
      * @return this node entity's type id.
      */
-    @NotNull NodeEntityType getType();
+    @NotNull
+    NodeEntityType getType();
 
     /**
      * Encodes this node entity as an NBT tag.
      *
      * @return this node entity as an NBT tag.
      */
-    @Nullable Tag toTag();
+    @Nullable
+    Tag toTag();
 
     /**
      * Called after this node entity has been initialized if it was just newly added instead of just being loaded.

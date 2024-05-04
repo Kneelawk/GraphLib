@@ -1,10 +1,13 @@
 package com.kneelawk.graphlib.impl.mixin.api;
 
 import java.nio.file.Path;
+
+import org.jetbrains.annotations.NotNull;
+
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.storage.IOWorker;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
-import org.jetbrains.annotations.NotNull;
+
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.impl.StorageIoWorkerAccessor;
 

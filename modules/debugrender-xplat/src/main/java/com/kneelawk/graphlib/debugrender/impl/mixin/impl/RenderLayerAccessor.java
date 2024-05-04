@@ -26,7 +26,9 @@
 package com.kneelawk.graphlib.debugrender.impl.mixin.impl;
 
 import com.mojang.blaze3d.vertex.VertexFormat;
+
 import net.minecraft.client.renderer.RenderType;
+
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 

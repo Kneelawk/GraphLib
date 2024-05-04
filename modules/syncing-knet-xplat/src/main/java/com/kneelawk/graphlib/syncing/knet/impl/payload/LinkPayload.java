@@ -28,6 +28,7 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
+
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
@@ -35,7 +36,7 @@ public record LinkPayload(PayloadHeader header, long graphId, PayloadExternalLin
     public static final Type<LinkPayload> ID = new Type<>(SyncingKNetImpl.id("link"));
     public static final StreamCodec<NetByteBuf, LinkPayload> CODEC =
         StreamCodec.ofMember(LinkPayload::encode, LinkPayload::decode);
-    
+
     public static LinkPayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
         long graphId = buf.readVarUnsignedLong();

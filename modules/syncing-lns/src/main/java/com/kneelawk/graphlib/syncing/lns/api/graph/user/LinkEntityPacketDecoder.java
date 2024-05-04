@@ -46,5 +46,6 @@ public interface LinkEntityPacketDecoder {
      * @return a newly decoded link entity.
      * @throws InvalidInputDataException if a link entity could not be decoded.
      */
-    @NotNull LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
+    @NotNull
+    LinkEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }
