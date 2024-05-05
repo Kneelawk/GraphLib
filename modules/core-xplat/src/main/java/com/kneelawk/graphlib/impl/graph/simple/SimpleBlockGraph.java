@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -24,6 +25,9 @@ import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
@@ -34,6 +38,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -52,6 +57,7 @@ import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.api.util.SidedPos;
+import com.kneelawk.graphlib.api.util.codec.OptionalMapCodec;
 import com.kneelawk.graphlib.api.util.graph.Graph;
 import com.kneelawk.graphlib.api.util.graph.Link;
 import com.kneelawk.graphlib.api.util.graph.Node;
@@ -65,6 +71,21 @@ import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
  * Holds and manages a set of block nodes.
  */
 public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
+//    private record Serial(LongSet chunks, )
+
+    private record SerialNode(int x, int y, int z, BlockNode node, Optional<NodeEntity> entity) {
+        static Codec<SerialNode> codec(GraphUniverse universe) {
+            return RecordCodecBuilder.create(instance -> instance.group(
+                Codec.INT.fieldOf("x").forGetter(SerialNode::x),
+                Codec.INT.fieldOf("y").forGetter(SerialNode::y),
+                Codec.INT.fieldOf("z").forGetter(SerialNode::z),
+                BlockNode.mapCodec(universe).forGetter(SerialNode::node),
+                new OptionalMapCodec<>(List.of("entityType"), NodeEntity.mapCodec(universe)).forGetter(
+                    SerialNode::entity)
+            ).apply(instance, SerialNode::new));
+        }
+    }
+
     static @NotNull SimpleBlockGraph fromTag(@NotNull SimpleServerGraphWorld controller, long id,
                                              @NotNull CompoundTag tag) {
         ListTag chunksTag = tag.getList("chunks", Tag.TAG_LONG);

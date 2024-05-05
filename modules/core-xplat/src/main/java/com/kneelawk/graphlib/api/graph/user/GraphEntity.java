@@ -31,13 +31,16 @@ import com.kneelawk.graphlib.impl.GLLog;
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
     /**
-     * Gets a map codec for encoding/decoding all graph entities in a given universe.
+     * Gets a codec for encoding/decoding all graph entities in a given universe.
+     * <p>
+     * Note: if this encounters invalid or missing graph entities when loading,
+     * it will create new graph entities in their place.
      *
      * @param universe the universe to get graph entities from.
-     * @return a map coded for encoding/decoding all graph entities in the given universe.
+     * @return a codec for encoding/decoding all graph entities in the given universe.
      */
-    static MapCodec<Map<GraphEntityType<?>, GraphEntity<?>>> mapMapCodec(GraphUniverse universe) {
-        return new MapCodec<>() {
+    static Codec<Map<GraphEntityType<?>, GraphEntity<?>>> allCodec(GraphUniverse universe) {
+        return new MapCodec<Map<GraphEntityType<?>, GraphEntity<?>>>() {
             @Override
             public <T> Stream<T> keys(DynamicOps<T> ops) {
                 return universe.getAllGraphEntityTypes().stream()
@@ -82,7 +85,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
 
                 return prefix;
             }
-        };
+        }.codec();
     }
 
     /**
