@@ -1,17 +1,28 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.Tag;
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.MapLike;
+import com.mojang.serialization.RecordBuilder;
 
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.impl.GLLog;
 
 /**
  * Arbitrary data that can be stored in a graph.
@@ -19,6 +30,61 @@ import com.kneelawk.graphlib.api.util.NodePos;
  * @param <G> this graph entity class.
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
+    /**
+     * Gets a map codec for encoding/decoding all graph entities in a given universe.
+     *
+     * @param universe the universe to get graph entities from.
+     * @return a map coded for encoding/decoding all graph entities in the given universe.
+     */
+    static MapCodec<Map<GraphEntityType<?>, GraphEntity<?>>> mapMapCodec(GraphUniverse universe) {
+        return new MapCodec<>() {
+            @Override
+            public <T> Stream<T> keys(DynamicOps<T> ops) {
+                return universe.getAllGraphEntityTypes().stream()
+                    .map(type -> ops.createString(type.getId().toString()));
+            }
+
+            @Override
+            public <T> DataResult<Map<GraphEntityType<?>, GraphEntity<?>>> decode(DynamicOps<T> ops, MapLike<T> input) {
+                Map<GraphEntityType<?>, GraphEntity<?>> map = new Object2ObjectLinkedOpenHashMap<>();
+
+                for (GraphEntityType<?> type : universe.getAllGraphEntityTypes()) {
+                    T element = input.get(type.getId().toString());
+                    if (element != null) {
+                        DataResult<GraphEntity<?>> entityResult =
+                            type.getCodec().parse(ops, element).map(Function.identity());
+                        if (entityResult.isSuccess()) {
+                            map.put(type, entityResult.result().get());
+                        } else {
+                            GLLog.error(
+                                "Error decoding graph entity '" + type.getId() + "' in universe '" + universe.getId() +
+                                    "': " + entityResult.error().get().message());
+                            map.put(type, type.getFactory().createNew());
+                        }
+                    } else {
+                        GLLog.warn("Missing graph entity '" + type.getId() + "' in universe '" + universe.getId() +
+                            "'. Creating a new one.");
+                        map.put(type, type.getFactory().createNew());
+                    }
+                }
+
+                return DataResult.success(map);
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T> RecordBuilder<T> encode(Map<GraphEntityType<?>, GraphEntity<?>> input, DynamicOps<T> ops,
+                                               RecordBuilder<T> prefix) {
+                for (GraphEntityType<?> type : input.keySet()) {
+                    prefix = prefix.add(type.getId().toString(),
+                        ((Codec<GraphEntity<?>>) type.getCodec()).encodeStart(ops, input.get(type)));
+                }
+
+                return prefix;
+            }
+        };
+    }
+
     /**
      * Called when the graph entity is initialized in a graph, to give this its context.
      *
@@ -41,14 +107,6 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      */
     @NotNull
     GraphEntityType<?> getType();
-
-    /**
-     * Encodes this graph entity as an NBT tag.
-     *
-     * @return this graph entity as an NBT tag.
-     */
-    @Nullable
-    Tag toTag();
 
     /**
      * Called right before this entity's associated graph is deleted.

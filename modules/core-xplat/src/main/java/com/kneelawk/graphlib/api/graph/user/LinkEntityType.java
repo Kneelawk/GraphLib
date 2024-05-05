@@ -30,6 +30,8 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.util.ObjectType;
@@ -39,11 +41,11 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  */
 public class LinkEntityType implements ObjectType {
     private final @NotNull ResourceLocation id;
-    private final @NotNull LinkEntityDecoder decoder;
+    private final @NotNull Codec<? extends LinkEntity> codec;
 
-    private LinkEntityType(@NotNull ResourceLocation id, @NotNull LinkEntityDecoder decoder) {
+    private LinkEntityType(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkEntity> codec) {
         this.id = id;
-        this.decoder = decoder;
+        this.codec = codec;
     }
 
     /**
@@ -61,8 +63,8 @@ public class LinkEntityType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull LinkEntityDecoder getDecoder() {
-        return decoder;
+    public @NotNull Codec<? extends LinkEntity> getCodec() {
+        return codec;
     }
 
     @Override
@@ -90,13 +92,13 @@ public class LinkEntityType implements ObjectType {
     /**
      * Creates a new link entity type.
      *
-     * @param id      the id of the new type.
-     * @param decoder the decoder for the new type.
+     * @param id    the id of the new type.
+     * @param codec the codec for the new type.
      * @return a new link entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull LinkEntityDecoder decoder) {
-        return new LinkEntityType(id, decoder);
+    public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkEntity> codec) {
+        return new LinkEntityType(id, codec);
     }
 
     /**
@@ -108,6 +110,6 @@ public class LinkEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkEntity> supplier) {
-        return new LinkEntityType(id, nbt -> supplier.get());
+        return new LinkEntityType(id, Codec.unit(supplier));
     }
 }

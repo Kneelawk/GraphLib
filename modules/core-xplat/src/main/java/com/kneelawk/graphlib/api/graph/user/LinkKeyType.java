@@ -110,6 +110,6 @@ public class LinkKeyType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkKey> supplier) {
-        return new LinkKeyType(id, nbt -> supplier.get());
+        return new LinkKeyType(id, Codec.unit(supplier));
     }
 }

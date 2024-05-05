@@ -30,6 +30,8 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.util.ObjectType;
@@ -39,11 +41,11 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  */
 public class NodeEntityType implements ObjectType {
     private final @NotNull ResourceLocation id;
-    private final @NotNull NodeEntityDecoder decoder;
+    private final @NotNull Codec<? extends NodeEntity> codec;
 
-    private NodeEntityType(@NotNull ResourceLocation id, @NotNull NodeEntityDecoder decoder) {
+    private NodeEntityType(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
         this.id = id;
-        this.decoder = decoder;
+        this.codec = codec;
     }
 
     /**
@@ -61,8 +63,8 @@ public class NodeEntityType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull NodeEntityDecoder getDecoder() {
-        return decoder;
+    public @NotNull Codec<? extends NodeEntity> getCodec() {
+        return codec;
     }
 
     @Override
@@ -90,13 +92,13 @@ public class NodeEntityType implements ObjectType {
     /**
      * Creates a new node entity type.
      *
-     * @param id      the id of the new node entity type.
-     * @param decoder the decoder for the new node entity type.
+     * @param id    the id of the new node entity type.
+     * @param codec the codec for the new node entity type.
      * @return a new node entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull NodeEntityDecoder decoder) {
-        return new NodeEntityType(id, decoder);
+    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
+        return new NodeEntityType(id, codec);
     }
 
     /**
@@ -108,6 +110,6 @@ public class NodeEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<NodeEntity> supplier) {
-        return new NodeEntityType(id, nbt -> supplier.get());
+        return new NodeEntityType(id, Codec.unit(supplier));
     }
 }

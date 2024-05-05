@@ -1,17 +1,38 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.Tag;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
+import com.kneelawk.graphlib.api.util.codec.CustomKeyDispatchCodec;
 
 /**
  * Mutable data associated with a block node, similar to a BlockEntity.
  */
 public interface NodeEntity {
+    /**
+     * Gets the node entity map codec for node entities in the given universe.
+     *
+     * @param universe the universe to find node entities in.
+     * @return a node entity map codec for node entities in the given universe.
+     */
+    static MapCodec<NodeEntity> mapCodec(GraphUniverse universe) {
+        return new CustomKeyDispatchCodec<>("entityType", "entity", ResourceLocation.CODEC,
+            entity -> DataResult.success(entity.getType().getId()), typeId -> {
+            NodeEntityType type = universe.getNodeEntityType(typeId);
+            if (type == null) {
+                return DataResult.error(
+                    () -> "No node entity exists with type '" + typeId + "' in universe '" + universe.getId() + "'");
+            }
+            return DataResult.success(type.getCodec());
+        });
+    }
+
     /**
      * Called when this node entity is initialized in a graph, to give this its context.
      *
@@ -37,14 +58,6 @@ public interface NodeEntity {
      */
     @NotNull
     NodeEntityType getType();
-
-    /**
-     * Encodes this node entity as an NBT tag.
-     *
-     * @return this node entity as an NBT tag.
-     */
-    @Nullable
-    Tag toTag();
 
     /**
      * Called after this node entity has been initialized if it was just newly added instead of just being loaded.

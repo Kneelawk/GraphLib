@@ -91,7 +91,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                     ResourceLocation entityTypeId = new ResourceLocation(com.getString("entityType"));
                     NodeEntityType type = controller.universe.getNodeEntityType(entityTypeId);
                     if (type != null) {
-                        entity = type.getDecoder().decode(com.get("entity"));
+                        entity = type.getCodec().decode(com.get("entity"));
                     } else {
                         GLLog.warn("Encountered Node Entity with unknown type id: {}", entityTypeId);
                     }
@@ -129,7 +129,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
                     ResourceLocation entityTypeId = new ResourceLocation(linkTag.getString("entityType"));
                     LinkEntityType type = controller.universe.getLinkEntityType(entityTypeId);
                     if (type != null) {
-                        entity = type.getDecoder().decode(linkTag.get("entity"));
+                        entity = type.getCodec().decode(linkTag.get("entity"));
                     } else {
                         GLLog.warn("Encountered Link Entity with unknown id: {}", entityTypeId);
                     }
@@ -144,7 +144,7 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             SimpleGraphEntityContext ctx = new SimpleGraphEntityContext(controller.world, controller, graph);
             if (graphEntities.contains(type.getId().toString(), Tag.TAG_COMPOUND)) {
                 CompoundTag entityCom = graphEntities.getCompound(type.getId().toString());
-                GraphEntity<?> entity = type.getDecoder().decode(entityCom.get("entity"));
+                GraphEntity<?> entity = type.getCodec().decode(entityCom.get("entity"));
                 if (entity == null) {
                     entity = type.getFactory().createNew();
                 }
