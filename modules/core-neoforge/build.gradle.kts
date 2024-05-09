@@ -36,6 +36,12 @@ submodule {
     createDevExport()
 }
 
+dependencies {
+    val codextra_version: String by project
+    modImplementation("com.kneelawk:codextra-neoforge:$codextra_version")
+    include("com.kneelawk:codextra-neoforge:$codextra_version")
+}
+
 java {
     withJavadocJar()
 }
