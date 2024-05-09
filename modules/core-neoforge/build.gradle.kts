@@ -38,7 +38,7 @@ submodule {
 
 dependencies {
     val codextra_version: String by project
-    modImplementation("com.kneelawk:codextra-neoforge:$codextra_version")
+    modApi("com.kneelawk:codextra-neoforge:$codextra_version")
     include("com.kneelawk:codextra-neoforge:$codextra_version")
 }
 
