@@ -31,16 +31,40 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.DataResult;
 
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of block node.
  */
 public class BlockNodeType implements ObjectType {
+    /**
+     * {@link BlockNodeType} static codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final Codec<BlockNodeType> CODEC =
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+            BlockNodeType type = universe.getNodeType(id);
+            if (type == null) return DataResult.error(
+                () -> "Block node type '" + id + "' does not exist in universe '" + universe.getId() + "'");
+            return DataResult.success(type);
+        }, (_universe, type) -> DataResult.success(type.getId()));
+
+    /**
+     * {@link BlockNodeType} codec getter.
+     *
+     * @param universe the universe the block node types to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static Codec<BlockNodeType> codec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, CODEC);
+    }
+
     private final @NotNull ResourceLocation id;
     private final @NotNull Codec<? extends BlockNode> codec;
 
@@ -93,7 +117,7 @@ public class BlockNodeType implements ObjectType {
     /**
      * Creates a new block node type, without packet decoder.
      *
-     * @param id      the id of the new type.
+     * @param id    the id of the new type.
      * @param codec the codec for the new type.
      * @return a new block node type.
      */

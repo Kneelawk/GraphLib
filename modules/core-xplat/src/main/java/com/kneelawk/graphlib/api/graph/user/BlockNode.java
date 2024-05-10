@@ -5,17 +5,13 @@ import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.resources.ResourceLocation;
-
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.api.util.codec.CustomKeyDispatchCodec;
 import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
 
 /**
@@ -33,33 +29,13 @@ import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
  */
 public interface BlockNode {
     /**
-     * Gets the block node map codec for nodes in the given universe.
+     * {@link BlockNode} map codec.
      * <p>
-     * Note: this uses the {@code type} and {@code node} map keys.
-     *
-     * @param universe the universe to find block nodes in.
-     * @return a map codec for block nodes in the given universe.
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
-    static MapCodec<BlockNode> mapCodec(GraphUniverse universe) {
-        return new CustomKeyDispatchCodec<>("type", "node", ResourceLocation.CODEC,
-            node -> DataResult.success(node.getType().getId()), typeId -> {
-            BlockNodeType type = universe.getNodeType(typeId);
-            if (type == null) {
-                return DataResult.error(() -> "No block node exists with type '" + typeId + "' in universe '" + universe.getId() + "'");
-            }
-            return DataResult.success(type.getCodec());
-        });
-    }
-
-    /**
-     * Gets the block node codec for nodes in the given universe.
-     *
-     * @param universe the universe to find block nodes in.
-     * @return a codec for block nodes in the given universe.
-     */
-    static Codec<BlockNode> codec(GraphUniverse universe) {
-        return mapCodec(universe).codec();
-    }
+    MapCodec<BlockNode> MAP_CODEC =
+        Codextra.mapKeyDispatchCodec(BlockNodeType.CODEC.fieldOf("type"), BlockNode::getType,
+            type -> type.getCodec().fieldOf("node"));
 
     /**
      * Gets this block node's type.

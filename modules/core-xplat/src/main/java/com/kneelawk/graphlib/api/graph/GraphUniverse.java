@@ -7,9 +7,14 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 
+import com.kneelawk.codextra.api.attach.AttachmentKey;
+import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -31,6 +36,20 @@ import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
  */
 @ApiStatus.NonExtendable
 public interface GraphUniverse {
+
+    /**
+     * Graph-Universe attachment key for use in codecs.
+     */
+    AttachmentKey<GraphUniverse> ATTACHMENT_KEY = AttachmentKey.ofStaticFieldName();
+
+    /**
+     * Codec for referencing a graph universe.
+     */
+    Codec<GraphUniverse> REF_CODEC = ResourceLocation.CODEC.comapFlatMap(id -> {
+        if (!GraphLib.universeExists(id))
+            return DataResult.error(() -> "The graph universe '" + id + "' does not exist");
+        return DataResult.success(GraphLib.getUniverse(id));
+    }, GraphUniverse::getId);
 
     /**
      * Gets the {@link GraphWorld} for the given {@link ServerLevel}.

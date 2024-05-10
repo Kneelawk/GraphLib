@@ -31,15 +31,40 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of link key.
  */
 public class LinkKeyType implements ObjectType {
+    /**
+     * {@link LinkKeyType} static codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final Codec<LinkKeyType> CODEC =
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+            LinkKeyType type = universe.getLinkKeyType(id);
+            if (type == null) return DataResult.error(
+                () -> "Link key type '" + id + "' does not exist in universe '" + universe.getId() + "'");
+            return DataResult.success(type);
+        }, (_universe, type) -> DataResult.success(type.getId()));
+
+    /**
+     * {@link LinkKeyType} codec getter.
+     *
+     * @param universe the universe the link key types to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static Codec<LinkKeyType> codec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, CODEC);
+    }
+
     private final @NotNull ResourceLocation id;
     private final @NotNull Codec<? extends LinkKey> codec;
 
@@ -92,7 +117,7 @@ public class LinkKeyType implements ObjectType {
     /**
      * Creates a new link key type.
      *
-     * @param id      the id of the type.
+     * @param id    the id of the type.
      * @param codec the codec of the type.
      * @return a new link key type.
      */

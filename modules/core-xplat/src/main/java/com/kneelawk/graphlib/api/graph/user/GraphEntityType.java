@@ -7,10 +7,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
@@ -19,6 +21,42 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  * @param <G> the type of graph entity this corresponds to.
  */
 public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectType {
+    /**
+     * {@link GraphEntityType} static codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final Codec<GraphEntityType<?>> CODEC =
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+            GraphEntityType<?> type = universe.getGraphEntityType(id);
+            if (type == null) return DataResult.error(
+                () -> "Graph entity type '" + id + "' does not exist in universe '" + universe.getId() + "'");
+            return DataResult.success(type);
+        }, (_universe, type) -> DataResult.success(type.getId()));
+
+    /**
+     * {@link GraphEntityType} codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     *
+     * @param <G> the type of graph entity.
+     * @return the codec, but typed.
+     */
+    @SuppressWarnings("unchecked")
+    public static <G extends GraphEntity<G>> Codec<GraphEntityType<G>> codec() {
+        return (Codec<GraphEntityType<G>>) (Object) CODEC;
+    }
+
+    /**
+     * {@link GraphEntityType} codec getter.
+     *
+     * @param universe the universe the graph entity types to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static <G extends GraphEntity<G>> Codec<GraphEntityType<G>> codec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, codec());
+    }
+
     private final @NotNull ResourceLocation id;
     private final @NotNull GraphEntityFactory factory;
     private final @NotNull Codec<G> codec;
@@ -27,7 +65,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
     /**
      * @param id       the id of the graph entity type.
      * @param factory  a factory for creating new graph entities of this type.
-     * @param codec  a decoder for decoding graph entities of this type.
+     * @param codec    a decoder for decoding graph entities of this type.
      * @param splitter a splitter for splitting graph entities of this type apart.
      */
     private GraphEntityType(@NotNull ResourceLocation id, @NotNull GraphEntityFactory factory,
