@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.Tag;
 
 /**
  * Used for decoding a {@link BlockNode} from an NBT element.
@@ -17,5 +17,6 @@ public interface BlockNodeDecoder {
      * @param tag the NBT element used to decode the block node.
      * @return the decoded block node.
      */
-    @Nullable BlockNode decode(@Nullable NbtElement tag);
+    @Nullable
+    BlockNode decode(@Nullable Tag tag);
 }

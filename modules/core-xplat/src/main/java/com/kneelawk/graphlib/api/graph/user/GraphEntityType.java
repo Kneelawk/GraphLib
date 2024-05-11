@@ -6,7 +6,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.util.ObjectType;
@@ -17,7 +17,7 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  * @param <G> the type of graph entity this corresponds to.
  */
 public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectType {
-    private final @NotNull Identifier id;
+    private final @NotNull ResourceLocation id;
     private final @NotNull GraphEntityFactory factory;
     private final @NotNull GraphEntityDecoder decoder;
     private final @NotNull GraphEntitySplitter<G> splitter;
@@ -28,7 +28,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @param decoder  a decoder for decoding graph entities of this type.
      * @param splitter a splitter for splitting graph entities of this type apart.
      */
-    private GraphEntityType(@NotNull Identifier id, @NotNull GraphEntityFactory factory,
+    private GraphEntityType(@NotNull ResourceLocation id, @NotNull GraphEntityFactory factory,
                             @NotNull GraphEntityDecoder decoder,
                             @NotNull GraphEntitySplitter<G> splitter) {
         this.id = id;
@@ -43,7 +43,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @return this type's id.
      */
     @Override
-    public @NotNull Identifier getId() {return id;}
+    public @NotNull ResourceLocation getId() {return id;}
 
     /**
      * Gets this type's factory.
@@ -128,7 +128,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @return a new graph entity type.
      */
     @Contract(value = "_, _, _, _ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
+    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull ResourceLocation id,
                                                                             @NotNull GraphEntityFactory factory,
                                                                             @NotNull GraphEntityDecoder decoder,
                                                                             @NotNull GraphEntitySplitter<G> splitter) {
@@ -144,8 +144,9 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @return a new graph entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
-                                                                            @NotNull Supplier<GraphEntity<G>> supplier) {
+    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull ResourceLocation id,
+                                                                            @NotNull
+                                                                            Supplier<GraphEntity<G>> supplier) {
         return new GraphEntityType<>(id, supplier::get, tag -> supplier.get(),
             (original, originalGraph, newGraph) -> supplier.get());
     }

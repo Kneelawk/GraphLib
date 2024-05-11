@@ -31,36 +31,36 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.client.world.ClientChunkManager;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.ChunkPos;
-
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientGraphWorldStorageAccess;
 
-@Mixin(ClientChunkManager.class)
+import net.minecraft.client.multiplayer.ClientChunkCache;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.world.level.ChunkPos;
+
+@Mixin(ClientChunkCache.class)
 public class ClientChunkManagerMixin implements ClientGraphWorldStorageAccess {
     @Unique
     private ClientGraphWorldStorage storage;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(ClientWorld world, int loadDistance, CallbackInfo ci) {
+    private void onInit(ClientLevel world, int loadDistance, CallbackInfo ci) {
         storage = new ClientGraphWorldStorage(world, loadDistance);
     }
 
-    @Inject(method = "unload", at = @At("RETURN"))
-    private void onUnload(ChunkPos pos, CallbackInfo ci) {
-        storage.unload(pos);
+    @Inject(method = "drop", at = @At("RETURN"))
+    private void onDrop(ChunkPos pos, CallbackInfo ci) {
+        storage.drop(pos);
     }
 
-    @Inject(method = "setChunkMapCenter", at = @At("RETURN"))
-    private void onSetChunkMapCenter(int x, int z, CallbackInfo ci) {
-        storage.setChunkMapCenter(x, z);
+    @Inject(method = "updateViewCenter", at = @At("RETURN"))
+    private void onUpdateViewCenter(int x, int z, CallbackInfo ci) {
+        storage.updateViewCenter(x, z);
     }
 
-    @Inject(method = "updateLoadDistance", at = @At("RETURN"))
-    private void onUpdateLoadDistance(int loadDistance, CallbackInfo ci) {
-        storage.updateLoadDistance(loadDistance);
+    @Inject(method = "updateViewRadius", at = @At("RETURN"))
+    private void onUpdateViewRadius(int loadDistance, CallbackInfo ci) {
+        storage.updateViewRadius(loadDistance);
     }
 
     @Override

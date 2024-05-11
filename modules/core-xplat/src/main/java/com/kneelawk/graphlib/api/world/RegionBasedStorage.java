@@ -3,8 +3,8 @@ package com.kneelawk.graphlib.api.world;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * Describes something that can store chunk-sections worth of data.
@@ -36,7 +36,8 @@ public interface RegionBasedStorage<R extends StorageChunk> extends AutoCloseabl
      * @param pos the position of the chunk section.
      * @return the retrieved or created chunk section.
      */
-    @NotNull R getOrCreate(@NotNull ChunkSectionPos pos);
+    @NotNull
+    R getOrCreate(@NotNull SectionPos pos);
 
     /**
      * Gets a chunk section at the given location or <code>null</code> one does not exist there.
@@ -44,7 +45,8 @@ public interface RegionBasedStorage<R extends StorageChunk> extends AutoCloseabl
      * @param pos the position of the chunk section.
      * @return the retrieved chunk section, or <code>null</code> if none could be retrieved.
      */
-    @Nullable R getIfExists(@NotNull ChunkSectionPos pos);
+    @Nullable
+    R getIfExists(@NotNull SectionPos pos);
 
     /**
      * Ticks this storage, unloading and saving any chunks that need it.

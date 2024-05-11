@@ -36,6 +36,7 @@ import com.kneelawk.kmodlib.client.overlay.RenderToOverlayEvent;
 public class GLDRRenderClient {
     @SubscribeEvent
     public static void onRenderToOverlay(RenderToOverlayEvent event) {
-        DebugRenderer.render(event.getPoseStack(), event.getModelViewMatrix(), event.getCamera().getPos(), event.getProvider());
+        DebugRenderer.render(event.getPoseStack(), event.getModelViewMatrix(), event.getCamera().getPosition(),
+            event.getProvider());
     }
 }

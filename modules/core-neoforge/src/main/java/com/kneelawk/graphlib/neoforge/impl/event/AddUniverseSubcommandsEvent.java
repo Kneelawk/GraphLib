@@ -25,17 +25,17 @@
 
 package com.kneelawk.graphlib.neoforge.impl.event;
 
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.resources.ResourceLocation;
+
 import net.neoforged.bus.api.Event;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Identifier;
-
 public class AddUniverseSubcommandsEvent extends Event {
-    public final RequiredArgumentBuilder<ServerCommandSource, Identifier> universe;
+    public final RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe;
 
-    public AddUniverseSubcommandsEvent(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
+    public AddUniverseSubcommandsEvent(RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe) {
         this.universe = universe;
     }
 }

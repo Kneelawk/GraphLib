@@ -71,7 +71,8 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
      * @param type the type of block node to get the syncing for.
      * @return the syncing for the given block node type.
      */
-    @NotNull BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type);
+    @NotNull
+    BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type);
 
     /**
      * Registers an encoder and decoder for the given node entity type.
@@ -95,7 +96,8 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
      * @param type the type of node entity to get the syncing for.
      * @return the syncing for the given node entity type.
      */
-    @NotNull NodeEntitySyncing getNodeEntitySyncing(@NotNull NodeEntityType type);
+    @NotNull
+    NodeEntitySyncing getNodeEntitySyncing(@NotNull NodeEntityType type);
 
     /**
      * Registers an encoder and decoder for the given link key type.
@@ -119,7 +121,8 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
      * @param type the type of link key to get the syncing for.
      * @return the syncing for the given link key type.
      */
-    @NotNull LinkKeySyncing getLinkKeySyncing(@NotNull LinkKeyType type);
+    @NotNull
+    LinkKeySyncing getLinkKeySyncing(@NotNull LinkKeyType type);
 
     /**
      * Registers an encoder and decoder for the given link entity type.
@@ -143,7 +146,8 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
      * @param type the type of link entity to get the syncing for.
      * @return the syncing for the given link entity type.
      */
-    @NotNull LinkEntitySyncing getLinkEntitySyncing(@NotNull LinkEntityType type);
+    @NotNull
+    LinkEntitySyncing getLinkEntitySyncing(@NotNull LinkEntityType type);
 
     /**
      * Registers an encoder and decoder for the given graph entity type.
@@ -195,7 +199,8 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
          * @param universe the universe that this synchronization handler is to synchronize.
          * @return a new universe synchronization handler.
          */
-        @NotNull KNetSyncedUniverse build(@NotNull GraphUniverse universe);
+        @NotNull
+        KNetSyncedUniverse build(@NotNull GraphUniverse universe);
 
         /**
          * Sets whether this graph universe should be synchronized to the client.
@@ -207,6 +212,7 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
          * @param profile a profile describing whether and how this graph universe should be synchronized to the client.
          * @return this builder for call chaining.
          */
-        @NotNull Builder synchronizeToClient(@NotNull SyncProfile profile);
+        @NotNull
+        Builder synchronizeToClient(@NotNull SyncProfile profile);
     }
 }

@@ -27,20 +27,20 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import java.util.List;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.level.ChunkPos;
 
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.math.ChunkPos;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
 public record ChunkDataPayload(PayloadHeader header, ChunkPos chunkPos, List<PayloadGraph> graphs)
-    implements CustomPayload {
-    public static final Id<ChunkDataPayload> ID = new Id<>(SyncingKNetImpl.id("chunk_data"));
-    public static final PacketCodec<NetByteBuf, ChunkDataPayload> CODEC =
-        PacketCodec.of(ChunkDataPayload::encode, ChunkDataPayload::decode);
+    implements CustomPacketPayload {
+    public static final Type<ChunkDataPayload> ID = new Type<>(SyncingKNetImpl.id("chunk_data"));
+    public static final StreamCodec<NetByteBuf, ChunkDataPayload> CODEC =
+        StreamCodec.ofMember(ChunkDataPayload::encode, ChunkDataPayload::decode);
 
     public static ChunkDataPayload decode(NetByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
@@ -68,7 +68,7 @@ public record ChunkDataPayload(PayloadHeader header, ChunkPos chunkPos, List<Pay
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

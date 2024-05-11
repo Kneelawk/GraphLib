@@ -43,5 +43,6 @@ public interface LinkKeyPacketDecoder {
      * @return a newly decoded link key.
      * @throws PayloadHandlingException if no link key could be decoded.
      */
-    @NotNull LinkKey decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
+    @NotNull
+    LinkKey decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
 }

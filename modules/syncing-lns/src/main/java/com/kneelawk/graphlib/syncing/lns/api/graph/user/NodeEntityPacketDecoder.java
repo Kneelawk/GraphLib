@@ -46,5 +46,6 @@ public interface NodeEntityPacketDecoder {
      * @return a newly decoded node entity.
      * @throws InvalidInputDataException if a node entity could not be decoded.
      */
-    @NotNull NodeEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
+    @NotNull
+    NodeEntity decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }

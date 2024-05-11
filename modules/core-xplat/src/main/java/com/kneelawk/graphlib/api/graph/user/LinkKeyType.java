@@ -29,9 +29,8 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.util.ObjectType;
 
@@ -39,10 +38,10 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  * Describes a type of link key.
  */
 public class LinkKeyType implements ObjectType {
-    private final @NotNull Identifier id;
+    private final @NotNull ResourceLocation id;
     private final @NotNull LinkKeyDecoder decoder;
 
-    private LinkKeyType(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder) {
+    private LinkKeyType(@NotNull ResourceLocation id, @NotNull LinkKeyDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
     }
@@ -53,7 +52,7 @@ public class LinkKeyType implements ObjectType {
      * @return this type's id.
      */
     @Override
-    public @NotNull Identifier getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
@@ -96,7 +95,7 @@ public class LinkKeyType implements ObjectType {
      * @return a new link key type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull LinkKeyDecoder decoder) {
+    public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull LinkKeyDecoder decoder) {
         return new LinkKeyType(id, decoder);
     }
 
@@ -108,7 +107,7 @@ public class LinkKeyType implements ObjectType {
      * @return a new link key type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkKeyType of(@NotNull Identifier id, @NotNull Supplier<LinkKey> supplier) {
+    public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkKey> supplier) {
         return new LinkKeyType(id, nbt -> supplier.get());
     }
 }

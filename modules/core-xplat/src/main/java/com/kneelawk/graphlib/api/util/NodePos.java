@@ -3,10 +3,10 @@ package com.kneelawk.graphlib.api.util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -27,7 +27,7 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
      * @param node the block node.
      */
     public NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
-        this.pos = pos.toImmutable();
+        this.pos = pos.immutable();
         this.node = node;
     }
 
@@ -38,12 +38,12 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
      *
      * @param nbt the NBT compound to write to.
      */
-    public void toNbt(@NotNull NbtCompound nbt) {
+    public void toNbt(@NotNull CompoundTag nbt) {
         nbt.putInt("x", pos.getX());
         nbt.putInt("y", pos.getY());
         nbt.putInt("z", pos.getZ());
         nbt.putString("type", node.getType().getId().toString());
-        NbtElement nodeNbt = node.toTag();
+        Tag nodeNbt = node.toTag();
         if (nodeNbt != null) {
             nbt.put("node", nodeNbt);
         }
@@ -54,8 +54,8 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
      *
      * @return the encoded NBT compound.
      */
-    public @NotNull NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
+    public @NotNull CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
         toNbt(nbt);
         return nbt;
     }
@@ -67,10 +67,10 @@ public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
      * @param universe the universe that the block node's decoder is to be retrieved from.
      * @return a newly decoded NodePos.
      */
-    public static @Nullable NodePos fromNbt(@NotNull NbtCompound nbt, @NotNull GraphUniverse universe) {
+    public static @Nullable NodePos fromNbt(@NotNull CompoundTag nbt, @NotNull GraphUniverse universe) {
         BlockPos pos = new BlockPos(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
 
-        Identifier typeId = new Identifier(nbt.getString("type"));
+        ResourceLocation typeId = new ResourceLocation(nbt.getString("type"));
         BlockNodeType type = universe.getNodeType(typeId);
         if (type == null) {
             GLLog.warn("Unable to decode unknown block node type id {} in universe {}", typeId, universe.getId());

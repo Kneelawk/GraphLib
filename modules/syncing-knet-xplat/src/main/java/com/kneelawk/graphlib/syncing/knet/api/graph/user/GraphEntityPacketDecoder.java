@@ -43,5 +43,6 @@ public interface GraphEntityPacketDecoder {
      * @return a new graph entity.
      * @throws PayloadHandlingException if a graph entity could not be read.
      */
-    @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
+    @NotNull
+    GraphEntity<?> decode(@NotNull NetByteBuf buf) throws PayloadHandlingException;
 }

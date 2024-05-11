@@ -5,7 +5,7 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.Tag;
 
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -31,21 +31,24 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      *
      * @return this graph entity's context.
      */
-    @NotNull GraphEntityContext getContext();
+    @NotNull
+    GraphEntityContext getContext();
 
     /**
      * Gets this graph entity's type.
      *
      * @return this graph entity's type.
      */
-    @NotNull GraphEntityType<?> getType();
+    @NotNull
+    GraphEntityType<?> getType();
 
     /**
      * Encodes this graph entity as an NBT tag.
      *
      * @return this graph entity as an NBT tag.
      */
-    @Nullable NbtElement toTag();
+    @Nullable
+    Tag toTag();
 
     /**
      * Called right before this entity's associated graph is deleted.

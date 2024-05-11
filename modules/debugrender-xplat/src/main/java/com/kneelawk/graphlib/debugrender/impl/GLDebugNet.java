@@ -44,15 +44,15 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.core.SectionPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.level.ChunkPos;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -94,14 +94,14 @@ public final class GLDebugNet {
             buf.writeByte(1);
 
             // Our side
-            buf.writeByte(sided.getSide().getId());
+            buf.writeByte(sided.getSide().get3DDataValue());
         } else {
             // A 0 byte to distinguish ourselves from SidedBlockNode, because both implementations use the same decoder
             buf.writeByte(0);
         }
     };
 
-    private static final Multimap<UUID, Identifier> debuggingPlayers = LinkedHashMultimap.create();
+    private static final Multimap<UUID, ResourceLocation> debuggingPlayers = LinkedHashMultimap.create();
 
     public static void onServerStart() {
         debuggingPlayers.clear();
@@ -115,46 +115,46 @@ public final class GLDebugNet {
         debuggingPlayers.removeAll(playerId);
     }
 
-    public static void onGraphCreated(ServerWorld serverWorld, GraphWorld graphWorld, BlockGraph blockGraph) {
+    public static void onGraphCreated(ServerLevel serverWorld, GraphWorld graphWorld, BlockGraph blockGraph) {
         sendBlockGraph(serverWorld, graphWorld, blockGraph);
     }
 
-    public static void onGraphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+    public static void onGraphUpdated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph) {
         sendBlockGraph(world, graphWorld, graph);
     }
 
-    public static void onGraphDestroyed(ServerWorld world, GraphWorld graphWorld, long id) {
-        Identifier universeId = graphWorld.getUniverse().getId();
+    public static void onGraphDestroyed(ServerLevel world, GraphWorld graphWorld, long id) {
+        ResourceLocation universeId = graphWorld.getUniverse().getId();
         sendToDebuggingPlayers(world, universeId, new GraphDestroyPayload(universeId, id));
     }
 
-    public static void startDebuggingPlayer(ServerPlayerEntity player, GraphUniverse universe) {
-        if (!(player.getWorld() instanceof ServerWorld world)) {
+    public static void startDebuggingPlayer(ServerPlayer player, GraphUniverse universe) {
+        if (!(player.level() instanceof ServerLevel world)) {
             GLLog.warn("Tried to start debugging a player with a world that was neither client nor server, but was {}",
-                ClassUtils.classOf(player.getWorld()));
+                ClassUtils.classOf(player.level()));
             return;
         }
 
-        debuggingPlayers.put(player.getUuid(), universe.getId());
+        debuggingPlayers.put(player.getUUID(), universe.getId());
 
         PayloadHeader header = new PayloadHeader(universe.getId(), new Int2ObjectLinkedOpenHashMap<>(),
-            new PacketByteBuf(Unpooled.buffer()));
-        Object2IntMap<Identifier> paletteLookup = new Object2IntOpenHashMap<>();
+            new FriendlyByteBuf(Unpooled.buffer()));
+        Object2IntMap<ResourceLocation> paletteLookup = new Object2IntOpenHashMap<>();
 
         MinecraftServer server = world.getServer();
         GraphWorld graphWorld = universe.getGraphWorld(world);
-        int viewDistance = server.getPlayerManager().getViewDistance();
+        int viewDistance = server.getPlayerList().getViewDistance();
 
-        ChunkSectionPos playerPos = player.getWatchedSection();
-        int minX = playerPos.getSectionX() - viewDistance - 1;
-        int minZ = playerPos.getSectionZ() - viewDistance - 1;
-        int maxX = playerPos.getSectionX() + viewDistance + 1;
-        int maxZ = playerPos.getSectionZ() + viewDistance + 1;
+        SectionPos playerPos = player.getLastSectionPos();
+        int minX = playerPos.x() - viewDistance - 1;
+        int minZ = playerPos.z() - viewDistance - 1;
+        int maxX = playerPos.x() + viewDistance + 1;
+        int maxZ = playerPos.z() + viewDistance + 1;
 
         LongSet graphIds = new LongLinkedOpenHashSet();
         for (int z = minZ; z <= maxZ; z++) {
             for (int x = minX; x <= maxX; x++) {
-                if (player.getChunkFilter().isWithinDistance(x, z)) {
+                if (player.getChunkTrackingView().contains(x, z)) {
                     ChunkPos pos = new ChunkPos(x, z);
 
                     graphWorld.getAllGraphIdsInChunk(pos).forEach(graphIds::add);
@@ -177,47 +177,47 @@ public final class GLDebugNet {
         GLDRPlatform.INSTANCE.sendPlayPayload(player, payload);
     }
 
-    public static void stopDebuggingPlayer(ServerPlayerEntity player, Identifier universe) {
-        if (!(player.getWorld() instanceof ServerWorld world)) {
+    public static void stopDebuggingPlayer(ServerPlayer player, ResourceLocation universe) {
+        if (!(player.level() instanceof ServerLevel world)) {
             GLLog.warn("Tried to stop debugging a player with a world that was neither client nor server, but was {}",
-                ClassUtils.classOf(player.getWorld()));
+                ClassUtils.classOf(player.level()));
             return;
         }
 
         GLDRPlatform.INSTANCE.sendPlayPayload(player, new DebuggingStopPayload(universe));
 
-        debuggingPlayers.remove(player.getUuid(), universe);
+        debuggingPlayers.remove(player.getUUID(), universe);
     }
 
-    private static void sendBlockGraph(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+    private static void sendBlockGraph(ServerLevel world, GraphWorld graphWorld, BlockGraph graph) {
         if (debuggingPlayers.isEmpty()) {
             return;
         }
 
         PayloadHeader header = new PayloadHeader(graphWorld.getUniverse().getId(), new Int2ObjectLinkedOpenHashMap<>(),
-            new PacketByteBuf(Unpooled.buffer()));
-        Object2IntMap<Identifier> paletteLookup = new Object2IntOpenHashMap<>();
+            new FriendlyByteBuf(Unpooled.buffer()));
+        Object2IntMap<ResourceLocation> paletteLookup = new Object2IntOpenHashMap<>();
 
         PayloadGraph payloadGraph = encodeBlockGraph(header, paletteLookup, graph);
 
         GraphUpdatePayload payload = new GraphUpdatePayload(header, payloadGraph);
 
-        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         graph.getChunks().forEachOrdered(section -> {
-            for (ServerPlayerEntity player : world.getChunkManager().threadedAnvilChunkStorage.getPlayersWatchingChunk(
-                section.toChunkPos(), false)) {
-                if (debuggingPlayers.containsEntry(player.getUuid(), graphWorld.getUniverse().getId())) {
+            for (ServerPlayer player : world.getChunkSource().chunkMap.getPlayers(
+                section.chunk(), false)) {
+                if (debuggingPlayers.containsEntry(player.getUUID(), graphWorld.getUniverse().getId())) {
                     sendTo.add(player);
                 }
             }
         });
 
-        for (ServerPlayerEntity player : sendTo) {
+        for (ServerPlayer player : sendTo) {
             GLDRPlatform.INSTANCE.sendPlayPayload(player, payload);
         }
     }
 
-    private static PayloadGraph encodeBlockGraph(PayloadHeader header, Object2IntMap<Identifier> paletteLookup,
+    private static PayloadGraph encodeBlockGraph(PayloadHeader header, Object2IntMap<ResourceLocation> paletteLookup,
                                                  BlockGraph graph) {
         AtomicInteger index = new AtomicInteger();
         Object2IntMap<NodePos> indexMap = new Object2IntOpenHashMap<>();
@@ -225,7 +225,7 @@ public final class GLDebugNet {
 
         List<PayloadNode> nodes = new ObjectArrayList<>();
         graph.getNodes().forEachOrdered(node -> {
-            Identifier typeId = node.getNode().getType().getId();
+            ResourceLocation typeId = node.getNode().getType().getId();
             int typeIdInt;
             if (paletteLookup.containsKey(typeId)) {
                 typeIdInt = paletteLookup.getInt(typeId);
@@ -267,11 +267,12 @@ public final class GLDebugNet {
         return new PayloadGraph(graph.getId(), nodes, links);
     }
 
-    private static void sendToDebuggingPlayers(ServerWorld world, Identifier universe, CustomPayload payload) {
-        PlayerManager manager = world.getServer().getPlayerManager();
+    private static void sendToDebuggingPlayers(ServerLevel world, ResourceLocation universe,
+                                               CustomPacketPayload payload) {
+        PlayerList manager = world.getServer().getPlayerList();
         for (UUID playerId : debuggingPlayers.keySet()) {
             if (debuggingPlayers.containsEntry(playerId, universe)) {
-                ServerPlayerEntity player = manager.getPlayer(playerId);
+                ServerPlayer player = manager.getPlayer(playerId);
                 if (player != null) {
                     GLDRPlatform.INSTANCE.sendPlayPayload(player, payload);
                 }

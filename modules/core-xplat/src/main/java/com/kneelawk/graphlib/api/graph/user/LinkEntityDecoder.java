@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.Tag;
 
 /**
  * Decoder for {@link LinkEntity}s.
@@ -17,5 +17,6 @@ public interface LinkEntityDecoder {
      * @param tag the NBT element to decode from.
      * @return a newly decode link entity, or <code>null</code> if a link entity could not be decoded.
      */
-    @Nullable LinkEntity decode(NbtElement tag);
+    @Nullable
+    LinkEntity decode(Tag tag);
 }

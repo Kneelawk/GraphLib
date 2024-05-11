@@ -7,10 +7,10 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -31,21 +31,24 @@ public interface NodeHolder<N extends BlockNode> {
      *
      * @return the node pos of this node holder.
      */
-    @NotNull NodePos getPos();
+    @NotNull
+    NodePos getPos();
 
     /**
      * Gets this block node holder's block position.
      *
      * @return the block-position of this block node holder.
      */
-    @NotNull BlockPos getBlockPos();
+    @NotNull
+    BlockPos getBlockPos();
 
     /**
      * Gets the {@link BlockNode} this holder is holding.
      *
      * @return the BlockNode this holder is holding.
      */
-    @NotNull N getNode();
+    @NotNull
+    N getNode();
 
     /**
      * Gets the graph id of the graph that this node is part of.
@@ -59,7 +62,7 @@ public interface NodeHolder<N extends BlockNode> {
      *
      * @return the world of blocks that this node holder is associated with.
      */
-    World getBlockWorld();
+    Level getBlockWorld();
 
     /**
      * Gets the world of graphs that this node holder is associated with.
@@ -73,7 +76,8 @@ public interface NodeHolder<N extends BlockNode> {
      *
      * @return a collection of all the {@link LinkHolder}s this node has with other nodes.
      */
-    @NotNull Collection<LinkHolder<LinkKey>> getConnections();
+    @NotNull
+    Collection<LinkHolder<LinkKey>> getConnections();
 
     /**
      * Gets all connections with keys of the given type.
@@ -82,7 +86,8 @@ public interface NodeHolder<N extends BlockNode> {
      * @param <K>      the type of the key to filter by.
      * @return all connections with keys of the given type.
      */
-    @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsOfType(Class<K> keyClass);
+    @NotNull
+    <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsOfType(Class<K> keyClass);
 
     /**
      * Gets all the connections with keys that match the given predicate.
@@ -92,15 +97,17 @@ public interface NodeHolder<N extends BlockNode> {
      * @param <K>      the type of key to filter by.
      * @return all connections with keys that match the given predicate.
      */
-    @NotNull <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsThatMatch(Class<K> keyClass,
-                                                                               Predicate<K> filter);
+    @NotNull
+    <K extends LinkKey> Stream<LinkHolder<K>> getConnectionsThatMatch(Class<K> keyClass,
+                                                                      Predicate<K> filter);
 
     /**
      * Gets an immutable view of this node holder's position and node.
      *
      * @return a positioned node containing this holder's position and node.
      */
-    @NotNull SnapshotNode<N> toSnapshot();
+    @NotNull
+    SnapshotNode<N> toSnapshot();
 
     /**
      * Gets the graph that this node is a part of.

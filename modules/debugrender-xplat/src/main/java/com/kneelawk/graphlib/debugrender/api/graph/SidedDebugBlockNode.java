@@ -27,9 +27,9 @@ package com.kneelawk.graphlib.debugrender.api.graph;
 
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.core.Direction;
 
-import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
@@ -53,5 +53,6 @@ public interface SidedDebugBlockNode extends DebugBlockNode {
      *
      * @return the side of the block this node is positioned at.
      */
-    @NotNull Direction getSide();
+    @NotNull
+    Direction getSide();
 }

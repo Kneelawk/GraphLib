@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.api;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.impl.Constants;
@@ -23,7 +23,7 @@ public final class GraphLib {
      * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder()}.
      */
     @Deprecated
-    public static final Identifier LEGACY_UNIVERSE_ID = Constants.id(Constants.GRAPHDATA_DIRNAME);
+    public static final ResourceLocation LEGACY_UNIVERSE_ID = Constants.id(Constants.GRAPHDATA_DIRNAME);
 
     /**
      * The universe representing the data managed by pre-1.0 versions of GraphLib.
@@ -39,7 +39,7 @@ public final class GraphLib {
      * @param universeId the id of the universe to check.
      * @return {@code true} if the universe has been registered.
      */
-    public static boolean universeExists(@NotNull Identifier universeId) {
+    public static boolean universeExists(@NotNull ResourceLocation universeId) {
         return GraphLibImpl.UNIVERSE.containsKey(universeId);
     }
 
@@ -49,7 +49,7 @@ public final class GraphLib {
      * @param universeId the id of the universe to look up.
      * @return the universe with the given id.
      */
-    public static @NotNull GraphUniverse getUniverse(@NotNull Identifier universeId) {
+    public static @NotNull GraphUniverse getUniverse(@NotNull ResourceLocation universeId) {
         GraphUniverseImpl graphUniverse = GraphLibImpl.UNIVERSE.get(universeId);
         if (graphUniverse == null) {
             throw new IllegalArgumentException("No universe exists with the name " + universeId);

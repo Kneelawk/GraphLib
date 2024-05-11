@@ -14,50 +14,50 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mojang.datafixers.DataFixer;
 
-import net.minecraft.server.WorldGenerationProgressListener;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
-import net.minecraft.structure.StructureTemplateManager;
-import net.minecraft.util.thread.ThreadExecutor;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.chunk.ChunkProvider;
-import net.minecraft.world.chunk.ChunkStatusChangeListener;
-import net.minecraft.world.gen.chunk.ChunkGenerator;
-import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.server.level.ChunkMap;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.progress.ChunkProgressListener;
+import net.minecraft.util.thread.BlockableEventLoop;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.chunk.LightChunkGetter;
+import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.world.level.storage.LevelStorageSource;
 
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.GraphWorldStorageAccess;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(ChunkMap.class)
 public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
     @Shadow
     @Final
-    ServerWorld world;
+    ServerLevel level;
 
     @Unique
     private ServerGraphWorldStorage storage;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onCreate(ServerWorld world, LevelStorage.Session session, DataFixer dataFixer,
+    private void onCreate(ServerLevel world, LevelStorageSource.LevelStorageAccess session, DataFixer dataFixer,
                           StructureTemplateManager structureTemplateManager, Executor executor,
-                          ThreadExecutor<Runnable> mainThreadExecutor, ChunkProvider chunkProvider,
+                          BlockableEventLoop<Runnable> mainThreadExecutor, LightChunkGetter chunkProvider,
                           ChunkGenerator chunkGenerator,
-                          WorldGenerationProgressListener worldGenerationProgressListener,
-                          ChunkStatusChangeListener chunkStatusChangeListener,
-                          Supplier<PersistentStateManager> persistentStateManagerFactory, int viewDistance,
+                          ChunkProgressListener worldGenerationProgressListener,
+                          ChunkStatusUpdateListener chunkStatusChangeListener,
+                          Supplier<DimensionDataStorage> persistentStateManagerFactory, int viewDistance,
                           boolean dsync, CallbackInfo ci) {
         storage = new ServerGraphWorldStorage(session, world,
-            session.getWorldDirectory(world.getRegistryKey()).resolve(Constants.DATA_DIRNAME), dsync);
+            session.getDimensionPath(world.dimension()).resolve(Constants.DATA_DIRNAME), dsync);
     }
 
-    @Inject(method = "save(Z)V", at = @At("HEAD"))
-    private void onSave(boolean flush, CallbackInfo ci) {
+    @Inject(method = "saveAllChunks", at = @At("HEAD"))
+    private void onSaveAllChunks(boolean flush, CallbackInfo ci) {
         try {
             storage.saveAll(flush);
         } catch (Exception e) {
-            GLLog.error("Error saving graph world storage. World: '{}'/{}", world, world.getRegistryKey().getValue(),
+            GLLog.error("Error saving graph world storage. World: '{}'/{}", level, level.dimension().location(),
                 e);
         }
     }

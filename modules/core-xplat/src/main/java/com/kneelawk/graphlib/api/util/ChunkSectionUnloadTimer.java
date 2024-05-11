@@ -10,9 +10,9 @@ import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
 /**
  * Chunk-Section variant of {@link ChunkUnloadTimer} for keeping track of chunk sections.
@@ -27,8 +27,8 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
     /**
      * Constructs a chunk section unload timer.
      *
-     * @param bottomSectionCoord the section coordinate of the bottom of the world ({@link World#getBottomSectionCoord()}).
-     * @param topSectionCoord    the section coordinate of the top of the world ({@link World#getTopSectionCoord()}).
+     * @param bottomSectionCoord the section coordinate of the bottom of the world ({@link Level#getMinSection()}).
+     * @param topSectionCoord    the section coordinate of the top of the world ({@link Level#getMaxSection()}).
      * @param maxAge             the maximum age chunks sections are allowed to be before they're unloaded.
      */
     public ChunkSectionUnloadTimer(int bottomSectionCoord, int topSectionCoord, long maxAge) {
@@ -40,14 +40,14 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
     @Override
     protected void removeUnloadMark(@NotNull ChunkPos pos) {
         for (int y = bottomSectionCoord; y < topSectionCoord; y++) {
-            toUnload.remove(ChunkSectionPos.asLong(pos.x, y, pos.z));
+            toUnload.remove(SectionPos.asLong(pos.x, y, pos.z));
         }
     }
 
     @Override
     protected void markForUnloading(@NotNull ChunkPos pos) {
         for (int y = bottomSectionCoord; y < topSectionCoord; y++) {
-            long longPos = ChunkSectionPos.asLong(pos.x, y, pos.z);
+            long longPos = SectionPos.asLong(pos.x, y, pos.z);
             if (loadedChunks.contains(longPos)) {
                 toUnload.put(longPos, tickAge + maxAge);
             }
@@ -60,7 +60,7 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
      * @param pos the position of the chunk section to check.
      * @return whether the given chunk section is loaded.
      */
-    public boolean isChunkLoaded(@NotNull ChunkSectionPos pos) {
+    public boolean isChunkLoaded(@NotNull SectionPos pos) {
         return loadedChunks.contains(pos.asLong());
     }
 
@@ -69,9 +69,9 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
      *
      * @param pos the position of the chunk section that was used.
      */
-    public void onChunkUse(@NotNull ChunkSectionPos pos) {
+    public void onChunkUse(@NotNull SectionPos pos) {
         loadedChunks.add(pos.asLong());
-        if (!worldLoadedChunks.contains(pos.toChunkPos().toLong())) {
+        if (!worldLoadedChunks.contains(pos.chunk().toLong())) {
             toUnload.put(pos.asLong(), tickAge + maxAge);
         }
     }
@@ -82,7 +82,7 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
      *
      * @param pos the position of the unloaded chunk.
      */
-    public void onChunkUnload(@NotNull ChunkSectionPos pos) {
+    public void onChunkUnload(@NotNull SectionPos pos) {
         loadedChunks.remove(pos.asLong());
         toUnload.remove(pos.asLong());
     }
@@ -92,11 +92,11 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
      *
      * @return a list of chunk sections to unload.
      */
-    public List<ChunkSectionPos> chunksToUnload() {
+    public List<SectionPos> chunksToUnload() {
         return toUnload.keySet()
             .longStream()
             .filter((longPos) -> toUnload.get(longPos) < tickAge)
-            .mapToObj(ChunkSectionPos::from)
+            .mapToObj(SectionPos::of)
             .collect(Collectors.toList());
     }
 }

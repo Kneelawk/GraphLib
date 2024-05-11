@@ -27,42 +27,39 @@ package com.kneelawk.graphlib.fabric.impl.platform;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.fabric.api.event.GraphLibEvents;
-import com.kneelawk.graphlib.fabric.impl.GraphLibFabricMod;
 import com.kneelawk.graphlib.fabric.impl.event.InternalEvents;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 public class GraphLibPlatformImpl implements GraphLibPlatform {
     @Override
-    public void fireAddUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
+    public void fireAddUniverseSubcommands(RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe) {
         InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.invoker().addUniverseSubcommands(universe);
     }
 
     @Override
-    public void fireGraphCreated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+    public void fireGraphCreated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph) {
         GraphLibEvents.GRAPH_CREATED.invoker().graphCreated(world, graphWorld, graph);
     }
 
     @Override
-    public void fireGraphUpdated(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+    public void fireGraphUpdated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph) {
         GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, graphWorld, graph);
     }
 
     @Override
-    public void fireGraphUnloading(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+    public void fireGraphUnloading(ServerLevel world, GraphWorld graphWorld, BlockGraph graph) {
         GraphLibEvents.GRAPH_UNLOADING.invoker().graphUnloading(world, graphWorld, graph);
     }
 
     @Override
-    public void fireGraphDestroyed(ServerWorld world, GraphWorld graphWorld, long id) {
+    public void fireGraphDestroyed(ServerLevel world, GraphWorld graphWorld, long id) {
         GraphLibEvents.GRAPH_DESTROYED.invoker().graphDestroyed(world, graphWorld, id);
     }
 }

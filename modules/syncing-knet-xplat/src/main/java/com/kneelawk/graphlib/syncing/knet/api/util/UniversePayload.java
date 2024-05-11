@@ -27,22 +27,22 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.knet.api.util.NetByteBuf;
+
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * A payload representing a universe.
  *
  * @param universeId the id of the specified universe.
  */
-public record UniversePayload(@NotNull Identifier universeId) {
+public record UniversePayload(@NotNull ResourceLocation universeId) {
     /**
      * This payload's codec.
      */
-    public static final PacketCodec<NetByteBuf, UniversePayload> CODEC =
-        PacketCodec.of(UniversePayload::encode, UniversePayload::decode);
+    public static final StreamCodec<NetByteBuf, UniversePayload> CODEC =
+        StreamCodec.ofMember(UniversePayload::encode, UniversePayload::decode);
 
     /**
      * Decodes a payload from the buffer.
@@ -50,12 +50,12 @@ public record UniversePayload(@NotNull Identifier universeId) {
      * @param buf the buffer to decode from.
      * @return the decoded payload.
      */
-    public static UniversePayload decode(NetByteBuf buf) {return new UniversePayload(buf.readIdentifier());}
+    public static UniversePayload decode(NetByteBuf buf) {return new UniversePayload(buf.readResourceLocation());}
 
     /**
      * Encodes this payload to the buffer.
      *
      * @param buf the buffer to encode to.
      */
-    public void encode(NetByteBuf buf) {buf.writeIdentifier(universeId);}
+    public void encode(NetByteBuf buf) {buf.writeResourceLocation(universeId);}
 }

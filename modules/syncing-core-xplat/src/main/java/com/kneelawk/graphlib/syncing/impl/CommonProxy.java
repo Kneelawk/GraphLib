@@ -28,23 +28,24 @@ package com.kneelawk.graphlib.syncing.impl;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
+
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 
 public class CommonProxy {
     public static CommonProxy INSTANCE = new CommonProxy();
 
-    public @Nullable World getClientWorld() {
+    public @Nullable Level getClientWorld() {
         return null;
     }
 
     @Deprecated
-    public @NotNull GraphWorldStorage getStorage(@NotNull World world) {
-        if (world instanceof ServerWorld serverWorld) {
+    public @NotNull GraphWorldStorage getStorage(@NotNull Level world) {
+        if (world instanceof ServerLevel serverWorld) {
             return StorageHelper.getStorage(serverWorld);
         }
 
@@ -56,8 +57,8 @@ public class CommonProxy {
         return null;
     }
 
-    public @Nullable GraphWorldStorage getSidedStorage(@NotNull World world) {
-        if (world instanceof ServerWorld serverWorld) {
+    public @Nullable GraphWorldStorage getSidedStorage(@NotNull Level world) {
+        if (world instanceof ServerLevel serverWorld) {
             return StorageHelper.getStorage(serverWorld);
         }
 

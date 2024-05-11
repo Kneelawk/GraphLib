@@ -115,7 +115,7 @@ abstract class SubmoduleExtension(private val project: Project) {
         project.dependencies.apply {
             add("compileOnly", project(xplatName, configuration = "namedElements"))
         }
-        
+
         for (transitiveDep in xplatSubmodule.transitiveProjectDependencies) {
             if (onNeoForge) {
                 neoforgeProjectDependency(transitiveDep)
@@ -158,10 +158,10 @@ abstract class SubmoduleExtension(private val project: Project) {
             }
         }
     }
-    
+
     fun generateRuns() {
         val loomEx = project.extensions.getByType(LoomGradleExtensionAPI::class);
-        loomEx.runs { 
+        loomEx.runs {
             named("client") {
                 ideConfigGenerated(true)
                 programArgs("--width", "1280", "--height", "720")

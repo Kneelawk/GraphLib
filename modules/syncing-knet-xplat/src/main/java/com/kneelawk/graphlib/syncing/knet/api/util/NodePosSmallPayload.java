@@ -27,11 +27,11 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.math.BlockPos;
-
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.knet.api.util.NetByteBuf;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
 
 /**
  * A smaller payload representing a {@link NodePos}, while allowing node data and palette data to go in a header.
@@ -43,7 +43,7 @@ public record NodePosSmallPayload(@NotNull BlockPos pos, int typeId) {
     /**
      * This payload's codec.
      */
-    public static final PacketCodec<NetByteBuf, NodePosSmallPayload> CODEC = PacketCodec.of(
+    public static final StreamCodec<NetByteBuf, NodePosSmallPayload> CODEC = StreamCodec.ofMember(
         NodePosSmallPayload::encode, NodePosSmallPayload::decode);
 
     /**

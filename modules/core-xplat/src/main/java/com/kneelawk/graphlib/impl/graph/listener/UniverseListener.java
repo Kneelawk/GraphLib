@@ -30,5 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 
 public interface UniverseListener {
-    @NotNull WorldListener createWorldListener(ServerGraphWorldImpl world);
+    @NotNull
+    WorldListener createWorldListener(ServerGraphWorldImpl world);
 }

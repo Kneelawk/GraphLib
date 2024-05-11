@@ -3,10 +3,10 @@ package com.kneelawk.graphlib.api.util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -85,11 +85,11 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
      *
      * @param nbt the NBT compound to write to.
      */
-    public void toNbt(@NotNull NbtCompound nbt) {
+    public void toNbt(@NotNull CompoundTag nbt) {
         nbt.put("first", first.toNbt());
         nbt.put("second", second.toNbt());
         nbt.putString("keyType", key.getType().getId().toString());
-        NbtElement keyNbt = key.toTag();
+        Tag keyNbt = key.toTag();
         if (keyNbt != null) {
             nbt.put("key", keyNbt);
         }
@@ -100,8 +100,8 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
      *
      * @return the NBT compound containing this link pos's encoded data.
      */
-    public @NotNull NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
+    public @NotNull CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
         toNbt(nbt);
         return nbt;
     }
@@ -113,13 +113,13 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
      * @param universe the universe containing the decoders that this will use.
      * @return a newly decoded link pos.
      */
-    public static @Nullable LinkPos fromNbt(@NotNull NbtCompound nbt, @NotNull GraphUniverse universe) {
+    public static @Nullable LinkPos fromNbt(@NotNull CompoundTag nbt, @NotNull GraphUniverse universe) {
         NodePos first = NodePos.fromNbt(nbt.getCompound("first"), universe);
         if (first == null) return null;
         NodePos second = NodePos.fromNbt(nbt.getCompound("second"), universe);
         if (second == null) return null;
 
-        Identifier typeId = new Identifier(nbt.getString("keyType"));
+        ResourceLocation typeId = new ResourceLocation(nbt.getString("keyType"));
         LinkKeyType type = universe.getLinkKeyType(typeId);
         if (type == null) return null;
         LinkKey key = type.getDecoder().decode(nbt.get("key"));

@@ -25,34 +25,35 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetByteBuf;
 
-public record UnlinkPayload(Identifier universeId, long graphId, LinkPosPayload linkPos) implements CustomPayload {
-    public static final Id<UnlinkPayload> ID = new Id<>(SyncingKNetImpl.id("unlink"));
-    public static final PacketCodec<NetByteBuf, UnlinkPayload> CODEC =
-        PacketCodec.of(UnlinkPayload::encode, UnlinkPayload::decode);
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
+
+public record UnlinkPayload(ResourceLocation universeId, long graphId, LinkPosPayload linkPos)
+    implements CustomPacketPayload {
+    public static final Type<UnlinkPayload> ID = new Type<>(SyncingKNetImpl.id("unlink"));
+    public static final StreamCodec<NetByteBuf, UnlinkPayload> CODEC =
+        StreamCodec.ofMember(UnlinkPayload::encode, UnlinkPayload::decode);
 
     public static UnlinkPayload decode(NetByteBuf buf) {
-        Identifier universeId = buf.readIdentifier();
+        ResourceLocation universeId = buf.readResourceLocation();
         long graphId = buf.readVarUnsignedLong();
         LinkPosPayload linkPos = LinkPosPayload.decode(buf);
         return new UnlinkPayload(universeId, graphId, linkPos);
     }
 
     public void encode(NetByteBuf buf) {
-        buf.writeIdentifier(universeId);
+        buf.writeResourceLocation(universeId);
         buf.writeVarUnsignedLong(graphId);
         linkPos.encode(buf);
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

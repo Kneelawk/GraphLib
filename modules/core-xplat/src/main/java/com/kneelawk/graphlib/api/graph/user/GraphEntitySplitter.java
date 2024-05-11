@@ -19,6 +19,7 @@ public interface GraphEntitySplitter<G extends GraphEntity<G>> {
      * @param newGraph      the graph of the new graph entity.
      * @return a newly created graph entity split off of the original graph entity.
      */
-    @NotNull GraphEntity<?> splitNew(@NotNull G original, @NotNull BlockGraph originalGraph,
-                                     @NotNull BlockGraph newGraph);
+    @NotNull
+    GraphEntity<?> splitNew(@NotNull G original, @NotNull BlockGraph originalGraph,
+                            @NotNull BlockGraph newGraph);
 }

@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.longs.LongIterable;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -52,7 +52,8 @@ public interface SimpleGraphCollection extends GraphView {
      *
      * @return the newly-created graph.
      */
-    @NotNull SimpleBlockGraph createGraph(boolean initializeGraphEntities);
+    @NotNull
+    SimpleBlockGraph createGraph(boolean initializeGraphEntities);
 
     /**
      * Deletes a graph and all nodes it contains.

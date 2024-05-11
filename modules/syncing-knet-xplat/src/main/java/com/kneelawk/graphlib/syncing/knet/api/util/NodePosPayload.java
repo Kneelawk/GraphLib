@@ -27,13 +27,13 @@ package com.kneelawk.graphlib.syncing.knet.api.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * A payload representing everything for a {@link NodePos} that would not go in the header.
@@ -42,12 +42,12 @@ import com.kneelawk.knet.api.util.NetByteBuf;
  * @param typeId  the node's type id.
  * @param nodeBuf the buffer holding the node's encoded data.
  */
-public record NodePosPayload(@NotNull BlockPos pos, @NotNull Identifier typeId, @NotNull NetByteBuf nodeBuf) {
+public record NodePosPayload(@NotNull BlockPos pos, @NotNull ResourceLocation typeId, @NotNull NetByteBuf nodeBuf) {
     /**
      * This payload's codec.
      */
-    public static final PacketCodec<NetByteBuf, NodePosPayload> CODEC =
-        PacketCodec.of(NodePosPayload::encode, NodePosPayload::decode);
+    public static final StreamCodec<NetByteBuf, NodePosPayload> CODEC =
+        StreamCodec.ofMember(NodePosPayload::encode, NodePosPayload::decode);
 
     /**
      * Decodes a payload from the buffer.
@@ -57,7 +57,7 @@ public record NodePosPayload(@NotNull BlockPos pos, @NotNull Identifier typeId, 
      */
     public static NodePosPayload decode(NetByteBuf buf) {
         BlockPos pos = buf.readBlockPos();
-        Identifier typeId = buf.readIdentifier();
+        ResourceLocation typeId = buf.readResourceLocation();
 
         int nodeBufLen = buf.readInt();
         NetByteBuf nodeBuf = NetBufs.netBuf(nodeBufLen);
@@ -73,7 +73,7 @@ public record NodePosPayload(@NotNull BlockPos pos, @NotNull Identifier typeId, 
      */
     public void encode(NetByteBuf buf) {
         buf.writeBlockPos(pos);
-        buf.writeIdentifier(typeId);
+        buf.writeResourceLocation(typeId);
         buf.writeInt(nodeBuf.readableBytes());
         buf.writeBytes(nodeBuf, nodeBuf.readerIndex(), nodeBuf.readableBytes());
     }

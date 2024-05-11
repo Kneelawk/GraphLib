@@ -20,6 +20,8 @@ pluginManagement {
     plugins {
         val architectury_loom_version: String by settings
         id("dev.architectury.loom") version architectury_loom_version
+        val remapcheck_version: String by settings
+        id("com.kneelawk.remapcheck") version remapcheck_version
     }
 }
 
@@ -60,16 +62,16 @@ fun javadoc(name: String) {
     project(":javadoc-$name").projectDir = File(rootDir, "javadoc/$name")
 }
 
-module("core-xplat", "mojmap")
+module("core-xplat")
 module("core-fabric")
 module("core-neoforge")
-module("debugrender-xplat", "mojmap")
+module("debugrender-xplat")
 module("debugrender-fabric")
 module("debugrender-neoforge")
-module("syncing-core-xplat", "mojmap")
+module("syncing-core-xplat")
 module("syncing-core-fabric")
 module("syncing-core-neoforge")
-module("syncing-knet-xplat", "mojmap")
+module("syncing-knet-xplat")
 module("syncing-knet-fabric")
 module("syncing-knet-neoforge")
 module("syncing-lns")
@@ -78,3 +80,5 @@ example("multiblock-lamps", "xplat", "fabric", "neoforge")
 javadoc("xplat")
 javadoc("fabric")
 javadoc("neoforge")
+
+include(":remapCheck")

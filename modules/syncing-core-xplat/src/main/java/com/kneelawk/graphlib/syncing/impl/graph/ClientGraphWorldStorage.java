@@ -27,31 +27,28 @@ package com.kneelawk.graphlib.syncing.impl.graph;
 
 import java.util.Map;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
-
-import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.impl.GLLog;
-import com.kneelawk.graphlib.impl.GraphLibImpl;
-import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 
 public class ClientGraphWorldStorage implements GraphWorldStorage {
-    private final Map<Identifier, ClientGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
-    private final World clientWorld;
+    private final Map<ResourceLocation, ClientGraphWorldImpl> worlds = new Object2ObjectLinkedOpenHashMap<>();
+    private final Level clientWorld;
 
-    public ClientGraphWorldStorage(World clientWorld, int loadDistance) {
+    public ClientGraphWorldStorage(Level clientWorld, int loadDistance) {
         this.clientWorld = clientWorld;
 
         for (SyncedUniverseImpl universe : GraphLibSyncingImpl.SYNCED_UNIVERSE.values()) {
             if (universe.getSyncProfile().isEnabled()) {
-                Identifier universeId = universe.getId();
+                ResourceLocation universeId = universe.getId();
 
                 worlds.put(universeId, universe.createClientGraphWorld(clientWorld, loadDistance));
             }
@@ -59,7 +56,7 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
     }
 
     @Override
-    public @NotNull ClientGraphWorldImpl get(@NotNull Identifier universeId) {
+    public @NotNull ClientGraphWorldImpl get(@NotNull ResourceLocation universeId) {
         if (!worlds.containsKey(universeId)) {
             throw new IllegalStateException(
                 "Attempted to get a client graph world for a universe that has not been synchronized. Make sure your universe builder's synchronizeToClient(...) is called with something that allows synchronization. Universe: " +
@@ -70,49 +67,50 @@ public class ClientGraphWorldStorage implements GraphWorldStorage {
     }
 
     @Override
-    public @NotNull Map<Identifier, ClientGraphWorldImpl> getAll() {
+    public @NotNull Map<ResourceLocation, ClientGraphWorldImpl> getAll() {
         return worlds;
     }
 
-    public void unload(ChunkPos pos) {
+    public void drop(ChunkPos pos) {
         for (ClientGraphWorldImpl impl : worlds.values()) {
             try {
-                impl.unload(pos);
+                impl.drop(pos);
             } catch (Exception e) {
                 GLLog.error("Error unloading chunk in client GraphWorld. World: '{}'/{}, Chunk: {}", clientWorld,
-                    clientWorld.getRegistryKey().getValue(), pos, e);
+                    clientWorld.dimension().location(), pos, e);
             }
         }
     }
 
-    public void setChunkMapCenter(int x, int z) {
+    public void updateViewCenter(int x, int z) {
         for (ClientGraphWorldImpl impl : worlds.values()) {
             try {
-                impl.setChunkMapCenter(x, z);
+                impl.updateViewCenter(x, z);
             } catch (Exception e) {
                 GLLog.error("Error setting center chunk in client GraphWorld. World: '{}'/{}, Chunk: ({}, {})",
-                    clientWorld, clientWorld.getRegistryKey().getValue(), x, z, e);
+                    clientWorld, clientWorld.dimension().location(), x, z, e);
             }
         }
     }
 
-    public void updateLoadDistance(int loadDistance) {
+    public void updateViewRadius(int loadDistance) {
         for (ClientGraphWorldImpl impl : worlds.values()) {
             try {
-                impl.updateLoadDistance(loadDistance);
+                impl.updateViewRadius(loadDistance);
             } catch (Exception | OutOfMemoryError e) {
                 GLLog.error("Error setting load distance in client GraphWorld. World: '{}'/{}, Load distance: {}",
-                    clientWorld, clientWorld.getRegistryKey().getValue(), loadDistance, e);
+                    clientWorld, clientWorld.dimension().location(), loadDistance, e);
             }
         }
     }
-    
+
     public void tick() {
         for (ClientGraphWorldImpl impl : worlds.values()) {
             try {
                 impl.tick();
             } catch (Exception e) {
-                GLLog.error("Error ticking client graph world. World: '{}'/{}", clientWorld, clientWorld.getRegistryKey().getValue(), e);
+                GLLog.error("Error ticking client graph world. World: '{}'/{}", clientWorld,
+                    clientWorld.dimension().location(), e);
             }
         }
     }

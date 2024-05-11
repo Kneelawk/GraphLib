@@ -30,12 +30,12 @@ import java.util.List;
 
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -49,14 +49,14 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
     // Vanilla Stuff
     //
 
-    public static final MapCodec<ConnectedLampBlock> CODEC = createCodec(ConnectedLampBlock::new);
+    public static final MapCodec<ConnectedLampBlock> CODEC = simpleCodec(ConnectedLampBlock::new);
 
-    public LampConnectorBlock(Settings settings) {
+    public LampConnectorBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected MapCodec<? extends Block> getCodec() {
+    protected MapCodec<? extends Block> codec() {
         return CODEC;
     }
 
@@ -65,17 +65,18 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
     //
 
     @Override
-    public void prepare(BlockState state, WorldAccess world, BlockPos pos, int flags, int maxUpdateDepth) {
+    public void updateIndirectNeighbourShapes(BlockState state, LevelAccessor world, BlockPos pos, int flags,
+                                              int maxUpdateDepth) {
         // only update nodes on the server
-        if (world instanceof ServerWorld serverWorld) {
+        if (world instanceof ServerLevel serverWorld) {
             MultiblockLamps.UNIVERSE.getGraphWorld(serverWorld).updateNodes(pos);
         }
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos,
-                               boolean notify) {
-        if (world instanceof ServerWorld serverWorld) {
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos fromPos,
+                                boolean notify) {
+        if (world instanceof ServerLevel serverWorld) {
             // grab a node holder for the node that *should* be at our current position and update it
             NodeHolder<BlockNode> node = MultiblockLamps.UNIVERSE.getGraphWorld(serverWorld)
                 .getNodeAt(new NodePos(pos, LampConnectorNode.INSTANCE));

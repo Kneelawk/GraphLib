@@ -29,11 +29,11 @@ import java.util.function.Supplier;
 
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 import com.kneelawk.multiblocklamps.MLPlatform;
 
@@ -43,11 +43,11 @@ public class MLPlatformImpl implements MLPlatform {
     @Override
     public <T extends Block> Supplier<T> registerBlockWithItem(String path, Supplier<T> creator,
                                                                MapCodec<? extends Block> codec) {
-        Identifier id = id(path);
+        ResourceLocation id = id(path);
         T block = creator.get();
-        MultiblockLampsFabric.BLOCKS.add(new Pair<>(id, block));
-        MultiblockLampsFabric.ITEMS.add(new Pair<>(id, new BlockItem(block, new Item.Settings())));
-        MultiblockLampsFabric.BLOCK_TYPES.add(new Pair<>(id, codec));
+        MultiblockLampsFabric.BLOCKS.add(new Tuple<>(id, block));
+        MultiblockLampsFabric.ITEMS.add(new Tuple<>(id, new BlockItem(block, new Item.Properties())));
+        MultiblockLampsFabric.BLOCK_TYPES.add(new Tuple<>(id, codec));
         return () -> block;
     }
 }

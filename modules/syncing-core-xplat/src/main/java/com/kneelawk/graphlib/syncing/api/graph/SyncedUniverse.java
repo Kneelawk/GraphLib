@@ -28,13 +28,13 @@ package com.kneelawk.graphlib.syncing.api.graph;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 
 /**
  * Manages server to client synchronization of a {@link GraphUniverse}
@@ -45,25 +45,28 @@ public interface SyncedUniverse {
      *
      * @return this universe's unique id.
      */
-    @NotNull Identifier getId();
+    @NotNull
+    ResourceLocation getId();
 
     /**
      * Gets the graph universe that this handler synchronizes.
      *
      * @return the universe associated with this synchronization handler.
      */
-    @NotNull GraphUniverse getUniverse();
+    @NotNull
+    GraphUniverse getUniverse();
 
     /**
-     * Gets the {@link GraphView} for the given {@link World}.
+     * Gets the {@link GraphView} for the given {@link Level}.
      * <p>
      * This works on both the logical server and the logical client, unlike
-     * {@link GraphUniverse#getGraphWorld(ServerWorld)} which only works on the logical server.
+     * {@link GraphUniverse#getGraphWorld(ServerLevel)} which only works on the logical server.
      *
      * @param world the world to get the graph view associated with.
      * @return the graph view associated with the given world.
      */
-    @Nullable GraphView getSidedGraphView(@NotNull World world);
+    @Nullable
+    GraphView getSidedGraphView(@NotNull Level world);
 
     /**
      * Gets the {@link GraphView} of this client, if this is indeed a physical client.
@@ -71,7 +74,8 @@ public interface SyncedUniverse {
      * @return the graph view of this client, if this is indeed a physical client, or <code>null</code> if this is a
      * physical server.
      */
-    @Nullable GraphView getClientGraphView();
+    @Nullable
+    GraphView getClientGraphView();
 
     /**
      * Registers this synchronization handler so that it can be found by its universe's id.
@@ -85,5 +89,6 @@ public interface SyncedUniverse {
      *
      * @return this universe's synchronization profile.
      */
-    @NotNull SyncProfile getSyncProfile();
+    @NotNull
+    SyncProfile getSyncProfile();
 }

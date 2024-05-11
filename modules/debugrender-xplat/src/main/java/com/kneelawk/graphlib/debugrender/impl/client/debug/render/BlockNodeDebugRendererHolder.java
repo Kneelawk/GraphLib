@@ -27,11 +27,10 @@ package com.kneelawk.graphlib.debugrender.impl.client.debug.render;
 
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.phys.Vec3;
 
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
@@ -39,6 +38,8 @@ import com.kneelawk.graphlib.debugrender.api.client.ClientBlockNodeHolder;
 import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
 import com.kneelawk.graphlib.debugrender.api.client.render.BlockNodeDebugRenderer;
 import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
+
+import com.mojang.blaze3d.vertex.PoseStack;
 
 /**
  * Holds a {@link BlockNodeDebugRenderer} and its associated class.
@@ -50,22 +51,22 @@ import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 public record BlockNodeDebugRendererHolder<N extends DebugBlockNode>(@NotNull Class<N> nodeClass,
                                                                      @NotNull BlockNodeDebugRenderer<N> nodeRenderer) {
     public void render(@NotNull DebugBlockNode node, @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
-                       @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack,
-                       @NotNull DebugBlockGraph graph, @NotNull Vec3d endpoint, int graphColor) {
+                       @NotNull MultiBufferSource consumers, @NotNull PoseStack stack,
+                       @NotNull DebugBlockGraph graph, @NotNull Vec3 endpoint, int graphColor) {
         if (nodeClass.isInstance(node)) {
             nodeRenderer.render(nodeClass.cast(node), holderNode, consumers, stack, graph, endpoint, graphColor);
         }
     }
 
-    public Vec3d getLineEndpoint(@NotNull DebugBlockNode node,
-                                 @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
-                                 @NotNull DebugBlockGraph graph, int nodesAtPos, int indexAmongNodes,
-                                 @NotNull List<Vec3d> otherEndpoints) {
+    public Vec3 getLineEndpoint(@NotNull DebugBlockNode node,
+                                @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
+                                @NotNull DebugBlockGraph graph, int nodesAtPos, int indexAmongNodes,
+                                @NotNull List<Vec3> otherEndpoints) {
         if (nodeClass.isInstance(node)) {
             return nodeRenderer.getLineEndpoint(nodeClass.cast(node), holderNode, graph, nodesAtPos, indexAmongNodes,
                 otherEndpoints);
         } else {
-            return Vec3d.ZERO;
+            return Vec3.ZERO;
         }
     }
 }

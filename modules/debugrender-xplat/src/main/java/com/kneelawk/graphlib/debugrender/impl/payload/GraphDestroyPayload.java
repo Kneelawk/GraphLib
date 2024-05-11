@@ -25,29 +25,29 @@
 
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
-public record GraphDestroyPayload(Identifier universeId, long graphId) implements CustomPayload {
-    public static final Id<GraphDestroyPayload> ID = new Id<>(GraphLibDebugRenderImpl.id("graph_destroy"));
-    public static final PacketCodec<PacketByteBuf, GraphDestroyPayload> CODEC =
-        PacketCodec.of(GraphDestroyPayload::write, GraphDestroyPayload::new);
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-    public GraphDestroyPayload(PacketByteBuf buf) {
-        this(buf.readIdentifier(), buf.readLong());
+public record GraphDestroyPayload(ResourceLocation universeId, long graphId) implements CustomPacketPayload {
+    public static final Type<GraphDestroyPayload> ID = new Type<>(GraphLibDebugRenderImpl.id("graph_destroy"));
+    public static final StreamCodec<FriendlyByteBuf, GraphDestroyPayload> CODEC =
+        StreamCodec.ofMember(GraphDestroyPayload::write, GraphDestroyPayload::new);
+
+    public GraphDestroyPayload(FriendlyByteBuf buf) {
+        this(buf.readResourceLocation(), buf.readLong());
     }
 
-    public void write(PacketByteBuf buf) {
-        buf.writeIdentifier(universeId);
+    public void write(FriendlyByteBuf buf) {
+        buf.writeResourceLocation(universeId);
         buf.writeLong(graphId);
     }
 
     @Override
-    public Id<?> getId() {
+    public Type<?> type() {
         return ID;
     }
 }

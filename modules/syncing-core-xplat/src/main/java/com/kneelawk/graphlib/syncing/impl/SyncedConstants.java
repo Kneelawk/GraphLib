@@ -25,14 +25,14 @@
 
 package com.kneelawk.graphlib.syncing.impl;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class SyncedConstants {
     public static final String MOD_ID = "graphlib_syncing";
 
-    public static final Identifier LISTENER_KEY = id("synchronizer");
+    public static final ResourceLocation LISTENER_KEY = id("synchronizer");
 
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 }

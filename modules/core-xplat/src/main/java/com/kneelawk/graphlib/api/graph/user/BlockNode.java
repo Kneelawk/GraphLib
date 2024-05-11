@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.Tag;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -35,7 +35,8 @@ public interface BlockNode {
      *
      * @return the id of this block node.
      */
-    @NotNull BlockNodeType getType();
+    @NotNull
+    BlockNodeType getType();
 
     /**
      * Encodes this block node's data to an NBT element.
@@ -44,7 +45,8 @@ public interface BlockNode {
      *
      * @return a (possibly null) NBT element describing this block node's data.
      */
-    @Nullable NbtElement toTag();
+    @Nullable
+    Tag toTag();
 
     /**
      * Checks if this block node should be automatically removed.
@@ -94,7 +96,8 @@ public interface BlockNode {
      * @return all nodes this node can connect to.
      * @see WireConnectionDiscoverers
      */
-    @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self);
+    @NotNull
+    Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self);
 
     /**
      * Determines whether this node can connect to another node.

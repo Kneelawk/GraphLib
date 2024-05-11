@@ -7,8 +7,8 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -87,13 +87,13 @@ public final class WireConnectionDiscoverers {
 
         // add all external connections
         for (Direction external : DirectionUtils.perpendiculars(side)) {
-            addFilteredNodes(self, holder, filter, keyFactory, graphView, pos.offset(external), collector);
+            addFilteredNodes(self, holder, filter, keyFactory, graphView, pos.relative(external), collector);
         }
 
         // add all corner connections
-        BlockPos under = pos.offset(side);
+        BlockPos under = pos.relative(side);
         for (Direction corner : DirectionUtils.perpendiculars(side)) {
-            addFilteredNodes(self, holder, filter, keyFactory, graphView, under.offset(corner), collector);
+            addFilteredNodes(self, holder, filter, keyFactory, graphView, under.relative(corner), collector);
         }
 
         // add full-block under connection
@@ -151,7 +151,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.fromDelta(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (other instanceof SidedWireBlockNode otherSidedNode) {
             Direction otherSide = otherSidedNode.getSide();
@@ -172,10 +172,10 @@ public final class WireConnectionDiscoverers {
             }
 
             // finally check the corner connections
-            BlockPos under = pos.offset(side);
+            BlockPos under = pos.relative(side);
             BlockPos underPosDiff = otherPos.subtract(under);
             Direction underPosDiffDir =
-                Direction.fromVector(underPosDiff.getX(), underPosDiff.getY(), underPosDiff.getZ());
+                Direction.fromDelta(underPosDiff.getX(), underPosDiff.getY(), underPosDiff.getZ());
 
             if (underPosDiffDir != null) {
                 return !underPosDiffDir.getAxis().equals(side.getAxis()) &&
@@ -248,7 +248,7 @@ public final class WireConnectionDiscoverers {
         List<HalfLink> collector = new ArrayList<>();
 
         for (Direction side : Direction.values()) {
-            for (var iter = graphView.getNodesAt(pos.offset(side)).iterator(); iter.hasNext(); ) {
+            for (var iter = graphView.getNodesAt(pos.relative(side)).iterator(); iter.hasNext(); ) {
                 NodeHolder<BlockNode> other = iter.next();
                 HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
                 if (fullBlockCanConnect(self, holder, link, filter)) {
@@ -289,7 +289,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.fromDelta(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (posDiffDir == null) {
             return false;
@@ -363,7 +363,7 @@ public final class WireConnectionDiscoverers {
 
         // add external connections
         for (Direction external : Direction.values()) {
-            for (var iter = graphView.getNodesAt(pos.offset(external)).iterator(); iter.hasNext(); ) {
+            for (var iter = graphView.getNodesAt(pos.relative(external)).iterator(); iter.hasNext(); ) {
                 NodeHolder<BlockNode> other = iter.next();
                 HalfLink link = new HalfLink(keyFactory.createLinkKey(holder, other), other);
                 if (centerWireCanConnect(self, holder, link, filter)) {
@@ -404,7 +404,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromVector(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.fromDelta(posDiff.getX(), posDiff.getY(), posDiff.getZ());
 
         if (other instanceof CenterWireBlockNode || other instanceof FullWireBlockNode) {
             return posDiffDir != null && (filter == null || filter.canConnect(self, holder, posDiffDir, link)) &&

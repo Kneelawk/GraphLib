@@ -34,7 +34,7 @@ jobs:
         run: chmod +x ./gradlew
       - name: Build
         run: ./gradlew build --no-daemon
-        env: 
+        env:
           JAVA_VERSION: ${{ matrix.java }} # override default toolchain version
       - name: Capture Build Artifacts
         if: ${{ runner.os == 'Linux' && matrix.java == '21' }}

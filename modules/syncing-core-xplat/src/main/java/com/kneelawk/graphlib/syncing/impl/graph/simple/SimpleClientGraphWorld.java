@@ -30,6 +30,11 @@ import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,11 +43,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -68,12 +68,12 @@ import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 
 public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, SimpleGraphCollection {
     private final SyncedUniverse universe;
-    final World world;
+    final Level world;
 
     private final SimpleClientGraphChunkManager manager;
     private final Long2ObjectMap<SimpleBlockGraph> graphs = new Long2ObjectLinkedOpenHashMap<>();
 
-    public SimpleClientGraphWorld(SyncedUniverse universe, World world, int loadDistance) {
+    public SimpleClientGraphWorld(SyncedUniverse universe, Level world, int loadDistance) {
         this.universe = universe;
         this.world = world;
 
@@ -91,17 +91,17 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public void unload(ChunkPos pos) {
+    public void drop(ChunkPos pos) {
         manager.unload(pos);
     }
 
     @Override
-    public void setChunkMapCenter(int x, int z) {
+    public void updateViewCenter(int x, int z) {
         manager.setPillarMapCenter(x, z);
     }
 
     @Override
-    public void updateLoadDistance(int loadDistance) {
+    public void updateViewRadius(int loadDistance) {
         manager.updateLoadDistance(loadDistance);
     }
 
@@ -116,7 +116,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public @NotNull World getWorld() {
+    public @NotNull Level getWorld() {
         return world;
     }
 
@@ -140,7 +140,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public boolean nodeExistsAt(@NotNull NodePos pos) {
-        SimpleBlockGraphChunk chunk = manager.getIfExists(ChunkSectionPos.from(pos.pos()));
+        SimpleBlockGraphChunk chunk = manager.getIfExists(SectionPos.of(pos.pos()));
         if (chunk == null) return false;
 
         return chunk.containsNode(pos, graphs);
@@ -148,7 +148,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public @Nullable BlockGraph getGraphForNode(@NotNull NodePos pos) {
-        SimpleBlockGraphChunk chunk = manager.getIfExists(ChunkSectionPos.from(pos.pos()));
+        SimpleBlockGraphChunk chunk = manager.getIfExists(SectionPos.of(pos.pos()));
         if (chunk == null) return null;
 
         return chunk.getGraphForNode(pos, graphs);
@@ -184,7 +184,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public @NotNull LongStream getAllGraphIdsAt(@NotNull BlockPos pos) {
-        SimpleBlockGraphChunk chunk = manager.getIfExists(ChunkSectionPos.from(pos));
+        SimpleBlockGraphChunk chunk = manager.getIfExists(SectionPos.of(pos));
         if (chunk == null) return LongStream.empty();
 
         return chunk.getGraphsAt(pos).longStream();
@@ -201,7 +201,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull ChunkSectionPos pos) {
+    public @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull SectionPos pos) {
         SimpleBlockGraphChunk chunk = manager.getIfExists(pos);
         if (chunk == null) return LongStream.empty();
 
@@ -209,7 +209,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     }
 
     @Override
-    public @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+    public @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull SectionPos pos) {
         return getAllGraphIdsInChunkSection(pos).mapToObj(graphs);
     }
 
@@ -219,7 +219,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         if (pillar == null) return LongStream.empty();
 
         LongSet graphsInChunk = new LongLinkedOpenHashSet();
-        for (int chunkY = world.getBottomSectionCoord(); chunkY < world.getTopSectionCoord(); chunkY++) {
+        for (int chunkY = world.getMinSection(); chunkY < world.getMaxSection(); chunkY++) {
             SimpleBlockGraphChunk chunk = pillar.get(chunkY);
             if (chunk != null) {
                 graphsInChunk.addAll(chunk.getGraphs());
@@ -247,7 +247,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
     private void onUnload(SimpleBlockGraphPillar pillar) {
         // dedupe graphs
         LongSet unloading = new LongLinkedOpenHashSet();
-        for (int chunkY = world.getBottomSectionCoord(); chunkY < world.getTopSectionCoord(); chunkY++) {
+        for (int chunkY = world.getMinSection(); chunkY < world.getMaxSection(); chunkY++) {
             SimpleBlockGraphChunk chunk = pillar.get(chunkY);
             if (chunk != null) {
                 unloading.addAll(chunk.getGraphs());
@@ -258,7 +258,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             SimpleBlockGraph graph = graphs.get(graphId);
             if (graph != null) {
                 graph.unloadInChunk(pillar.x, pillar.z);
-                
+
                 // actually unload the graph
                 if (graph.isEmpty()) {
                     graphs.remove(graphId);
@@ -269,7 +269,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
             }
         }
     }
-    
+
     private void tickGraphs() {
         for (SimpleBlockGraph graph : graphs.values()) {
             graph.onTick();
@@ -306,13 +306,13 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         graphs.remove(id);
 
         for (long sectionPos : graph.getChunksImpl()) {
-            SimpleBlockGraphChunk chunk = manager.getIfExists(ChunkSectionPos.from(sectionPos));
+            SimpleBlockGraphChunk chunk = manager.getIfExists(SectionPos.of(sectionPos));
             if (chunk != null) {
                 // Is called by graph.merge, which removes all nodes from the graph being deleted first.
                 chunk.removeGraph(id);
             } else {
                 GLLog.warn("Attempted to destroy graph in chunk that does not exist. Id: {}, chunk: {}", id,
-                    ChunkSectionPos.from(sectionPos));
+                    SectionPos.of(sectionPos));
             }
         }
 
@@ -321,7 +321,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void putGraphWithNode(long id, @NotNull NodePos pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
+        SectionPos sectionPos = SectionPos.of(pos.pos());
         SimpleBlockGraphChunk chunk = manager.getOrCreate(sectionPos);
         if (chunk != null) {
             chunk.putGraphWithNode(id, pos, graphs);
@@ -333,7 +333,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void removeGraphWithNode(long id, @NotNull NodePos pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
+        SectionPos sectionPos = SectionPos.of(pos.pos());
         SimpleBlockGraphChunk chunk = manager.getIfExists(sectionPos);
         if (chunk != null) {
             chunk.removeGraphWithNodeUnchecked(pos);
@@ -345,7 +345,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void removeGraphInPos(long id, @NotNull BlockPos pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
+        SectionPos sectionPos = SectionPos.of(pos);
         SimpleBlockGraphChunk chunk = manager.getIfExists(sectionPos);
         if (chunk != null) {
             chunk.removeGraphInPosUnchecked(id, pos);
@@ -357,7 +357,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
 
     @Override
     public void removeGraphInChunk(long id, long pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
+        SectionPos sectionPos = SectionPos.of(pos);
         SimpleBlockGraphChunk chunk = manager.getIfExists(sectionPos);
         if (chunk != null) {
             chunk.removeGraphUnchecked(id);

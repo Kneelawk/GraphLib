@@ -28,10 +28,10 @@ package com.kneelawk.graphlib.syncing.impl;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
 
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -41,7 +41,7 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 
 public class GraphLibSyncingImpl {
-    public static final Map<Identifier, SyncedUniverseImpl> SYNCED_UNIVERSE = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, SyncedUniverseImpl> SYNCED_UNIVERSE = new LinkedHashMap<>();
 
     public static void register(SyncedUniverseImpl universe) {
         if (!(universe.getUniverse() instanceof GraphUniverseImpl universeImpl)) throw new IllegalArgumentException(
@@ -55,7 +55,7 @@ public class GraphLibSyncingImpl {
         universeImpl.addListener(SyncedConstants.LISTENER_KEY, universe);
     }
 
-    public static void sendChunkDataPackets(ServerWorld serverWorld, ServerPlayerEntity player, ChunkPos pos) {
+    public static void sendChunkDataPackets(ServerLevel serverWorld, ServerPlayer player, ChunkPos pos) {
         ServerGraphWorldStorage storage = StorageHelper.getStorage(serverWorld);
 
         for (SyncedUniverseImpl universe : SYNCED_UNIVERSE.values()) {
@@ -66,7 +66,7 @@ public class GraphLibSyncingImpl {
                     universe.sendChunkDataPacket(world, player, pos);
                 } catch (Exception e) {
                     GLLog.error("Error sending GraphWorld chunk packets. World: '{}'/{}, Chunk: {}", serverWorld,
-                        serverWorld.getRegistryKey().getValue(), pos, e);
+                        serverWorld.dimension().location(), pos, e);
                 }
             }
         }

@@ -50,5 +50,6 @@ public interface BlockNodePacketDecoder {
      * @return the decoded block node.
      * @throws InvalidInputDataException if a block node could not be decoded.
      */
-    @NotNull BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
+    @NotNull
+    BlockNode decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }

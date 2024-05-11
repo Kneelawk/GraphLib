@@ -29,9 +29,8 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.util.ObjectType;
 
@@ -39,10 +38,10 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  * Describes a type of link entity.
  */
 public class LinkEntityType implements ObjectType {
-    private final @NotNull Identifier id;
+    private final @NotNull ResourceLocation id;
     private final @NotNull LinkEntityDecoder decoder;
 
-    private LinkEntityType(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder) {
+    private LinkEntityType(@NotNull ResourceLocation id, @NotNull LinkEntityDecoder decoder) {
         this.id = id;
         this.decoder = decoder;
     }
@@ -53,7 +52,7 @@ public class LinkEntityType implements ObjectType {
      * @return this type's id.
      */
     @Override
-    public @NotNull Identifier getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
@@ -96,7 +95,7 @@ public class LinkEntityType implements ObjectType {
      * @return a new link entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder) {
+    public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull LinkEntityDecoder decoder) {
         return new LinkEntityType(id, decoder);
     }
 
@@ -108,7 +107,7 @@ public class LinkEntityType implements ObjectType {
      * @return a new link entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull Supplier<LinkEntity> supplier) {
+    public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkEntity> supplier) {
         return new LinkEntityType(id, nbt -> supplier.get());
     }
 }

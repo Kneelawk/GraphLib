@@ -37,16 +37,16 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.level.storage.LevelStorage;
-import net.minecraft.world.storage.StorageKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+import net.minecraft.world.level.storage.LevelStorageSource;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -94,7 +94,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     final SimpleGraphUniverse universe;
 
-    final ServerWorld world;
+    final ServerLevel world;
 
     private final UnloadingRegionBasedStorage<SimpleBlockGraphChunk> chunks;
 
@@ -113,7 +113,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     private final ObjectSet<UpdatePos> connectionUpdates = new ObjectLinkedOpenHashSet<>();
     private final Map<NodePos, CallbackUpdate> callbackUpdates = new Object2ObjectLinkedOpenHashMap<>();
 
-    private final Map<Identifier, WorldListener> listeners = new Object2ObjectLinkedOpenHashMap<>();
+    private final Map<ResourceLocation, WorldListener> listeners = new Object2ObjectLinkedOpenHashMap<>();
 
     private boolean stateDirty = false;
     private long prevGraphId = -1L;
@@ -122,11 +122,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     private boolean closed = false;
 
-    public SimpleServerGraphWorld(SimpleGraphUniverse universe, @NotNull LevelStorage.Session session,
-                                  @NotNull ServerWorld world, @NotNull Path path, boolean syncChunkWrites) {
+    public SimpleServerGraphWorld(SimpleGraphUniverse universe, @NotNull LevelStorageSource.LevelStorageAccess session,
+                                  @NotNull ServerLevel world, @NotNull Path path, boolean syncChunkWrites) {
         this.universe = universe;
         this.chunks = new UnloadingRegionBasedStorage<>(
-            new StorageKey(session.getDirectoryName(), world.getRegistryKey(), universe.getId() + "/chunks"), world,
+            new RegionStorageInfo(session.getLevelId(), world.dimension(), universe.getId() + "/chunks"), world,
             path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
             (compound, pos, markDirty) -> new SimpleBlockGraphChunk(compound, pos, markDirty, universe),
             SimpleBlockGraphChunk::new, universe.saveMode);
@@ -134,7 +134,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         this.saveMode = universe.saveMode;
         graphsDir = path.resolve(Constants.GRAPHS_DIRNAME);
         stateFile = path.resolve(Constants.STATE_FILENAME);
-        timer = new ChunkSectionUnloadTimer(world.getBottomSectionCoord(), world.getTopSectionCoord(), MAX_AGE);
+        timer = new ChunkSectionUnloadTimer(world.getMinSection(), world.getMaxSection(), MAX_AGE);
 
         try {
             Files.createDirectories(graphsDir);
@@ -221,7 +221,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     @Override
-    public @Nullable WorldListener getListener(Identifier id) {
+    public @Nullable WorldListener getListener(ResourceLocation id) {
         return listeners.get(id);
     }
 
@@ -243,7 +243,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      * @return the block world associated with this graph view.
      */
     @Override
-    public @NotNull ServerWorld getWorld() {
+    public @NotNull ServerLevel getWorld() {
         return world;
     }
 
@@ -294,7 +294,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public boolean nodeExistsAt(@NotNull NodePos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(pos.pos()));
         if (chunk != null) {
             return chunk.containsNode(pos, this::getGraph);
         }
@@ -309,7 +309,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public @Nullable SimpleBlockGraph getGraphForNode(@NotNull NodePos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.pos()));
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(pos.pos()));
         if (chunk != null) {
             return chunk.getGraphForNode(pos, this::getGraph);
         }
@@ -384,7 +384,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public @NotNull LongStream getAllGraphIdsAt(@NotNull BlockPos pos) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos));
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(pos));
         if (chunk != null) {
             LongSet graphsInPos = chunk.getGraphsAt(pos);
             if (graphsInPos != null) {
@@ -468,8 +468,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     @Override
     public @Nullable LinkHolder<LinkKey> connectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key,
                                                       @Nullable LinkEntity entity) {
-        SimpleBlockGraphChunk aChunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
-        SimpleBlockGraphChunk bChunk = chunks.getIfExists(ChunkSectionPos.from(b.pos()));
+        SimpleBlockGraphChunk aChunk = chunks.getIfExists(SectionPos.of(a.pos()));
+        SimpleBlockGraphChunk bChunk = chunks.getIfExists(SectionPos.of(b.pos()));
 
         if (aChunk != null && bChunk != null) {
             SimpleBlockGraph aGraph = aChunk.getGraphForNode(a, this::getGraph);
@@ -531,7 +531,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public boolean disconnectNodes(@NotNull NodePos a, @NotNull NodePos b, @NotNull LinkKey key) {
-        SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(a.pos()));
+        SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(a.pos()));
         if (chunk != null) {
             SimpleBlockGraph graph = chunk.getGraphForNode(a, this::getGraph);
             if (graph != null) {
@@ -566,7 +566,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public void updateNodes(@NotNull BlockPos pos) {
-        nodeUpdates.add(pos.toImmutable());
+        nodeUpdates.add(pos.immutable());
     }
 
     /**
@@ -601,7 +601,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public void updateConnections(@NotNull BlockPos pos) {
-        connectionUpdates.add(new UpdateBlockPos(pos.toImmutable()));
+        connectionUpdates.add(new UpdateBlockPos(pos.immutable()));
     }
 
     /**
@@ -635,7 +635,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
         if (graph != null) {
             for (long posLong : graph.getChunksImpl()) {
-                timer.onChunkUse(ChunkSectionPos.from(posLong));
+                timer.onChunkUse(SectionPos.of(posLong));
             }
         }
 
@@ -652,7 +652,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      * @return a stream of all graph ids in the given chunk section.
      */
     @Override
-    public @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull ChunkSectionPos pos) {
+    public @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull SectionPos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(pos);
         if (chunk != null) {
             return chunk.getGraphs().longStream();
@@ -668,7 +668,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      * @return a stream of all the loaded graphs in the given chunk section.
      */
     @Override
-    public @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+    public @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull SectionPos pos) {
         return getAllGraphIdsInChunkSection(pos).mapToObj(loadedGraphs::get).filter(Objects::nonNull)
             .map(Function.identity());
     }
@@ -684,8 +684,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public @NotNull LongStream getAllGraphIdsInChunk(@NotNull ChunkPos pos) {
-        return LongStream.range(world.getBottomSectionCoord(), world.getTopSectionCoord())
-            .flatMap(y -> getAllGraphIdsInChunkSection(ChunkSectionPos.from(pos, (int) y))).distinct();
+        return LongStream.range(world.getMinSection(), world.getMaxSection())
+            .flatMap(y -> getAllGraphIdsInChunkSection(SectionPos.of(pos, (int) y))).distinct();
     }
 
     /**
@@ -766,10 +766,10 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      * @param listener  progress and completion listeners.
      */
     @Override
-    public void rebuildChunks(List<ChunkSectionPos> toRebuild, RebuildChunksListener listener) {
+    public void rebuildChunks(List<SectionPos> toRebuild, RebuildChunksListener listener) {
         if (rebuildState == null) {
             LongSet chunksToRebuild = new LongLinkedOpenHashSet();
-            for (ChunkSectionPos pos : toRebuild) {
+            for (SectionPos pos : toRebuild) {
                 chunksToRebuild.add(pos.asLong());
                 SimpleBlockGraphChunk chunk = chunks.getIfExists(pos);
                 if (chunk != null) {
@@ -841,7 +841,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     @Override
     public void putGraphWithNode(long id, @NotNull NodePos pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
+        SectionPos sectionPos = SectionPos.of(pos.pos());
         SimpleBlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
         chunk.putGraphWithNode(id, pos, this::getGraph);
 
@@ -850,7 +850,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     @Override
     public void removeGraphWithNode(long id, @NotNull NodePos pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos.pos());
+        SectionPos sectionPos = SectionPos.of(pos.pos());
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
             chunk.removeGraphWithNodeUnchecked(pos);
@@ -862,7 +862,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     @Override
     public void removeGraphInPos(long id, @NotNull BlockPos pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
+        SectionPos sectionPos = SectionPos.of(pos);
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
             chunk.removeGraphInPosUnchecked(id, pos);
@@ -874,7 +874,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     @Override
     public void removeGraphInChunk(long id, long pos) {
-        ChunkSectionPos sectionPos = ChunkSectionPos.from(pos);
+        SectionPos sectionPos = SectionPos.of(pos);
         SimpleBlockGraphChunk chunk = chunks.getIfExists(sectionPos);
         if (chunk != null) {
             chunk.removeGraphUnchecked(id);
@@ -1208,7 +1208,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         Iterator<NodeHolder<BlockNode>> holderIterator = graph.getNodes().iterator();
         while (holderIterator.hasNext()) {
             NodeHolder<BlockNode> holder = holderIterator.next();
-            ChunkSectionPos sectionPos = ChunkSectionPos.from(holder.getBlockPos());
+            SectionPos sectionPos = SectionPos.of(holder.getBlockPos());
 
             if (chunkPoses.contains(sectionPos.asLong())) {
                 SimpleBlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
@@ -1228,8 +1228,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     private void loadGraphs(@NotNull ChunkPos pos) {
-        for (int y = world.getBottomSectionCoord(); y < world.getTopSectionCoord(); y++) {
-            SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(pos.x, y, pos.z));
+        for (int y = world.getMinSection(); y < world.getMaxSection(); y++) {
+            SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(pos.x, y, pos.z));
             if (chunk != null) {
                 for (long id : chunk.getGraphs()) {
                     getGraph(id);
@@ -1239,9 +1239,9 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     private void saveGraphs(@NotNull ChunkPos pos) {
-        LongSet chunkSectionPillar = new LongOpenHashSet(world.getTopSectionCoord() - world.getBottomSectionCoord());
-        for (int y = world.getBottomSectionCoord(); y < world.getTopSectionCoord(); y++) {
-            chunkSectionPillar.add(ChunkSectionPos.asLong(pos.x, y, pos.z));
+        LongSet chunkSectionPillar = new LongOpenHashSet(world.getMaxSection() - world.getMinSection());
+        for (int y = world.getMinSection(); y < world.getMaxSection(); y++) {
+            chunkSectionPillar.add(SectionPos.asLong(pos.x, y, pos.z));
         }
 
         for (SimpleBlockGraph loadedGraph : loadedGraphs.values()) {
@@ -1256,8 +1256,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     private void unloadGraphs() {
-        List<ChunkSectionPos> chunksToUnload = timer.chunksToUnload();
-        for (ChunkSectionPos chunk : chunksToUnload) {
+        List<SectionPos> chunksToUnload = timer.chunksToUnload();
+        for (SectionPos chunk : chunksToUnload) {
             // acknowledge that we're unloading the chunk's data
             timer.onChunkUnload(chunk);
         }
@@ -1362,7 +1362,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     private void writeGraph(@NotNull SimpleBlockGraph graph) {
         Path graphFile = getGraphFile(graph.getId());
 
-        NbtCompound root = new NbtCompound();
+        CompoundTag root = new CompoundTag();
         root.put("data", graph.toTag());
 
         try (OutputStream os = Files.newOutputStream(graphFile)) {
@@ -1381,8 +1381,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         try (InputStream is = Files.newInputStream(graphFile)) {
-            NbtCompound root = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
-            NbtCompound data = root.getCompound("data");
+            CompoundTag root = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
+            CompoundTag data = root.getCompound("data");
             SimpleBlockGraph graph = SimpleBlockGraph.fromTag(this, id, data);
             if (graph.isEmpty()) {
                 GLLog.warn(
@@ -1422,7 +1422,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         for (long sectionPos : graph.getChunksImpl()) {
-            SimpleBlockGraphChunk chunk = chunks.getIfExists(ChunkSectionPos.from(sectionPos));
+            SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(sectionPos));
             if (chunk != null) {
                 // Note: if this is changed to only remove from block-poses that the graph actually occupies, make sure
                 // not to get those block-poses from the block-graph's graph, because the block-graph's graph will often
@@ -1430,7 +1430,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 chunk.removeGraph(id);
             } else {
                 GLLog.warn("Attempted to destroy graph in chunk that does not exist. Id: {}, chunk: {}", id,
-                    ChunkSectionPos.from(sectionPos));
+                    SectionPos.of(sectionPos));
             }
         }
 
@@ -1444,8 +1444,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     private void loadState() {
         if (Files.exists(stateFile)) {
             try (InputStream is = Files.newInputStream(stateFile)) {
-                NbtCompound root = NbtIo.readCompressed(is, NbtSizeTracker.ofUnlimitedBytes());
-                NbtCompound data = root.getCompound("data");
+                CompoundTag root = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
+                CompoundTag data = root.getCompound("data");
                 prevGraphId = data.getLong("prevGraphId");
             } catch (Exception e) {
                 GLLog.error("Error loading graph controller state file.", e);
@@ -1455,9 +1455,9 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     private void saveState() {
         if (stateDirty) {
-            NbtCompound root = new NbtCompound();
+            CompoundTag root = new CompoundTag();
 
-            NbtCompound data = new NbtCompound();
+            CompoundTag data = new CompoundTag();
             data.putLong("prevGraphId", prevGraphId);
 
             root.put("data", data);
@@ -1486,7 +1486,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             "Use the command '/graphlib {} rebuildchunks {} {} {} {} {} {}' in the {} dimension to fix the issue.",
             universe.getId(), affected.getX(),
             affected.getY(), affected.getZ(), affected.getX(), affected.getY(), affected.getZ(),
-            world.getRegistryKey().getValue());
+            world.dimension().location());
     }
 
     private sealed interface UpdatePos {}

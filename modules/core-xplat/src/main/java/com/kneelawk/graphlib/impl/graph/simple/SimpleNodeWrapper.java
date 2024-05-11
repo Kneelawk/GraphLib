@@ -8,13 +8,12 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
@@ -26,19 +25,19 @@ public final class SimpleNodeWrapper {
     long graphId;
 
     public SimpleNodeWrapper(@NotNull BlockPos pos, @NotNull BlockNode node, long graphId) {
-        this.pos = pos.toImmutable();
+        this.pos = pos.immutable();
         this.node = node;
         this.graphId = graphId;
     }
 
-    public @NotNull NbtCompound toTag() {
-        NbtCompound tag = new NbtCompound();
+    public @NotNull CompoundTag toTag() {
+        CompoundTag tag = new CompoundTag();
 
         tag.putInt("x", pos.getX());
         tag.putInt("y", pos.getY());
         tag.putInt("z", pos.getZ());
 
-        NbtElement nodeTag = node.toTag();
+        Tag nodeTag = node.toTag();
         if (nodeTag != null) {
             tag.put("node", nodeTag);
         }
@@ -49,11 +48,11 @@ public final class SimpleNodeWrapper {
     }
 
     @Nullable
-    public static SimpleNodeWrapper fromTag(@NotNull GraphUniverseImpl universe, @NotNull NbtCompound tag,
+    public static SimpleNodeWrapper fromTag(@NotNull GraphUniverseImpl universe, @NotNull CompoundTag tag,
                                             long graphId) {
         BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
 
-        Identifier typeId = new Identifier(tag.getString("type"));
+        ResourceLocation typeId = new ResourceLocation(tag.getString("type"));
         BlockNodeType type = universe.getNodeType(typeId);
 
         if (type == null) {
@@ -61,7 +60,7 @@ public final class SimpleNodeWrapper {
             return null;
         }
 
-        NbtElement nodeTag = tag.get("node");
+        Tag nodeTag = tag.get("node");
         BlockNode node = type.getDecoder().decode(nodeTag);
 
         if (node == null) {

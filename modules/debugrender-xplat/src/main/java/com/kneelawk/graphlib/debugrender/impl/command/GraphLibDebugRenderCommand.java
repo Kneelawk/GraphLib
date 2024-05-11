@@ -28,44 +28,44 @@ package com.kneelawk.graphlib.debugrender.impl.command;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
 
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.literal;
 
 public class GraphLibDebugRenderCommand {
-    public static void addUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe) {
+    public static void addUniverseSubcommands(RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe) {
         universe.then(literal("debugrender")
             .then(literal("start")
                 .executes(context -> startDebugRender(context.getSource(),
-                    IdentifierArgumentType.getIdentifier(context, "universe")))
+                    ResourceLocationArgument.getId(context, "universe")))
             )
             .then(literal("stop")
                 .executes(context -> stopDebugRender(context.getSource(),
-                    IdentifierArgumentType.getIdentifier(context, "universe")))
+                    ResourceLocationArgument.getId(context, "universe")))
             )
         );
     }
 
-    private static int startDebugRender(ServerCommandSource source, Identifier universeId)
+    private static int startDebugRender(CommandSourceStack source, ResourceLocation universeId)
         throws CommandSyntaxException {
         if (!GraphLib.universeExists(universeId)) throw GraphLibCommand.UNKNOWN_UNIVERSE.create(universeId);
 
         GraphUniverse universe = GraphLib.getUniverse(universeId);
 
-        GLDebugNet.startDebuggingPlayer(source.getPlayerOrThrow(), universe);
+        GLDebugNet.startDebuggingPlayer(source.getPlayerOrException(), universe);
         return 15;
     }
 
-    private static int stopDebugRender(ServerCommandSource source, Identifier universeId)
+    private static int stopDebugRender(CommandSourceStack source, ResourceLocation universeId)
         throws CommandSyntaxException {
-        GLDebugNet.stopDebuggingPlayer(source.getPlayerOrThrow(), universeId);
+        GLDebugNet.stopDebuggingPlayer(source.getPlayerOrException(), universeId);
         return 15;
     }
 }

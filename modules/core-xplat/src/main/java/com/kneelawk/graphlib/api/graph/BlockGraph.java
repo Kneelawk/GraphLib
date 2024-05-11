@@ -6,8 +6,8 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
@@ -45,7 +45,8 @@ public interface BlockGraph {
      * @param pos the block-position to get the nodes in.
      * @return a stream of all the nodes in this graph in the given block-position.
      */
-    @NotNull Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos);
+    @NotNull
+    Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos);
 
     /**
      * Gets all the nodes in this graph in the given sided block-position.
@@ -53,7 +54,8 @@ public interface BlockGraph {
      * @param pos the sided block-position to get the nodes in.
      * @return a stream of all the nodes in this graph in the given sided block-position.
      */
-    @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
+    @NotNull
+    Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
 
     /**
      * Checks whether the given node actually exists in this graph.
@@ -69,7 +71,8 @@ public interface BlockGraph {
      * @param pos the position of the node to get.
      * @return the node holder at the given position.
      */
-    @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
+    @Nullable
+    NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
 
     /**
      * Checks whether the given link actually exists in this graph.
@@ -85,7 +88,8 @@ public interface BlockGraph {
      * @param pos the position to get the link at.
      * @return the link holder at the given position, if it exists.
      */
-    @Nullable LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos);
+    @Nullable
+    LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos);
 
     /**
      * Gets the node entity at a given pos, if it exists.
@@ -93,7 +97,8 @@ public interface BlockGraph {
      * @param pos the position to find the node entity at.
      * @return the node entity, or <code>null</code> if there is no node entity present at the given location.
      */
-    @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos);
+    @Nullable
+    NodeEntity getNodeEntity(@NotNull NodePos pos);
 
     /**
      * Gets the link entity at the given pos, if it exists.
@@ -101,7 +106,8 @@ public interface BlockGraph {
      * @param pos the position to find the link entity at.
      * @return the link entity, or <code>null</code> if there is no link entity present at the given location.
      */
-    @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos);
+    @Nullable
+    LinkEntity getLinkEntity(@NotNull LinkPos pos);
 
     /**
      * Gets all the nodes in the given chunk section.
@@ -109,28 +115,32 @@ public interface BlockGraph {
      * @param pos the position of the chunk section to get all nodes from.
      * @return a stream of all nodes in the given chunk section.
      */
-    @NotNull Stream<NodeHolder<BlockNode>> getNodesInChunkSection(ChunkSectionPos pos);
+    @NotNull
+    Stream<NodeHolder<BlockNode>> getNodesInChunkSection(SectionPos pos);
 
     /**
      * Gets all the nodes in this graph.
      *
      * @return a stream of all the nodes in this graph.
      */
-    @NotNull Stream<NodeHolder<BlockNode>> getNodes();
+    @NotNull
+    Stream<NodeHolder<BlockNode>> getNodes();
 
     /**
      * Gets all node entities in this graph.
      *
      * @return a stream of all node entities in this graph.
      */
-    @NotNull Stream<NodeEntity> getNodeEntities();
+    @NotNull
+    Stream<NodeEntity> getNodeEntities();
 
     /**
      * Gets all link entities in this graph.
      *
      * @return a stream of all link entities in this graph.
      */
-    @NotNull Stream<LinkEntity> getLinkEntities();
+    @NotNull
+    Stream<LinkEntity> getLinkEntities();
 
     /**
      * Gets all nodes in this graph that match the given cache category.
@@ -139,14 +149,16 @@ public interface BlockGraph {
      * @param <T>      the type of node being retrieved.
      * @return all nodes in this graph that match the given cache category.
      */
-    @NotNull <T extends BlockNode> Collection<NodeHolder<T>> getCachedNodes(@NotNull CacheCategory<T> category);
+    @NotNull
+    <T extends BlockNode> Collection<NodeHolder<T>> getCachedNodes(@NotNull CacheCategory<T> category);
 
     /**
      * Gets all the chunk sections that this graph currently has nodes in.
      *
      * @return a stream of all the chunk sections this graph is in.
      */
-    @NotNull Stream<ChunkSectionPos> getChunks();
+    @NotNull
+    Stream<SectionPos> getChunks();
 
     /**
      * Gets a graph entity attached to this graph.
@@ -156,7 +168,8 @@ public interface BlockGraph {
      * @return the given graph entity attached to this graph.
      * @throws IllegalArgumentException if the given graph entity type has not been registered with this graph's universe.
      */
-    @NotNull <G extends GraphEntity<G>> G getGraphEntity(GraphEntityType<G> type);
+    @NotNull
+    <G extends GraphEntity<G>> G getGraphEntity(GraphEntityType<G> type);
 
     /**
      * Gets the number of nodes in this graph.

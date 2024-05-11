@@ -30,15 +30,15 @@ import java.util.Iterator;
 import java.util.PrimitiveIterator;
 import java.util.Set;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
-
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
 
 import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.NetByteBuf;
@@ -73,10 +73,10 @@ public final class LNSEncoding {
 
         // collect graphs to encode
         Long2ObjectMap<BlockGraphImpl> toEncode = new Long2ObjectLinkedOpenHashMap<>();
-        for (int chunkY = world.getWorld().getBottomSectionCoord();
-             chunkY < world.getWorld().getTopSectionCoord(); chunkY++) {
+        for (int chunkY = world.getWorld().getMinSection();
+             chunkY < world.getWorld().getMaxSection(); chunkY++) {
             PrimitiveIterator.OfLong graphIds =
-                world.getAllGraphIdsInChunkSection(ChunkSectionPos.from(chunkPos, chunkY)).iterator();
+                world.getAllGraphIdsInChunkSection(SectionPos.of(chunkPos, chunkY)).iterator();
             while (graphIds.hasNext()) {
                 long graphId = graphIds.nextLong();
                 BlockGraphImpl graph = world.getGraph(graphId);
@@ -122,8 +122,8 @@ public final class LNSEncoding {
                 NodeHolder<BlockNode> holder = iter.next();
                 BlockPos blockPos = holder.getBlockPos();
 
-                if (blockPos.getX() < chunkPos.getStartX() || chunkPos.getEndX() < blockPos.getX() ||
-                    blockPos.getZ() < chunkPos.getStartZ() || chunkPos.getEndZ() < blockPos.getZ()) {
+                if (blockPos.getX() < chunkPos.getMinBlockX() || chunkPos.getMaxBlockX() < blockPos.getX() ||
+                    blockPos.getZ() < chunkPos.getMinBlockZ() || chunkPos.getMaxBlockZ() < blockPos.getZ()) {
                     continue;
                 }
 
@@ -141,8 +141,8 @@ public final class LNSEncoding {
                     if (nodeFilter != null && !nodeFilter.matches(other)) continue;
 
                     BlockPos otherPos = other.getBlockPos();
-                    if (otherPos.getX() < chunkPos.getStartX() || chunkPos.getEndX() < otherPos.getX() ||
-                        otherPos.getZ() < chunkPos.getStartZ() || chunkPos.getEndZ() < otherPos.getZ()) {
+                    if (otherPos.getX() < chunkPos.getMinBlockX() || chunkPos.getMaxBlockX() < otherPos.getX() ||
+                        otherPos.getZ() < chunkPos.getMinBlockZ() || chunkPos.getMaxBlockZ() < otherPos.getZ()) {
                         externalLinks.add(link.getPos());
                     } else {
                         internalLinks.add(link.getPos());

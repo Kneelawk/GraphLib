@@ -3,7 +3,7 @@ package com.kneelawk.graphlib.api.graph;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 
@@ -27,7 +27,7 @@ public record SnapshotNode<T extends BlockNode>(@NotNull BlockPos pos, @NotNull 
      */
     @ApiStatus.Internal
     public SnapshotNode(@NotNull BlockPos pos, @NotNull T node, long graphId) {
-        this.pos = pos.toImmutable();
+        this.pos = pos.immutable();
         this.node = node;
         this.graphId = graphId;
     }
