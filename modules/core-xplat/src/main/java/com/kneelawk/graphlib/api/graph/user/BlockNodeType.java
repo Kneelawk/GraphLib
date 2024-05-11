@@ -35,19 +35,20 @@ import com.mojang.serialization.DataResult;
 
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.codextra.api.codec.CodecOrUnit;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of block node.
  */
-public class BlockNodeType implements ObjectType {
+public final class BlockNodeType implements ObjectType {
     /**
      * {@link BlockNodeType} static codec.
      * <p>
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
-    public static final Codec<BlockNodeType> CODEC =
+    public static final Codec<BlockNodeType> REF_CODEC =
         GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
             BlockNodeType type = universe.getNodeType(id);
             if (type == null) return DataResult.error(
@@ -61,14 +62,14 @@ public class BlockNodeType implements ObjectType {
      * @param universe the universe the block node types to decode.
      * @return the codec associated with the given universe.
      */
-    public static Codec<BlockNodeType> codec(GraphUniverse universe) {
-        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, CODEC);
+    public static Codec<BlockNodeType> refCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, REF_CODEC);
     }
 
     private final @NotNull ResourceLocation id;
-    private final @NotNull Codec<? extends BlockNode> codec;
+    private final @NotNull CodecOrUnit<? extends BlockNode> codec;
 
-    private BlockNodeType(@NotNull ResourceLocation id, @NotNull Codec<? extends BlockNode> codec) {
+    private BlockNodeType(@NotNull ResourceLocation id, @NotNull CodecOrUnit<? extends BlockNode> codec) {
         this.id = id;
         this.codec = codec;
     }
@@ -88,7 +89,7 @@ public class BlockNodeType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull Codec<? extends BlockNode> getCodec() {
+    public @NotNull CodecOrUnit<? extends BlockNode> getCodec() {
         return codec;
     }
 
@@ -121,7 +122,7 @@ public class BlockNodeType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull Codec<? extends BlockNode> codec) {
-        return new BlockNodeType(id, codec);
+        return new BlockNodeType(id, CodecOrUnit.codec(codec));
     }
 
     /**
@@ -133,6 +134,6 @@ public class BlockNodeType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull Supplier<BlockNode> supplier) {
-        return new BlockNodeType(id, Codec.unit(supplier));
+        return new BlockNodeType(id, CodecOrUnit.unit(supplier));
     }
 }

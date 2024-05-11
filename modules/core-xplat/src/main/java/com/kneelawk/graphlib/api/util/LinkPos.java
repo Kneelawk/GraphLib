@@ -1,20 +1,15 @@
 package com.kneelawk.graphlib.api.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 
 /**
  * Represents a positioned unique link in a way that can be looked up.
@@ -28,17 +23,29 @@ import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
  */
 public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull LinkKey key) {
     /**
+     * Map codec for link poses.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final MapCodec<LinkPos> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+        NodePos.MAP_CODEC.fieldOf("first").forGetter(LinkPos::first),
+        NodePos.MAP_CODEC.fieldOf("second").forGetter(LinkPos::second),
+        LinkKey.MAP_CODEC.forGetter(LinkPos::key)
+    ).apply(instance, LinkPos::new));
+
+    /**
+     * Map codec for link poses that provides its own universe.
+     */
+    public static final MapCodec<InUniverse<LinkPos>> IN_UNIVERSE_MAP_CODEC = InUniverse.mapCodec(MAP_CODEC);
+
+    /**
      * Gets a link pos codec for link poses in the given universe.
      *
      * @param universe the universe to find link poses in.
      * @return a link pos codec for link poses in the given universe.
      */
-    public static Codec<LinkPos> codec(GraphUniverse universe) {
-        return RecordCodecBuilder.create(instance -> instance.group(
-            NodePos.codec(universe).fieldOf("first").forGetter(LinkPos::first),
-            NodePos.codec(universe).fieldOf("second").forGetter(LinkPos::second),
-            LinkKey.mapCodec(universe).forGetter(LinkPos::key)
-        ).apply(instance, LinkPos::new));
+    public static MapCodec<LinkPos> codec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
     }
 
     /**
@@ -93,5 +100,10 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
         result = result ^ second.hashCode();
         result = 31 * result + key.hashCode();
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "(" + first + "<-" + key + "->" + second + ")";
     }
 }

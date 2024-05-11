@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.PrimitiveIterator;
 import java.util.Set;
 import java.util.function.Function;
@@ -37,11 +38,17 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -1362,13 +1369,23 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     private void writeGraph(@NotNull SimpleBlockGraph graph) {
         Path graphFile = getGraphFile(graph.getId());
 
-        CompoundTag root = new CompoundTag();
-        root.put("data", graph.toTag());
+        DynamicOps<Tag> ops = createGraphOps(graph.getId());
 
-        try (OutputStream os = Files.newOutputStream(graphFile)) {
-            NbtIo.writeCompressed(root, os);
-        } catch (IOException e) {
-            GLLog.error("Unable to save graph {}.", graph.getId(), e);
+        DataResult<Tag> result = SimpleBlockGraph.CODEC.encodeStart(ops, graph);
+        Optional<Tag> resultOpt = result.resultOrPartial(
+            error -> GLLog.warn("Errors present while encoding graph '{}': {}", graph.getId(), error));
+
+        if (resultOpt.isPresent()) {
+            CompoundTag root = new CompoundTag();
+            root.put("data", resultOpt.get());
+
+            try (OutputStream os = Files.newOutputStream(graphFile)) {
+                NbtIo.writeCompressed(root, os);
+            } catch (IOException e) {
+                GLLog.error("Unable to save graph {}.", graph.getId(), e);
+            }
+        } else {
+            GLLog.error("Unable to save graph '{}' due to previous errors.", graph.getId());
         }
     }
 
@@ -1381,19 +1398,38 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         }
 
         try (InputStream is = Files.newInputStream(graphFile)) {
-            CompoundTag root = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
-            CompoundTag data = root.getCompound("data");
-            SimpleBlockGraph graph = SimpleBlockGraph.fromTag(this, id, data);
-            if (graph.isEmpty()) {
-                GLLog.warn(
-                    "Loaded empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
-                    graph.getId(), graph.getChunks().toList());
+            DynamicOps<Tag> ops = createGraphOps(id);
 
-                // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
-                destroyGraphImpl(graph);
-                return null;
+            CompoundTag root = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
+            Dynamic<Tag> dynRoot = new Dynamic<>(ops, root);
+            // TODO: DFU fix data
+
+            Optional<Dynamic<Tag>> dataOpt = dynRoot.get("data").result();
+            if (dataOpt.isPresent()) {
+                DataResult<SimpleBlockGraph> graphRes = SimpleBlockGraph.CODEC.parse(dataOpt.get());
+                Optional<SimpleBlockGraph> graphOpt = graphRes.resultOrPartial(
+                    error -> GLLog.warn("Errors present while decoding graph '{}': {}", id, error));
+
+                if (graphOpt.isPresent()) {
+                    SimpleBlockGraph graph = graphOpt.get();
+                    if (graph.isEmpty()) {
+                        GLLog.warn(
+                            "Loaded empty graph! The graph's nodes probably failed to load. Removing graph... Id: {}, chunks: {}",
+                            graph.getId(), graph.getChunks().toList());
+
+                        // must be impl because destroyGraph calls readGraph if the graph isn't already loaded
+                        destroyGraphImpl(graph);
+                        return null;
+                    } else {
+                        return graph;
+                    }
+                } else {
+                    GLLog.error("Unable to load graph '{}' due to previous errors.", id);
+                    return null;
+                }
             } else {
-                return graph;
+                GLLog.error("Graph file for graph '{}' does not contain graph data", id);
+                return null;
             }
         } catch (IOException e) {
             GLLog.error("Unable to load graph {}. Removing graph...", id, e);
@@ -1408,6 +1444,18 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
             return null;
         }
+    }
+
+    private DynamicOps<Tag> createOps() {
+        DynamicOps<Tag> ops = NbtOps.INSTANCE;
+        ops = world.registryAccess().createSerializationContext(ops);
+        ops = GraphUniverse.ATTACHMENT_KEY.push(ops, universe);
+        ops = SimpleBlockGraph.CONTROLLER.push(ops, this);
+        return ops;
+    }
+
+    private DynamicOps<Tag> createGraphOps(long graphId) {
+        return SimpleBlockGraph.GRAPH_ID.push(createOps(), graphId);
     }
 
     private void destroyGraphImpl(SimpleBlockGraph graph) {

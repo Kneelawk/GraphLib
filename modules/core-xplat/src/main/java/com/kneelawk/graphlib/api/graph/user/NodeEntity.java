@@ -20,7 +20,7 @@ public interface NodeEntity {
      * This uses the {@code entityType} and {@code entity} map keys.
      */
     MapCodec<NodeEntity> MAP_CODEC =
-        Codextra.mapKeyDispatchCodec(NodeEntityType.CODEC.fieldOf("entityType"), NodeEntity::getType,
+        Codextra.mapKeyDispatchCodec(NodeEntityType.REF_CODEC.fieldOf("entityType"), NodeEntity::getType,
             type -> type.getCodec().fieldOf("entity"));
 
     /**

@@ -22,7 +22,7 @@ public interface LinkKey {
      * <p>
      * This uses the {@code keyType} and {@code key} map keys.
      */
-    MapCodec<LinkKey> MAP_CODEC = Codextra.mapKeyDispatchCodec(LinkKeyType.CODEC.fieldOf("keyType"), LinkKey::getType,
+    MapCodec<LinkKey> MAP_CODEC = Codextra.mapKeyDispatchCodec(LinkKeyType.REF_CODEC.fieldOf("keyType"), LinkKey::getType,
         type -> type.getCodec().fieldOf("key"));
 
     /**

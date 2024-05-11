@@ -18,7 +18,7 @@ public interface LinkEntity {
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     MapCodec<LinkEntity> MAP_CODEC =
-        Codextra.mapKeyDispatchCodec(LinkEntityType.CODEC.fieldOf("entityType"), LinkEntity::getType,
+        Codextra.mapKeyDispatchCodec(LinkEntityType.REF_CODEC.fieldOf("entityType"), LinkEntity::getType,
             type -> type.getCodec().fieldOf("entity"));
 
     /**

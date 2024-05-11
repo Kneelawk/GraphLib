@@ -11,6 +11,7 @@ import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -34,8 +35,11 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      * it will create new graph entities in their place.
      * Partial graph entity loads will cause this codec to return a partial.
      */
+    @SuppressWarnings("unchecked")
     Codec<Map<GraphEntityType<?>, GraphEntity<?>>> ALL_CODEC = GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(
-        Codec.dispatchedMap(GraphEntityType.CODEC, GraphEntityType::getCodec),
+        Codec.dispatchedMap(GraphEntityType.REF_CODEC,
+            type -> ((Codec<GraphEntity<?>>) type.getCodec().fieldOf("entity").codec()).mapResult(
+                Codextra.codecAddPartial(() -> type.getFactory().createNew()))),
         (GraphUniverse universe, Map<GraphEntityType<?>, GraphEntity<?>> decodedMap) -> {
             Map<GraphEntityType<?>, GraphEntity<?>> map = new Object2ObjectOpenHashMap<>(decodedMap);
             DataResult<Unit> accumulator = DataResult.success(Unit.INSTANCE);

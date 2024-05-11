@@ -1,11 +1,9 @@
 package com.kneelawk.graphlib.api.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
 
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -49,5 +47,10 @@ public final class EmptyLinkKey implements LinkKey {
     @Override
     public @NotNull LinkKeyType getType() {
         return TYPE;
+    }
+
+    @Override
+    public String toString() {
+        return "EmptyLinkKey";
     }
 }

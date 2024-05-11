@@ -36,7 +36,7 @@ public interface BlockNode {
      * This uses the {@code type} and {@code node} map keys.
      */
     MapCodec<BlockNode> MAP_CODEC =
-        Codextra.mapKeyDispatchCodec(BlockNodeType.CODEC.fieldOf("type"), BlockNode::getType,
+        Codextra.mapKeyDispatchCodec(BlockNodeType.REF_CODEC.fieldOf("type"), BlockNode::getType,
             type -> type.getCodec().fieldOf("node"));
 
     /**
