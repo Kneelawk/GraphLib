@@ -152,9 +152,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
 
     @Override
     public String toString() {
-        return "GraphEntityType{" +
-            "id=" + id +
-            '}';
+        return "GraphEntityType[" + id + ']';
     }
 
     /**

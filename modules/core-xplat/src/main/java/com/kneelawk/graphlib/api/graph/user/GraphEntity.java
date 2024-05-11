@@ -1,20 +1,15 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
+import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.MapLike;
-import com.mojang.serialization.RecordBuilder;
 
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -22,7 +17,6 @@ import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.impl.GLLog;
 
 /**
  * Arbitrary data that can be stored in a graph.
@@ -30,62 +24,46 @@ import com.kneelawk.graphlib.impl.GLLog;
  * @param <G> this graph entity class.
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
+
+    /**
+     * Codec for encoding/decoding all graph entities in a given universe.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * Note: if this encounters invalid or missing graph entities when loading,
+     * it will create new graph entities in their place.
+     * Partial graph entity loads will cause this codec to return a partial.
+     */
+    Codec<Map<GraphEntityType<?>, GraphEntity<?>>> ALL_CODEC = GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(
+        Codec.dispatchedMap(GraphEntityType.CODEC, GraphEntityType::getCodec),
+        (GraphUniverse universe, Map<GraphEntityType<?>, GraphEntity<?>> decodedMap) -> {
+            Map<GraphEntityType<?>, GraphEntity<?>> map = new Object2ObjectOpenHashMap<>(decodedMap);
+            DataResult<Unit> accumulator = DataResult.success(Unit.INSTANCE);
+
+            // fill out missing graph entities
+            for (GraphEntityType<?> type : universe.getAllGraphEntityTypes()) {
+                if (!map.containsKey(type)) {
+                    accumulator.apply2stable((u, o) -> u,
+                        DataResult.error(() -> "Missing entry for key: '" + type + "'"));
+                    map.put(type, type.getFactory().createNew());
+                }
+            }
+
+            return accumulator.map(unit -> map).setPartial(map);
+        }, (universe, map) -> DataResult.success(map));
+
     /**
      * Gets a codec for encoding/decoding all graph entities in a given universe.
      * <p>
      * Note: if this encounters invalid or missing graph entities when loading,
      * it will create new graph entities in their place.
+     * Partial graph entity loads will cause this codec to return a partial.
      *
      * @param universe the universe to get graph entities from.
      * @return a codec for encoding/decoding all graph entities in the given universe.
      */
     static Codec<Map<GraphEntityType<?>, GraphEntity<?>>> allCodec(GraphUniverse universe) {
-        return new MapCodec<Map<GraphEntityType<?>, GraphEntity<?>>>() {
-            @Override
-            public <T> Stream<T> keys(DynamicOps<T> ops) {
-                return universe.getAllGraphEntityTypes().stream()
-                    .map(type -> ops.createString(type.getId().toString()));
-            }
-
-            @Override
-            public <T> DataResult<Map<GraphEntityType<?>, GraphEntity<?>>> decode(DynamicOps<T> ops, MapLike<T> input) {
-                Map<GraphEntityType<?>, GraphEntity<?>> map = new Object2ObjectLinkedOpenHashMap<>();
-
-                for (GraphEntityType<?> type : universe.getAllGraphEntityTypes()) {
-                    T element = input.get(type.getId().toString());
-                    if (element != null) {
-                        DataResult<GraphEntity<?>> entityResult =
-                            type.getCodec().parse(ops, element).map(Function.identity());
-                        if (entityResult.isSuccess()) {
-                            map.put(type, entityResult.result().get());
-                        } else {
-                            GLLog.error(
-                                "Error decoding graph entity '" + type.getId() + "' in universe '" + universe.getId() +
-                                    "': " + entityResult.error().get().message());
-                            map.put(type, type.getFactory().createNew());
-                        }
-                    } else {
-                        GLLog.warn("Missing graph entity '" + type.getId() + "' in universe '" + universe.getId() +
-                            "'. Creating a new one.");
-                        map.put(type, type.getFactory().createNew());
-                    }
-                }
-
-                return DataResult.success(map);
-            }
-
-            @Override
-            @SuppressWarnings("unchecked")
-            public <T> RecordBuilder<T> encode(Map<GraphEntityType<?>, GraphEntity<?>> input, DynamicOps<T> ops,
-                                               RecordBuilder<T> prefix) {
-                for (GraphEntityType<?> type : input.keySet()) {
-                    prefix = prefix.add(type.getId().toString(),
-                        ((Codec<GraphEntity<?>>) type.getCodec()).encodeStart(ops, input.get(type)));
-                }
-
-                return prefix;
-            }
-        }.codec();
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, ALL_CODEC);
     }
 
     /**

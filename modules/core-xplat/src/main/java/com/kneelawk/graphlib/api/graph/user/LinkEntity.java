@@ -2,35 +2,33 @@ package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.resources.ResourceLocation;
-
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
-import com.kneelawk.graphlib.api.util.codec.CustomKeyDispatchCodec;
 
 /**
  * Mutable data associated with a link, similar to a BlockEntity.
  */
 public interface LinkEntity {
     /**
-     * Gets a link entity map codec for link entities in the given universe.
+     * {@link LinkEntity} map codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    MapCodec<LinkEntity> MAP_CODEC =
+        Codextra.mapKeyDispatchCodec(LinkEntityType.CODEC.fieldOf("entityType"), LinkEntity::getType,
+            type -> type.getCodec().fieldOf("entity"));
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
      *
-     * @param universe the universe to find link entities in.
-     * @return a link entity map codec for link entities in the given universe.
+     * @param universe the universe to attach.
+     * @return the map codec.
      */
     static MapCodec<LinkEntity> mapCodec(GraphUniverse universe) {
-        return new CustomKeyDispatchCodec<>("entityType", "entity", ResourceLocation.CODEC,
-            entity -> DataResult.success(entity.getType().getId()), typeId -> {
-            LinkEntityType type = universe.getLinkEntityType(typeId);
-            if (type == null) {
-                return DataResult.error(
-                    () -> "No link entity exists with type '" + typeId + "' in universe '" + universe + "'");
-            }
-            return DataResult.success(type.getCodec());
-        });
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
     }
 
     /**

@@ -32,10 +32,22 @@ public interface BlockNode {
      * {@link BlockNode} map codec.
      * <p>
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * This uses the {@code type} and {@code node} map keys.
      */
     MapCodec<BlockNode> MAP_CODEC =
         Codextra.mapKeyDispatchCodec(BlockNodeType.CODEC.fieldOf("type"), BlockNode::getType,
             type -> type.getCodec().fieldOf("node"));
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the map codec.
+     */
+    static MapCodec<BlockNode> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
 
     /**
      * Gets this block node's type.

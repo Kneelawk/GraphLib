@@ -109,9 +109,7 @@ public class NodeEntityType implements ObjectType {
 
     @Override
     public String toString() {
-        return "NodeEntityType{" +
-            "id=" + id +
-            '}';
+        return "NodeEntityType[" + id + ']';
     }
 
     /**

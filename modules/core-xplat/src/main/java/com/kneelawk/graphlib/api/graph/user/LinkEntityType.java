@@ -109,9 +109,7 @@ public class LinkEntityType implements ObjectType {
 
     @Override
     public String toString() {
-        return "LinkEntityType{" +
-            "id=" + id +
-            '}';
+        return "LinkEntityType[" + id + ']';
     }
 
     /**

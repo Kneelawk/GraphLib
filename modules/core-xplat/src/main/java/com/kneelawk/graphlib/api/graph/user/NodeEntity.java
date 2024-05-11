@@ -2,35 +2,35 @@ package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.resources.ResourceLocation;
-
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
-import com.kneelawk.graphlib.api.util.codec.CustomKeyDispatchCodec;
 
 /**
  * Mutable data associated with a block node, similar to a BlockEntity.
  */
 public interface NodeEntity {
     /**
-     * Gets the node entity map codec for node entities in the given universe.
+     * {@link NodeEntity} map codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * This uses the {@code entityType} and {@code entity} map keys.
+     */
+    MapCodec<NodeEntity> MAP_CODEC =
+        Codextra.mapKeyDispatchCodec(NodeEntityType.CODEC.fieldOf("entityType"), NodeEntity::getType,
+            type -> type.getCodec().fieldOf("entity"));
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
      *
-     * @param universe the universe to find node entities in.
-     * @return a node entity map codec for node entities in the given universe.
+     * @param universe the universe to attach.
+     * @return the map codec.
      */
     static MapCodec<NodeEntity> mapCodec(GraphUniverse universe) {
-        return new CustomKeyDispatchCodec<>("entityType", "entity", ResourceLocation.CODEC,
-            entity -> DataResult.success(entity.getType().getId()), typeId -> {
-            NodeEntityType type = universe.getNodeEntityType(typeId);
-            if (type == null) {
-                return DataResult.error(
-                    () -> "No node entity exists with type '" + typeId + "' in universe '" + universe.getId() + "'");
-            }
-            return DataResult.success(type.getCodec());
-        });
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
     }
 
     /**

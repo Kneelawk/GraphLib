@@ -109,9 +109,7 @@ public class LinkKeyType implements ObjectType {
 
     @Override
     public String toString() {
-        return "LinkKeyType{" +
-            "id=" + id +
-            '}';
+        return "LinkKeyType[" + id + ']';
     }
 
     /**

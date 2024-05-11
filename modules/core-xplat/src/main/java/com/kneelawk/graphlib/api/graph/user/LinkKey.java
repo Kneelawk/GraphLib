@@ -3,50 +3,36 @@ package com.kneelawk.graphlib.api.graph.user;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.resources.ResourceLocation;
-
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.api.util.codec.CustomKeyDispatchCodec;
 
 /**
  * The data stored in a link between nodes.
  */
 public interface LinkKey {
     /**
-     * Gets the link key map codec for link keys in the given universe.
+     * {@link LinkKey} map codec.
      * <p>
-     * Note: this uses the {@code keyType} and {@code key} map keys.
-     *
-     * @param universe the universe to find link keys in.
-     * @return a link key map codec for link keys in the given universe.
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * This uses the {@code keyType} and {@code key} map keys.
      */
-    static MapCodec<LinkKey> mapCodec(GraphUniverse universe) {
-        return new CustomKeyDispatchCodec<>("keyType", "key", ResourceLocation.CODEC,
-            key -> DataResult.success(key.getType().getId()), typeId -> {
-            LinkKeyType type = universe.getLinkKeyType(typeId);
-            if (type == null) {
-                return DataResult.error(
-                    () -> "No link key exists with type '" + typeId + "' in universe '" + universe.getId() + "'");
-            }
-            return DataResult.success(type.getCodec());
-        });
-    }
+    MapCodec<LinkKey> MAP_CODEC = Codextra.mapKeyDispatchCodec(LinkKeyType.CODEC.fieldOf("keyType"), LinkKey::getType,
+        type -> type.getCodec().fieldOf("key"));
 
     /**
-     * Gets the link key codec for link keys in the given universe.
+     * {@link #MAP_CODEC} with universe attached.
      *
-     * @param universe the universe to find link keys in.
-     * @return a link key codec for link keys in the given universe.
+     * @param universe the universe to attach.
+     * @return the map codec.
      */
-    static Codec<LinkKey> codec(GraphUniverse universe) {
-        return mapCodec(universe).codec();
+    static MapCodec<LinkKey> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
     }
 
     /**

@@ -109,9 +109,7 @@ public class BlockNodeType implements ObjectType {
 
     @Override
     public String toString() {
-        return "BlockNodeType{" +
-            "id=" + id +
-            '}';
+        return "BlockNodeType[" + id + ']';
     }
 
     /**
