@@ -27,7 +27,9 @@ package com.kneelawk.graphlib.syncing.knet.api.graph;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import com.kneelawk.codextra.api.attach.AttachmentKey;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
@@ -50,6 +52,11 @@ import com.kneelawk.graphlib.syncing.knet.impl.graph.simple.SimpleKNetSyncedUniv
  */
 public interface KNetSyncedUniverse extends SyncedUniverse {
     /**
+     * Attachment key for the current synced universe.
+     */
+    AttachmentKey<KNetSyncedUniverse> ATTACHMENT_KEY = AttachmentKey.ofStaticFieldName();
+
+    /**
      * Registers an encoder and decoder for the given block node type.
      *
      * @param type    the type of block node to associate the encoder and decoder with.
@@ -58,20 +65,12 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodeSyncing syncing);
 
     /**
-     * Gets whether the given block node type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of block node to check.
-     * @return {@code true} if this universe contains syncing for the given block node type.
-     */
-    boolean hasNodeSyncing(@NotNull BlockNodeType type);
-
-    /**
      * Gets the encoder and decoder for the given block node type.
      *
      * @param type the type of block node to get the syncing for.
      * @return the syncing for the given block node type.
      */
-    @NotNull
+    @Nullable
     BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type);
 
     /**
@@ -83,20 +82,12 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntitySyncing syncing);
 
     /**
-     * Gets whether the given node entity type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of node entity to check.
-     * @return {@code true} if this universe contains syncing for the given node entity type.
-     */
-    boolean hasNodeEntitySyncing(@NotNull NodeEntityType type);
-
-    /**
      * Gets the encoder and decoder for the given node entity type.
      *
      * @param type the type of node entity to get the syncing for.
      * @return the syncing for the given node entity type.
      */
-    @NotNull
+    @Nullable
     NodeEntitySyncing getNodeEntitySyncing(@NotNull NodeEntityType type);
 
     /**
@@ -108,20 +99,12 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeySyncing syncing);
 
     /**
-     * Gets whether the given link key type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of link key to check.
-     * @return {@code true} if this universe contains syncing for the given link key type.
-     */
-    boolean hasLinkKeySyncing(@NotNull LinkKeyType type);
-
-    /**
      * Gets the encoder and decoder for the given link key type.
      *
      * @param type the type of link key to get the syncing for.
      * @return the syncing for the given link key type.
      */
-    @NotNull
+    @Nullable
     LinkKeySyncing getLinkKeySyncing(@NotNull LinkKeyType type);
 
     /**
@@ -133,20 +116,12 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntitySyncing syncing);
 
     /**
-     * Gets whether the given link entity type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of link entity to check.
-     * @return {@code true} if this universe contains syncing for the given link entity type.
-     */
-    boolean hasLinkEntitySyncing(@NotNull LinkEntityType type);
-
-    /**
      * Gets the encoder and decoder for the given link entity type.
      *
      * @param type the type of link entity to get the syncing for.
      * @return the syncing for the given link entity type.
      */
-    @NotNull
+    @Nullable
     LinkEntitySyncing getLinkEntitySyncing(@NotNull LinkEntityType type);
 
     /**
@@ -160,21 +135,13 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
                                                           @NotNull GraphEntitySyncing<G> syncing);
 
     /**
-     * Gets whether the given graph entity type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of graph entity to check.
-     * @return {@code true} if this universe contains syncing for the given graph entity type.
-     */
-    boolean hasGraphEntitySyncing(@NotNull GraphEntityType<?> type);
-
-    /**
      * Gets the encoder and decoder for the given graph entity type.
      *
      * @param type the type of graph entity to get the syncing for.
      * @param <G>  the type of graph entity to get the syncing for.
      * @return the syncing for the given graph entity type.
      */
-    <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> getGraphEntitySyncing(@NotNull GraphEntityType<G> type);
+    <G extends GraphEntity<G>> @Nullable GraphEntitySyncing<G> getGraphEntitySyncing(@NotNull GraphEntityType<G> type);
 
     /**
      * Creates a new SyncedUniverse builder.

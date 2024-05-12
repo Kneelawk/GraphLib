@@ -59,7 +59,7 @@ public final class BlockNodeType implements ObjectType {
     /**
      * {@link BlockNodeType} codec getter.
      *
-     * @param universe the universe the block node types to decode.
+     * @param universe the universe containing the block node types to decode.
      * @return the codec associated with the given universe.
      */
     public static Codec<BlockNodeType> refCodec(GraphUniverse universe) {

@@ -27,6 +27,12 @@ package com.kneelawk.graphlib.syncing.knet.api;
 
 import org.jetbrains.annotations.NotNull;
 
+import io.netty.handler.codec.EncoderException;
+
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
+
+import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -57,16 +63,29 @@ import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 import com.kneelawk.knet.api.util.Palette;
-
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * KNet-based synchronization library.
  */
 public final class GraphLibSyncingKNet {
     private GraphLibSyncingKNet() {}
+
+    /**
+     * Stream codec for {@link BlockNode}s.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<NetRegistryByteBuf, BlockNode> BLOCK_NODE_CODEC =
+        KNetSyncedUniverse.ATTACHMENT_KEY.dispatchStreamCodec(
+            universe -> CodextraStreams.dispatch(BlockNodeSyncing.REF_STREAM_CODEC, node -> {
+                BlockNodeSyncing syncing = universe.getNodeSyncing(node.getType());
+                if (syncing == null) throw new EncoderException(
+                    "Block node type '" + node.getType().getId() + "' does not have syncing in universe '" +
+                        universe.getId() + "'");
+                return syncing;
+            }, BlockNodeSyncing::getCodec));
 
     /**
      * Channel context for referencing a specific universe.
