@@ -27,12 +27,9 @@ package com.kneelawk.graphlib.syncing.knet.api;
 
 import org.jetbrains.annotations.NotNull;
 
-import io.netty.handler.codec.EncoderException;
-
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -57,6 +54,7 @@ import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.UniversePayload;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.knet.api.channel.context.PlayChannelContext;
 import com.kneelawk.knet.api.channel.context.RootPlayChannelContext;
 import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
@@ -78,14 +76,17 @@ public final class GraphLibSyncingKNet {
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     public static final StreamCodec<NetRegistryByteBuf, BlockNode> BLOCK_NODE_CODEC =
-        KNetSyncedUniverse.ATTACHMENT_KEY.dispatchStreamCodec(
-            universe -> CodextraStreams.dispatch(BlockNodeSyncing.REF_STREAM_CODEC, node -> {
-                BlockNodeSyncing syncing = universe.getNodeSyncing(node.getType());
-                if (syncing == null) throw new EncoderException(
-                    "Block node type '" + node.getType().getId() + "' does not have syncing in universe '" +
-                        universe.getId() + "'");
-                return syncing;
-            }, BlockNodeSyncing::getCodec));
+        StreamCodecHelper.createObjStreamCodec(BlockNodeSyncing.REF_STREAM_CODEC, BlockNode::getType,
+            KNetSyncedUniverse::getNodeSyncing, BlockNodeSyncing::getCodec, "BlockNode");
+
+    /**
+     * Stream codec for {@link LinkKey}s.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<NetRegistryByteBuf, LinkKey> LINK_KEY_CODEC =
+        StreamCodecHelper.createObjStreamCodec(LinkKeySyncing.REF_STREAM_CODEC, LinkKey::getType,
+            KNetSyncedUniverse::getLinkKeySyncing, LinkKeySyncing::getCodec, "LinkKey");
 
     /**
      * Channel context for referencing a specific universe.
@@ -163,7 +164,7 @@ public final class GraphLibSyncingKNet {
     /**
      * Syncing for {@link EmptyLinkKey}.
      */
-    public static final LinkKeySyncing EMPTY_KEY_SYNCING = LinkKeySyncing.ofNoOp(() -> EmptyLinkKey.INSTANCE);
+    public static final LinkKeySyncing EMPTY_KEY_SYNCING = LinkKeySyncing.ofNoOp(type, () -> EmptyLinkKey.INSTANCE);
 
     /**
      * Gets a KNet synced universe with the given universe id.

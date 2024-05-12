@@ -30,17 +30,15 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import io.netty.handler.codec.DecoderException;
-
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 
-import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.codextra.api.CodextraStreams;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 /**
@@ -53,16 +51,8 @@ public final class BlockNodeSyncing {
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     public static final StreamCodec<FriendlyByteBuf, BlockNodeSyncing> REF_STREAM_CODEC =
-        KNetSyncedUniverse.ATTACHMENT_KEY.retrieveWithStreamCodec(
-            ResourceLocation.STREAM_CODEC, (universe, id) -> {
-                BlockNodeType type = universe.getUniverse().getNodeType(id);
-                if (type == null) throw new DecoderException(
-                    "Block node type '" + id + "' does not exist in universe '" + universe.getId() + "'");
-                BlockNodeSyncing syncing = universe.getNodeSyncing(type);
-                if (syncing == null) throw new DecoderException(
-                    "Block node type '" + id + "' is not synced in universe '" + universe.getId() + "'");
-                return syncing;
-            }, (universe, syncing) -> syncing.getType().getId());
+        StreamCodecHelper.createRefStreamCodec(GraphUniverse::getNodeType, KNetSyncedUniverse::getNodeSyncing,
+            BlockNodeSyncing::getType, "BlockNode");
 
     /**
      * {@link BlockNodeSyncing} codec getter.
@@ -91,7 +81,7 @@ public final class BlockNodeSyncing {
     }
 
     /**
-     * {@return this syncing descriptor's node codec}
+     * {@return this syncing descriptor's stream codec}
      */
     public @NotNull StreamCodec<NetRegistryByteBuf, ? extends BlockNode> getCodec() {
         return codec;

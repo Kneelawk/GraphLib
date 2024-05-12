@@ -29,68 +29,69 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+
+import com.kneelawk.codextra.api.CodextraStreams;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.knet.api.handling.PayloadHandlingException;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 /**
  * Holds a link key encoder and decoder.
  */
 public final class LinkKeySyncing {
-    private final @NotNull LinkKeyPacketEncoder<?> encoder;
-    private final @NotNull LinkKeyPacketDecoder decoder;
+    public static final StreamCodec<FriendlyByteBuf, LinkKeySyncing> REF_STREAM_CODEC =
+        StreamCodecHelper.createRefStreamCodec(GraphUniverse::getLinkKeyType, KNetSyncedUniverse::getLinkKeySyncing,
+            LinkKeySyncing::getType, "LinkKey");
 
-    private LinkKeySyncing(@NotNull LinkKeyPacketEncoder<?> encoder, @NotNull LinkKeyPacketDecoder decoder) {
-        this.encoder = encoder;
-        this.decoder = decoder;
+    private final @NotNull LinkKeyType type;
+    private final @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> codec;
+
+    private LinkKeySyncing(@NotNull LinkKeyType type,
+                           @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> codec) {
+        this.type = type;
+        this.codec = codec;
     }
 
     /**
-     * Encodes a link key.
-     * <p>
-     * <b>Note: this does not write the link key's type id. That must be written separately.</b>
-     * <p>
-     * <b>Note: the link key being encoded must be of the type that the encoder expects.</b>
-     *
-     * @param node the link key to encode.
-     * @param buf  the buffer to encode to.
+     * {@return this syncing descriptor's type}
      */
-    @SuppressWarnings("unchecked")
-    public void encode(@NotNull LinkKey node, @NotNull NetByteBuf buf) {
-        ((LinkKeyPacketEncoder<LinkKey>) encoder).encode(node, buf);
+    public @NotNull LinkKeyType getType() {
+        return type;
     }
 
     /**
-     * Decodes a link key.
-     *
-     * @param buf the buffer to decode from.
-     * @return a newly decoded link key.
-     * @throws PayloadHandlingException if the buffer contained invalid data.
+     * {@return this syncing descriptor's stream codec}
      */
-    public @NotNull LinkKey decode(@NotNull NetByteBuf buf) throws PayloadHandlingException {
-        return decoder.decode(buf);
+    public @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> getCodec() {
+        return codec;
     }
 
     /**
      * Makes a {@link LinkKey} syncing descriptor.
      *
-     * @param encoder the encoder.
-     * @param decoder the decoder.
-     * @param <L>     the type of link key this descriptor syncs.
+     * @param type  the link key type this syncing is associated with.
+     * @param codec the link key's stream codec.
      * @return a link key syncing descriptor.
      */
-    public static <L extends LinkKey> @NotNull LinkKeySyncing of(@NotNull LinkKeyPacketEncoder<L> encoder,
-                                                                 @NotNull LinkKeyPacketDecoder decoder) {
-        return new LinkKeySyncing(encoder, decoder);
+    public static @NotNull LinkKeySyncing of(@NotNull LinkKeyType type,
+                                             @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> codec) {
+        return new LinkKeySyncing(type, codec);
     }
 
     /**
      * Makes a {@link LinkKey} syncing descriptor that does not do any encoding or decoding.
      *
+     * @param type     the link key type this syncing is associated with.
      * @param supplier supplies the instance(s) of the link key.
      * @return a link key syncing descriptor.
      */
-    public static @NotNull LinkKeySyncing ofNoOp(@NotNull Supplier<? extends LinkKey> supplier) {
-        return new LinkKeySyncing(LinkKeyPacketEncoder.noOp(), buf -> supplier.get());
+    public static @NotNull LinkKeySyncing ofNoOp(@NotNull LinkKeyType type,
+                                                 @NotNull Supplier<? extends LinkKey> supplier) {
+        return new LinkKeySyncing(type, CodextraStreams.unit(supplier));
     }
 }
