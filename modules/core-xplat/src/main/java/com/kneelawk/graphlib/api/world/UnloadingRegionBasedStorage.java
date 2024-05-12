@@ -16,8 +16,13 @@ import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -33,7 +38,7 @@ import com.kneelawk.graphlib.impl.mixin.api.StorageHelper;
  *
  * @param <R> the type of chunk data to store.
  */
-public class UnloadingRegionBasedStorage<R extends StorageChunk> implements RegionBasedStorage<R> {
+public class UnloadingRegionBasedStorage<R> implements RegionBasedStorage<R> {
 
     /**
      * The max chunk age is 1 minute.
@@ -43,7 +48,7 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
 
     private final ServerLevel world;
 
-    private final TrackingChunkDecoder<R> loadFromNbt;
+    private final Codec<R> sectionCodec;
     private final TrackingChunkFactory<R> createNew;
 
     private final SaveMode saveMode;
@@ -65,17 +70,17 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
      * @param path            the path to where region files should be saved.
      * @param syncChunkWrites whether chunk writes should be written synchronously, corresponding to
      *                        {@link java.nio.file.StandardOpenOption#DSYNC}.
-     * @param loadFromNbt     the function for loading a chunk section from NBT.
+     * @param codec           the chunk section's codec.
      * @param createNew       the function for creating a new, empty chunk section.
      * @param saveMode        how often storage chunks should be saved.
      */
     public UnloadingRegionBasedStorage(@NotNull RegionStorageInfo storageKey, @NotNull ServerLevel world,
                                        @NotNull Path path,
-                                       boolean syncChunkWrites, @NotNull TrackingChunkDecoder<@NotNull R> loadFromNbt,
+                                       boolean syncChunkWrites, @NotNull Codec<R> codec,
                                        @NotNull TrackingChunkFactory<@NotNull R> createNew,
                                        @NotNull SaveMode saveMode) {
         this.world = world;
-        this.loadFromNbt = loadFromNbt;
+        this.sectionCodec = codec;
         this.createNew = createNew;
         this.saveMode = saveMode;
         worker = StorageHelper.newWorker(storageKey, path, syncChunkWrites);
@@ -212,14 +217,24 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
 
     private void loadChunkPillar(@NotNull ChunkPos chunkPos, @NotNull Int2ObjectMap<R> pillar,
                                  @NotNull CompoundTag root) {
+        // TODO: move this over to dynamics and DFU fix it
         CompoundTag sectionsTag = root.getCompound("Sections");
         for (int sectionY = world.getMinSection(); sectionY < world.getMaxSection(); sectionY++) {
             if (sectionsTag.contains(String.valueOf(sectionY), Tag.TAG_COMPOUND)) {
                 CompoundTag sectionTag = sectionsTag.getCompound(String.valueOf(sectionY));
                 try {
-                    R section = loadFromNbt.decode(sectionTag, SectionPos.of(chunkPos.x, sectionY, chunkPos.z),
-                        () -> markDirty(chunkPos));
-                    pillar.put(sectionY, section);
+                    DynamicOps<Tag> ops = createOps(SectionPos.of(chunkPos, sectionY), () -> markDirty(chunkPos));
+                    DataResult<R> res = sectionCodec.parse(ops, sectionTag);
+                    final int y = sectionY;
+                    Optional<R> opt = res.resultOrPartial(
+                        err -> GLLog.error("Error loading chunk {}, section {}: {}", chunkPos, y, err));
+
+                    if (opt.isPresent()) {
+                        R section = opt.get();
+                        pillar.put(sectionY, section);
+                    } else {
+                        GLLog.error("Unable to load chunk {}, section {} due to previous errors.", chunkPos, sectionY);
+                    }
                 } catch (Exception e) {
                     GLLog.error("Error loading chunk {} section {}. Discarding chunk section.", chunkPos, sectionY, e);
                 }
@@ -282,9 +297,17 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
                 R section = sections.get(sectionY);
                 if (section != null) {
                     try {
-                        CompoundTag nbt = new CompoundTag();
-                        section.toNbt(nbt);
-                        sectionsTag.put(String.valueOf(sectionY), nbt);
+                        DynamicOps<Tag> ops = createOps(SectionPos.of(pos, sectionY), () -> {});
+                        DataResult<Tag> nbtRes = sectionCodec.encodeStart(ops, section);
+                        final int y = sectionY;
+                        Optional<Tag> nbtOpt = nbtRes.resultOrPartial(
+                            err -> GLLog.error("Error saving chunk {}, section {}: {}", pos, y, err));
+
+                        if (nbtOpt.isPresent()) {
+                            sectionsTag.put(String.valueOf(sectionY), nbtOpt.get());
+                        } else {
+                            GLLog.error("Unable to save chunk {}, section {} due to previous errors.", pos, sectionY);
+                        }
                     } catch (Exception e) {
                         GLLog.error("Error saving chunk {}, section {}", pos, sectionY, e);
                     }
@@ -296,5 +319,13 @@ public class UnloadingRegionBasedStorage<R extends StorageChunk> implements Regi
         } else {
             worker.store(pos, null);
         }
+    }
+
+    private DynamicOps<Tag> createOps(SectionPos pos, Runnable markDirty) {
+        DynamicOps<Tag> ops = NbtOps.INSTANCE;
+        ops = world.registryAccess().createSerializationContext(ops);
+        ops = SECTION_POS.push(ops, pos);
+        ops = MARK_DIRTY.push(ops, markDirty);
+        return ops;
     }
 }

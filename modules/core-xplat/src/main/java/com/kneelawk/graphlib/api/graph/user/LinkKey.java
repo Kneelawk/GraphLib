@@ -5,7 +5,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.MapCodec;
 
-import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -22,8 +21,8 @@ public interface LinkKey {
      * <p>
      * This uses the {@code keyType} and {@code key} map keys.
      */
-    MapCodec<LinkKey> MAP_CODEC = Codextra.mapKeyDispatchCodec(LinkKeyType.REF_CODEC.fieldOf("keyType"), LinkKey::getType,
-        type -> type.getCodec().fieldOf("key"));
+    MapCodec<LinkKey> MAP_CODEC =
+        LinkKeyType.REF_CODEC.dispatchMap("keyType", LinkKey::getType, type -> type.getCodec().fieldOf("key"));
 
     /**
      * {@link #MAP_CODEC} with universe attached.

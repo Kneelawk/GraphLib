@@ -10,7 +10,7 @@ import net.minecraft.core.SectionPos;
  * @param <R> the type of storage chunk this creates.
  */
 @FunctionalInterface
-public interface TrackingChunkFactory<R extends StorageChunk> {
+public interface TrackingChunkFactory<R> {
     /**
      * Create a new storage chunk.
      *

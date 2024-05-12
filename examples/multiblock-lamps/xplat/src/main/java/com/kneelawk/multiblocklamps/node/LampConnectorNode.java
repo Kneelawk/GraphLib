@@ -26,9 +26,6 @@
 package com.kneelawk.multiblocklamps.node;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.Tag;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -47,12 +44,6 @@ public class LampConnectorNode implements BlockNode, FullWireBlockNode, LampInpu
     @Override
     public @NotNull BlockNodeType getType() {
         return TYPE;
-    }
-
-    @Override
-    public @Nullable Tag toTag() {
-        // This node is a singleton so no data needs to be encoded
-        return null;
     }
 
     @Override

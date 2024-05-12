@@ -143,7 +143,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraphChunk chunk = manager.getIfExists(SectionPos.of(pos.pos()));
         if (chunk == null) return false;
 
-        return chunk.containsNode(pos, graphs);
+        return chunk.containsNode(pos);
     }
 
     @Override
@@ -324,7 +324,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SectionPos sectionPos = SectionPos.of(pos.pos());
         SimpleBlockGraphChunk chunk = manager.getOrCreate(sectionPos);
         if (chunk != null) {
-            chunk.putGraphWithNode(id, pos, graphs);
+            chunk.putGraphWithNode(id, pos);
         } else {
             GLLog.warn("Attempted to add graph in chunk that is outside client range. Id: {}, chunk: {}, node: {}", id,
                 sectionPos, pos);

@@ -52,6 +52,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * {@link GraphEntityType} codec getter.
      *
      * @param universe the universe the graph entity types to decode.
+     * @param <G>      the type of graph entity.
      * @return the codec associated with the given universe.
      */
     public static <G extends GraphEntity<G>> Codec<GraphEntityType<G>> refCodec(GraphUniverse universe) {

@@ -4,12 +4,11 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
 
+import com.mojang.serialization.Codec;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -23,27 +22,18 @@ import static org.junit.Assert.assertNotEquals;
 
 public class LinkPosEqualityTests {
     private static final BlockNodeType STRING_NODE_TYPE =
-        BlockNodeType.of(new ResourceLocation("test", "string"), nbt -> {
-            if (nbt instanceof StringTag string)
-                return new StringBlockNode(string.getAsString());
-            return null;
-        });
+        BlockNodeType.of(new ResourceLocation("test", "string"), StringBlockNode.CODEC);
 
-    private static final LinkKeyType STRING_LINK_TYPE = LinkKeyType.of(new ResourceLocation("test", "string"), nbt -> {
-        if (nbt instanceof StringTag string)
-            return new StringLinkKey(string.getAsString());
-        return null;
-    });
+    private static final LinkKeyType STRING_LINK_TYPE =
+        LinkKeyType.of(new ResourceLocation("test", "string"), StringLinkKey.CODEC);
 
     private record StringBlockNode(String str) implements BlockNode {
+        public static final Codec<StringBlockNode> CODEC =
+            Codec.STRING.xmap(StringBlockNode::new, StringBlockNode::str);
+
         @Override
         public @NotNull BlockNodeType getType() {
             return STRING_NODE_TYPE;
-        }
-
-        @Override
-        public @Nullable Tag toTag() {
-            return StringTag.valueOf(str);
         }
 
         @Override
@@ -61,14 +51,11 @@ public class LinkPosEqualityTests {
     }
 
     private record StringLinkKey(String str) implements LinkKey {
+        public static final Codec<StringLinkKey> CODEC = Codec.STRING.xmap(StringLinkKey::new, StringLinkKey::str);
+
         @Override
         public @NotNull LinkKeyType getType() {
             return STRING_LINK_TYPE;
-        }
-
-        @Override
-        public @Nullable Tag toTag() {
-            return StringTag.valueOf(str);
         }
     }
 

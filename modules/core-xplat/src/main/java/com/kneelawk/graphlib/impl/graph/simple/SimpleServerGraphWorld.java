@@ -38,6 +38,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
@@ -55,6 +56,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.storage.LevelStorageSource;
 
+import com.kneelawk.codextra.api.attach.AttachmentKey;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
@@ -88,6 +90,7 @@ import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
  * possibility of maybe eventually making a cubic-chunks implementation of GraphLib or something.
  */
 public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, ServerGraphWorldImpl, SimpleGraphCollection {
+    public static final AttachmentKey<SimpleServerGraphWorld> CONTROLLER = AttachmentKey.ofStaticFieldName();
     /**
      * Graphs will unload 1 minute after their chunk unloads or their last use.
      */
@@ -132,10 +135,12 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     public SimpleServerGraphWorld(SimpleGraphUniverse universe, @NotNull LevelStorageSource.LevelStorageAccess session,
                                   @NotNull ServerLevel world, @NotNull Path path, boolean syncChunkWrites) {
         this.universe = universe;
+        Codec<SimpleBlockGraphChunk> attached =
+            AttachmentKey.attachingCodec(Map.of(GraphUniverse.ATTACHMENT_KEY, universe, CONTROLLER, this),
+                SimpleBlockGraphChunk.CODEC);
         this.chunks = new UnloadingRegionBasedStorage<>(
             new RegionStorageInfo(session.getLevelId(), world.dimension(), universe.getId() + "/chunks"), world,
-            path.resolve(Constants.REGION_DIRNAME), syncChunkWrites,
-            (compound, pos, markDirty) -> new SimpleBlockGraphChunk(compound, pos, markDirty, universe),
+            path.resolve(Constants.REGION_DIRNAME), syncChunkWrites, attached,
             SimpleBlockGraphChunk::new, universe.saveMode);
         this.world = world;
         this.saveMode = universe.saveMode;
@@ -303,7 +308,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     public boolean nodeExistsAt(@NotNull NodePos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(pos.pos()));
         if (chunk != null) {
-            return chunk.containsNode(pos, this::getGraph);
+            return chunk.containsNode(pos);
         }
         return false;
     }
@@ -850,7 +855,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     public void putGraphWithNode(long id, @NotNull NodePos pos) {
         SectionPos sectionPos = SectionPos.of(pos.pos());
         SimpleBlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
-        chunk.putGraphWithNode(id, pos, this::getGraph);
+        chunk.putGraphWithNode(id, pos);
 
         timer.onChunkUse(sectionPos);
     }
@@ -1219,11 +1224,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
             if (chunkPoses.contains(sectionPos.asLong())) {
                 SimpleBlockGraphChunk chunk = chunks.getOrCreate(sectionPos);
-                chunk.putGraphWithNode(graphId, holder.getPos(), id -> {
-                    throw new AssertionError(
-                        "This chunk (" + sectionPos +
-                            ") should already have had its node->graph map initialized and should not need to rebuild it. This is a bug.");
-                });
+                chunk.putGraphWithNode(graphId, holder.getPos());
             }
         }
     }
@@ -1450,7 +1451,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         DynamicOps<Tag> ops = NbtOps.INSTANCE;
         ops = world.registryAccess().createSerializationContext(ops);
         ops = GraphUniverse.ATTACHMENT_KEY.push(ops, universe);
-        ops = SimpleBlockGraph.CONTROLLER.push(ops, this);
+        ops = CONTROLLER.push(ops, this);
         return ops;
     }
 
