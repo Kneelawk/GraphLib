@@ -39,6 +39,9 @@ submodule {
 dependencies {
     val knet_version: String by project
     modApi("com.kneelawk:knet-xplat-intermediary:$knet_version")
+
+    val codextra_version: String by project
+    modApi("com.kneelawk:codextra-xplat-intermediary:$codextra_version")
 }
 
 java {

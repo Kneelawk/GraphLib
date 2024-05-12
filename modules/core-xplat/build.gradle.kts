@@ -37,7 +37,6 @@ submodule {
 dependencies {
     val codextra_version: String by project
     modApi("com.kneelawk:codextra-xplat-intermediary:$codextra_version")
-    include("com.kneelawk:codextra-xplat-intermediary:$codextra_version")
 }
 
 java {

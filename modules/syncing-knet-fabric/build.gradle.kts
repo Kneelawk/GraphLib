@@ -41,6 +41,11 @@ dependencies {
     val knet_version: String by project
     modApi("com.kneelawk:knet-fabric:$knet_version")
     include("com.kneelawk:knet-fabric:$knet_version")
+    
+    // Codextra
+    val codextra_version: String by project
+    modApi("com.kneelawk:codextra-fabric:$codextra_version")
+    include("com.kneelawk:codextra-fabric:$codextra_version")
 }
 
 java {
