@@ -36,6 +36,10 @@ submodule {
 }
 
 dependencies {
+    // Codextra
+    val codextra_version: String by project
+    modRuntimeOnly("com.kneelawk:codextra-neoforge:$codextra_version")
+
     // KModLib Overlay
     val kml_version: String by project
     modRuntimeOnly("com.kneelawk:kmodlib-overlay-neoforge:$kml_version")

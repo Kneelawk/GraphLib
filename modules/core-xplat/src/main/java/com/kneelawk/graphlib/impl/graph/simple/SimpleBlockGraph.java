@@ -86,15 +86,15 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
     }
 
     private record SerialNode(NodePos node, Optional<NodeEntity> entity) {
-        static final Codec<List<Optional<SerialNode>>> LIST_CODEC = SerialNode.CODEC.flatComapMap(Optional::of,
-                option -> option.map(DataResult::success).orElse(DataResult.error(() -> "Cannot encode an empty optional")))
-            .mapResult(Codextra.codecAddPartial(Optional::empty)).listOf();
         static final Codec<SerialNode> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             NodePos.MAP_CODEC.forGetter(SerialNode::node),
             Codextra.keyCheckingMapCodec(List.of("entityType"), NodeEntity.MAP_CODEC)
                 .mapResult(Codextra.mapCodecAddPartial(Optional::empty))
                 .forGetter(SerialNode::entity)
         ).apply(instance, SerialNode::new));
+        static final Codec<List<Optional<SerialNode>>> LIST_CODEC = SerialNode.CODEC.flatComapMap(Optional::of,
+                option -> option.map(DataResult::success).orElse(DataResult.error(() -> "Cannot encode an empty optional")))
+            .mapResult(Codextra.codecAddPartial(Optional::empty)).listOf();
     }
 
     private record SerialLink(int first, int second, LinkKey key, Optional<LinkEntity> entity) {
