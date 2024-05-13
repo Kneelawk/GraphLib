@@ -46,6 +46,8 @@ import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 public final class NodeEntitySyncing {
     /**
      * {@link NodeEntitySyncing} static codec.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     public static final StreamCodec<FriendlyByteBuf, NodeEntitySyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getNodeEntityType,

@@ -48,6 +48,7 @@ import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
+import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
@@ -72,7 +73,7 @@ public final class GraphLibSyncingKNet {
     private GraphLibSyncingKNet() {}
 
     /**
-     * Stream codec for {@link BlockNode}s.
+     * Stream codec that encodes/decodes an entire {@link BlockNode}.
      * <p>
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
@@ -81,7 +82,7 @@ public final class GraphLibSyncingKNet {
             KNetSyncedUniverse::getNodeSyncing, BlockNodeSyncing::getCodec, "BlockNode");
 
     /**
-     * Stream codec for {@link LinkKey}s.
+     * Stream codec that encodes/decodes an entire {@link LinkKey}.
      * <p>
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
@@ -90,13 +91,22 @@ public final class GraphLibSyncingKNet {
             KNetSyncedUniverse::getLinkKeySyncing, LinkKeySyncing::getCodec, "LinkKey");
 
     /**
-     * Stream codec for {@link NodeEntity}s.
+     * Stream codec that encodes/decodes an entire {@link NodeEntity}.
      * <p>
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     public static final StreamCodec<NetRegistryByteBuf, NodeEntity> NODE_ENTITY_CODEC =
         StreamCodecHelper.createObjStreamCodec(NodeEntitySyncing.REF_CODEC, NodeEntity::getType,
             KNetSyncedUniverse::getNodeEntitySyncing, NodeEntitySyncing::getCodec, "NodeEntity");
+
+    /**
+     * Stream codec that encodes/decodes an entire {@link LinkEntity}.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<NetRegistryByteBuf, LinkEntity> LINK_ENTITY_CODEC =
+        StreamCodecHelper.createObjStreamCodec(LinkEntitySyncing.REF_CODEC, LinkEntity::getType,
+            KNetSyncedUniverse::getLinkEntitySyncing, LinkEntitySyncing::getCodec, "LinkEntity");
 
     /**
      * Channel context for referencing a specific universe.

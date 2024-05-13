@@ -29,68 +29,84 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+
+import com.kneelawk.codextra.api.CodextraStreams;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.knet.api.handling.PayloadHandlingException;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 /**
  * Holds a link entity encoder and decoder.
  */
 public final class LinkEntitySyncing {
-    private final @NotNull LinkEntityPacketEncoder<?> encoder;
-    private final @NotNull LinkEntityPacketDecoder decoder;
+    /**
+     * {@link LinkEntitySyncing} static codec.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<FriendlyByteBuf, LinkEntitySyncing> REF_CODEC =
+        StreamCodecHelper.createRefStreamCodec(GraphUniverse::getLinkEntityType,
+            KNetSyncedUniverse::getLinkEntitySyncing, LinkEntitySyncing::getType, "LinkEntity");
 
-    private LinkEntitySyncing(@NotNull LinkEntityPacketEncoder<?> encoder, @NotNull LinkEntityPacketDecoder decoder) {
-        this.encoder = encoder;
-        this.decoder = decoder;
+    /**
+     * {@link LinkEntitySyncing} codec getter.
+     *
+     * @param universe the universe containing the link entities to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static StreamCodec<FriendlyByteBuf, LinkEntitySyncing> refCodec(KNetSyncedUniverse universe) {
+        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, REF_CODEC);
+    }
+
+    private final @NotNull LinkEntityType type;
+    private final @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkEntity> codec;
+
+    public LinkEntitySyncing(@NotNull LinkEntityType type,
+                             @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkEntity> codec) {
+        this.type = type;
+        this.codec = codec;
     }
 
     /**
-     * Encodes a link entity.
-     * <p>
-     * <b>Note: this does not write the link entity's type id. That must be written separately.</b>
-     * <p>
-     * <b>Note: the link entity being encoded must be of the type that the encoder expects.</b>
-     *
-     * @param node the link entity to encode.
-     * @param buf  the buffer to encode to.
+     * {@return this syncing descriptor's type}
      */
-    @SuppressWarnings("unchecked")
-    public void encode(@NotNull LinkEntity node, @NotNull NetByteBuf buf) {
-        ((LinkEntityPacketEncoder<LinkEntity>) encoder).encode(node, buf);
+    public @NotNull LinkEntityType getType() {
+        return type;
     }
 
     /**
-     * Decodes a link entity.
-     *
-     * @param buf the buffer to decode from.
-     * @return a newly decoded link entity.
-     * @throws PayloadHandlingException if the buffer contained invalid data.
+     * {@return this syncing descriptor's stream codec}
      */
-    public @NotNull LinkEntity decode(@NotNull NetByteBuf buf) throws PayloadHandlingException {
-        return decoder.decode(buf);
+    public @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkEntity> getCodec() {
+        return codec;
     }
 
     /**
      * Makes a {@link LinkEntity} syncing descriptor.
      *
-     * @param encoder the encoder.
-     * @param decoder the decoder.
-     * @param <L>     the type of link entity this descriptor syncs.
+     * @param type  the link entity type this syncing is associated with.
+     * @param codec the link entity's stream codec.
      * @return a new link entity syncing descriptor.
      */
-    public static <L extends LinkEntity> @NotNull LinkEntitySyncing of(@NotNull LinkEntityPacketEncoder<L> encoder,
-                                                                       @NotNull LinkEntityPacketDecoder decoder) {
-        return new LinkEntitySyncing(encoder, decoder);
+    public static @NotNull LinkEntitySyncing of(@NotNull LinkEntityType type, @NotNull
+    StreamCodec<? super NetRegistryByteBuf, ? extends LinkEntity> codec) {
+        return new LinkEntitySyncing(type, codec);
     }
 
     /**
      * Makes a {@link LinkEntity} syncing descriptor that does no encoding or decoding.
      *
+     * @param type     the link entity type this syncing is associated with.
      * @param supplier supplies new instances of the link entity.
      * @return a new link entity syncing descriptor.
      */
-    public static @NotNull LinkEntitySyncing ofNoOp(@NotNull Supplier<? extends LinkEntity> supplier) {
-        return new LinkEntitySyncing(LinkEntityPacketEncoder.noOp(), buf -> supplier.get());
+    public static @NotNull LinkEntitySyncing ofNoOp(@NotNull LinkEntityType type,
+                                                    @NotNull Supplier<? extends LinkEntity> supplier) {
+        return new LinkEntitySyncing(type, CodextraStreams.unit(supplier));
     }
 }
