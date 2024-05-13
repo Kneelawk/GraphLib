@@ -29,6 +29,12 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.handler.codec.DecoderException;
+
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
+
 import com.kneelawk.codextra.api.attach.AttachmentKey;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -38,8 +44,10 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
+import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
@@ -55,6 +63,15 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
      * Attachment key for the current synced universe.
      */
     AttachmentKey<KNetSyncedUniverse> ATTACHMENT_KEY = AttachmentKey.ofStaticFieldName();
+
+    /**
+     * Codec for referencing a specific {@link KNetSyncedUniverse}.
+     */
+    StreamCodec<ByteBuf, KNetSyncedUniverse> REF_CODEC = ResourceLocation.STREAM_CODEC.map(id -> {
+        if (!GraphLibSyncing.syncingEnabled(id))
+            throw new DecoderException("There is no synced universe called '" + id + "'");
+        return GraphLibSyncingKNet.getUniverse(id);
+    }, KNetSyncedUniverse::getId);
 
     /**
      * Registers an encoder and decoder for the given block node type.

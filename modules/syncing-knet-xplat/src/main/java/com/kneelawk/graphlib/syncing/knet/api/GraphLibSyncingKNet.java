@@ -64,6 +64,7 @@ import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.knet.api.util.NetCodecs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 import com.kneelawk.knet.api.util.Palette;
 
@@ -117,6 +118,49 @@ public final class GraphLibSyncingKNet {
     public static final StreamCodec<NetRegistryByteBuf, GraphEntity<?>> GRAPH_ENTITY_CODEC =
         StreamCodecHelper.createObjStreamCodec(GraphEntitySyncing.REF_CODEC, GraphEntity::getType,
             KNetSyncedUniverse::getGraphEntitySyncing, GraphEntitySyncing::getCodec, "GraphEntity");
+
+    /**
+     * Stream codec for a {@link NodePos}.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<NetRegistryByteBuf, NodePos> NODE_POS_CODEC = StreamCodec.composite(
+        NetCodecs.BLOCK_POS.mapStream(NetBufs::netOf), NodePos::pos,
+        BLOCK_NODE_CODEC, NodePos::node,
+        NodePos::new
+    );
+
+    /**
+     * Stream codec for a {@link LinkPos}.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<NetRegistryByteBuf, LinkPos> LINK_POS_CODEC = StreamCodec.composite(
+        NODE_POS_CODEC, LinkPos::first,
+        NODE_POS_CODEC, LinkPos::second,
+        LINK_KEY_CODEC, LinkPos::key,
+        LinkPos::new
+    );
+
+    /**
+     * Stream codec for a {@link NodePos} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the codec with universe attached.
+     */
+    public static StreamCodec<NetRegistryByteBuf, NodePos> nodePosCodec(KNetSyncedUniverse universe) {
+        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, NODE_POS_CODEC);
+    }
+
+    /**
+     * Stream codec for a {@link LinkPos} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the codec with universe attached.
+     */
+    public static StreamCodec<NetRegistryByteBuf, LinkPos> linkPosCodec(KNetSyncedUniverse universe) {
+        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, LINK_POS_CODEC);
+    }
 
     /**
      * Channel context for referencing a specific universe.
