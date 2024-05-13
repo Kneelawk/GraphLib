@@ -1,7 +1,9 @@
 name: prerelease
 
 env:
+  PROJECT_NAME: GraphLib
   MAVEN_URL: 'https://kneelawk.com/maven#com/kneelawk/graphlib'
+  ROLE_ID: '1239437674058879047'
 
 on:
   push:
@@ -100,7 +102,8 @@ jobs:
             let versions = fullVersion.split('+');
             let mavenVersion = fullVersion.substring(1);
             let lines = [];
-            lines.push(`**GraphLib prerelease ${versions[0]} has been published for Minecraft ${versions[1]}!**`);
+            lines.push(`# ${process.env.PROJECT_NAME} Prerelease`);
+            lines.push(`**<&${process.env.ROLE_ID}> ${process.env.PROJECT_NAME} prerelease ${versions[0]} has been published for Minecraft ${versions[1]}!**`);
             lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", "With identifiers:");
             lines.push(`\`com.kneelawk.graphlib:core-xplat-intermediary:${mavenVersion}\``);
             lines.push(`\`com.kneelawk.graphlib:core-xplat-mojmap:${mavenVersion}\``);
