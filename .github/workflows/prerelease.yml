@@ -103,7 +103,7 @@ jobs:
             let mavenVersion = fullVersion.substring(1);
             let lines = [];
             lines.push(`# ${process.env.PROJECT_NAME} Prerelease`);
-            lines.push(`**<&${process.env.ROLE_ID}> ${process.env.PROJECT_NAME} prerelease ${versions[0]} has been published for Minecraft ${versions[1]}!**`);
+            lines.push(`**<@&${process.env.ROLE_ID}> ${process.env.PROJECT_NAME} prerelease ${versions[0]} has been published for Minecraft ${versions[1]}!**`);
             lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", "With identifiers:");
             lines.push(`\`com.kneelawk.graphlib:core-xplat-intermediary:${mavenVersion}\``);
             lines.push(`\`com.kneelawk.graphlib:core-xplat-mojmap:${mavenVersion}\``);

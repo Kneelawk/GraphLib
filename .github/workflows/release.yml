@@ -112,7 +112,7 @@ jobs:
             let lines = process.env.CHANGELOG.split('\n');
             let changesStart = lines.findIndex(line => line.startsWith('*'));
             lines.splice(0, changesStart);
-            lines.unshift(`# ${process.env.PROJECT_NAME} Release`, `**<&${process.env.ROLE_ID}> ${process.env.PROJECT_NAME} ${versions[0]} has been released for Minecraft ${versions[1]}!**`, '', '__Changes:__');
+            lines.unshift(`# ${process.env.PROJECT_NAME} Release`, `**<@&${process.env.ROLE_ID}> ${process.env.PROJECT_NAME} ${versions[0]} has been released for Minecraft ${versions[1]}!**`, '', '__Changes:__');
             lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", "With identifiers:");
             lines.push(`\`com.kneelawk.graphlib:core-xplat-intermediary:${mavenVersion}\``);
             lines.push(`\`com.kneelawk.graphlib:core-xplat-mojmap:${mavenVersion}\``);
