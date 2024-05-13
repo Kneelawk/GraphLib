@@ -66,8 +66,8 @@ public final class LinkEntitySyncing {
     private final @NotNull LinkEntityType type;
     private final @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkEntity> codec;
 
-    public LinkEntitySyncing(@NotNull LinkEntityType type,
-                             @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkEntity> codec) {
+    private LinkEntitySyncing(@NotNull LinkEntityType type,
+                              @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkEntity> codec) {
         this.type = type;
         this.codec = codec;
     }
