@@ -49,6 +49,7 @@ import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
+import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
@@ -76,7 +77,7 @@ public final class GraphLibSyncingKNet {
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     public static final StreamCodec<NetRegistryByteBuf, BlockNode> BLOCK_NODE_CODEC =
-        StreamCodecHelper.createObjStreamCodec(BlockNodeSyncing.REF_STREAM_CODEC, BlockNode::getType,
+        StreamCodecHelper.createObjStreamCodec(BlockNodeSyncing.REF_CODEC, BlockNode::getType,
             KNetSyncedUniverse::getNodeSyncing, BlockNodeSyncing::getCodec, "BlockNode");
 
     /**
@@ -85,8 +86,17 @@ public final class GraphLibSyncingKNet {
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     public static final StreamCodec<NetRegistryByteBuf, LinkKey> LINK_KEY_CODEC =
-        StreamCodecHelper.createObjStreamCodec(LinkKeySyncing.REF_STREAM_CODEC, LinkKey::getType,
+        StreamCodecHelper.createObjStreamCodec(LinkKeySyncing.REF_CODEC, LinkKey::getType,
             KNetSyncedUniverse::getLinkKeySyncing, LinkKeySyncing::getCodec, "LinkKey");
+
+    /**
+     * Stream codec for {@link NodeEntity}s.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<NetRegistryByteBuf, NodeEntity> NODE_ENTITY_CODEC =
+        StreamCodecHelper.createObjStreamCodec(NodeEntitySyncing.REF_CODEC, NodeEntity::getType,
+            KNetSyncedUniverse::getNodeEntitySyncing, NodeEntitySyncing::getCodec, "NodeEntity");
 
     /**
      * Channel context for referencing a specific universe.

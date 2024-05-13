@@ -44,15 +44,30 @@ import com.kneelawk.knet.api.util.NetRegistryByteBuf;
  * Holds a link key encoder and decoder.
  */
 public final class LinkKeySyncing {
-    public static final StreamCodec<FriendlyByteBuf, LinkKeySyncing> REF_STREAM_CODEC =
+    /**
+     * {@link LinkKeySyncing} static codec.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final StreamCodec<FriendlyByteBuf, LinkKeySyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getLinkKeyType, KNetSyncedUniverse::getLinkKeySyncing,
             LinkKeySyncing::getType, "LinkKey");
 
+    /**
+     * {@link LinkKeySyncing} codec getter.
+     *
+     * @param universe the universe containing the link keys to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static StreamCodec<FriendlyByteBuf, LinkKeySyncing> refCodec(KNetSyncedUniverse universe) {
+        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, REF_CODEC);
+    }
+
     private final @NotNull LinkKeyType type;
-    private final @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> codec;
+    private final @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkKey> codec;
 
     private LinkKeySyncing(@NotNull LinkKeyType type,
-                           @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> codec) {
+                           @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkKey> codec) {
         this.type = type;
         this.codec = codec;
     }
@@ -67,7 +82,7 @@ public final class LinkKeySyncing {
     /**
      * {@return this syncing descriptor's stream codec}
      */
-    public @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> getCodec() {
+    public @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends LinkKey> getCodec() {
         return codec;
     }
 
@@ -78,8 +93,8 @@ public final class LinkKeySyncing {
      * @param codec the link key's stream codec.
      * @return a link key syncing descriptor.
      */
-    public static @NotNull LinkKeySyncing of(@NotNull LinkKeyType type,
-                                             @NotNull StreamCodec<NetRegistryByteBuf, ? extends LinkKey> codec) {
+    public static @NotNull LinkKeySyncing of(@NotNull LinkKeyType type, @NotNull
+    StreamCodec<? super NetRegistryByteBuf, ? extends LinkKey> codec) {
         return new LinkKeySyncing(type, codec);
     }
 

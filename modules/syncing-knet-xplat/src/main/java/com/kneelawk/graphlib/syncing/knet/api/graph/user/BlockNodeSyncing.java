@@ -50,7 +50,7 @@ public final class BlockNodeSyncing {
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
      */
-    public static final StreamCodec<FriendlyByteBuf, BlockNodeSyncing> REF_STREAM_CODEC =
+    public static final StreamCodec<FriendlyByteBuf, BlockNodeSyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getNodeType, KNetSyncedUniverse::getNodeSyncing,
             BlockNodeSyncing::getType, "BlockNode");
 
@@ -60,15 +60,15 @@ public final class BlockNodeSyncing {
      * @param universe the universe containing the block node types to decode.
      * @return the codec associated with the given universe.
      */
-    public static StreamCodec<FriendlyByteBuf, BlockNodeSyncing> refStreamCodec(KNetSyncedUniverse universe) {
-        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, REF_STREAM_CODEC);
+    public static StreamCodec<FriendlyByteBuf, BlockNodeSyncing> refodec(KNetSyncedUniverse universe) {
+        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, REF_CODEC);
     }
 
     private final @NotNull BlockNodeType type;
-    private final @NotNull StreamCodec<NetRegistryByteBuf, ? extends BlockNode> codec;
+    private final @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends BlockNode> codec;
 
     private BlockNodeSyncing(@NotNull BlockNodeType type,
-                             @NotNull StreamCodec<NetRegistryByteBuf, ? extends BlockNode> codec) {
+                             @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends BlockNode> codec) {
         this.type = type;
         this.codec = codec;
     }
@@ -83,7 +83,7 @@ public final class BlockNodeSyncing {
     /**
      * {@return this syncing descriptor's stream codec}
      */
-    public @NotNull StreamCodec<NetRegistryByteBuf, ? extends BlockNode> getCodec() {
+    public @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends BlockNode> getCodec() {
         return codec;
     }
 
@@ -96,7 +96,8 @@ public final class BlockNodeSyncing {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeSyncing of(@NotNull BlockNodeType type,
-                                               @NotNull StreamCodec<NetRegistryByteBuf, ? extends BlockNode> codec) {
+                                               @NotNull
+                                               StreamCodec<? super NetRegistryByteBuf, ? extends BlockNode> codec) {
         return new BlockNodeSyncing(type, codec);
     }
 
