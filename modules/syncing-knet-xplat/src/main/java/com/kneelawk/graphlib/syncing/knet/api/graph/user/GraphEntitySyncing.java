@@ -37,6 +37,7 @@ import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
@@ -49,6 +50,9 @@ import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 public final class GraphEntitySyncing<G extends GraphEntity<G>> {
     /**
      * {@link GraphEntitySyncing} static codec.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE_ATTACHMENT} attachment.
      */
     public static final StreamCodec<FriendlyByteBuf, GraphEntitySyncing<?>> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getGraphEntityType,

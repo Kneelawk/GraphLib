@@ -27,9 +27,12 @@ package com.kneelawk.graphlib.syncing.knet.api;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.codextra.api.attach.AttachmentKey;
+import com.kneelawk.codextra.api.attach.stream.ChildBufferFactory;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -62,17 +65,67 @@ import com.kneelawk.knet.api.channel.context.PlayChannelContext;
 import com.kneelawk.knet.api.channel.context.RootPlayChannelContext;
 import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
+import com.kneelawk.knet.api.util.NetBuf;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetByteBuf;
 import com.kneelawk.knet.api.util.NetCodecs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 import com.kneelawk.knet.api.util.Palette;
+import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 
 /**
  * KNet-based synchronization library.
  */
 public final class GraphLibSyncingKNet {
     private GraphLibSyncingKNet() {}
+
+    /**
+     * Attachment key for a palette of {@link ResourceLocation}s.
+     */
+    public static final AttachmentKey<Palette<ResourceLocation>> ID_PALETTE_ATTACHMENT =
+        AttachmentKey.ofStaticFieldName();
+
+    /**
+     * Wraps the given {@link StreamCodec} codec in a palette that will be used in both encoding and decoding.
+     *
+     * @param wrappedCodec    the codec to wrap.
+     * @param childBufferCtor the constructor for the buffer type the wrapped codec uses.
+     * @param <B1>            the type of the parent buffer.
+     * @param <B2>            the type of the child buffer.
+     * @param <V>             the result type.
+     * @return the wrapper stream codec.
+     */
+    public static <B1 extends FriendlyByteBuf & NetBuf<B1>, B2 extends FriendlyByteBuf, V> StreamCodec<B1, V> attachPalette(
+        StreamCodec<? super B2, V> wrappedCodec, ChildBufferFactory<? super B1, B2> childBufferCtor) {
+        return ID_PALETTE_ATTACHMENT.mutReadAttachingStreamCodec(Palette.codec(ResourceLocation.STREAM_CODEC),
+            childBufferCtor, wrappedCodec, obj -> new Palette<>());
+    }
+
+    /**
+     * Wraps the given {@link StreamCodec} codec in a palette that will be used in both encoding and decoding, using a
+     * buffer capable of being used as a {@link net.minecraft.network.RegistryFriendlyByteBuf}.
+     *
+     * @param wrappedCodec the codec to wrap.
+     * @param <V>          the result type.
+     * @return the wrapper stream codec.
+     */
+    public static <V> StreamCodec<NetRegistryByteBuf, V> registryAttachPalette(
+        StreamCodec<? super NetRegistryByteBuf, V> wrappedCodec) {
+        return attachPalette(wrappedCodec, (cap, old) -> NetBufs.netRegistryBuf(cap, old.registryAccess()));
+    }
+
+    /**
+     * Wraps the given {@link StreamCodec} codec in a palette that will be used in both encoding and decoding, using a
+     * buffer capable of being used as a {@link NetByteBuf}.
+     *
+     * @param wrappedCodec the codec to wrap.
+     * @param <V>          the result type.
+     * @return the wrapper stream codec.
+     */
+    public static <V> StreamCodec<NetRegistryByteBuf, V> netAttachPalette(
+        StreamCodec<? super RegistryNetByteBuf, V> wrappedCodec) {
+        return attachPalette(wrappedCodec, (cap, old) -> NetBufs.registryNetBuf(cap, old.registryAccess()));
+    }
 
     /**
      * Stream codec that encodes/decodes an entire {@link BlockNode}.

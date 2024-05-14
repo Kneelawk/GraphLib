@@ -36,6 +36,7 @@ import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
@@ -48,6 +49,7 @@ public final class LinkKeySyncing {
      * {@link LinkKeySyncing} static codec.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE_ATTACHMENT} attachment.
      */
     public static final StreamCodec<FriendlyByteBuf, LinkKeySyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getLinkKeyType, KNetSyncedUniverse::getLinkKeySyncing,
