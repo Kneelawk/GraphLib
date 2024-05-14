@@ -40,7 +40,9 @@ import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 
 /**
  * Holds a block node encoder and decoder.
@@ -97,10 +99,22 @@ public final class BlockNodeSyncing {
      * @return a new block node syncing descriptor.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull BlockNodeSyncing of(@NotNull BlockNodeType type,
-                                               @NotNull
-                                               StreamCodec<? super NetRegistryByteBuf, ? extends BlockNode> codec) {
+    public static @NotNull BlockNodeSyncing ofRegistry(@NotNull BlockNodeType type, @NotNull
+    StreamCodec<? super NetRegistryByteBuf, ? extends BlockNode> codec) {
         return new BlockNodeSyncing(type, codec);
+    }
+
+    /**
+     * Makes a {@link BlockNode} syncing descriptor.
+     *
+     * @param type  the block node type this syncing is associated with.
+     * @param codec the block node's stream codec.
+     * @return a new block node syncing descriptor.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static @NotNull BlockNodeSyncing ofNet(@NotNull BlockNodeType type, @NotNull
+    StreamCodec<? super RegistryNetByteBuf, ? extends BlockNode> codec) {
+        return new BlockNodeSyncing(type, codec.mapStream(NetBufs::registryNetOf));
     }
 
     /**

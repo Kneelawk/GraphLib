@@ -39,7 +39,9 @@ import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 
 /**
  * Holds a link key encoder and decoder.
@@ -95,9 +97,21 @@ public final class LinkKeySyncing {
      * @param codec the link key's stream codec.
      * @return a link key syncing descriptor.
      */
-    public static @NotNull LinkKeySyncing of(@NotNull LinkKeyType type, @NotNull
+    public static @NotNull LinkKeySyncing ofRegistry(@NotNull LinkKeyType type, @NotNull
     StreamCodec<? super NetRegistryByteBuf, ? extends LinkKey> codec) {
         return new LinkKeySyncing(type, codec);
+    }
+
+    /**
+     * Makes a {@link LinkKey} syncing descriptor.
+     *
+     * @param type  the link key type this syncing is associated with.
+     * @param codec the link key's stream codec.
+     * @return a link key syncing descriptor.
+     */
+    public static @NotNull LinkKeySyncing ofNet(@NotNull LinkKeyType type, @NotNull
+    StreamCodec<? super RegistryNetByteBuf, ? extends LinkKey> codec) {
+        return new LinkKeySyncing(type, codec.mapStream(NetBufs::registryNetOf));
     }
 
     /**

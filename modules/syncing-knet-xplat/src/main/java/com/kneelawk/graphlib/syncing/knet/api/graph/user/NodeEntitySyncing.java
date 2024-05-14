@@ -39,7 +39,9 @@ import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 
 /**
  * Holds a node entity encoder and decoder.
@@ -95,9 +97,21 @@ public final class NodeEntitySyncing {
      * @param codec the node entity's stream codec.
      * @return a new node entity syncing descriptor.
      */
-    public static @NotNull NodeEntitySyncing of(@NotNull NodeEntityType type, @NotNull
+    public static @NotNull NodeEntitySyncing ofRegistry(@NotNull NodeEntityType type, @NotNull
     StreamCodec<? super NetRegistryByteBuf, ? extends NodeEntity> codec) {
         return new NodeEntitySyncing(type, codec);
+    }
+
+    /**
+     * Makes a {@link NodeEntity} syncing descriptor.
+     *
+     * @param type  the node entity type this syncing is associated with.
+     * @param codec the node entity's stream codec.
+     * @return a new node entity syncing descriptor.
+     */
+    public static @NotNull NodeEntitySyncing ofNet(@NotNull NodeEntityType type, @NotNull
+    StreamCodec<? super RegistryNetByteBuf, ? extends NodeEntity> codec) {
+        return new NodeEntitySyncing(type, codec.mapStream(NetBufs::registryNetOf));
     }
 
     /**

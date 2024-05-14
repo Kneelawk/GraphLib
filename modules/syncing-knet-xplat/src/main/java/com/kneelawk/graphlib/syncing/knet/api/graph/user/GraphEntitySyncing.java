@@ -40,7 +40,9 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 
 /**
  * Holds a graph entity encoder and decoder.
@@ -113,10 +115,25 @@ public final class GraphEntitySyncing<G extends GraphEntity<G>> {
      * @return a new graph entity syncing descriptor.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> of(@NotNull GraphEntityType<G> type,
-                                                                               @NotNull
-                                                                               StreamCodec<? super NetRegistryByteBuf, G> codec) {
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofRegistry(@NotNull GraphEntityType<G> type,
+                                                                                       @NotNull
+                                                                                       StreamCodec<? super NetRegistryByteBuf, G> codec) {
         return new GraphEntitySyncing<>(type, codec);
+    }
+
+    /**
+     * Makes a new {@link GraphEntity} syncing descriptor.
+     *
+     * @param <G>   the type of graph entity this descriptor syncs.
+     * @param type  the graph entity type this syncing is associated with.
+     * @param codec graph entity's stream codec.
+     * @return a new graph entity syncing descriptor.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofNet(@NotNull GraphEntityType<G> type,
+                                                                                  @NotNull
+                                                                                  StreamCodec<? super RegistryNetByteBuf, G> codec) {
+        return new GraphEntitySyncing<>(type, codec.mapStream(NetBufs::registryNetOf));
     }
 
     /**
