@@ -51,7 +51,7 @@ public final class LinkKeySyncing {
      * {@link LinkKeySyncing} static codec.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE_ATTACHMENT} attachment.
+     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<FriendlyByteBuf, LinkKeySyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getLinkKeyType, KNetSyncedUniverse::getLinkKeySyncing,

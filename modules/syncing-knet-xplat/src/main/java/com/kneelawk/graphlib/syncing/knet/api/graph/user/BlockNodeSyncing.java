@@ -52,7 +52,7 @@ public final class BlockNodeSyncing {
      * {@link BlockNodeSyncing} static stream codec.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE_ATTACHMENT} attachment.
+     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<FriendlyByteBuf, BlockNodeSyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getNodeType, KNetSyncedUniverse::getNodeSyncing,

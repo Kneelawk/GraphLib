@@ -19,7 +19,7 @@ import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 public class StreamCodecHelper {
     public static final StreamCodec<FriendlyByteBuf, ResourceLocation> PALETTED_ID_CODEC =
-        GraphLibSyncingKNet.ID_PALETTE_ATTACHMENT.dispatchIfPresentStreamCodec(palette -> palette.asCodec("id palette"),
+        GraphLibSyncingKNet.ID_PALETTE.dispatchIfPresentStreamCodec(palette -> palette.asCodec("id palette"),
             ResourceLocation.STREAM_CODEC);
 
     public static <S, T extends ObjectType> StreamCodec<FriendlyByteBuf, S> createRefStreamCodec(

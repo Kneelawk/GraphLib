@@ -51,7 +51,7 @@ public final class NodeEntitySyncing {
      * {@link NodeEntitySyncing} static codec.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE_ATTACHMENT} attachment.
+     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<FriendlyByteBuf, NodeEntitySyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getNodeEntityType,
