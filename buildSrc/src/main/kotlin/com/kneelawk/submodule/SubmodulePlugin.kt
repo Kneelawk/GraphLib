@@ -143,15 +143,13 @@ class SubmodulePlugin : Plugin<Project> {
 
 //              val minecraft_version: String by project
 //              val quilt_mappings: String by project
-                val jetbrainsAnnotationsVersion = project.getProperty<String>("jetbrains_annotations_version")
+//                val jetbrainsAnnotationsVersion = project.getProperty<String>("jetbrains_annotations_version")
 //              val lns_version: String by project
                 (options as? StandardJavadocDocletOptions)?.links = listOf(
 //                  "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
-                    "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrainsAnnotationsVersion}/",
+//                    "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrainsAnnotationsVersion}/",
 //                  "https://alexiil.uk/javadoc/libnetworkstack/${lns_version}/"
                 )
-
-                options.optionFiles(project.rootProject.file("javadoc-options.txt"))
             }
 
             named("test", Test::class.java).configure {

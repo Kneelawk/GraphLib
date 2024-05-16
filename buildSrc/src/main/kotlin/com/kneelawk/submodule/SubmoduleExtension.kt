@@ -29,6 +29,7 @@ import com.kneelawk.getProperty
 import net.fabricmc.loom.api.LoomGradleExtensionAPI
 import org.gradle.api.Project
 import org.gradle.api.plugins.BasePluginExtension
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.javadoc.Javadoc
@@ -169,6 +170,16 @@ abstract class SubmoduleExtension(private val project: Project) {
             named("server") {
                 ideConfigGenerated(true)
             }
+        }
+    }
+
+    fun setupJavadoc() {
+        val javaEx = project.extensions.getByType(JavaPluginExtension::class)
+
+        javaEx.withJavadocJar()
+
+        project.tasks.named("javadoc", Javadoc::class).configure {
+            options.optionFiles(project.rootProject.file("javadoc-options.txt"))
         }
     }
 

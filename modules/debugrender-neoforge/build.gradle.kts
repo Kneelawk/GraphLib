@@ -33,6 +33,7 @@ submodule {
     setLibsDirectory()
     applyNeoforgeDependency()
     applyXplatConnection(":debugrender-xplat")
+    setupJavadoc()
     createDevExport()
 }
 
@@ -41,10 +42,6 @@ dependencies {
     val kml_version: String by project
     modImplementation("com.kneelawk:kmodlib-overlay-neoforge:$kml_version")
     include("com.kneelawk:kmodlib-overlay-neoforge:$kml_version")
-}
-
-java {
-    withJavadocJar()
 }
 
 kpublish {

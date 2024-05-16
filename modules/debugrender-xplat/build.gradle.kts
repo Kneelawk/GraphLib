@@ -33,15 +33,12 @@ submodule {
     setRefmaps("graphlib-debugrender")
     applyFabricLoaderDependency()
     xplatProjectDependency(":core")
+    setupJavadoc()
 }
 
 dependencies {
     val kml_version: String by project
     modImplementation("com.kneelawk:kmodlib-renderlayer:$kml_version")
-}
-
-java {
-    withJavadocJar()
 }
 
 kpublish {

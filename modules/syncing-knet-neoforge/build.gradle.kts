@@ -33,6 +33,7 @@ submodule {
     setLibsDirectory()
     applyNeoforgeDependency()
     applyXplatConnection(":syncing-knet-xplat")
+    setupJavadoc()
     createDevExport()
 }
 
@@ -46,10 +47,6 @@ dependencies {
     val codextra_version: String by project
     modApi("com.kneelawk:codextra-neoforge:$codextra_version")
     include("com.kneelawk:codextra-neoforge:$codextra_version")
-}
-
-java {
-    withJavadocJar()
 }
 
 kpublish {

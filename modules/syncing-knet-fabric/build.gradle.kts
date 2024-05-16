@@ -34,6 +34,7 @@ submodule {
     applyFabricLoaderDependency()
     applyFabricApiDependency()
     applyXplatConnection(":syncing-knet-xplat")
+    setupJavadoc()
 }
 
 dependencies {
@@ -46,10 +47,6 @@ dependencies {
     val codextra_version: String by project
     modApi("com.kneelawk:codextra-fabric:$codextra_version")
     include("com.kneelawk:codextra-fabric:$codextra_version")
-}
-
-java {
-    withJavadocJar()
 }
 
 kpublish {

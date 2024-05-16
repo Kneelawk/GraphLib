@@ -33,10 +33,7 @@ submodule {
     setRefmaps("graphlib-syncing-core")
     applyFabricLoaderDependency()
     xplatProjectDependency(":core")
-}
-
-java {
-    withJavadocJar()
+    setupJavadoc()
 }
 
 kpublish {

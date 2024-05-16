@@ -33,11 +33,8 @@ submodule {
     setLibsDirectory()
     applyNeoforgeDependency()
     applyXplatConnection(":syncing-core-xplat")
+    setupJavadoc()
     createDevExport()
-}
-
-java {
-    withJavadocJar()
 }
 
 kpublish {
