@@ -35,6 +35,15 @@ jobs:
       - name: Get Tag Version
         uses: dawidd6/action-get-tag@v1
         id: tag_version
+      - name: Get Project Version
+        # script to remove the 'v' from the beginning of the tag version
+        uses: actions/github-script@v6
+        id: project_version
+        env:
+          TAG_VERSION: ${{ steps.tag_version.outputs.tag }}
+        with:
+          script: return process.env.TAG_VERSION.substring(1)
+          result-encoding: string
       - name: Checkout
         uses: actions/checkout@v3
       - name: Validate Gradle Wrapper
