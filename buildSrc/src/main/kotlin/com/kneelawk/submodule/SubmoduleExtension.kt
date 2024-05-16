@@ -41,7 +41,7 @@ import org.gradle.language.jvm.tasks.ProcessResources
 
 abstract class SubmoduleExtension(private val project: Project) {
     lateinit var xplatName: String
-    val transitiveProjectDependencies = mutableListOf<String>()
+    val transitiveProjectDependencies = mutableListOf<ProjectDep>()
 
     fun setLibsDirectory() {
         val baseEx = project.extensions.getByType(BasePluginExtension::class)
@@ -118,9 +118,9 @@ abstract class SubmoduleExtension(private val project: Project) {
 
         for (transitiveDep in xplatSubmodule.transitiveProjectDependencies) {
             if (onNeoForge) {
-                neoforgeProjectDependency(transitiveDep)
+                neoforgeProjectDependency(transitiveDep.projectBase, transitiveDep.api)
             } else {
-                fabricProjectDependency(transitiveDep)
+                fabricProjectDependency(transitiveDep.projectBase, transitiveDep.api)
             }
         }
 
@@ -197,32 +197,38 @@ abstract class SubmoduleExtension(private val project: Project) {
         project.tasks.named("assemble").configure { dependsOn(jarExt) }
     }
 
-    fun xplatProjectDependency(projectBase: String, transitive: Boolean = true) {
+    fun xplatProjectDependency(projectBase: String, transitive: Boolean = true, api: Boolean = true) {
+        val config = if (api) "api" else "compileOnly"
+
         project.dependencies.apply {
-            add("compileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
+            add(config, project("${projectBase}-xplat", configuration = "namedElements"))
             add("testCompileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
         }
 
         if (transitive) {
-            transitiveProjectDependencies.add(projectBase)
+            transitiveProjectDependencies.add(ProjectDep(projectBase, api))
         }
     }
 
-    fun fabricProjectDependency(projectBase: String) {
+    fun fabricProjectDependency(projectBase: String, api: Boolean = true) {
+        val config = if (api) "api" else "implementation"
+
         project.dependencies.apply {
             add("compileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
-            add("implementation", project("${projectBase}-fabric", configuration = "namedElements"))
+            add(config, project("${projectBase}-fabric", configuration = "namedElements"))
             add("include", project("${projectBase}-fabric"))
             add("testCompileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
             add("testImplementation", project("${projectBase}-fabric", configuration = "namedElements"))
         }
     }
 
-    fun neoforgeProjectDependency(projectBase: String) {
+    fun neoforgeProjectDependency(projectBase: String, api: Boolean = true) {
+        val config = if (api) "api" else "implementation"
+
         project.dependencies.apply {
             add("compileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
-            add("compileOnly", project("${projectBase}-neoforge", configuration = "namedElements"))
-            add("runtimeOnly", project("${projectBase}-neoforge", configuration = "dev"))
+            add(config, project("${projectBase}-neoforge", configuration = "namedElements"))
+//            add("runtimeOnly", project("${projectBase}-neoforge", configuration = "dev"))
             add("include", project("${projectBase}-neoforge"))
             add("testCompileOnly", project("${projectBase}-xplat", configuration = "namedElements"))
             add("testCompileOnly", project("${projectBase}-neoforge", configuration = "namedElements"))
