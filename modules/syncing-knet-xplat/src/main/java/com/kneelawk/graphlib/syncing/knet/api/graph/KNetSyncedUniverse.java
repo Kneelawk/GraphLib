@@ -25,15 +25,17 @@
 
 package com.kneelawk.graphlib.syncing.knet.api.graph;
 
+import java.util.Map;
+import java.util.function.Function;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.DecoderException;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.codextra.api.attach.AttachmentKey;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -53,6 +55,7 @@ import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.graphlib.syncing.knet.impl.graph.simple.SimpleKNetSyncedUniverseBuilder;
 
 /**
@@ -67,11 +70,44 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     /**
      * Codec for referencing a specific {@link KNetSyncedUniverse}.
      */
-    StreamCodec<ByteBuf, KNetSyncedUniverse> REF_CODEC = ResourceLocation.STREAM_CODEC.map(id -> {
+    StreamCodec<FriendlyByteBuf, KNetSyncedUniverse> REF_CODEC = StreamCodecHelper.PALETTED_ID_CODEC.map(id -> {
         if (!GraphLibSyncing.syncingEnabled(id))
             throw new DecoderException("There is no synced universe called '" + id + "'");
         return GraphLibSyncingKNet.getUniverse(id);
     }, KNetSyncedUniverse::getId);
+
+    /**
+     * Creates a {@link StreamCodec} that wraps the given codec and attaches a universe read from the stream.
+     * <p>
+     * This provides both the {@link #ATTACHMENT_KEY} and {@link GraphUniverse#ATTACHMENT_KEY} attachments.
+     *
+     * @param wrappedCodec the codec to wrap and provide the universe attachment to.
+     * @param getter       the function to get the universe from the wrapped type.
+     * @param <B>          the buffer type.
+     * @param <V>          the result type.
+     * @return the created stream codec.
+     */
+    static <B extends FriendlyByteBuf, V> StreamCodec<B, V> readAttachingCodec(StreamCodec<? super B, V> wrappedCodec,
+                                                                               Function<? super V, ? extends KNetSyncedUniverse> getter) {
+        return AttachmentKey.readAttachingStreamCodec(REF_CODEC,
+            universe -> Map.of(ATTACHMENT_KEY, universe, GraphUniverse.ATTACHMENT_KEY, universe.getUniverse()),
+            wrappedCodec, getter);
+    }
+
+    /**
+     * Creates a {@link StreamCodec.CodecOperation} that attaches a universe read from the stream.
+     * <p>
+     * This provides both the {@link #ATTACHMENT_KEY} and {@link GraphUniverse#ATTACHMENT_KEY} attachments.
+     *
+     * @param getter the function to get the universe from the wrapped type.
+     * @param <B>    the buffer type.
+     * @param <V>    the result type.
+     * @return the created codec operation.
+     */
+    static <B extends FriendlyByteBuf, V> StreamCodec.CodecOperation<B, V, V> readAttachingOp(
+        Function<? super V, ? extends KNetSyncedUniverse> getter) {
+        return streamCodec -> readAttachingCodec(streamCodec, getter);
+    }
 
     /**
      * Registers an encoder and decoder for the given block node type.

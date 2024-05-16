@@ -25,32 +25,26 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
-import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
-import com.kneelawk.knet.api.util.NetByteBuf;
-
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 
-public record NodeRemovePayload(ResourceLocation universeId, long graphId, NodePosPayload nodePos)
+import com.kneelawk.codextra.api.util.FunctionUtils;
+import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+
+public record NodeRemovePayload(KNetSyncedUniverse universe, long graphId, NodePos nodePos)
     implements CustomPacketPayload {
     public static final Type<NodeRemovePayload> ID = new Type<>(SyncingKNetImpl.id("node_remove"));
-    public static final StreamCodec<NetByteBuf, NodeRemovePayload> CODEC =
-        StreamCodec.ofMember(NodeRemovePayload::encode, NodeRemovePayload::decode);
-
-    public static NodeRemovePayload decode(NetByteBuf buf) {
-        ResourceLocation universeId = buf.readResourceLocation();
-        long graphId = buf.readVarUnsignedLong();
-        NodePosPayload nodePos = NodePosPayload.decode(buf);
-        return new NodeRemovePayload(universeId, graphId, nodePos);
-    }
-
-    public void encode(NetByteBuf buf) {
-        buf.writeResourceLocation(universeId);
-        buf.writeVarUnsignedLong(graphId);
-        nodePos.encode(buf);
-    }
+    public static final StreamCodec<NetRegistryByteBuf, NodeRemovePayload> CODEC = StreamCodec.composite(
+        KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+        ByteBufCodecs.VAR_LONG, NodeRemovePayload::graphId,
+        GraphLibSyncingKNet.NODE_POS_CODEC, NodeRemovePayload::nodePos,
+        NodeRemovePayload::new
+    ).apply(KNetSyncedUniverse.readAttachingOp(NodeRemovePayload::universe));
 
     @Override
     public Type<?> type() {

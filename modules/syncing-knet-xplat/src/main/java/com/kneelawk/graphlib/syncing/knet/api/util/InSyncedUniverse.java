@@ -26,8 +26,9 @@ public record InSyncedUniverse<T>(KNetSyncedUniverse universe, T obj) {
      */
     public static <B extends FriendlyByteBuf, V> StreamCodec<B, InSyncedUniverse<V>> codec(
         StreamCodec<? super B, V> objCodec) {
-        return KNetSyncedUniverse.ATTACHMENT_KEY.readAttachingStreamCodec(KNetSyncedUniverse.REF_CODEC,
-            StreamCodec.composite(KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
-                objCodec, InSyncedUniverse::obj, InSyncedUniverse::new), InSyncedUniverse::universe);
+        return StreamCodec.<B, InSyncedUniverse<V>, KNetSyncedUniverse, V>composite(
+                KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+                objCodec, InSyncedUniverse::obj, InSyncedUniverse::new)
+            .apply(KNetSyncedUniverse.readAttachingOp(InSyncedUniverse::universe));
     }
 }

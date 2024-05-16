@@ -26,40 +26,27 @@
 package com.kneelawk.graphlib.syncing.knet.impl;
 
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.Set;
-import java.util.function.Function;
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.ChunkPos;
-
-import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
-import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
-import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
-import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
-import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
@@ -67,7 +54,6 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeRemovePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
-import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadInternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadNode;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.SplitPayload;
@@ -75,91 +61,28 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.UnlinkPayload;
 import com.kneelawk.knet.api.handling.PayloadHandlingContext;
 import com.kneelawk.knet.api.handling.PayloadHandlingErrorException;
 import com.kneelawk.knet.api.handling.PayloadHandlingException;
-import com.kneelawk.knet.api.util.NetByteBuf;
-import com.kneelawk.knet.api.util.Palette;
 
 public final class KNetDecoding {
     private KNetDecoding() {}
 
-    private static ClientGraphWorldImpl getWorld(ResourceLocation universeId, String packetName)
+    private static ClientGraphWorldImpl getWorld(KNetSyncedUniverse universe, String packetName)
         throws PayloadHandlingException {
-        SyncedUniverseImpl universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(universeId);
-        if (universe == null)
-            throw new PayloadHandlingErrorException("Received " + packetName + " for unknown universe");
-
-        ClientGraphWorldImpl world = universe.getClientGraphView();
+        ClientGraphWorldImpl world = ((SyncedUniverseImpl) universe).getClientGraphView();
         if (world == null)
             throw new PayloadHandlingErrorException("Received " + packetName + " but client GraphWorld was null");
 
         return world;
     }
 
-    private static <T> T getType(int typeIdInt, Palette<ResourceLocation> palette, Function<ResourceLocation, T> getter,
-                                 String name, Object position) throws PayloadHandlingException {
-        ResourceLocation typeId = palette.get(typeIdInt);
-        if (typeId == null) throw new PayloadHandlingErrorException(
-            "Unable to decode " + name + " type id int as id. Int: " + typeIdInt + " @ " + position);
-
-        T type = getter.apply(typeId);
-        if (type == null)
-            throw new PayloadHandlingErrorException(
-                "Received unknown " + name + " type id: " + typeId + " @ " + position);
-
-        return type;
-    }
-
-    private static void loadGraphEntities(BlockGraphImpl graph, int[] graphEntityIds, NetByteBuf data,
-                                          Palette<ResourceLocation> palette, KNetSyncedUniverse universe)
-        throws PayloadHandlingException {
-        List<GraphEntity<?>> decodedEntities = new ObjectArrayList<>();
-
-        for (int typeIdInt : graphEntityIds) {
-            GraphEntityType<?> type =
-                getType(typeIdInt, palette, universe.getUniverse()::getGraphEntityType, "graph entity", graph.getId());
-
-            GraphEntitySyncing<?> syncing = universe.getGraphEntitySyncing(type);
-
-            GraphEntity<?> entity = syncing.decode(data);
-            decodedEntities.add(entity);
-        }
-
-        graph.initializeGraphEntities(decodedEntities);
-    }
-
-    private static @Nullable NodeEntity readNodeEntity(OptionalInt entityId, NetByteBuf data,
-                                                       Palette<ResourceLocation> palette, KNetSyncedUniverse universe,
-                                                       NodePos pos) throws PayloadHandlingException {
-        if (entityId.isPresent()) {
-            NodeEntityType entityType =
-                getType(entityId.getAsInt(), palette, universe.getUniverse()::getNodeEntityType, "node entity", pos);
-            return universe.getNodeEntitySyncing(entityType).decode(data);
-        }
-        return null;
-    }
-
-    private static @Nullable LinkEntity readLinkEntity(OptionalInt entityId, NetByteBuf data,
-                                                       Palette<ResourceLocation> palette, KNetSyncedUniverse universe,
-                                                       LinkPos pos) throws PayloadHandlingException {
-        if (entityId.isPresent()) {
-            LinkEntityType entityType =
-                getType(entityId.getAsInt(), palette, universe.getUniverse()::getLinkEntityType, "link entity", pos);
-            return universe.getLinkEntitySyncing(entityType).decode(data);
-        }
-        return null;
-    }
-
     public static void receiveChunkDataPacket(ChunkDataPayload payload, PayloadHandlingContext ctx)
         throws PayloadHandlingException {
-        PayloadHeader header = payload.header();
-        Palette<ResourceLocation> palette = header.palette();
-        NetByteBuf data = header.data();
-
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
-        ClientGraphWorldImpl world = getWorld(header.universeId(), "chunk data");
+        KNetSyncedUniverse universe = payload.universe();
+        ClientGraphWorldImpl world = getWorld(universe, "chunk data");
 
         ChunkPos chunkPos = payload.chunkPos();
         if (!world.tryCreateGraphPillar(chunkPos.x, chunkPos.z)) {
             GLLog.warn("Received pillar outside current client range at ({}, {})", chunkPos.x, chunkPos.z);
+            payload.discard();
             return;
         }
 
@@ -168,16 +91,15 @@ public final class KNetDecoding {
             BlockGraphImpl graph = world.getOrCreateGraph(graphId);
 
             // load graph entities if they exist
-            loadGraphEntities(graph, payloadGraph.graphEntityIds(), data, palette, universe);
+            graph.initializeGraphEntities(payloadGraph.entities());
 
             List<NodeHolder<BlockNode>> nodeList = new ObjectArrayList<>(payloadGraph.nodes().size());
             for (PayloadNode payloadNode : payloadGraph.nodes()) {
                 // decode block node
-                NodePos nodePos =
-                    GraphLibSyncingKNet.decodeNodePosSmall(payloadNode.nodePos(), data, palette, universe);
+                NodePos nodePos = payloadNode.nodePos();
 
                 // decode node entity
-                NodeEntity entity = readNodeEntity(payloadNode.entityTypeId(), data, palette, universe, nodePos);
+                NodeEntity entity = payloadNode.entity().orElse(null);
 
                 NodeHolder<BlockNode> holder = graph.createNode(nodePos.pos(), nodePos.node(), entity, false);
                 nodeList.add(holder);
@@ -189,43 +111,39 @@ public final class KNetDecoding {
                 int nodeBIndex = payloadLink.secondIndex();
 
                 if (nodeAIndex < 0 || nodeAIndex >= nodeList.size()) {
-                    // packet is foo bar
-                    throw new PayloadHandlingErrorException(
-                        "Received packet with invalid links. Node index " + nodeAIndex + " is invalid.");
+                    GLLog.error("Received chunk packet @ {} with invalid links. Node index {} is invalid.",
+                        payload.chunkPos(), nodeAIndex);
+                    payloadLink.entity().ifPresent(LinkEntity::onDiscard);
+                    continue;
                 }
 
                 if (nodeBIndex < 0 || nodeBIndex >= nodeList.size()) {
-                    // packet is foo bar
-                    throw new PayloadHandlingErrorException(
-                        "Received packet with invalid links. Node index " + nodeBIndex + " is invalid.");
+                    GLLog.error("Received chunk packet @ {} with invalid links. Node index {} is invalid.",
+                        payload.chunkPos(), nodeBIndex);
+                    payloadLink.entity().ifPresent(LinkEntity::onDiscard);
+                    continue;
                 }
 
                 NodeHolder<BlockNode> nodeA = nodeList.get(nodeAIndex);
                 NodeHolder<BlockNode> nodeB = nodeList.get(nodeBIndex);
 
-                LinkKeyType linkType =
-                    getType(payloadLink.keyTypeId(), palette, universe.getUniverse()::getLinkKeyType, "link key",
-                        nodeA.getPos() + "-" + nodeB.getPos());
-
-                LinkKey linkKey = universe.getLinkKeySyncing(linkType).decode(data);
+                LinkKey linkKey = payloadLink.key();
 
                 // read link entity
-                LinkEntity entity = readLinkEntity(payloadLink.entityTypeId(), data, palette, universe,
-                    new LinkPos(nodeA.getPos(), nodeB.getPos(), linkKey));
+                LinkEntity entity = payloadLink.entity().orElse(null);
 
                 graph.link(nodeA, nodeB, linkKey, entity, false);
             }
 
             // decode external links
             for (PayloadExternalLink payloadLink : payloadGraph.externalLinks()) {
-                LinkPos link =
-                    GraphLibSyncingKNet.decodeLinkPosSmall(payloadLink.linkPos(), data, data, palette, universe);
+                LinkPos link = payloadLink.linkPos();
 
                 NodeHolder<BlockNode> holderA = graph.getNodeAt(link.first());
                 NodeHolder<BlockNode> holderB = graph.getNodeAt(link.second());
 
                 // read link entity
-                LinkEntity entity = readLinkEntity(payloadLink.entityTypeId(), data, palette, universe, link);
+                LinkEntity entity = payloadLink.entity().orElse(null);
 
                 if (holderA != null && holderB != null) {
                     // ignore links with missing nodes,
@@ -243,86 +161,80 @@ public final class KNetDecoding {
 
     public static void receiveNodeAdd(NodeAddPayload payload, PayloadHandlingContext ctx)
         throws PayloadHandlingException {
-        PayloadHeader header = payload.header();
-        Palette<ResourceLocation> palette = header.palette();
-        NetByteBuf data = header.data();
-
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
-        ClientGraphWorldImpl world = getWorld(header.universeId(), "node add");
+        KNetSyncedUniverse universe = payload.universe();
+        ClientGraphWorldImpl world = getWorld(universe, "node add");
 
         PayloadNode payloadNode = payload.node();
-        NodePos pos = GraphLibSyncingKNet.decodeNodePosSmall(payloadNode.nodePos(), data, palette, universe);
+        NodePos pos = payloadNode.nodePos();
 
         BlockPos blockPos = pos.pos();
         if (!world.isInRadius(new ChunkPos(blockPos))) {
             GLLog.warn("Received node add @ {} that is outside client chunk radius", pos);
+
+            payloadNode.entity().ifPresent(NodeEntity::onDiscard);
+            payload.graphEntities().forEach(GraphEntity::onDiscard);
+
             return;
         }
 
-        NodeEntity entity = readNodeEntity(payloadNode.entityTypeId(), data, palette, universe, pos);
+        NodeEntity entity = payloadNode.entity().orElse(null);
 
         BlockGraphImpl graph = world.getOrCreateGraph(payload.graphId());
-        loadGraphEntities(graph, payload.graphEntityIds(), data, palette, universe);
+        graph.initializeGraphEntities(payload.graphEntities());
 
         graph.createNode(blockPos, pos.node(), entity, true);
     }
 
     public static void receiveMerge(MergePayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
-        PayloadHeader header = payload.header();
-        Palette<ResourceLocation> palette = header.palette();
-        NetByteBuf data = header.data();
-
-        ClientGraphWorldImpl world = getWorld(header.universeId(), "merge");
+        ClientGraphWorldImpl world = getWorld(payload.universe(), "merge");
         BlockGraphImpl from = world.getGraph(payload.fromId());
         if (from == null) {
             // we don't know the graph being merged from, so we can safely ignore this packet
+            payload.intoGraphEntities().forEach(GraphEntity::onDiscard);
             return;
         }
 
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
-
         // however, it is possible for a graph we do know about to get merged into one we don't know about yet
         BlockGraphImpl into = world.getOrCreateGraph(payload.intoId());
-        loadGraphEntities(into, payload.intoGraphEntityIds(), data, palette, universe);
+        into.initializeGraphEntities(payload.intoGraphEntities());
 
         // do the merge
         into.merge(from);
     }
 
     public static void receiveLink(LinkPayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
-        PayloadHeader header = payload.header();
-        Palette<ResourceLocation> palette = header.palette();
-        NetByteBuf data = header.data();
-
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
-        ClientGraphWorldImpl world = getWorld(header.universeId(), "link");
+        KNetSyncedUniverse universe = payload.universe();
+        ClientGraphWorldImpl world = getWorld(universe, "link");
 
         BlockGraphImpl graph = world.getGraph(payload.graphId());
         if (graph == null) {
             GLLog.warn("Received link in unknown graph {}", payload.graphId());
+
+            payload.link().entity().ifPresent(LinkEntity::onDiscard);
             return;
         }
 
         PayloadExternalLink payloadLink = payload.link();
 
-        LinkPos linkPos = GraphLibSyncingKNet.decodeLinkPosSmall(payloadLink.linkPos(), data, data, palette, universe);
+        LinkPos linkPos = payloadLink.linkPos();
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
         if (nodeA == null || nodeB == null) {
             // unknown nodes means they're outside our range
+            payloadLink.entity().ifPresent(LinkEntity::onDiscard);
             return;
         }
 
-        LinkEntity entity = readLinkEntity(payloadLink.entityTypeId(), data, palette, universe, linkPos);
+        LinkEntity entity = payloadLink.entity().orElse(null);
 
         graph.link(nodeA, nodeB, linkPos.key(), entity, true);
     }
 
     public static void receiveUnlink(UnlinkPayload payload, PayloadHandlingContext ctx)
         throws PayloadHandlingException {
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(payload.universeId());
-        ClientGraphWorldImpl world = getWorld(payload.universeId(), "unlink");
+        KNetSyncedUniverse universe = payload.universe();
+        ClientGraphWorldImpl world = getWorld(universe, "unlink");
 
         BlockGraphImpl graph = world.getGraph(payload.graphId());
         if (graph == null) {
@@ -330,7 +242,7 @@ public final class KNetDecoding {
             return;
         }
 
-        LinkPos linkPos = GraphLibSyncingKNet.decodeLinkPos(payload.linkPos(), universe);
+        LinkPos linkPos = payload.linkPos();
 
         NodeHolder<BlockNode> nodeA = graph.getNodeAt(linkPos.first());
         NodeHolder<BlockNode> nodeB = graph.getNodeAt(linkPos.second());
@@ -343,28 +255,22 @@ public final class KNetDecoding {
     }
 
     public static void receiveSplit(SplitPayload payload, PayloadHandlingContext ctx) throws PayloadHandlingException {
-        PayloadHeader header = payload.header();
-        Palette<ResourceLocation> palette = header.palette();
-        NetByteBuf data = header.data();
-
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(header.universeId());
-        ClientGraphWorldImpl world = getWorld(header.universeId(), "split");
+        KNetSyncedUniverse universe = payload.universe();
+        ClientGraphWorldImpl world = getWorld(universe, "split");
 
         BlockGraphImpl from = world.getGraph(payload.fromId());
         if (from == null) {
             // we don't know the graph being split from, so we can safely ignore this packet
+            payload.graphEntities().forEach(GraphEntity::onDiscard);
             return;
         }
 
         // however, the into graph is normally a newly created one
         BlockGraphImpl into = world.getOrCreateGraph(payload.intoId());
-        loadGraphEntities(into, payload.graphEntityIds(), data, palette, universe);
+        into.initializeGraphEntities(payload.graphEntities());
 
         // load the nodes to be split off
-        Set<NodePos> toMove = new ObjectLinkedOpenHashSet<>();
-        for (NodePosSmallPayload nodePayload : payload.toMove()) {
-            toMove.add(GraphLibSyncingKNet.decodeNodePosSmall(nodePayload, data, palette, universe));
-        }
+        Set<NodePos> toMove = new ObjectLinkedOpenHashSet<>(payload.toMove());
 
         // Split Into only moves nodes from actually knows about, so nodes that are outside the client radius get
         // discarded.
@@ -373,8 +279,8 @@ public final class KNetDecoding {
 
     public static void receiveNodeRemove(NodeRemovePayload payload, PayloadHandlingContext ctx)
         throws PayloadHandlingException {
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(payload.universeId());
-        ClientGraphWorldImpl world = getWorld(payload.universeId(), "node remove");
+        KNetSyncedUniverse universe = payload.universe();
+        ClientGraphWorldImpl world = getWorld(universe, "node remove");
 
         BlockGraphImpl graph = world.getGraph(payload.graphId());
         if (graph == null) {
@@ -382,7 +288,7 @@ public final class KNetDecoding {
             return;
         }
 
-        NodePos pos = GraphLibSyncingKNet.decodeNodePos(payload.nodePos(), universe);
+        NodePos pos = payload.nodePos();
 
         NodeHolder<BlockNode> node = graph.getNodeAt(pos);
         // ignore removals of nodes we don't know about

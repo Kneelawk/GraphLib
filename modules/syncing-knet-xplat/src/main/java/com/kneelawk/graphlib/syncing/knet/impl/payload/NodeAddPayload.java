@@ -25,33 +25,30 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import java.util.List;
 
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record NodeAddPayload(PayloadHeader header, long graphId, PayloadNode node, int[] graphEntityIds)
+import com.kneelawk.codextra.api.util.FunctionUtils;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+
+public record NodeAddPayload(KNetSyncedUniverse universe, long graphId, PayloadNode node,
+                             List<GraphEntity<?>> graphEntities)
     implements CustomPacketPayload {
     public static final Type<NodeAddPayload> ID = new Type<>(SyncingKNetImpl.id("node_add"));
-    public static final StreamCodec<NetByteBuf, NodeAddPayload> CODEC =
-        StreamCodec.ofMember(NodeAddPayload::encode, NodeAddPayload::decode);
-
-    public static NodeAddPayload decode(NetByteBuf buf) {
-        PayloadHeader header = PayloadHeader.decode(buf);
-        long graphId = buf.readVarUnsignedLong();
-        int[] graphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
-        PayloadNode node = PayloadNode.decode(buf);
-
-        return new NodeAddPayload(header, graphId, node, graphEntityIds);
-    }
-
-    public void encode(NetByteBuf buf) {
-        header.encode(buf);
-        buf.writeVarUnsignedLong(graphId);
-        PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
-        node.encode(buf);
-    }
+    public static final StreamCodec<NetRegistryByteBuf, NodeAddPayload> CODEC = StreamCodec.composite(
+        KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+        ByteBufCodecs.VAR_LONG, NodeAddPayload::graphId,
+        PayloadNode.CODEC, NodeAddPayload::node,
+        GraphLibSyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), NodeAddPayload::graphEntities,
+        NodeAddPayload::new
+    ).apply(KNetSyncedUniverse.readAttachingOp(NodeAddPayload::universe));
 
     @Override
     public Type<?> type() {

@@ -27,56 +27,30 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import java.util.List;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
-import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
-public record PayloadGraph(long graphId, int[] graphEntityIds, List<PayloadNode> nodes,
+public record PayloadGraph(long graphId, List<GraphEntity<?>> entities, List<PayloadNode> nodes,
                            List<PayloadInternalLink> internalLinks, List<PayloadExternalLink> externalLinks) {
-    public static PayloadGraph decode(NetByteBuf buf) {
-        long graphId = buf.readVarUnsignedLong();
+    public static final StreamCodec<NetRegistryByteBuf, PayloadGraph> CODEC = StreamCodec.composite(
+        ByteBufCodecs.VAR_LONG, PayloadGraph::graphId,
+        GraphLibSyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), PayloadGraph::entities,
+        PayloadNode.CODEC.apply(ByteBufCodecs.list()), PayloadGraph::nodes,
+        PayloadInternalLink.CODEC.apply(ByteBufCodecs.list()), PayloadGraph::internalLinks,
+        PayloadExternalLink.CODEC.apply(ByteBufCodecs.list()), PayloadGraph::externalLinks,
+        PayloadGraph::new
+    );
 
-        int[] graphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
-
-        int nodeCount = buf.readVarUnsignedInt();
-        List<PayloadNode> nodes = new ObjectArrayList<>(nodeCount);
-        for (int i = 0; i < nodeCount; i++) {
-            nodes.add(PayloadNode.decode(buf));
-        }
-
-        int internalLinkCount = buf.readVarUnsignedInt();
-        List<PayloadInternalLink> internalLinks = new ObjectArrayList<>(internalLinkCount);
-        for (int i = 0; i < internalLinkCount; i++) {
-            internalLinks.add(PayloadInternalLink.decode(buf));
-        }
-
-        int externalLinkCount = buf.readVarUnsignedInt();
-        List<PayloadExternalLink> externalLinks = new ObjectArrayList<>(externalLinkCount);
-        for (int i = 0; i < externalLinkCount; i++) {
-            externalLinks.add(PayloadExternalLink.decode(buf));
-        }
-
-        return new PayloadGraph(graphId, graphEntityIds, nodes, internalLinks, externalLinks);
-    }
-
-    public void encode(NetByteBuf buf) {
-        buf.writeVarUnsignedLong(graphId);
-
-        PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
-
-        buf.writeVarUnsignedInt(nodes.size());
-        for (PayloadNode node : nodes) {
-            node.encode(buf);
-        }
-
-        buf.writeVarUnsignedInt(internalLinks.size());
-        for (PayloadInternalLink link : internalLinks) {
-            link.encode(buf);
-        }
-
-        buf.writeVarUnsignedInt(externalLinks.size());
-        for (PayloadExternalLink link : externalLinks) {
-            link.encode(buf);
-        }
+    public void discard() {
+        entities.forEach(GraphEntity::onDiscard);
+        nodes.forEach(node -> node.entity().ifPresent(NodeEntity::onDiscard));
+        internalLinks.forEach(link -> link.entity().ifPresent(LinkEntity::onDiscard));
+        externalLinks.forEach(link -> link.entity().ifPresent(LinkEntity::onDiscard));
     }
 }

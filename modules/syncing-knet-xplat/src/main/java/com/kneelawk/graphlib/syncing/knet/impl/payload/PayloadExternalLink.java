@@ -25,30 +25,20 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import java.util.OptionalInt;
+import java.util.Optional;
 
-import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
-public record PayloadExternalLink(LinkPosSmallPayload linkPos, OptionalInt entityTypeId) {
-    public static PayloadExternalLink decode(NetByteBuf buf) {
-        LinkPosSmallPayload linkPos = LinkPosSmallPayload.decode(buf);
-        OptionalInt entityTypeId;
-        if (buf.readBoolean()) {
-            entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
-        } else {
-            entityTypeId = OptionalInt.empty();
-        }
-        return new PayloadExternalLink(linkPos, entityTypeId);
-    }
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.util.LinkPos;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
-    public void encode(NetByteBuf buf) {
-        linkPos.encode(buf);
-        if (entityTypeId.isPresent()) {
-            buf.writeBoolean(true);
-            buf.writeVarUnsignedInt(entityTypeId.getAsInt());
-        } else {
-            buf.writeBoolean(false);
-        }
-    }
+public record PayloadExternalLink(LinkPos linkPos, Optional<LinkEntity> entity) {
+    public static final StreamCodec<NetRegistryByteBuf, PayloadExternalLink> CODEC = StreamCodec.composite(
+        GraphLibSyncingKNet.LINK_POS_CODEC, PayloadExternalLink::linkPos,
+        GraphLibSyncingKNet.LINK_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadExternalLink::entity,
+        PayloadExternalLink::new
+    );
 }

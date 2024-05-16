@@ -29,17 +29,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.OptionalInt;
+import java.util.Optional;
 import java.util.PrimitiveIterator;
 import java.util.Set;
-
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.level.ChunkPos;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -48,18 +40,19 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 
-import com.kneelawk.graphlib.api.graph.BlockGraph;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
-import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.util.LinkPos;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -69,10 +62,6 @@ import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
 import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
-import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
-import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosSmallPayload;
-import com.kneelawk.graphlib.syncing.knet.api.util.NodePosPayload;
-import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.MergePayload;
@@ -80,54 +69,19 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeAddPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeRemovePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadExternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadGraph;
-import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadHeader;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadInternalLink;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.PayloadNode;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.SplitPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.UnlinkPayload;
 import com.kneelawk.knet.api.channel.NoContextPlayChannel;
-import com.kneelawk.knet.api.util.NetBufs;
-import com.kneelawk.knet.api.util.NetByteBuf;
-import com.kneelawk.knet.api.util.Palette;
 
 public final class KNetEncoding {
     private KNetEncoding() {}
 
-    private static int[] writeGraphEntities(BlockGraphImpl graph, NetByteBuf data, Palette<ResourceLocation> palette,
-                                            KNetSyncedUniverse universe) {
-        Collection<GraphEntityType<?>> types = graph.getGraphView().getUniverse().getAllGraphEntityTypes();
-        int[] typeIds = new int[types.size()];
-        int i = 0;
-        for (GraphEntityType<?> type : types) {
-            typeIds[i] = palette.keyFor(type.getId());
-            universe.getGraphEntitySyncing(type).encode(graph.getGraphEntity(type), data);
-        }
-        return typeIds;
-    }
-
-    private static OptionalInt writeNodeEntity(NodeHolder<BlockNode> holder, BlockGraph graph,
-                                               NetByteBuf data, Palette<ResourceLocation> palette,
-                                               KNetSyncedUniverse universe) {
-        NodeEntity entity = graph.getNodeEntity(holder.getPos());
-        if (entity != null) {
-            NodeEntityType type = entity.getType();
-            universe.getNodeEntitySyncing(type).encode(entity, data);
-            return OptionalInt.of(palette.keyFor(type.getId()));
-        } else {
-            return OptionalInt.empty();
-        }
-    }
-
-    private static OptionalInt writeLinkEntity(LinkPos link, BlockGraph graph, NetByteBuf data,
-                                               Palette<ResourceLocation> palette, KNetSyncedUniverse universe) {
-        LinkEntity entity = graph.getLinkEntity(link);
-        if (entity != null) {
-            LinkEntityType type = entity.getType();
-            universe.getLinkEntitySyncing(type).encode(entity, data);
-            return OptionalInt.of(palette.keyFor(type.getId()));
-        } else {
-            return OptionalInt.empty();
-        }
+    @SuppressWarnings("unchecked")
+    private static List<GraphEntity<?>> getGraphEntities(BlockGraphImpl graph) {
+        return (List<GraphEntity<?>>) graph.getGraphView().getUniverse().getAllGraphEntityTypes().stream()
+            .map(graph::getGraphEntity).toList();
     }
 
     private static <P extends CustomPacketPayload> void sendToFilteredWatching(NoContextPlayChannel<P> channel,
@@ -148,9 +102,6 @@ public final class KNetEncoding {
     public static void sendChunkData(ServerGraphWorldImpl world, ServerPlayer player, ChunkPos chunkPos) {
         KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
         // SyncProfile checking happens before this method is called
-
-        Palette<ResourceLocation> palette = new Palette<>();
-        NetByteBuf data = NetBufs.netBuf();
 
         // collect graphs to encode
         Long2ObjectMap<BlockGraphImpl> toEncode = new Long2ObjectLinkedOpenHashMap<>();
@@ -173,9 +124,8 @@ public final class KNetEncoding {
         // write graphs
         List<PayloadGraph> graphs = new ObjectArrayList<>(toEncode.size());
         for (BlockGraphImpl graph : toEncode.values()) {
-            // write graph entities if any exist
-            int[] graphEntityIds = writeGraphEntities(graph, data, palette, universe);
 
+            // collections for managing links
             Object2IntMap<NodePos> indexMap = new Object2IntOpenHashMap<>();
             indexMap.defaultReturnValue(-1);
             Set<LinkPos> internalLinks = new ObjectLinkedOpenHashSet<>();
@@ -201,11 +151,6 @@ public final class KNetEncoding {
                     continue;
                 }
 
-                NodePosSmallPayload nodePosPayload =
-                    GraphLibSyncingKNet.encodeNodePosSmall(holder.getPos(), data, palette, universe);
-
-                OptionalInt entityId = writeNodeEntity(holder, graph, data, palette, universe);
-
                 // put the node into the index map for links to look up
                 indexMap.put(holder.getPos(), nodes.size());
 
@@ -224,7 +169,7 @@ public final class KNetEncoding {
                     }
                 }
 
-                nodes.add(new PayloadNode(nodePosPayload, entityId));
+                nodes.add(new PayloadNode(holder.getPos(), Optional.ofNullable(holder.getNodeEntity())));
             }
 
             // write internal links
@@ -240,32 +185,21 @@ public final class KNetEncoding {
                     continue;
                 }
 
-                LinkKey linkKey = link.key();
-                LinkKeyType linkKeyType = linkKey.getType();
-                int keyTypeId = palette.keyFor(linkKeyType.getId());
-                universe.getLinkKeySyncing(linkKeyType).encode(linkKey, data);
-
-                OptionalInt entityId = writeLinkEntity(link, graph, data, palette, universe);
-
-                iLinks.add(new PayloadInternalLink(nodeAIndex, nodeBIndex, keyTypeId, entityId));
+                iLinks.add(new PayloadInternalLink(nodeAIndex, nodeBIndex, link.key(),
+                    Optional.ofNullable(graph.getLinkEntity(link))));
             }
 
             // write external
             List<PayloadExternalLink> eLinks = new ObjectArrayList<>(externalLinks.size());
             for (LinkPos link : externalLinks) {
-                LinkPosSmallPayload linkPos =
-                    GraphLibSyncingKNet.encodeLinkPosSmall(link, data, data, palette, universe);
-
-                OptionalInt entityId = writeLinkEntity(link, graph, data, palette, universe);
-
-                eLinks.add(new PayloadExternalLink(linkPos, entityId));
+                eLinks.add(new PayloadExternalLink(link, Optional.ofNullable(graph.getLinkEntity(link))));
             }
 
-            graphs.add(new PayloadGraph(graph.getId(), graphEntityIds, nodes, iLinks, eLinks));
+            graphs.add(new PayloadGraph(graph.getId(), getGraphEntities(graph), nodes, iLinks, eLinks));
         }
 
         KNetChannels.CHUNK_DATA.send(player,
-            new ChunkDataPayload(new PayloadHeader(universe.getId(), palette, data), chunkPos, graphs));
+            new ChunkDataPayload(universe, chunkPos, graphs));
     }
 
     public static void sendNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node) {
@@ -278,18 +212,9 @@ public final class KNetEncoding {
 
         if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(node)) return;
 
-        Palette<ResourceLocation> palette = new Palette<>();
-        NetByteBuf data = NetBufs.netBuf();
-
-        // write node-pos first, so we can discard everything quickly if it's outside the client's range
-        NodePosSmallPayload nodePos = GraphLibSyncingKNet.encodeNodePosSmall(node.getPos(), data, palette, universe);
-        OptionalInt nodeEntityId = writeNodeEntity(node, graph, data, palette, universe);
-
-        int[] graphEntityIds = writeGraphEntities(graph, data, palette, universe);
-
-        sendToFilteredWatching(KNetChannels.NODE_ADD,
-            new NodeAddPayload(new PayloadHeader(universe.getId(), palette, data), graph.getId(),
-                new PayloadNode(nodePos, nodeEntityId), graphEntityIds), world.getWorld(), node.getBlockPos(), sp);
+        sendToFilteredWatching(KNetChannels.NODE_ADD, new NodeAddPayload(universe, graph.getId(),
+                new PayloadNode(node.getPos(), Optional.ofNullable(node.getNodeEntity())), getGraphEntities(graph)),
+            world.getWorld(), node.getBlockPos(), sp);
     }
 
     public static void sendMerge(BlockGraphImpl from, BlockGraphImpl into) {
@@ -300,13 +225,7 @@ public final class KNetEncoding {
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
-        Palette<ResourceLocation> palette = new Palette<>();
-        NetByteBuf data = NetBufs.netBuf();
-
-        int[] intoGraphEntityIds = writeGraphEntities(into, data, palette, universe);
-        MergePayload payload =
-            new MergePayload(new PayloadHeader(universe.getId(), palette, data), from.getId(), into.getId(),
-                intoGraphEntityIds);
+        MergePayload payload = new MergePayload(universe, from.getId(), into.getId(), getGraphEntities(into));
 
         Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         for (var iter = into.getChunks().iterator(); iter.hasNext(); ) {
@@ -336,15 +255,8 @@ public final class KNetEncoding {
         CacheCategory<?> nodeFilter = sp.getNodeFilter();
         if (nodeFilter != null && !(nodeFilter.matches(link.getFirst()) && nodeFilter.matches(link.getSecond())))
             return;
-
-        Palette<ResourceLocation> palette = new Palette<>();
-        NetByteBuf data = NetBufs.netBuf();
-
-        LinkPosSmallPayload linkPos =
-            GraphLibSyncingKNet.encodeLinkPosSmall(link.getPos(), data, data, palette, universe);
-        OptionalInt entityId = writeLinkEntity(link.getPos(), graph, data, palette, universe);
-        LinkPayload payload = new LinkPayload(new PayloadHeader(universe.getId(), palette, data), graph.getId(),
-            new PayloadExternalLink(linkPos, entityId));
+        LinkPayload payload = new LinkPayload(universe, graph.getId(),
+            new PayloadExternalLink(link.getPos(), Optional.ofNullable(link.getLinkEntity())));
 
         Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         sendTo.addAll(world.getWorld().getChunkSource().chunkMap.getPlayers(
@@ -370,8 +282,7 @@ public final class KNetEncoding {
         CacheCategory<?> nodeFilter = sp.getNodeFilter();
         if (nodeFilter != null && !(nodeFilter.matches(a) && nodeFilter.matches(b))) return;
 
-        LinkPosPayload linkPos = GraphLibSyncingKNet.encodeLinkPos(new LinkPos(a.getPos(), b.getPos(), key), universe);
-        UnlinkPayload payload = new UnlinkPayload(universe.getId(), graph.getId(), linkPos);
+        UnlinkPayload payload = new UnlinkPayload(universe, graph.getId(), new LinkPos(a.getPos(), b.getPos(), key));
 
         Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         sendTo.addAll(world.getWorld().getChunkSource().chunkMap.getPlayers(
@@ -395,27 +306,15 @@ public final class KNetEncoding {
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
-        Palette<ResourceLocation> palette = new Palette<>();
-        NetByteBuf data = NetBufs.netBuf();
-
-        int[] graphEntityIds = writeGraphEntities(into, data, palette, universe);
-
-        Iterator<NodeHolder<BlockNode>> iter;
+        List<NodePos> toMove;
         CacheCategory<BlockNode> nodeFilter = (CacheCategory<BlockNode>) universe.getSyncProfile().getNodeFilter();
         if (nodeFilter != null) {
-            iter = into.getCachedNodes(nodeFilter).iterator();
+            toMove = into.getCachedNodes(nodeFilter).stream().map(NodeHolder::getPos).toList();
         } else {
-            iter = into.getNodes().iterator();
+            toMove = into.getNodes().map(NodeHolder::getPos).toList();
         }
 
-        List<NodePosSmallPayload> toMove = new ObjectArrayList<>();
-        while (iter.hasNext()) {
-            toMove.add(GraphLibSyncingKNet.encodeNodePosSmall(iter.next().getPos(), data, palette, universe));
-        }
-
-        SplitPayload payload =
-            new SplitPayload(new PayloadHeader(universe.getId(), palette, data), from.getId(), into.getId(),
-                graphEntityIds, toMove);
+        SplitPayload payload = new SplitPayload(universe, from.getId(), into.getId(), getGraphEntities(into), toMove);
 
         Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         for (var iter1 = into.getChunks().iterator(); iter1.hasNext(); ) {
@@ -444,8 +343,7 @@ public final class KNetEncoding {
 
         if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(holder)) return;
 
-        NodePosPayload nodePos = GraphLibSyncingKNet.encodeNodePos(holder.getPos(), universe);
-        NodeRemovePayload payload = new NodeRemovePayload(universe.getId(), graph.getId(), nodePos);
+        NodeRemovePayload payload = new NodeRemovePayload(universe, graph.getId(), holder.getPos());
 
         sendToFilteredWatching(KNetChannels.NODE_REMOVE, payload, world.getWorld(), holder.getBlockPos(), sp);
     }

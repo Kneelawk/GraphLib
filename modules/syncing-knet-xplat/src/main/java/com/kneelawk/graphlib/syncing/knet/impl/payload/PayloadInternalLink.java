@@ -25,33 +25,22 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import java.util.OptionalInt;
+import java.util.Optional;
 
-import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
-public record PayloadInternalLink(int firstIndex, int secondIndex, int keyTypeId, OptionalInt entityTypeId) {
-    public static PayloadInternalLink decode(NetByteBuf buf) {
-        int firstIndex = buf.readVarUnsignedInt();
-        int secondIndex = buf.readVarUnsignedInt();
-        int keyTypeId = buf.readVarUnsignedInt();
-        OptionalInt entityTypeId;
-        if (buf.readBoolean()) {
-            entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
-        } else {
-            entityTypeId = OptionalInt.empty();
-        }
-        return new PayloadInternalLink(firstIndex, secondIndex, keyTypeId, entityTypeId);
-    }
+import com.kneelawk.graphlib.api.graph.user.LinkEntity;
+import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
-    public void encode(NetByteBuf buf) {
-        buf.writeVarUnsignedInt(firstIndex);
-        buf.writeVarUnsignedInt(secondIndex);
-        buf.writeVarUnsignedInt(keyTypeId);
-        if (entityTypeId.isPresent()) {
-            buf.writeBoolean(true);
-            buf.writeVarUnsignedInt(entityTypeId.getAsInt());
-        } else {
-            buf.writeBoolean(false);
-        }
-    }
+public record PayloadInternalLink(int firstIndex, int secondIndex, LinkKey key, Optional<LinkEntity> entity) {
+    public static final StreamCodec<NetRegistryByteBuf, PayloadInternalLink> CODEC = StreamCodec.composite(
+        ByteBufCodecs.VAR_INT, PayloadInternalLink::firstIndex,
+        ByteBufCodecs.VAR_INT, PayloadInternalLink::secondIndex,
+        GraphLibSyncingKNet.LINK_KEY_CODEC, PayloadInternalLink::key,
+        GraphLibSyncingKNet.LINK_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadInternalLink::entity,
+        PayloadInternalLink::new
+    );
 }

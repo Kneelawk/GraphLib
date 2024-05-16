@@ -25,32 +25,31 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import java.util.List;
 
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record MergePayload(PayloadHeader header, long fromId, long intoId, int[] intoGraphEntityIds)
+import com.kneelawk.codextra.api.util.FunctionUtils;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
+import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+
+public record MergePayload(KNetSyncedUniverse universe, long fromId, long intoId,
+                           List<GraphEntity<?>> intoGraphEntities)
     implements CustomPacketPayload {
     public static final Type<MergePayload> ID = new Type<>(SyncingKNetImpl.id("merge"));
-    public static final StreamCodec<NetByteBuf, MergePayload> CODEC =
-        StreamCodec.ofMember(MergePayload::encode, MergePayload::decode);
-
-    public static MergePayload decode(NetByteBuf buf) {
-        PayloadHeader header = PayloadHeader.decode(buf);
-        long fromId = buf.readVarUnsignedLong();
-        long intoId = buf.readVarUnsignedLong();
-        int[] intoGraphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
-        return new MergePayload(header, fromId, intoId, intoGraphEntityIds);
-    }
-
-    public void encode(NetByteBuf buf) {
-        header.encode(buf);
-        buf.writeVarUnsignedLong(fromId);
-        buf.writeVarUnsignedLong(intoId);
-        PayloadUtils.writeVarUnsignedIntArray(intoGraphEntityIds, buf);
-    }
+    public static final StreamCodec<NetRegistryByteBuf, MergePayload> CODEC = StreamCodec.composite(
+        KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+        ByteBufCodecs.VAR_LONG, MergePayload::fromId,
+        ByteBufCodecs.VAR_LONG, MergePayload::intoId,
+        GraphLibSyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), MergePayload::intoGraphEntities,
+        MergePayload::new
+    ).apply(KNetSyncedUniverse.readAttachingOp(MergePayload::universe));
 
     @Override
     public Type<?> type() {
