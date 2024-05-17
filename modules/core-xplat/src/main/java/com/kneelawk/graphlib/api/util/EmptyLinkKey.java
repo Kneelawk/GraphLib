@@ -28,11 +28,6 @@ public final class EmptyLinkKey implements LinkKey {
     public static final EmptyLinkKey INSTANCE = new EmptyLinkKey();
 
     /**
-     * Decoder for the empty link key. Always returns this singleton's instance.
-     */
-    public static final Codec<EmptyLinkKey> CODEC = Codec.unit(INSTANCE);
-
-    /**
      * Always returns this singleton's link key instance.
      */
     public static final LinkKeyFactory FACTORY = (self, other) -> INSTANCE;
@@ -40,7 +35,7 @@ public final class EmptyLinkKey implements LinkKey {
     /**
      * The link key type for the empty link key.
      */
-    public static final LinkKeyType TYPE = LinkKeyType.of(TYPE_ID, CODEC);
+    public static final LinkKeyType TYPE = LinkKeyType.of(TYPE_ID, () -> INSTANCE);
 
     private EmptyLinkKey() {}
 

@@ -133,7 +133,11 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
             }
         }
 
-        graph.graphEntities.putAll(serial.graphEntities());
+        for (var entry : serial.graphEntities().entrySet()) {
+            entry.getValue()
+                .onInit(new SimpleGraphEntityContext(serial.controller().getWorld(), serial.controller(), graph));
+            graph.graphEntities.put(entry.getKey(), entry.getValue());
+        }
 
         // no need to rebuild refs as that stuff is handled by graph.createNode(...)
 
