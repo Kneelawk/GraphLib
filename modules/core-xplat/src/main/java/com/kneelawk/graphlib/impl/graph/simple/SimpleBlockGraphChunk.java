@@ -26,6 +26,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -33,8 +34,8 @@ import com.kneelawk.graphlib.api.world.RegionBasedStorage;
 
 public class SimpleBlockGraphChunk {
     // why did I use a different key for node data in chunks than everywhere else????
-    private static final MapCodec<BlockNode> CHUNK_NODE_CODEC =
-        BlockNodeType.REF_CODEC.dispatchMap(BlockNode::getType, type -> type.getCodec().fieldOf("data"));
+    private static final MapCodec<BlockNode> CHUNK_NODE_CODEC = BlockNodeType.REF_CODEC.dispatchMap(BlockNode::getType,
+        type -> Codextra.unitHandlingFieldOf("data", type.getCodec()));
 
     private static final Codec<LongSet> LONG_SET_CODEC =
         Codec.LONG_STREAM.xmap(LongLinkedOpenHashSet::toSet, LongCollection::longStream);
