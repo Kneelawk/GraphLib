@@ -38,7 +38,7 @@ public interface GraphEntity<G extends GraphEntity<G>> {
     @SuppressWarnings("unchecked")
     Codec<Map<GraphEntityType<?>, GraphEntity<?>>> ALL_CODEC = GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(
         Codec.dispatchedMap(GraphEntityType.REF_CODEC,
-            type -> ((Codec<GraphEntity<?>>) type.getCodec().fieldOf("entity").codec()).mapResult(
+            type -> ((Codec<GraphEntity<?>>) Codextra.unitHandlingFieldOf("entity", type.getCodec()).codec()).mapResult(
                 Codextra.codecAddPartial(() -> type.getFactory().createNew()))),
         (GraphUniverse universe, Map<GraphEntityType<?>, GraphEntity<?>> decodedMap) -> {
             Map<GraphEntityType<?>, GraphEntity<?>> map = new Object2ObjectOpenHashMap<>(decodedMap);

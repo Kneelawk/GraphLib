@@ -67,9 +67,9 @@ public final class LinkEntityType implements ObjectType {
     }
 
     private final @NotNull ResourceLocation id;
-    private final @NotNull CodecOrUnit<? extends LinkEntity> codec;
+    private final @NotNull Codec<? extends LinkEntity> codec;
 
-    private LinkEntityType(@NotNull ResourceLocation id, @NotNull CodecOrUnit<? extends LinkEntity> codec) {
+    private LinkEntityType(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkEntity> codec) {
         this.id = id;
         this.codec = codec;
     }
@@ -89,7 +89,7 @@ public final class LinkEntityType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull CodecOrUnit<? extends LinkEntity> getCodec() {
+    public @NotNull Codec<? extends LinkEntity> getCodec() {
         return codec;
     }
 
@@ -122,7 +122,7 @@ public final class LinkEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkEntity> codec) {
-        return new LinkEntityType(id, CodecOrUnit.codec(codec));
+        return new LinkEntityType(id, codec);
     }
 
     /**
@@ -134,6 +134,6 @@ public final class LinkEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkEntity> supplier) {
-        return new LinkEntityType(id, CodecOrUnit.unit(supplier));
+        return new LinkEntityType(id, Codec.unit(supplier));
     }
 }

@@ -67,9 +67,9 @@ public final class BlockNodeType implements ObjectType {
     }
 
     private final @NotNull ResourceLocation id;
-    private final @NotNull CodecOrUnit<? extends BlockNode> codec;
+    private final @NotNull Codec<? extends BlockNode> codec;
 
-    private BlockNodeType(@NotNull ResourceLocation id, @NotNull CodecOrUnit<? extends BlockNode> codec) {
+    private BlockNodeType(@NotNull ResourceLocation id, @NotNull Codec<? extends BlockNode> codec) {
         this.id = id;
         this.codec = codec;
     }
@@ -89,7 +89,7 @@ public final class BlockNodeType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull CodecOrUnit<? extends BlockNode> getCodec() {
+    public @NotNull Codec<? extends BlockNode> getCodec() {
         return codec;
     }
 
@@ -122,7 +122,7 @@ public final class BlockNodeType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull Codec<? extends BlockNode> codec) {
-        return new BlockNodeType(id, CodecOrUnit.codec(codec));
+        return new BlockNodeType(id, codec);
     }
 
     /**
@@ -134,6 +134,6 @@ public final class BlockNodeType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull BlockNodeType of(@NotNull ResourceLocation id, @NotNull Supplier<BlockNode> supplier) {
-        return new BlockNodeType(id, CodecOrUnit.unit(supplier));
+        return new BlockNodeType(id, Codec.unit(supplier));
     }
 }

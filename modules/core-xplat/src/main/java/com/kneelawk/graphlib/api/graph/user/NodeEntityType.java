@@ -67,9 +67,9 @@ public final class NodeEntityType implements ObjectType {
     }
 
     private final @NotNull ResourceLocation id;
-    private final @NotNull CodecOrUnit<? extends NodeEntity> codec;
+    private final @NotNull Codec<? extends NodeEntity> codec;
 
-    private NodeEntityType(@NotNull ResourceLocation id, @NotNull CodecOrUnit<? extends NodeEntity> codec) {
+    private NodeEntityType(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
         this.id = id;
         this.codec = codec;
     }
@@ -89,7 +89,7 @@ public final class NodeEntityType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull CodecOrUnit<? extends NodeEntity> getCodec() {
+    public @NotNull Codec<? extends NodeEntity> getCodec() {
         return codec;
     }
 
@@ -122,7 +122,7 @@ public final class NodeEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
-        return new NodeEntityType(id, CodecOrUnit.codec(codec));
+        return new NodeEntityType(id, codec);
     }
 
     /**
@@ -134,6 +134,6 @@ public final class NodeEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<NodeEntity> supplier) {
-        return new NodeEntityType(id, CodecOrUnit.unit(supplier));
+        return new NodeEntityType(id, Codec.unit(supplier));
     }
 }

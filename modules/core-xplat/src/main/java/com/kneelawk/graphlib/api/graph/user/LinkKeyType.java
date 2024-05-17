@@ -67,9 +67,9 @@ public final class LinkKeyType implements ObjectType {
     }
 
     private final @NotNull ResourceLocation id;
-    private final @NotNull CodecOrUnit<? extends LinkKey> codec;
+    private final @NotNull Codec<? extends LinkKey> codec;
 
-    private LinkKeyType(@NotNull ResourceLocation id, @NotNull CodecOrUnit<? extends LinkKey> codec) {
+    private LinkKeyType(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkKey> codec) {
         this.id = id;
         this.codec = codec;
     }
@@ -89,7 +89,7 @@ public final class LinkKeyType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull CodecOrUnit<? extends LinkKey> getCodec() {
+    public @NotNull Codec<? extends LinkKey> getCodec() {
         return codec;
     }
 
@@ -122,7 +122,7 @@ public final class LinkKeyType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkKey> codec) {
-        return new LinkKeyType(id, CodecOrUnit.codec(codec));
+        return new LinkKeyType(id, codec);
     }
 
     /**
@@ -134,6 +134,6 @@ public final class LinkKeyType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkKey> supplier) {
-        return new LinkKeyType(id, CodecOrUnit.unit(supplier));
+        return new LinkKeyType(id, Codec.unit(supplier));
     }
 }

@@ -61,7 +61,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
 
     private final @NotNull ResourceLocation id;
     private final @NotNull GraphEntityFactory factory;
-    private final @NotNull CodecOrUnit<G> codec;
+    private final @NotNull Codec<G> codec;
     private final @NotNull GraphEntitySplitter<G> splitter;
 
     /**
@@ -70,7 +70,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @param factory  a factory for creating new graph entities of this type.
      * @param splitter a splitter for splitting graph entities of this type apart.
      */
-    private GraphEntityType(@NotNull ResourceLocation id, @NotNull CodecOrUnit<G> codec,
+    private GraphEntityType(@NotNull ResourceLocation id, @NotNull Codec<G> codec,
                             @NotNull GraphEntityFactory factory, @NotNull GraphEntitySplitter<G> splitter) {
         this.id = id;
         this.factory = factory;
@@ -98,7 +98,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      *
      * @return this type's decoder.
      */
-    public @NotNull CodecOrUnit<G> getCodec() {return codec;}
+    public @NotNull Codec<G> getCodec() {return codec;}
 
     /**
      * Gets this type's splitter.
@@ -171,7 +171,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
                                                                             @NotNull Codec<G> codec,
                                                                             @NotNull GraphEntityFactory factory,
                                                                             @NotNull GraphEntitySplitter<G> splitter) {
-        return new GraphEntityType<>(id, CodecOrUnit.codec(codec), factory, splitter);
+        return new GraphEntityType<>(id, codec, factory, splitter);
     }
 
     /**
@@ -185,7 +185,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
     @Contract(value = "_, _ -> new", pure = true)
     public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull ResourceLocation id,
                                                                             @NotNull Supplier<G> supplier) {
-        return new GraphEntityType<>(id, CodecOrUnit.unit(supplier), supplier::get,
+        return new GraphEntityType<>(id, Codec.unit(supplier), supplier::get,
             (original, originalGraph, newGraph) -> supplier.get());
     }
 }

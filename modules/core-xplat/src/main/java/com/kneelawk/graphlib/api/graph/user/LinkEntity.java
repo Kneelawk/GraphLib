@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 
@@ -17,7 +18,7 @@ public interface LinkEntity {
      * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
     MapCodec<LinkEntity> MAP_CODEC = LinkEntityType.REF_CODEC.dispatchMap("entityType", LinkEntity::getType,
-        type -> type.getCodec().fieldOf("entity"));
+        type -> Codextra.unitHandlingFieldOf("entity", type.getCodec()));
 
     /**
      * {@link #MAP_CODEC} with universe attached.

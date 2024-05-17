@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -34,8 +35,8 @@ public interface BlockNode {
      * <p>
      * This uses the {@code type} and {@code node} map keys.
      */
-    MapCodec<BlockNode> MAP_CODEC =
-        BlockNodeType.REF_CODEC.dispatchMap(BlockNode::getType, type -> type.getCodec().fieldOf("node"));
+    MapCodec<BlockNode> MAP_CODEC = BlockNodeType.REF_CODEC.dispatchMap(BlockNode::getType,
+        type -> Codextra.unitHandlingFieldOf("node", type.getCodec()));
 
     /**
      * {@link #MAP_CODEC} with universe attached.
