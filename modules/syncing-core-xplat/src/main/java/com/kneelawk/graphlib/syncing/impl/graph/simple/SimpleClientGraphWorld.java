@@ -143,7 +143,7 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraphChunk chunk = manager.getIfExists(SectionPos.of(pos.pos()));
         if (chunk == null) return false;
 
-        return chunk.containsNode(pos);
+        return chunk.containsNode(pos, graphs);
     }
 
     @Override

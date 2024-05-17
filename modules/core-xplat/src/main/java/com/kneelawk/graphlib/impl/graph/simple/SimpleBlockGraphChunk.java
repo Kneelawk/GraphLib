@@ -82,6 +82,7 @@ public class SimpleBlockGraphChunk {
     private final Short2ObjectMap<LongSet> graphsInPos = new Short2ObjectLinkedOpenHashMap<>();
     private final LongSet graphsInChunk = new LongLinkedOpenHashSet();
     private final Short2ObjectMap<Object2LongMap<BlockNode>> blockNodes = new Short2ObjectLinkedOpenHashMap<>();
+    private boolean blockNodesPopulated;
 
     private SimpleBlockGraphChunk(@NotNull SimpleServerGraphWorld world, @NotNull SectionPos chunkPos,
                                   @NotNull Runnable markDirty, @NotNull Serial serial) {
@@ -93,7 +94,6 @@ public class SimpleBlockGraphChunk {
         for (SerialInPos serialInPos : serial.inPos()) {
             BlockPos pos = serialInPos.pos();
             short shortPos = SectionPos.sectionRelativePos(pos);
-            BlockPos keyPos = pos.offset(chunkPos.minBlockX(), chunkPos.minBlockY(), chunkPos.minBlockZ());
 
             LongSet inPos = graphsInPos.computeIfAbsent(shortPos, pos1 -> new LongLinkedOpenHashSet());
             Object2LongMap<BlockNode> nodes =
@@ -105,24 +105,14 @@ public class SimpleBlockGraphChunk {
                     inPos.add(serialNode.id());
                     nodes.put(serialNode.node(), serialNode.id());
                 }
+                blockNodesPopulated = true;
             });
 
             // Legacy route
             serialInPos.either().ifRight(longs -> {
                 inPos.addAll(longs);
 
-                // build missing node->graphId map
-                for (LongIterator it = longs.iterator(); it.hasNext(); ) {
-                    long graphId = it.nextLong();
-
-                    SimpleBlockGraph graph = world.getGraph(graphId);
-                    if (graph != null) {
-                        for (var iter = graph.getNodesAt(keyPos).iterator(); iter.hasNext(); ) {
-                            var holder = iter.next();
-                            nodes.put(holder.getNode(), graphId);
-                        }
-                    }
-                }
+                blockNodesPopulated = false;
             });
         }
     }
@@ -135,18 +125,29 @@ public class SimpleBlockGraphChunk {
     private @NotNull Serial toSerial() {
         List<SerialInPos> inPosList = new ObjectArrayList<>();
 
-        for (ShortIterator keyIter = blockNodes.keySet().iterator(); keyIter.hasNext(); ) {
-            short shortPos = keyIter.nextShort();
-            BlockPos localPos =
-                new BlockPos(SectionPos.sectionRelativeX(shortPos), SectionPos.sectionRelativeY(shortPos),
-                    SectionPos.sectionRelativeZ(shortPos));
+        if (blockNodesPopulated) {
+            for (ShortIterator keyIter = blockNodes.keySet().iterator(); keyIter.hasNext(); ) {
+                short shortPos = keyIter.nextShort();
+                BlockPos localPos =
+                    new BlockPos(SectionPos.sectionRelativeX(shortPos), SectionPos.sectionRelativeY(shortPos),
+                        SectionPos.sectionRelativeZ(shortPos));
 
-            List<SerialNode> serialNodes = new ObjectArrayList<>();
-            for (Object2LongMap.Entry<BlockNode> nodeEntry : blockNodes.get(shortPos).object2LongEntrySet()) {
-                serialNodes.add(new SerialNode(nodeEntry.getLongValue(), nodeEntry.getKey()));
+                List<SerialNode> serialNodes = new ObjectArrayList<>();
+                for (Object2LongMap.Entry<BlockNode> nodeEntry : blockNodes.get(shortPos).object2LongEntrySet()) {
+                    serialNodes.add(new SerialNode(nodeEntry.getLongValue(), nodeEntry.getKey()));
+                }
+
+                inPosList.add(new SerialInPos(localPos, Either.left(serialNodes)));
             }
+        } else {
+            for (ShortIterator keyIter = graphsInPos.keySet().iterator(); keyIter.hasNext(); ) {
+                short shortPos = keyIter.nextShort();
+                BlockPos localPos =
+                    new BlockPos(SectionPos.sectionRelativeX(shortPos), SectionPos.sectionRelativeY(shortPos),
+                        SectionPos.sectionRelativeZ(shortPos));
 
-            inPosList.add(new SerialInPos(localPos, Either.left(serialNodes)));
+                inPosList.add(new SerialInPos(localPos, Either.right(graphsInPos.get(shortPos))));
+            }
         }
 
         return new Serial(graphsInChunk, inPosList);
@@ -156,6 +157,33 @@ public class SimpleBlockGraphChunk {
         graphsInPos.clear();
         graphsInChunk.clear();
         blockNodes.clear();
+    }
+
+    public void ensureBlockNodesPopulated(@NotNull Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
+        if (blockNodesPopulated) return;
+
+        // build missing node->graphId map
+        for (LongIterator it = graphsInChunk.iterator(); it.hasNext(); ) {
+            long graphId = it.nextLong();
+
+            SimpleBlockGraph graph = graphGetter.get(graphId);
+            if (graph != null) {
+                for (var iter = graph.getNodes().iterator(); iter.hasNext(); ) {
+                    var holder = iter.next();
+
+                    BlockPos keyPos = holder.getBlockPos();
+                    if (chunkPos.minBlockX() <= keyPos.getX() && keyPos.getX() <= chunkPos.maxBlockX() &&
+                        chunkPos.minBlockY() <= keyPos.getY() && keyPos.getY() <= chunkPos.maxBlockY() &&
+                        chunkPos.minBlockZ() <= keyPos.getZ() && keyPos.getZ() <= chunkPos.maxBlockZ()) {
+
+                        blockNodes.computeIfAbsent(SectionPos.sectionRelativePos(keyPos),
+                            pos1 -> new Object2LongLinkedOpenHashMap<>()).put(holder.getNode(), graphId);
+                    }
+                }
+            }
+        }
+
+        blockNodesPopulated = true;
     }
 
     public void putGraphWithNode(long id, @NotNull NodePos key) {
@@ -198,6 +226,7 @@ public class SimpleBlockGraphChunk {
     }
 
     public @Nullable SimpleBlockGraph getGraphForNode(NodePos key, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
+        ensureBlockNodesPopulated(graphGetter);
         Object2LongMap<BlockNode> uNodes = blockNodes.get(SectionPos.sectionRelativePos(key.pos()));
         if (uNodes == null) return null;
         if (!uNodes.containsKey(key.node())) return null;
@@ -205,7 +234,8 @@ public class SimpleBlockGraphChunk {
         return graphGetter.get(uNodes.getLong(key.node()));
     }
 
-    public boolean containsNode(NodePos key) {
+    public boolean containsNode(NodePos key, Long2ObjectFunction<SimpleBlockGraph> graphGetter) {
+        ensureBlockNodesPopulated(graphGetter);
         Object2LongMap<BlockNode> uNodes = blockNodes.get(SectionPos.sectionRelativePos(key.pos()));
         if (uNodes == null) return false;
         return uNodes.containsKey(key.node());

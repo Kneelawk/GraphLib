@@ -308,7 +308,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     public boolean nodeExistsAt(@NotNull NodePos pos) {
         SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(pos.pos()));
         if (chunk != null) {
-            return chunk.containsNode(pos);
+            return chunk.containsNode(pos, this::getGraph);
         }
         return false;
     }
