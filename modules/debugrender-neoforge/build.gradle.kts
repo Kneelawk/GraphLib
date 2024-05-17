@@ -32,7 +32,7 @@ plugins {
 submodule {
     setLibsDirectory()
     applyNeoforgeDependency()
-    applyXplatConnection(":debugrender-xplat")
+    applyXplatConnection(":debugrender-xplat", "neoforge")
     setupJavadoc()
     createDevExport()
 }

@@ -33,7 +33,7 @@ submodule {
     setLibsDirectory()
     applyFabricLoaderDependency()
     applyFabricApiDependency()
-    applyXplatConnection(":syncing-core-xplat")
+    applyXplatConnection(":syncing-core-xplat", "fabric")
     setupJavadoc()
 }
 

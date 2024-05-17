@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 Kneelawk.
+ * Copyright (c) 2024 Cyan Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,23 +30,15 @@ plugins {
 }
 
 submodule {
-    setLibsDirectory()
-    applyNeoforgeDependency()
-    applyXplatConnection(":syncing-knet-xplat", "neoforge")
+    applyFabricLoaderDependency()
+    applyXplatConnection(":core-xplat", "mojmap")
     setupJavadoc()
-    createDevExport()
+    disableRemap()
 }
 
 dependencies {
-    // KNet
-    val knet_version: String by project
-    modApi("com.kneelawk:knet-neoforge:$knet_version")
-    include("com.kneelawk:knet-neoforge:$knet_version")
-
-    // Codextra
     val codextra_version: String by project
-    modApi("com.kneelawk:codextra-neoforge:$codextra_version")
-    include("com.kneelawk:codextra-neoforge:$codextra_version")
+    api("com.kneelawk:codextra-xplat-mojmap:$codextra_version")
 }
 
 kpublish {

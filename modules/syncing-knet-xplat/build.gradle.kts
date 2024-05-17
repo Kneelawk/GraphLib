@@ -34,6 +34,7 @@ submodule {
     applyFabricLoaderDependency()
     xplatProjectDependency(":core")
     xplatProjectDependency(":syncing-core")
+    forceRemap()
     setupJavadoc()
 }
 
@@ -46,10 +47,5 @@ dependencies {
 }
 
 kpublish {
-    createPublication("intermediary", publicationName = "mavenIntermediary")
-    createPublication(
-        "mojmap",
-        publicationName = "mavenMojmap",
-        tasks = arrayOf(tasks.named("jar"), tasks.named("sourcesJar"), tasks.named("javadocJar"))
-    )
+    createPublication("intermediary")
 }

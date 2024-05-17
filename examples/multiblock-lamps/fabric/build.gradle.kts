@@ -32,7 +32,7 @@ submodule {
     setLibsDirectory()
     applyFabricLoaderDependency()
     applyFabricApiDependency()
-    applyXplatConnection(":multiblock-lamps:xplat")
+    applyXplatConnection(":multiblock-lamps:xplat", "fabric")
     generateRuns()
 }
 

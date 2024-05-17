@@ -63,18 +63,23 @@ fun javadoc(name: String) {
 }
 
 module("core-xplat")
+module("core-xplat-mojmap")
 module("core-fabric")
 module("core-neoforge")
 module("debugrender-xplat")
+module("debugrender-xplat-mojmap")
 module("debugrender-fabric")
 module("debugrender-neoforge")
 module("syncing-core-xplat")
+module("syncing-core-xplat-mojmap")
 module("syncing-core-fabric")
 module("syncing-core-neoforge")
 module("syncing-knet-xplat")
+module("syncing-knet-xplat-mojmap")
 module("syncing-knet-fabric")
 module("syncing-knet-neoforge")
 module("syncing-lns")
+
 example("multiblock-lamps", "xplat", "fabric", "neoforge")
 
 javadoc("xplat")

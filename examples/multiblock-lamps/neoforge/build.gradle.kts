@@ -31,7 +31,7 @@ plugins {
 submodule {
     setLibsDirectory()
     applyNeoforgeDependency()
-    applyXplatConnection(":multiblock-lamps:xplat")
+    applyXplatConnection(":multiblock-lamps:xplat", "neoforge")
     generateRuns()
 }
 
