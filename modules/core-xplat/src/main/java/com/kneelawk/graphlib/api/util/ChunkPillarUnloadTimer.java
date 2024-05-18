@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import it.unimi.dsi.fastutil.longs.Long2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * Chunk-Pillar variant of {@link ChunkUnloadTimer}, for keeping track of chunk-pillars.

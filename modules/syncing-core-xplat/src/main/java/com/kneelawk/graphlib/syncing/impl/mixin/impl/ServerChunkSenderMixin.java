@@ -30,17 +30,17 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.minecraft.server.network.ServerChunkSender;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.chunk.WorldChunk;
-
 import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
 
-@Mixin(ServerChunkSender.class)
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.network.PlayerChunkSender;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.level.chunk.LevelChunk;
+
+@Mixin(PlayerChunkSender.class)
 public class ServerChunkSenderMixin {
     @Inject(method = "sendChunk", at = @At("RETURN"))
-    private static void onSendChunk(ServerPlayNetworkHandler handler, ServerWorld world, WorldChunk chunk,
+    private static void onSendChunk(ServerGamePacketListenerImpl handler, ServerLevel world, LevelChunk chunk,
                                     CallbackInfo ci) {
         GraphLibSyncingImpl.sendChunkDataPackets(world, handler.player, chunk.getPos());
     }

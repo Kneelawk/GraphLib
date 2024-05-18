@@ -25,9 +25,9 @@
 
 package com.kneelawk.graphlib.neoforge.api.event;
 
-import net.neoforged.bus.api.Event;
+import net.minecraft.server.level.ServerLevel;
 
-import net.minecraft.server.world.ServerWorld;
+import net.neoforged.bus.api.Event;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
@@ -36,7 +36,7 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
  * Fired when a graph is unloading.
  */
 public class GraphUnloadingEvent extends Event {
-    private final ServerWorld world;
+    private final ServerLevel world;
     private final GraphWorld graphWorld;
     private final BlockGraph graph;
 
@@ -47,7 +47,7 @@ public class GraphUnloadingEvent extends Event {
      * @param graphWorld the graph world.
      * @param graph      the graph being unloaded.
      */
-    public GraphUnloadingEvent(ServerWorld world, GraphWorld graphWorld, BlockGraph graph) {
+    public GraphUnloadingEvent(ServerLevel world, GraphWorld graphWorld, BlockGraph graph) {
         this.world = world;
         this.graphWorld = graphWorld;
         this.graph = graph;
@@ -58,7 +58,7 @@ public class GraphUnloadingEvent extends Event {
      *
      * @return the block world.
      */
-    public ServerWorld getWorld() {
+    public ServerLevel getWorld() {
         return world;
     }
 

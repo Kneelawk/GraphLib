@@ -7,10 +7,10 @@ import java.util.stream.Stream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
@@ -30,14 +30,16 @@ public interface GraphView {
      *
      * @return the universe this belongs to.
      */
-    @NotNull GraphUniverse getUniverse();
+    @NotNull
+    GraphUniverse getUniverse();
 
     /**
      * Gets the block world associated with this graph view.
      *
      * @return the block world associated with this graph view.
      */
-    @NotNull World getWorld();
+    @NotNull
+    Level getWorld();
 
     /**
      * Gets the nodes in the given block-position.
@@ -45,7 +47,8 @@ public interface GraphView {
      * @param pos the block-position to get the nodes in.
      * @return a stream of all the nodes in the given block-position.
      */
-    @NotNull Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos);
+    @NotNull
+    Stream<NodeHolder<BlockNode>> getNodesAt(@NotNull BlockPos pos);
 
     /**
      * Gets the nodes in the given sided block-position.
@@ -53,7 +56,8 @@ public interface GraphView {
      * @param pos the sided block-position to get the nodes in.
      * @return a stream of all the nodes in the given sided block-position.
      */
-    @NotNull Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
+    @NotNull
+    Stream<NodeHolder<SidedBlockNode>> getNodesAt(@NotNull SidedPos pos);
 
     /**
      * Gets the node holder at the given position.
@@ -61,7 +65,8 @@ public interface GraphView {
      * @param pos the position to get the node at.
      * @return the node holder at the given position, if any.
      */
-    @Nullable NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
+    @Nullable
+    NodeHolder<BlockNode> getNodeAt(@NotNull NodePos pos);
 
     /**
      * Checks whether the given node with the given position exists.
@@ -77,7 +82,8 @@ public interface GraphView {
      * @param pos th positioned node to find the graph id of.
      * @return the graph id of the node, of empty if the node was not found.
      */
-    @Nullable BlockGraph getGraphForNode(@NotNull NodePos pos);
+    @Nullable
+    BlockGraph getGraphForNode(@NotNull NodePos pos);
 
     /**
      * Gets the node entity at the given position, if it exists.
@@ -85,7 +91,8 @@ public interface GraphView {
      * @param pos the position to find the node entity at.
      * @return the node entity at the given position, if it exists.
      */
-    @Nullable NodeEntity getNodeEntity(@NotNull NodePos pos);
+    @Nullable
+    NodeEntity getNodeEntity(@NotNull NodePos pos);
 
     /**
      * Checks whether the given link exists.
@@ -101,7 +108,8 @@ public interface GraphView {
      * @param pos the position of the link to get.
      * @return the link holder at the given position, if it exists.
      */
-    @Nullable LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos);
+    @Nullable
+    LinkHolder<LinkKey> getLinkAt(@NotNull LinkPos pos);
 
     /**
      * Gets the link entity at the given position, if it exists.
@@ -109,7 +117,8 @@ public interface GraphView {
      * @param pos the position to find the link entity at.
      * @return the link entity at the given position, if it exists.
      */
-    @Nullable LinkEntity getLinkEntity(@NotNull LinkPos pos);
+    @Nullable
+    LinkEntity getLinkEntity(@NotNull LinkPos pos);
 
     /**
      * Gets the IDs of all graphs with nodes in the given block-position.
@@ -117,7 +126,8 @@ public interface GraphView {
      * @param pos the block-position to get the IDs of graphs with nodes at.
      * @return a stream of all the IDs of graphs with nodes in the given block-position.
      */
-    @NotNull LongStream getAllGraphIdsAt(@NotNull BlockPos pos);
+    @NotNull
+    LongStream getAllGraphIdsAt(@NotNull BlockPos pos);
 
     /**
      * Gets all graphs with nodes in the given block-position.
@@ -138,7 +148,8 @@ public interface GraphView {
      * @param pos the block-position to get the loaded graphs with nodes at.
      * @return all loaded graphs at the given position.
      */
-    @NotNull Stream<BlockGraph> getLoadedGraphsAt(@NotNull BlockPos pos);
+    @NotNull
+    Stream<BlockGraph> getLoadedGraphsAt(@NotNull BlockPos pos);
 
     /**
      * Gets the graph with the given ID.
@@ -161,18 +172,19 @@ public interface GraphView {
      * @param pos the position of the chunk section to get the graphs in.
      * @return a stream of all graph ids in the given chunk section.
      */
-    @NotNull LongStream getAllGraphIdsInChunkSection(@NotNull ChunkSectionPos pos);
+    @NotNull
+    LongStream getAllGraphIdsInChunkSection(@NotNull SectionPos pos);
 
     /**
      * Gets all graphs in the given chunk section.
      * <p>
      * Note: this loads all graphs in the given chunk section, which may not be what you want. If you only want the
-     * loaded graphs, {@link #getLoadedGraphsInChunkSection(ChunkSectionPos)} may be a better fit.
+     * loaded graphs, {@link #getLoadedGraphsInChunkSection(SectionPos)} may be a better fit.
      *
      * @param pos the position of the chunk section to get the graphs in.
      * @return a stream of all the graphs in the given chunk section.
      */
-    default @NotNull Stream<BlockGraph> getAllGraphsInChunkSection(@NotNull ChunkSectionPos pos) {
+    default @NotNull Stream<BlockGraph> getAllGraphsInChunkSection(@NotNull SectionPos pos) {
         return getAllGraphIdsInChunkSection(pos).mapToObj(this::getGraph).filter(Objects::nonNull);
     }
 
@@ -182,7 +194,8 @@ public interface GraphView {
      * @param pos the position of the chunk section to get the loaded graphs in.
      * @return a stream of all the loaded graphs in the given chunk section.
      */
-    @NotNull Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull ChunkSectionPos pos);
+    @NotNull
+    Stream<BlockGraph> getLoadedGraphsInChunkSection(@NotNull SectionPos pos);
 
     /**
      * Gets all graph ids in the given chunk.
@@ -193,7 +206,8 @@ public interface GraphView {
      * @param pos the position of the chunk to get the graphs in.
      * @return a stream of all graph ids in the given chunk.
      */
-    @NotNull LongStream getAllGraphIdsInChunk(@NotNull ChunkPos pos);
+    @NotNull
+    LongStream getAllGraphIdsInChunk(@NotNull ChunkPos pos);
 
     /**
      * Gets all graphs in the given chunk.
@@ -214,7 +228,8 @@ public interface GraphView {
      * @param pos the position of the chunk to get the loaded graphs in.
      * @return a stream of all loaded graphs in the given chunk.
      */
-    @NotNull Stream<BlockGraph> getLoadedGraphsInChunk(@NotNull ChunkPos pos);
+    @NotNull
+    Stream<BlockGraph> getLoadedGraphsInChunk(@NotNull ChunkPos pos);
 
     /**
      * Gets all graph ids in this graph controller.
@@ -224,7 +239,8 @@ public interface GraphView {
      *
      * @return a stream of all graph ids in this graph world.
      */
-    @NotNull LongStream getAllGraphIds();
+    @NotNull
+    LongStream getAllGraphIds();
 
     /**
      * Gets all graphs in this graph world, loading all graphs. <b>Use with care.</b>
@@ -245,5 +261,6 @@ public interface GraphView {
      *
      * @return all the currently loaded graphs.
      */
-    @NotNull Stream<BlockGraph> getLoadedGraphs();
+    @NotNull
+    Stream<BlockGraph> getLoadedGraphs();
 }

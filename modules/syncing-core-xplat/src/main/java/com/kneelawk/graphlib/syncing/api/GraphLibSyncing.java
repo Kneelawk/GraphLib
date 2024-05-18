@@ -27,12 +27,12 @@ package com.kneelawk.graphlib.syncing.api;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.impl.GraphLibSyncingImpl;
+
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Graph Lib Synchronization public API. This class contains static methods and fields for interacting with GraphLib's
@@ -47,7 +47,7 @@ public class GraphLibSyncing {
      * @param id the id of the universe to check.
      * @return whether the given universe has syncing enabled.
      */
-    public static boolean syncingEnabled(@NotNull Identifier id) {
+    public static boolean syncingEnabled(@NotNull ResourceLocation id) {
         return GraphLibSyncingImpl.SYNCED_UNIVERSE.containsKey(id);
     }
 
@@ -67,7 +67,7 @@ public class GraphLibSyncing {
      * @param id the id of the universe to look up.
      * @return the universe with the given id.
      */
-    public static SyncedUniverse getUniverse(@NotNull Identifier id) {
+    public static SyncedUniverse getUniverse(@NotNull ResourceLocation id) {
         SyncedUniverse universe = GraphLibSyncingImpl.SYNCED_UNIVERSE.get(id);
         if (universe == null) throw new IllegalArgumentException("No synced universe exists with name " + id);
 

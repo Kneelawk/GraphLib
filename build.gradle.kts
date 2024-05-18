@@ -1,11 +1,9 @@
 plugins {
-    id("architectury-plugin")
     id("dev.architectury.loom") apply false
-}
-
-architectury {
-    val minecraft_version: String by project
-    minecraft = minecraft_version
+    id("com.kneelawk.submodule") apply false
+    id("com.kneelawk.mojmap") apply false
+    id("com.kneelawk.versioning") apply false
+    id("com.kneelawk.kpublish") apply false
 }
 
 tasks.create("clean", Delete::class) {

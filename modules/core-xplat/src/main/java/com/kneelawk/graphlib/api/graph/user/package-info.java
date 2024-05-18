@@ -1,12 +1,11 @@
 /**
  * This package contains the interfaces that are expected to be implemented by users of GraphLib.
  * <p>
- * For minimal use, only {@link com.kneelawk.graphlib.api.graph.user.BlockNode} and
- * {@link com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder} need be implemented.
+ * For minimal use, only {@link com.kneelawk.graphlib.api.graph.user.BlockNode} needs to be implemented.
  * <p>
  * {@link com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer} is often typically implemented as well, as this
  * allows automatic node discovery, using the
- * {@link com.kneelawk.graphlib.api.graph.GraphWorld#updateNodes(net.minecraft.util.math.BlockPos)} family of methods.
+ * {@link com.kneelawk.graphlib.api.graph.GraphWorld#updateNodes(net.minecraft.core.BlockPos)} family of methods.
  *
  * <h2>Node Entities</h2>
  * As a rule, block nodes cannot store arbitrary data, only storing the data that makes them unique. This is because

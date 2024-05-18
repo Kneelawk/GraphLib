@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;

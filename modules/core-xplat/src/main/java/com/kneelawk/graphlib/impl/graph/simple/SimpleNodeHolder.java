@@ -7,9 +7,8 @@ import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -23,7 +22,7 @@ import com.kneelawk.graphlib.api.util.graph.Node;
 import com.kneelawk.graphlib.impl.util.ReadOnlyMappingCollection;
 
 public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
-    final World blockWorld;
+    final Level blockWorld;
     final GraphView graphWorld;
     public final Node<SimpleNodeWrapper, LinkKey> node;
 
@@ -32,7 +31,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
      * @param graphWorld the graph world.
      * @param node       treat this as if it were parameterized on <code>&lt;T&gt;</code>.
      */
-    public SimpleNodeHolder(World blockWorld, GraphView graphWorld,
+    public SimpleNodeHolder(Level blockWorld, GraphView graphWorld,
                             Node<SimpleNodeWrapper, LinkKey> node) {
         this.blockWorld = blockWorld;
         this.graphWorld = graphWorld;
@@ -41,13 +40,13 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
 
     @Override
     public @NotNull BlockPos getBlockPos() {
-        return node.data().getPos();
+        return node.data().blockPos();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public @NotNull T getNode() {
-        return (T) node.data().getNode();
+        return (T) node.data().node();
     }
 
     @Override
@@ -56,7 +55,7 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     }
 
     @Override
-    public World getBlockWorld() {
+    public Level getBlockWorld() {
         return blockWorld;
     }
 
@@ -90,23 +89,23 @@ public class SimpleNodeHolder<T extends BlockNode> implements NodeHolder<T> {
     @Override
     @SuppressWarnings("unchecked")
     public @NotNull SnapshotNode<T> toSnapshot() {
-        return new SnapshotNode<>(node.data().getPos(), (T) node.data().getNode(), node.data().getGraphId());
+        return new SnapshotNode<>(node.data().blockPos(), (T) node.data().node(), node.data().getGraphId());
     }
 
     @Override
     public @NotNull NodePos getPos() {
-        return new NodePos(node.data().getPos(), node.data().getNode());
+        return node.data().pos();
     }
 
     @Override
     public boolean canCast(Class<?> newType) {
-        return newType.isInstance(node.data().getNode());
+        return newType.isInstance(node.data().node());
     }
 
     @Override
     public <R extends BlockNode> NodeHolder<R> cast(Class<R> newType) throws ClassCastException {
         if (!canCast(newType))
-            throw new ClassCastException(node.data().getNode().getClass() + " cannot be cast to " + newType);
+            throw new ClassCastException(node.data().node().getClass() + " cannot be cast to " + newType);
         return new SimpleNodeHolder<>(blockWorld, graphWorld, node);
     }
 

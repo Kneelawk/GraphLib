@@ -26,12 +26,16 @@
 package com.kneelawk.graphlib.syncing.fabric.impl.client;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 
 import com.kneelawk.graphlib.syncing.impl.client.ClientProxy;
+import com.kneelawk.graphlib.syncing.impl.mixin.api.ClientStorageHelper;
 
 public class GraphLibSyncingFabricModClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientProxy.init();
+
+        ClientTickEvents.END_WORLD_TICK.register(world -> ClientStorageHelper.getStorage(world).tick());
     }
 }

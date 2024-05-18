@@ -1,17 +1,15 @@
 package com.kneelawk.graphlib.api.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
+import net.minecraft.core.BlockPos;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
-import com.kneelawk.graphlib.impl.GLLog;
 
 /**
  * Represents a positioned block node.
@@ -21,68 +19,45 @@ import com.kneelawk.graphlib.impl.GLLog;
  */
 public record NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
     /**
+     * Map codec for node poses.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final MapCodec<NodePos> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+        Codec.INT.fieldOf("x").forGetter(pos -> pos.pos.getX()),
+        Codec.INT.fieldOf("y").forGetter(pos -> pos.pos.getY()),
+        Codec.INT.fieldOf("z").forGetter(pos -> pos.pos.getZ()),
+        BlockNode.MAP_CODEC.forGetter(NodePos::node)
+    ).apply(instance, (x, y, z, node) -> new NodePos(new BlockPos(x, y, z), node)));
+
+    /**
+     * Map codec for node poses that provides its own universe.
+     */
+    public static final MapCodec<InUniverse<NodePos>> IN_UNIVERSE_MAP_CODEC = InUniverse.mapCodec(MAP_CODEC);
+
+    /**
+     * Gets a node pos map codec for node poses in the given universe.
+     *
+     * @param universe the universe to find nodes in.
+     * @return a node pos codec for node poses in the given universe.
+     */
+    public static MapCodec<NodePos> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
+    /**
      * Creates a positioned block node representation.
      *
      * @param pos  the block pos.
      * @param node the block node.
      */
     public NodePos(@NotNull BlockPos pos, @NotNull BlockNode node) {
-        this.pos = pos.toImmutable();
+        this.pos = pos.immutable();
         this.node = node;
     }
 
-    /**
-     * Encodes this NodePos to an NBT compound.
-     * <p>
-     * This writes to the {@code x}, {@code y}, {@code z}, {@code type}, and {@code node} elements.
-     *
-     * @param nbt the NBT compound to write to.
-     */
-    public void toNbt(@NotNull NbtCompound nbt) {
-        nbt.putInt("x", pos.getX());
-        nbt.putInt("y", pos.getY());
-        nbt.putInt("z", pos.getZ());
-        nbt.putString("type", node.getType().getId().toString());
-        NbtElement nodeNbt = node.toTag();
-        if (nodeNbt != null) {
-            nbt.put("node", nodeNbt);
-        }
-    }
-
-    /**
-     * Encodes this NodePos to an NBT compound.
-     *
-     * @return the encoded NBT compound.
-     */
-    public @NotNull NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
-        toNbt(nbt);
-        return nbt;
-    }
-
-    /**
-     * Decodes a NodePos from an NBT compound.
-     *
-     * @param nbt      the NBT compound to decode from.
-     * @param universe the universe that the block node's decoder is to be retrieved from.
-     * @return a newly decoded NodePos.
-     */
-    public static @Nullable NodePos fromNbt(@NotNull NbtCompound nbt, @NotNull GraphUniverse universe) {
-        BlockPos pos = new BlockPos(nbt.getInt("x"), nbt.getInt("y"), nbt.getInt("z"));
-
-        Identifier typeId = new Identifier(nbt.getString("type"));
-        BlockNodeType type = universe.getNodeType(typeId);
-        if (type == null) {
-            GLLog.warn("Unable to decode unknown block node type id {} in universe {}", typeId, universe.getId());
-            return null;
-        }
-
-        BlockNode node = type.getDecoder().decode(nbt.get("node"));
-        if (node == null) {
-            GLLog.warn("Failed to decode block node {}", type.getId());
-            return null;
-        }
-
-        return new NodePos(pos, node);
+    @Override
+    public String toString() {
+        return "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ", " + node + ")";
     }
 }

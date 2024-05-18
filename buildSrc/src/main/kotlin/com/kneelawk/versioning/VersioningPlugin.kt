@@ -27,6 +27,7 @@ package com.kneelawk.versioning
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import com.kneelawk.getProperty
 
 class VersioningPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -49,9 +50,5 @@ class VersioningPlugin : Plugin<Project> {
 
         ext.extraProperties.set("modVersion", modVersion)
         target.version = modVersion
-    }
-
-    private inline fun <reified T> Project.getProperty(propertyName: String): T {
-        return property(propertyName) as? T ?: throw IllegalStateException("No property '$propertyName' found")
     }
 }

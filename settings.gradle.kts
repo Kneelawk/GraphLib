@@ -12,17 +12,16 @@ pluginManagement {
         maven("https://maven.neoforged.net/releases/") {
             name = "NeoForged"
         }
+        maven("https://kneelawk.com/maven") {
+            name = "Kneelawk"
+        }
         gradlePluginPortal()
     }
     plugins {
-        val loom_version: String by settings
-        id("fabric-loom") version loom_version
-        val architectury_version: String by settings
-        id("architectury-plugin") version architectury_version
         val architectury_loom_version: String by settings
         id("dev.architectury.loom") version architectury_loom_version
-        val shadow_version: String by settings
-        id("com.github.johnrengelman.shadow") version shadow_version
+        val remapcheck_version: String by settings
+        id("com.kneelawk.remapcheck") version remapcheck_version
     }
 }
 
@@ -63,22 +62,29 @@ fun javadoc(name: String) {
     project(":javadoc-$name").projectDir = File(rootDir, "javadoc/$name")
 }
 
-module("core-xplat", "mojmap")
+module("core-xplat")
+module("core-xplat-mojmap")
 module("core-fabric")
 module("core-neoforge")
-module("debugrender-xplat", "mojmap")
+module("debugrender-xplat")
+module("debugrender-xplat-mojmap")
 module("debugrender-fabric")
 module("debugrender-neoforge")
-module("syncing-core-xplat", "mojmap")
+module("syncing-core-xplat")
+module("syncing-core-xplat-mojmap")
 module("syncing-core-fabric")
 module("syncing-core-neoforge")
-module("syncing-knet-xplat", "mojmap")
+module("syncing-knet-xplat")
+module("syncing-knet-xplat-mojmap")
 module("syncing-knet-fabric")
 module("syncing-knet-neoforge")
 module("syncing-lns")
+
 example("multiblock-lamps", "xplat", "fabric", "neoforge")
 example("transfer-beams")
 
 javadoc("xplat")
 javadoc("fabric")
 javadoc("neoforge")
+
+include(":remapCheck")

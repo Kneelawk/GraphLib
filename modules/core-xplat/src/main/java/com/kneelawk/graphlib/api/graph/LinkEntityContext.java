@@ -1,12 +1,21 @@
 package com.kneelawk.graphlib.api.graph;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
@@ -30,21 +39,24 @@ public interface LinkEntityContext {
      *
      * @return the link holder associated with this link entity.
      */
-    @NotNull LinkHolder<LinkKey> getHolder();
+    @NotNull
+    LinkHolder<LinkKey> getHolder();
 
     /**
      * Gets the world of blocks that this link entity exists within.
      *
      * @return the world of blocks that this link entity exists within.
      */
-    @NotNull World getBlockWorld();
+    @NotNull
+    Level getBlockWorld();
 
     /**
      * Gets the world of graphs that this link entity exists within.
      *
      * @return the world of graphs that this link entity exists within.
      */
-    @NotNull GraphView getGraphWorld();
+    @NotNull
+    GraphView getGraphWorld();
 
     /**
      * Gets the holder for the first node in this link entity's link.
@@ -208,5 +220,25 @@ public interface LinkEntityContext {
             return entityClass.cast(entity);
         }
         return null;
+    }
+
+    /**
+     * Gets a collection of all the players tracking this link.
+     * <p>
+     * Note: returns an empty collection on the client side.
+     *
+     * @return a collection of all the players tracking this link.
+     */
+    default @NotNull Collection<ServerPlayer> getTrackingPlayers() {
+        if (getBlockWorld() instanceof ServerLevel world) {
+            Set<ServerPlayer> players = new ObjectLinkedOpenHashSet<>();
+            players.addAll(world.getChunkSource().chunkMap.getPlayers(
+                new ChunkPos(getFirstBlockPos()), false));
+            players.addAll(world.getChunkSource().chunkMap.getPlayers(
+                new ChunkPos(getSecondBlockPos()), false));
+            return players;
+        } else {
+            return List.of();
+        }
     }
 }

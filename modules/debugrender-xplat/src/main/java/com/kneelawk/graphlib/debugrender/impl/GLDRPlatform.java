@@ -27,12 +27,12 @@ package com.kneelawk.graphlib.debugrender.impl;
 
 import java.util.ServiceLoader;
 
-import net.minecraft.network.packet.payload.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface GLDRPlatform {
     GLDRPlatform INSTANCE = ServiceLoader.load(GLDRPlatform.class).findFirst()
         .orElseThrow(() -> new RuntimeException("Failed to find platform object for GraphLib Debug Renderer"));
 
-    void sendPlayPayload(ServerPlayerEntity player, CustomPayload payload);
+    void sendPlayPayload(ServerPlayer player, CustomPacketPayload payload);
 }

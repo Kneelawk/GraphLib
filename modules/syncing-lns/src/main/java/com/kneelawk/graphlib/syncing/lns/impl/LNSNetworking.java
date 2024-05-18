@@ -26,6 +26,7 @@
 package com.kneelawk.graphlib.syncing.lns.impl;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Function;
@@ -35,11 +36,11 @@ import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
 import alexiil.mc.lib.net.ActiveConnection;
 import alexiil.mc.lib.net.IMsgReadCtx;
@@ -104,14 +105,14 @@ public final class LNSNetworking {
             }
             return lnsSynced;
         });
-    public static final NetObjectCache<Identifier> ID_CACHE =
+    public static final NetObjectCache<ResourceLocation> ID_CACHE =
         NetObjectCache.createMappedIdentifier(GRAPH_LIB_ID.child("id_cache"), Function.identity(), Function.identity());
 
     public static final ParentNetIdSingle<NodeEntity> NODE_ENTITY_PARENT =
         new ParentNetIdSingle<>(GRAPH_LIB_ID, NodeEntity.class, "node_entity", -1) {
             @Override
             protected NodeEntity readContext(NetByteBuf buffer, IMsgReadCtx ctx) throws InvalidInputDataException {
-                World world = ctx.getConnection().getPlayer().getWorld();
+                Level world = ctx.getConnection().getPlayer().level();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
                 LNSSyncedUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
@@ -154,7 +155,7 @@ public final class LNSNetworking {
         new ParentNetIdSingle<>(GRAPH_LIB_ID, LinkEntity.class, "link_entity", -1) {
             @Override
             protected LinkEntity readContext(NetByteBuf buffer, IMsgReadCtx ctx) throws InvalidInputDataException {
-                World world = ctx.getConnection().getPlayer().getWorld();
+                Level world = ctx.getConnection().getPlayer().level();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
                 LNSSyncedUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
@@ -198,7 +199,7 @@ public final class LNSNetworking {
         new ParentNetIdSingle<>(GRAPH_LIB_ID, GraphEntity.class, "graph_entity", -1) {
             @Override
             protected GraphEntity<?> readContext(NetByteBuf buffer, IMsgReadCtx ctx) throws InvalidInputDataException {
-                World world = ctx.getConnection().getPlayer().getWorld();
+                Level world = ctx.getConnection().getPlayer().level();
 
                 int universeIdInt = buffer.readVarUnsignedInt();
                 SyncedUniverse universe = UNIVERSE_CACHE.getObj(ctx.getConnection(), universeIdInt);
@@ -224,7 +225,7 @@ public final class LNSNetworking {
                 }
 
                 int typeIdInt = buffer.readVarUnsignedInt();
-                Identifier typeId = ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
+                ResourceLocation typeId = ID_CACHE.getObj(ctx.getConnection(), typeIdInt);
                 if (typeId == null) {
                     GLLog.warn("Unable to decode graph entity type id from int {}", typeIdInt);
                     throw new InvalidInputDataException("Unable to decode graph entity type id from int " + typeIdInt);
@@ -253,11 +254,11 @@ public final class LNSNetworking {
         };
 
     public static <T> @NotNull T readType(@NotNull NetByteBuf buf, ActiveConnection conn,
-                                          @NotNull Function<@NotNull Identifier, @Nullable T> typeGetter,
+                                          @NotNull Function<@NotNull ResourceLocation, @Nullable T> typeGetter,
                                           @NotNull String typeName, BlockPos blockPos)
         throws InvalidInputDataException {
         int typeIdInt = buf.readVarUnsignedInt();
-        Identifier typeId = ID_CACHE.getObj(conn, typeIdInt);
+        ResourceLocation typeId = ID_CACHE.getObj(conn, typeIdInt);
         if (typeId == null) {
             GLLog.warn("Unable to decode unknown {} id int: {} @ {}", typeName, typeIdInt, blockPos);
             throw new InvalidInputDataException(
@@ -274,14 +275,14 @@ public final class LNSNetworking {
         return type;
     }
 
-    public static void writeType(@NotNull NetByteBuf buf, @NotNull ActiveConnection conn, Identifier typeId) {
+    public static void writeType(@NotNull NetByteBuf buf, @NotNull ActiveConnection conn, ResourceLocation typeId) {
         buf.writeVarUnsignedInt(ID_CACHE.getId(conn, typeId));
     }
 
     public static final NetIdData CHUNK_DATA =
         new NetIdData(GRAPH_LIB_ID, "chunk_data", -1).toClientOnly().setReceiver(LNSNetworking::receiveChunkDataPacket);
 
-    public static void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
+    public static void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayer player, ChunkPos pos) {
         ActiveConnection connection = CoreMinecraftNetUtil.getConnection(player);
         CHUNK_DATA.send(connection, (buffer, ctx) -> {
             buffer.writeVarUnsignedInt(
@@ -315,9 +316,9 @@ public final class LNSNetworking {
 
         if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(node)) return;
 
-        Collection<ServerPlayerEntity> watching = PlayerLookup.tracking(world.getWorld(), node.getBlockPos());
+        Collection<ServerPlayer> watching = PlayerLookup.tracking(world.getWorld(), node.getBlockPos());
 
-        for (ServerPlayerEntity player : watching) {
+        for (ServerPlayer player : watching) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_ADD.send(conn, (buf, ctx) -> {
@@ -365,15 +366,15 @@ public final class LNSNetworking {
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
-        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         for (var iter = into.getChunks().iterator(); iter.hasNext(); ) {
-            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().chunk()));
         }
         for (var iter = from.getChunks().iterator(); iter.hasNext(); ) {
-            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().chunk()));
         }
 
-        for (ServerPlayerEntity player : sendTo) {
+        for (ServerPlayer player : sendTo) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 GRAPH_MERGE.send(conn, (buf, ctx) -> {
@@ -406,11 +407,11 @@ public final class LNSNetworking {
         if (nodeFilter != null && !(nodeFilter.matches(link.getFirst()) && nodeFilter.matches(link.getSecond())))
             return;
 
-        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         sendTo.addAll(PlayerLookup.tracking(world.getWorld(), link.getFirstBlockPos()));
         sendTo.addAll(PlayerLookup.tracking(world.getWorld(), link.getSecondBlockPos()));
 
-        for (ServerPlayerEntity player : sendTo) {
+        for (ServerPlayer player : sendTo) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_LINK.send(conn, (buf, ctx) -> {
@@ -442,11 +443,11 @@ public final class LNSNetworking {
         CacheCategory<?> nodeFilter = sp.getNodeFilter();
         if (nodeFilter != null && !(nodeFilter.matches(a) && nodeFilter.matches(b))) return;
 
-        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         sendTo.addAll(PlayerLookup.tracking(world.getWorld(), a.getBlockPos()));
         sendTo.addAll(PlayerLookup.tracking(world.getWorld(), b.getBlockPos()));
 
-        for (ServerPlayerEntity player : sendTo) {
+        for (ServerPlayer player : sendTo) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_UNLINK.send(conn, (buf, ctx) -> {
@@ -475,15 +476,15 @@ public final class LNSNetworking {
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
-        Set<ServerPlayerEntity> sendTo = new LinkedHashSet<>();
+        Set<ServerPlayer> sendTo = new LinkedHashSet<>();
         for (var iter = into.getChunks().iterator(); iter.hasNext(); ) {
-            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().chunk()));
         }
         for (var iter = from.getChunks().iterator(); iter.hasNext(); ) {
-            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().toChunkPos()));
+            sendTo.addAll(PlayerLookup.tracking(world.getWorld(), iter.next().chunk()));
         }
 
-        for (ServerPlayerEntity player : sendTo) {
+        for (ServerPlayer player : sendTo) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 GRAPH_SPLIT.send(conn, (buf, ctx) -> {
@@ -514,9 +515,9 @@ public final class LNSNetworking {
 
         if (sp.getNodeFilter() != null && !sp.getNodeFilter().matches(holder)) return;
 
-        Collection<ServerPlayerEntity> watching = PlayerLookup.tracking(world.getWorld(), holder.getBlockPos());
+        Collection<ServerPlayer> watching = PlayerLookup.tracking(world.getWorld(), holder.getBlockPos());
 
-        for (ServerPlayerEntity player : watching) {
+        for (ServerPlayer player : watching) {
             if (sp.getPlayerFilter().shouldSync(player)) {
                 ActiveConnection conn = CoreMinecraftNetUtil.getConnection(player);
                 NODE_REMOVE.send(conn, (buf, ctx) -> {

@@ -1,12 +1,18 @@
 package com.kneelawk.graphlib.api.graph;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -28,21 +34,24 @@ public interface NodeEntityContext {
      *
      * @return the block node holder associated with this entity.
      */
-    @NotNull NodeHolder<BlockNode> getHolder();
+    @NotNull
+    NodeHolder<BlockNode> getHolder();
 
     /**
      * Gets the block world that this node entity exists in.
      *
      * @return the block world that this node entity exists in.
      */
-    @NotNull World getBlockWorld();
+    @NotNull
+    Level getBlockWorld();
 
     /**
      * Gets a view of the graph world this node entity exists in.
      *
      * @return a view of the graph world this node entity exists in.
      */
-    @NotNull GraphView getGraphWorld();
+    @NotNull
+    GraphView getGraphWorld();
 
     /**
      * Gets this node entity's position.
@@ -96,5 +105,21 @@ public interface NodeEntityContext {
      */
     default @Nullable BlockEntity getBlockEntity() {
         return getBlockWorld().getBlockEntity(getBlockPos());
+    }
+
+    /**
+     * Gets a collection of all the players tracking this node entity.
+     * <p>
+     * Note: this returns an empty collection on the client side.
+     *
+     * @return a collection of all the players tracking this node entity.
+     */
+    default @NotNull Collection<ServerPlayer> getTrackingPlayers() {
+        if (getBlockWorld() instanceof ServerLevel world) {
+            return world.getChunkSource().chunkMap.getPlayers(
+                new ChunkPos(getBlockPos()), false);
+        } else {
+            return List.of();
+        }
     }
 }

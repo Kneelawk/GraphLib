@@ -25,13 +25,13 @@
 
 package com.kneelawk.graphlib.debugrender.api.graph;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.debugrender.api.client.BlockNodeDebugPacketDecoder;
 import com.kneelawk.graphlib.debugrender.api.client.GraphLibDebugRenderClient;
+
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Encodes a {@link BlockNode} for sending to the client-side debug renderer.
@@ -45,12 +45,12 @@ public interface BlockNodeDebugPacketEncoder {
      * This interface should only be implemented to provide custom data to the client.
      * <p>
      * If custom data is being sent to the client, use
-     * {@link GraphLibDebugRenderClient#registerDebugDecoder(Identifier, Identifier, BlockNodeDebugPacketDecoder)}
+     * {@link GraphLibDebugRenderClient#registerDebugDecoder(ResourceLocation, ResourceLocation, BlockNodeDebugPacketDecoder)}
      * to register a decoder for the custom data.
      *
      * @param node the node to encode.
      * @param self the node holder for context.
      * @param buf  the buffer to write to.
      */
-    void encode(BlockNode node, NodeHolder<BlockNode> self, PacketByteBuf buf);
+    void encode(BlockNode node, NodeHolder<BlockNode> self, FriendlyByteBuf buf);
 }

@@ -30,9 +30,19 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+
+import com.kneelawk.codextra.api.CodextraStreams;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
-import com.kneelawk.knet.api.handling.PayloadHandlingException;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetBufs;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 
 /**
  * Holds a graph entity encoder and decoder.
@@ -40,64 +50,103 @@ import com.kneelawk.knet.api.util.NetByteBuf;
  * @param <G> the type of graph entity this syncs.
  */
 public final class GraphEntitySyncing<G extends GraphEntity<G>> {
-    private final @NotNull GraphEntityPacketEncoder<G> encoder;
-    private final @NotNull GraphEntityPacketDecoder decoder;
-
-    private GraphEntitySyncing(@NotNull GraphEntityPacketEncoder<G> encoder,
-                               @NotNull GraphEntityPacketDecoder decoder) {
-        this.encoder = encoder;
-        this.decoder = decoder;
-    }
+    /**
+     * {@link GraphEntitySyncing} static codec.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     */
+    public static final StreamCodec<FriendlyByteBuf, GraphEntitySyncing<?>> REF_CODEC =
+        StreamCodecHelper.createRefStreamCodec(GraphUniverse::getGraphEntityType,
+            (universe, type) -> universe.getGraphEntitySyncing(type), GraphEntitySyncing::getType, "GraphEntity");
 
     /**
-     * Encodes a graph entity.
-     * <p>
-     * <b>Note: this does not write the graph entity's type id. That must be written separately.</b>
-     * <p>
-     * <b>Note: the graph entity being encoded must be of the type that the encoder expects.</b>
+     * {@link GraphEntitySyncing} codec caster.
      *
-     * @param node the graph entity to encode.
-     * @param buf  the buffer to encode to.
+     * @param <G> the type of graph entity this is related to.
+     * @return {@link #REF_CODEC} cast to the desired graph entity type.
      */
     @SuppressWarnings("unchecked")
-    public void encode(@NotNull GraphEntity<?> node, @NotNull NetByteBuf buf) {
-        encoder.encode((G) node, buf);
+    public static <G extends GraphEntity<G>> StreamCodec<FriendlyByteBuf, GraphEntitySyncing<G>> refCodec() {
+        return (StreamCodec<FriendlyByteBuf, GraphEntitySyncing<G>>) (Object) REF_CODEC;
     }
 
     /**
-     * Decodes a graph entity.
+     * {@link GraphEntitySyncing} codec getter.
      *
-     * @param buf the buffer to decode from.
-     * @return a newly decoded graph entity.
-     * @throws PayloadHandlingException if the buffer contained invalid data.
+     * @param universe the universe to attach to the codec.
+     * @param <G>      the type of graph entity this is related to.
+     * @return the codec with the given universe attached.
      */
-    public @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf) throws PayloadHandlingException {
-        return decoder.decode(buf);
+    public static <G extends GraphEntity<G>> StreamCodec<FriendlyByteBuf, GraphEntitySyncing<G>> refCodec(
+        KNetSyncedUniverse universe) {
+        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, refCodec());
+    }
+
+    private final @NotNull GraphEntityType<G> type;
+    private final @NotNull StreamCodec<? super NetRegistryByteBuf, G> codec;
+
+    private GraphEntitySyncing(@NotNull GraphEntityType<G> type,
+                               @NotNull StreamCodec<? super NetRegistryByteBuf, G> codec) {
+        this.type = type;
+        this.codec = codec;
+    }
+
+    /**
+     * {@return this syncing descriptor's type}
+     */
+    public @NotNull GraphEntityType<G> getType() {
+        return type;
+    }
+
+    /**
+     * {@return this syncing descriptor's stream codec}
+     */
+    public @NotNull StreamCodec<? super NetRegistryByteBuf, G> getCodec() {
+        return codec;
     }
 
     /**
      * Makes a new {@link GraphEntity} syncing descriptor.
      *
-     * @param encoder the encoder for the graph entity.
-     * @param decoder the decoder for the graph entity.
-     * @param <G>     the type of graph entity this descriptor syncs.
+     * @param <G>   the type of graph entity this descriptor syncs.
+     * @param type  the graph entity type this syncing is associated with.
+     * @param codec graph entity's stream codec.
      * @return a new graph entity syncing descriptor.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> of(
-        @NotNull GraphEntityPacketEncoder<G> encoder, @NotNull GraphEntityPacketDecoder decoder) {
-        return new GraphEntitySyncing<>(encoder, decoder);
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofRegistry(@NotNull GraphEntityType<G> type,
+                                                                                       @NotNull
+                                                                                       StreamCodec<? super NetRegistryByteBuf, G> codec) {
+        return new GraphEntitySyncing<>(type, codec);
+    }
+
+    /**
+     * Makes a new {@link GraphEntity} syncing descriptor.
+     *
+     * @param <G>   the type of graph entity this descriptor syncs.
+     * @param type  the graph entity type this syncing is associated with.
+     * @param codec graph entity's stream codec.
+     * @return a new graph entity syncing descriptor.
+     */
+    @Contract(value = "_, _ -> new", pure = true)
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofNet(@NotNull GraphEntityType<G> type,
+                                                                                  @NotNull
+                                                                                  StreamCodec<? super RegistryNetByteBuf, G> codec) {
+        return new GraphEntitySyncing<>(type, codec.mapStream(NetBufs::registryNetOf));
     }
 
     /**
      * Makes a new {@link GraphEntity} syncing descriptor that does no encoding or decoding.
      *
-     * @param supplier supplies instances of the graph entity.
      * @param <G>      the type of graph entity this descriptor syncs.
+     * @param type     the graph entity type this syncing is associated with.
+     * @param supplier supplies instances of the graph entity.
      * @return a new graph entity syncing descriptor.
      */
-    @Contract(value = "_ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofNoOp(@NotNull Supplier<G> supplier) {
-        return new GraphEntitySyncing<G>(GraphEntityPacketEncoder.noOp(), buf -> supplier.get());
+    @Contract(value = "_, _ -> new", pure = true)
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofNoOp(@NotNull GraphEntityType<G> type,
+                                                                                   @NotNull Supplier<G> supplier) {
+        return new GraphEntitySyncing<G>(type, CodextraStreams.unit(supplier));
     }
 }

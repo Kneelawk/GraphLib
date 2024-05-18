@@ -45,7 +45,7 @@ public class GraphLibDebugRenderFabricMod implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTING.register(server -> GLDebugNet.onServerStart());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> GLDebugNet.onServerStop());
         ServerPlayConnectionEvents.DISCONNECT.register(
-            (handler, server) -> GLDebugNet.onDisconnect(handler.getPlayer().getUuid()));
+            (handler, server) -> GLDebugNet.onDisconnect(handler.getPlayer().getUUID()));
 
         GraphLibEvents.GRAPH_CREATED.register(GLDebugNet::onGraphCreated);
         GraphLibEvents.GRAPH_UPDATED.register(GLDebugNet::onGraphUpdated);

@@ -25,26 +25,28 @@
 
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
-public record DebuggingStopPayload(Identifier universeId) implements CustomPayload {
-    public static final Identifier ID = GraphLibDebugRenderImpl.id("debugging_stop");
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-    public DebuggingStopPayload(PacketByteBuf buf) {
-        this(buf.readIdentifier());
+public record DebuggingStopPayload(ResourceLocation universeId) implements CustomPacketPayload {
+    public static final Type<DebuggingStopPayload> ID = new Type<>(GraphLibDebugRenderImpl.id("debugging_stop"));
+    public static final StreamCodec<FriendlyByteBuf, DebuggingStopPayload> CODEC =
+        StreamCodec.ofMember(DebuggingStopPayload::write, DebuggingStopPayload::new);
+
+    public DebuggingStopPayload(FriendlyByteBuf buf) {
+        this(buf.readResourceLocation());
+    }
+
+    public void write(FriendlyByteBuf buf) {
+        buf.writeResourceLocation(universeId);
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
-        buf.writeIdentifier(universeId);
-    }
-
-    @Override
-    public Identifier id() {
+    public Type<?> type() {
         return ID;
     }
 }

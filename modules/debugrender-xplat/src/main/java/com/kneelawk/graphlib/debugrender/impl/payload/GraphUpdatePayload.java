@@ -25,30 +25,31 @@
 
 package com.kneelawk.graphlib.debugrender.impl.payload;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
-public record GraphUpdatePayload(PayloadHeader header, PayloadGraph graph) implements CustomPayload {
-    public static final Identifier ID = GraphLibDebugRenderImpl.id("graph_update");
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-    public static GraphUpdatePayload decode(PacketByteBuf buf) {
+public record GraphUpdatePayload(PayloadHeader header, PayloadGraph graph) implements CustomPacketPayload {
+    public static final Type<GraphUpdatePayload> ID = new Type<>(GraphLibDebugRenderImpl.id("graph_update"));
+    public static final StreamCodec<FriendlyByteBuf, GraphUpdatePayload> CODEC =
+        StreamCodec.ofMember(GraphUpdatePayload::write, GraphUpdatePayload::decode);
+
+    public static GraphUpdatePayload decode(FriendlyByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
         PayloadGraph graph = PayloadGraph.decode(buf);
 
         return new GraphUpdatePayload(header, graph);
     }
 
-    @Override
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         header.write(buf);
         graph.write(buf);
     }
 
     @Override
-    public Identifier id() {
+    public Type<?> type() {
         return ID;
     }
 }

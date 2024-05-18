@@ -5,10 +5,10 @@ import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
@@ -29,35 +29,40 @@ public interface LinkHolder<K extends LinkKey> {
      *
      * @return the world of blocks that this link is associated with.
      */
-    @NotNull World getBlockWorld();
+    @NotNull
+    Level getBlockWorld();
 
     /**
      * Gets the world of graphs that this link is associated with.
      *
      * @return the world of graphs that this link is associated with.
      */
-    @NotNull GraphView getGraphWorld();
+    @NotNull
+    GraphView getGraphWorld();
 
     /**
      * Gets the first node in this connection.
      *
      * @return the first node in this connection.
      */
-    @NotNull NodeHolder<BlockNode> getFirst();
+    @NotNull
+    NodeHolder<BlockNode> getFirst();
 
     /**
      * Gets the second node in this connection.
      *
      * @return the second node in this connection.
      */
-    @NotNull NodeHolder<BlockNode> getSecond();
+    @NotNull
+    NodeHolder<BlockNode> getSecond();
 
     /**
      * Gets the key of this link.
      *
      * @return the key of this link.
      */
-    @NotNull K getKey();
+    @NotNull
+    K getKey();
 
     /**
      * Checks whether either node is the given node.

@@ -46,5 +46,6 @@ public interface LinkKeyPacketDecoder {
      * @return a newly decoded link key.
      * @throws InvalidInputDataException if no link key could be decoded.
      */
-    @NotNull LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
+    @NotNull
+    LinkKey decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx ctx) throws InvalidInputDataException;
 }

@@ -27,45 +27,39 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import java.util.List;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.level.ChunkPos;
 
-import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.knet.api.channel.NetPayload;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.codextra.api.util.FunctionUtils;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.knet.api.util.NetBufs;
+import com.kneelawk.knet.api.util.NetCodecs;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
-public record ChunkDataPayload(PayloadHeader header, ChunkPos chunkPos, List<PayloadGraph> graphs)
-    implements NetPayload {
-    public static ChunkDataPayload decode(NetByteBuf buf) {
-        PayloadHeader header = PayloadHeader.decode(buf);
-        ChunkPos chunkPos = new ChunkPos(buf.readVarInt(), buf.readVarInt());
+import static com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl.id;
 
-        int graphCount = buf.readVarUnsignedInt();
-        List<PayloadGraph> graphs = new ObjectArrayList<>(graphCount);
-        for (int i = 0; i < graphCount; i++) {
-            graphs.add(PayloadGraph.decode(buf));
-        }
+public record ChunkDataPayload(KNetSyncedUniverse universe, ChunkPos chunkPos, List<PayloadGraph> graphs)
+    implements CustomPacketPayload {
+    public static final Type<ChunkDataPayload> ID = new Type<>(id("chunk_data"));
+    public static final StreamCodec<NetRegistryByteBuf, ChunkDataPayload> CODEC = StreamCodec.composite(
+            KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+            NetCodecs.CHUNK_POS.mapStream(NetBufs::netOf), ChunkDataPayload::chunkPos,
+            PayloadGraph.CODEC.apply(ByteBufCodecs.list()), ChunkDataPayload::graphs,
+            ChunkDataPayload::new
+        ).apply(KNetSyncedUniverse.readAttachingOp(ChunkDataPayload::universe))
+        .apply(GraphLibSyncingKNet::registryAttachPalette);
 
-        return new ChunkDataPayload(header, chunkPos, graphs);
+    public void discard() {
+        graphs.forEach(graph -> graph.discard());
     }
 
     @Override
-    public void write(NetByteBuf buf) {
-        header.encode(buf);
-
-        buf.writeVarInt(chunkPos.x);
-        buf.writeVarInt(chunkPos.z);
-
-        buf.writeVarUnsignedInt(graphs.size());
-        for (PayloadGraph graph : graphs) {
-            graph.encode(buf);
-        }
-    }
-
-    @Override
-    public Identifier id() {
-        return KNetChannels.CHUNK_DATA.getId();
+    public @NotNull Type<?> type() {
+        return ID;
     }
 }

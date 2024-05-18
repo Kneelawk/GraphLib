@@ -1,10 +1,10 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 
@@ -12,6 +12,26 @@ import com.kneelawk.graphlib.api.graph.NodeEntityContext;
  * Mutable data associated with a block node, similar to a BlockEntity.
  */
 public interface NodeEntity {
+    /**
+     * {@link NodeEntity} map codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * This uses the {@code entityType} and {@code entity} map keys.
+     */
+    MapCodec<NodeEntity> MAP_CODEC = NodeEntityType.REF_CODEC.dispatchMap("entityType", NodeEntity::getType,
+        type -> Codextra.unitHandlingFieldOf("entity", type.getCodec()));
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the map codec.
+     */
+    static MapCodec<NodeEntity> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
     /**
      * Called when this node entity is initialized in a graph, to give this its context.
      *
@@ -24,7 +44,8 @@ public interface NodeEntity {
      *
      * @return this node entity's context.
      */
-    @NotNull NodeEntityContext getContext();
+    @NotNull
+    NodeEntityContext getContext();
 
     /**
      * Get this node entity's type id.
@@ -34,14 +55,8 @@ public interface NodeEntity {
      *
      * @return this node entity's type id.
      */
-    @NotNull NodeEntityType getType();
-
-    /**
-     * Encodes this node entity as an NBT tag.
-     *
-     * @return this node entity as an NBT tag.
-     */
-    @Nullable NbtElement toTag();
+    @NotNull
+    NodeEntityType getType();
 
     /**
      * Called after this node entity has been initialized if it was just newly added instead of just being loaded.

@@ -12,5 +12,6 @@ public interface GraphEntityFactory {
      *
      * @return a newly created graph entity.
      */
-    @NotNull GraphEntity<?> createNew();
+    @NotNull
+    GraphEntity<?> createNew();
 }

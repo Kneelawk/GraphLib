@@ -33,8 +33,8 @@ import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
@@ -47,25 +47,26 @@ import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.NodePos;
 
 public interface BlockGraphImpl extends BlockGraph {
-    @NotNull NbtCompound toTag();
-
     void initializeGraphEntities(List<GraphEntity<?>> newGraphEntities);
 
     LongSet getChunksImpl();
 
-    @NotNull NodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
-                                           @Nullable NodeEntity entity, boolean newlyAdded);
+    @NotNull
+    NodeHolder<BlockNode> createNode(@NotNull BlockPos blockPos, @NotNull BlockNode node,
+                                     @Nullable NodeEntity entity, boolean newlyAdded);
 
     void destroyNode(@NotNull NodeHolder<BlockNode> holder, boolean doSplit);
 
-    @NotNull LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
-                                      @Nullable LinkEntity entity, boolean newlyAdded);
+    @NotNull
+    LinkHolder<LinkKey> link(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key,
+                             @Nullable LinkEntity entity, boolean newlyAdded);
 
     boolean unlink(@NotNull NodeHolder<BlockNode> a, @NotNull NodeHolder<BlockNode> b, LinkKey key);
 
     void merge(@NotNull BlockGraphImpl other);
 
-    @NotNull List<? extends BlockGraphImpl> split();
+    @NotNull
+    List<? extends BlockGraphImpl> split();
 
     void splitInto(BlockGraphImpl into, Collection<NodePos> nodes);
 

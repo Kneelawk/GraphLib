@@ -25,9 +25,19 @@
 
 package com.kneelawk.graphlib.syncing.knet.api.graph;
 
+import java.util.Map;
+import java.util.function.Function;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import io.netty.handler.codec.DecoderException;
+
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+
+import com.kneelawk.codextra.api.attach.AttachmentKey;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
@@ -36,19 +46,69 @@ import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
+import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.graphlib.syncing.knet.impl.graph.simple.SimpleKNetSyncedUniverseBuilder;
 
 /**
  * KNet-based universe synchronization.
  */
 public interface KNetSyncedUniverse extends SyncedUniverse {
+    /**
+     * Attachment key for the current synced universe.
+     */
+    AttachmentKey<KNetSyncedUniverse> ATTACHMENT_KEY = AttachmentKey.ofStaticFieldName();
+
+    /**
+     * Codec for referencing a specific {@link KNetSyncedUniverse}.
+     */
+    StreamCodec<FriendlyByteBuf, KNetSyncedUniverse> REF_CODEC = StreamCodecHelper.PALETTED_ID_CODEC.map(id -> {
+        if (!GraphLibSyncing.syncingEnabled(id))
+            throw new DecoderException("There is no synced universe called '" + id + "'");
+        return GraphLibSyncingKNet.getUniverse(id);
+    }, KNetSyncedUniverse::getId);
+
+    /**
+     * Creates a {@link StreamCodec} that wraps the given codec and attaches a universe read from the stream.
+     * <p>
+     * This provides both the {@link #ATTACHMENT_KEY} and {@link GraphUniverse#ATTACHMENT_KEY} attachments.
+     *
+     * @param wrappedCodec the codec to wrap and provide the universe attachment to.
+     * @param getter       the function to get the universe from the wrapped type.
+     * @param <B>          the buffer type.
+     * @param <V>          the result type.
+     * @return the created stream codec.
+     */
+    static <B extends FriendlyByteBuf, V> StreamCodec<B, V> readAttachingCodec(StreamCodec<? super B, V> wrappedCodec,
+                                                                               Function<? super V, ? extends KNetSyncedUniverse> getter) {
+        return AttachmentKey.readAttachingStreamCodec(REF_CODEC,
+            universe -> Map.of(ATTACHMENT_KEY, universe, GraphUniverse.ATTACHMENT_KEY, universe.getUniverse()),
+            wrappedCodec, getter);
+    }
+
+    /**
+     * Creates a {@link StreamCodec.CodecOperation} that attaches a universe read from the stream.
+     * <p>
+     * This provides both the {@link #ATTACHMENT_KEY} and {@link GraphUniverse#ATTACHMENT_KEY} attachments.
+     *
+     * @param getter the function to get the universe from the wrapped type.
+     * @param <B>    the buffer type.
+     * @param <V>    the result type.
+     * @return the created codec operation.
+     */
+    static <B extends FriendlyByteBuf, V> StreamCodec.CodecOperation<B, V, V> readAttachingOp(
+        Function<? super V, ? extends KNetSyncedUniverse> getter) {
+        return streamCodec -> readAttachingCodec(streamCodec, getter);
+    }
+
     /**
      * Registers an encoder and decoder for the given block node type.
      *
@@ -58,20 +118,13 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodeSyncing syncing);
 
     /**
-     * Gets whether the given block node type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of block node to check.
-     * @return {@code true} if this universe contains syncing for the given block node type.
-     */
-    boolean hasNodeSyncing(@NotNull BlockNodeType type);
-
-    /**
      * Gets the encoder and decoder for the given block node type.
      *
      * @param type the type of block node to get the syncing for.
      * @return the syncing for the given block node type.
      */
-    @NotNull BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type);
+    @Nullable
+    BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type);
 
     /**
      * Registers an encoder and decoder for the given node entity type.
@@ -82,20 +135,13 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntitySyncing syncing);
 
     /**
-     * Gets whether the given node entity type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of node entity to check.
-     * @return {@code true} if this universe contains syncing for the given node entity type.
-     */
-    boolean hasNodeEntitySyncing(@NotNull NodeEntityType type);
-
-    /**
      * Gets the encoder and decoder for the given node entity type.
      *
      * @param type the type of node entity to get the syncing for.
      * @return the syncing for the given node entity type.
      */
-    @NotNull NodeEntitySyncing getNodeEntitySyncing(@NotNull NodeEntityType type);
+    @Nullable
+    NodeEntitySyncing getNodeEntitySyncing(@NotNull NodeEntityType type);
 
     /**
      * Registers an encoder and decoder for the given link key type.
@@ -106,20 +152,13 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeySyncing syncing);
 
     /**
-     * Gets whether the given link key type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of link key to check.
-     * @return {@code true} if this universe contains syncing for the given link key type.
-     */
-    boolean hasLinkKeySyncing(@NotNull LinkKeyType type);
-
-    /**
      * Gets the encoder and decoder for the given link key type.
      *
      * @param type the type of link key to get the syncing for.
      * @return the syncing for the given link key type.
      */
-    @NotNull LinkKeySyncing getLinkKeySyncing(@NotNull LinkKeyType type);
+    @Nullable
+    LinkKeySyncing getLinkKeySyncing(@NotNull LinkKeyType type);
 
     /**
      * Registers an encoder and decoder for the given link entity type.
@@ -130,20 +169,13 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntitySyncing syncing);
 
     /**
-     * Gets whether the given link entity type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of link entity to check.
-     * @return {@code true} if this universe contains syncing for the given link entity type.
-     */
-    boolean hasLinkEntitySyncing(@NotNull LinkEntityType type);
-
-    /**
      * Gets the encoder and decoder for the given link entity type.
      *
      * @param type the type of link entity to get the syncing for.
      * @return the syncing for the given link entity type.
      */
-    @NotNull LinkEntitySyncing getLinkEntitySyncing(@NotNull LinkEntityType type);
+    @Nullable
+    LinkEntitySyncing getLinkEntitySyncing(@NotNull LinkEntityType type);
 
     /**
      * Registers an encoder and decoder for the given graph entity type.
@@ -156,21 +188,13 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
                                                           @NotNull GraphEntitySyncing<G> syncing);
 
     /**
-     * Gets whether the given graph entity type has had encoders and decoders registered with this universe.
-     *
-     * @param type the type of graph entity to check.
-     * @return {@code true} if this universe contains syncing for the given graph entity type.
-     */
-    boolean hasGraphEntitySyncing(@NotNull GraphEntityType<?> type);
-
-    /**
      * Gets the encoder and decoder for the given graph entity type.
      *
      * @param type the type of graph entity to get the syncing for.
      * @param <G>  the type of graph entity to get the syncing for.
      * @return the syncing for the given graph entity type.
      */
-    <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> getGraphEntitySyncing(@NotNull GraphEntityType<G> type);
+    <G extends GraphEntity<G>> @Nullable GraphEntitySyncing<G> getGraphEntitySyncing(@NotNull GraphEntityType<G> type);
 
     /**
      * Creates a new SyncedUniverse builder.
@@ -195,7 +219,8 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
          * @param universe the universe that this synchronization handler is to synchronize.
          * @return a new universe synchronization handler.
          */
-        @NotNull KNetSyncedUniverse build(@NotNull GraphUniverse universe);
+        @NotNull
+        KNetSyncedUniverse build(@NotNull GraphUniverse universe);
 
         /**
          * Sets whether this graph universe should be synchronized to the client.
@@ -207,6 +232,7 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
          * @param profile a profile describing whether and how this graph universe should be synchronized to the client.
          * @return this builder for call chaining.
          */
-        @NotNull Builder synchronizeToClient(@NotNull SyncProfile profile);
+        @NotNull
+        Builder synchronizeToClient(@NotNull SyncProfile profile);
     }
 }

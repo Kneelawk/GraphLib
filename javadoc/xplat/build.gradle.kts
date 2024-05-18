@@ -24,65 +24,32 @@
  */
 
 plugins {
-    id("architectury-plugin")
-    id("dev.architectury.loom")
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
 }
 
 evaluationDependsOn(":core-xplat")
 evaluationDependsOn(":debugrender-xplat")
 evaluationDependsOn(":syncing-core-xplat")
 
+submodule {
+    applyFabricLoaderDependency()
+    setupJavadoc()
+}
+
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("xplat") })
 
-architectury {
-    val enabled_platforms: String by project
-    common(enabled_platforms.split(','))
-}
-
-repositories {
-    mavenCentral()
-    maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
-    maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
-    maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
-    maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
-
-    mavenLocal()
-}
-
 dependencies {
-    val minecraft_version: String by project
-    minecraft("com.mojang:minecraft:$minecraft_version")
-    val quilt_mappings: String by project
-    mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:intermediary-v2")
-
-    // Fabric Loader
-    val fabric_loader_version: String by project
-    modCompileOnly("net.fabricmc:fabric-loader:$fabric_loader_version")
-    
     // modules
     compileOnly(project(":core-xplat", configuration = "namedElements"))
     compileOnly(project(":debugrender-xplat", configuration = "namedElements"))
     compileOnly(project(":syncing-core-xplat", configuration = "namedElements"))
+    compileOnly(project(":syncing-knet-xplat", configuration = "namedElements"))
 }
 
 tasks.javadoc {
     source(project(":core-xplat").sourceSets.main.get().allJava)
     source(project(":debugrender-xplat").sourceSets.main.get().allJava)
     source(project(":syncing-core-xplat").sourceSets.main.get().allJava)
-
-    exclude("com/kneelawk/graphlib/impl")
-    exclude("com/kneelawk/graphlib/debugrender/impl")
-    exclude("com/kneelawk/graphlib/syncing/impl")
-
-//        val minecraft_version: String by project
-//        val quilt_mappings: String by project
-    val jetbrains_annotations_version: String by project
-//        val lns_version: String by project
-    (options as? StandardJavadocDocletOptions)?.links = listOf(
-//            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
-        "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/",
-//            "https://alexiil.uk/javadoc/libnetworkstack/${lns_version}/"
-    )
-
-    options.optionFiles(rootProject.file("javadoc-options.txt"))
+    source(project(":syncing-knet-xplat").sourceSets.main.get().allJava)
 }

@@ -27,16 +27,14 @@ package com.kneelawk.multiblocklamps.fabric;
 
 import java.util.function.Supplier;
 
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.multiblocklamps.MLPlatform;
 
 import static com.kneelawk.multiblocklamps.MultiblockLamps.id;
@@ -45,11 +43,11 @@ public class MLPlatformImpl implements MLPlatform {
     @Override
     public <T extends Block> Supplier<T> registerBlockWithItem(String path, Supplier<T> creator,
                                                                MapCodec<? extends Block> codec) {
-        Identifier id = id(path);
+        ResourceLocation id = id(path);
         T block = creator.get();
-        MultiblockLampsFabric.BLOCKS.add(new Pair<>(id, block));
-        MultiblockLampsFabric.ITEMS.add(new Pair<>(id, new BlockItem(block, new FabricItemSettings())));
-        MultiblockLampsFabric.BLOCK_TYPES.add(new Pair<>(id, codec));
+        MultiblockLampsFabric.BLOCKS.add(new Tuple<>(id, block));
+        MultiblockLampsFabric.ITEMS.add(new Tuple<>(id, new BlockItem(block, new Item.Properties())));
+        MultiblockLampsFabric.BLOCK_TYPES.add(new Tuple<>(id, codec));
         return () -> block;
     }
 }

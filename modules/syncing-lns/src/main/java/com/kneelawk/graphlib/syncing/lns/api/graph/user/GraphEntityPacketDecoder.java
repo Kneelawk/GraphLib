@@ -46,5 +46,6 @@ public interface GraphEntityPacketDecoder {
      * @return a new graph entity.
      * @throws InvalidInputDataException if a graph entity could not be read.
      */
-    @NotNull GraphEntity<?> decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
+    @NotNull
+    GraphEntity<?> decode(@NotNull NetByteBuf buf, @NotNull IMsgReadCtx msgCtx) throws InvalidInputDataException;
 }

@@ -3,7 +3,9 @@ package com.kneelawk.graphlib.api.util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.math.Direction;
+import com.mojang.serialization.Codec;
+
+import net.minecraft.core.Direction;
 
 /**
  * Simple {@link Direction} utilities.
@@ -27,9 +29,15 @@ public final class DirectionUtils {
                 }
             }
 
-            PERPENDICULARS[side.getId()] = array;
+            PERPENDICULARS[side.get3DDataValue()] = array;
         }
     }
+
+    /**
+     * A direction codec that uses the direction's 3D data value.
+     */
+    public static final Codec<Direction> BYTE_CODEC =
+        Codec.BYTE.xmap(Direction::from3DDataValue, dir -> (byte) dir.get3DDataValue());
 
     /**
      * Gets all the directions perpendicular to the given direction.
@@ -39,6 +47,6 @@ public final class DirectionUtils {
      */
     @Contract(pure = true)
     public static @NotNull Direction[] perpendiculars(@NotNull Direction side) {
-        return PERPENDICULARS[side.getId()];
+        return PERPENDICULARS[side.get3DDataValue()];
     }
 }

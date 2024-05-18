@@ -33,10 +33,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.block.Block;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 
 import com.kneelawk.multiblocklamps.MultiblockLamps;
 
@@ -49,7 +49,7 @@ public class MultiblockLampsNeoForge {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MultiblockLamps.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MultiblockLamps.MOD_ID);
     public static final DeferredRegister<MapCodec<? extends Block>> BLOCK_TYPES =
-        DeferredRegister.create(RegistryKeys.BLOCK_TYPE, MultiblockLamps.MOD_ID);
+        DeferredRegister.create(Registries.BLOCK_TYPE, MultiblockLamps.MOD_ID);
 
     public MultiblockLampsNeoForge(IEventBus modBus) {
         MultiblockLamps.init();
@@ -67,9 +67,9 @@ public class MultiblockLampsNeoForge {
     }
 
     public void onCreativeTab(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == ItemGroups.REDSTONE_BLOCKS) {
-            event.addStack(new ItemStack(CONNECTED_LAMP_BLOCK.get().asItem()));
-            event.addStack(new ItemStack(LAMP_CONNECTOR_BLOCK.get().asItem()));
+        if (event.getTabKey() == CreativeModeTabs.REDSTONE_BLOCKS) {
+            event.accept(new ItemStack(CONNECTED_LAMP_BLOCK.get().asItem()));
+            event.accept(new ItemStack(LAMP_CONNECTOR_BLOCK.get().asItem()));
         }
     }
 }

@@ -24,8 +24,8 @@
  */
 
 plugins {
-    id("architectury-plugin")
-    id("dev.architectury.loom")
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
 }
 
 evaluationDependsOn(":core-xplat")
@@ -35,31 +35,14 @@ evaluationDependsOn(":debugrender-neoforge")
 evaluationDependsOn(":syncing-core-xplat")
 evaluationDependsOn(":syncing-core-neoforge")
 
+submodule {
+    applyNeoforgeDependency()
+    setupJavadoc()
+}
+
 java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("neoforge") })
 
-architectury {
-    neoForge()
-}
-
-repositories {
-    mavenCentral()
-    maven("https://maven.quiltmc.org/repository/release") { name = "Quilt" }
-    maven("https://maven.neoforged.net/releases/") { name = "NeoForged" }
-    maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
-    maven("https://kneelawk.com/maven/") { name = "Kneelawk" }
-
-    mavenLocal()
-}
-
 dependencies {
-    val minecraft_version: String by project
-    minecraft("com.mojang:minecraft:$minecraft_version")
-    val quilt_mappings: String by project
-    mappings("org.quiltmc:quilt-mappings:$minecraft_version+build.$quilt_mappings:intermediary-v2")
-
-    val neoforge_version: String by project
-    neoForge("net.neoforged:neoforge:$neoforge_version")
-    
     // modules
     compileOnly(project(":core-xplat", configuration = "namedElements"))
     compileOnly(project(":core-neoforge", configuration = "namedElements"))
@@ -67,6 +50,8 @@ dependencies {
     compileOnly(project(":debugrender-neoforge", configuration = "namedElements"))
     compileOnly(project(":syncing-core-xplat", configuration = "namedElements"))
     compileOnly(project(":syncing-core-neoforge", configuration = "namedElements"))
+    compileOnly(project(":syncing-knet-xplat", configuration = "namedElements"))
+    compileOnly(project(":syncing-knet-neoforge", configuration = "namedElements"))
 
     // KModLib Overlay
     val kml_version: String by project
@@ -80,23 +65,6 @@ tasks.javadoc {
     source(project(":debugrender-neoforge").sourceSets.main.get().allJava)
     source(project(":syncing-core-xplat").sourceSets.main.get().allJava)
     source(project(":syncing-core-neoforge").sourceSets.main.get().allJava)
-
-    exclude("com/kneelawk/graphlib/impl")
-    exclude("com/kneelawk/graphlib/neoforge/impl")
-    exclude("com/kneelawk/graphlib/debugrender/impl")
-    exclude("com/kneelawk/graphlib/debugrender/neoforge/impl")
-    exclude("com/kneelawk/graphlib/syncing/impl")
-    exclude("com/kneelawk/graphlib/syncing/neoforge/impl")
-
-//        val minecraft_version: String by project
-//        val quilt_mappings: String by project
-    val jetbrains_annotations_version: String by project
-//        val lns_version: String by project
-    (options as? StandardJavadocDocletOptions)?.links = listOf(
-//            "https://maven.quiltmc.org/repository/release/org/quiltmc/quilt-mappings/$minecraft_version+build.$quilt_mappings/quilt-mappings-$minecraft_version+build.$quilt_mappings-javadoc.jar/",
-        "https://javadoc.io/doc/org.jetbrains/annotations/${jetbrains_annotations_version}/",
-//            "https://alexiil.uk/javadoc/libnetworkstack/${lns_version}/"
-    )
-
-    options.optionFiles(rootProject.file("javadoc-options.txt"))
+    source(project(":syncing-knet-xplat").sourceSets.main.get().allJava)
+    source(project(":syncing-knet-neoforge").sourceSets.main.get().allJava)
 }

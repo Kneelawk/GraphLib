@@ -30,9 +30,7 @@ import java.util.function.Supplier;
 
 import com.mojang.serialization.MapCodec;
 
-import net.minecraft.block.Block;
-
-import com.kneelawk.graphlib.api.graph.GraphUniverse;
+import net.minecraft.world.level.block.Block;
 
 public interface MLPlatform {
     MLPlatform INSTANCE = ServiceLoader.load(MLPlatform.class).findFirst()

@@ -2,7 +2,7 @@ package com.kneelawk.graphlib.api.world;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.core.SectionPos;
 
 /**
  * Creates a storage chunk that can alert its holder when it has changed.
@@ -10,7 +10,7 @@ import net.minecraft.util.math.ChunkSectionPos;
  * @param <R> the type of storage chunk this creates.
  */
 @FunctionalInterface
-public interface TrackingChunkFactory<R extends StorageChunk> {
+public interface TrackingChunkFactory<R> {
     /**
      * Create a new storage chunk.
      *
@@ -18,5 +18,6 @@ public interface TrackingChunkFactory<R extends StorageChunk> {
      * @param markDirty used to signal when the created storage chunk has changed.
      * @return the newly created storage chunk.
      */
-    @NotNull R createNew(@NotNull ChunkSectionPos pos, @NotNull Runnable markDirty);
+    @NotNull
+    R createNew(@NotNull SectionPos pos, @NotNull Runnable markDirty);
 }

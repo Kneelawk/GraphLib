@@ -3,8 +3,10 @@ package com.kneelawk.graphlib.api.graph.user;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.codextra.api.Codextra;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -14,6 +16,26 @@ import com.kneelawk.graphlib.api.util.NodePos;
  */
 public interface LinkKey {
     /**
+     * {@link LinkKey} map codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * This uses the {@code keyType} and {@code key} map keys.
+     */
+    MapCodec<LinkKey> MAP_CODEC = LinkKeyType.REF_CODEC.dispatchMap("keyType", LinkKey::getType,
+        type -> Codextra.unitHandlingFieldOf("key", type.getCodec()));
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the map codec.
+     */
+    static MapCodec<LinkKey> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
+    /**
      * Gets the type id of this link key.
      * <p>
      * Note: this is the same type id as is used in registering link key decoders,
@@ -21,14 +43,8 @@ public interface LinkKey {
      *
      * @return this link key's type id.
      */
-    @NotNull LinkKeyType getType();
-
-    /**
-     * Encodes this link key as an NBT tag.
-     *
-     * @return this link key as an NBT tag.
-     */
-    @Nullable NbtElement toTag();
+    @NotNull
+    LinkKeyType getType();
 
     /**
      * Checks whether this specific link should have a link entity associated with it.

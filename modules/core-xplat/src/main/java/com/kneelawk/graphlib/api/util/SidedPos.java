@@ -6,10 +6,11 @@ import org.jetbrains.annotations.NotNull;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 /**
  * Represents both a block-position and the side of that block-position.
@@ -26,7 +27,7 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      * @param side the side of the block-position.
      */
     public SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
-        this.pos = pos.toImmutable();
+        this.pos = pos.immutable();
         this.side = side;
     }
 
@@ -37,22 +38,22 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      *
      * @param nbt the NBT compound to write to.
      * @see #toNbt()
-     * @see #fromNbt(NbtCompound)
+     * @see #fromNbt(CompoundTag)
      */
-    public void toNbt(@NotNull NbtCompound nbt) {
+    public void toNbt(@NotNull CompoundTag nbt) {
         nbt.putIntArray("pos", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-        nbt.putByte("side", (byte) side.getId());
+        nbt.putByte("side", (byte) side.get3DDataValue());
     }
 
     /**
      * Encodes this SidedPos to an NBT compound and returns it.
      *
      * @return the encoded NBT compound.
-     * @see #toNbt(NbtCompound)
-     * @see #fromNbt(NbtCompound)
+     * @see #toNbt(CompoundTag)
+     * @see #fromNbt(CompoundTag)
      */
-    public @NotNull NbtCompound toNbt() {
-        NbtCompound nbt = new NbtCompound();
+    public @NotNull CompoundTag toNbt() {
+        CompoundTag nbt = new CompoundTag();
         toNbt(nbt);
         return nbt;
     }
@@ -61,11 +62,11 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      * Writes this SidedPos to the given PacketByteBuf.
      *
      * @param buf the buffer to write to.
-     * @see #fromPacket(PacketByteBuf)
+     * @see #fromPacket(FriendlyByteBuf)
      */
-    public void toPacket(@NotNull PacketByteBuf buf) {
+    public void toPacket(@NotNull FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
-        buf.writeByte(side.getId());
+        buf.writeByte(side.get3DDataValue());
     }
 
     /**
@@ -73,13 +74,13 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      *
      * @param nbt the NBT compound to read from.
      * @return a new SidedPos with the data read from the given NBT compound.
-     * @see #toNbt(NbtCompound)
+     * @see #toNbt(CompoundTag)
      * @see #toNbt()
      */
     @Contract("_ -> new")
-    public static @NotNull SidedPos fromNbt(@NotNull NbtCompound nbt) {
+    public static @NotNull SidedPos fromNbt(@NotNull CompoundTag nbt) {
         int[] pos = nbt.getIntArray("pos");
-        return new SidedPos(new BlockPos(pos[0], pos[1], pos[2]), Direction.byId(nbt.getByte("side")));
+        return new SidedPos(new BlockPos(pos[0], pos[1], pos[2]), Direction.from3DDataValue(nbt.getByte("side")));
     }
 
     /**
@@ -87,23 +88,33 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      *
      * @param buf the buffer to read from.
      * @return a new SidedPos with the data read from the given buffer.
-     * @see #toPacket(PacketByteBuf)
+     * @see #toPacket(FriendlyByteBuf)
      */
     @Contract("_ -> new")
-    public static @NotNull SidedPos fromPacket(@NotNull PacketByteBuf buf) {
-        return new SidedPos(buf.readBlockPos(), Direction.byId(buf.readByte()));
+    public static @NotNull SidedPos fromPacket(@NotNull FriendlyByteBuf buf) {
+        return new SidedPos(buf.readBlockPos(), Direction.from3DDataValue(buf.readByte()));
     }
 
     /**
      * Codec for encoding and decoding SidedPoses with a matching structure as produced and consumed by
-     * {@link #toNbt(NbtCompound)} and {@link #fromNbt(NbtCompound)}.
+     * {@link #toNbt(CompoundTag)} and {@link #fromNbt(CompoundTag)}.
      *
-     * @see #toNbt(NbtCompound)
+     * @see #toNbt(CompoundTag)
      * @see #toNbt()
-     * @see #fromNbt(NbtCompound)
+     * @see #fromNbt(CompoundTag)
      */
-    public static Codec<SidedPos> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<SidedPos> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         BlockPos.CODEC.fieldOf("pos").forGetter(SidedPos::pos),
-        Codec.BYTE.xmap(Direction::byId, side -> (byte) side.getId()).fieldOf("side").forGetter(SidedPos::side)
+        DirectionUtils.BYTE_CODEC.fieldOf("side").forGetter(SidedPos::side)
     ).apply(instance, SidedPos::new));
+
+    /**
+     * Stream codec for encoding and decoding {@link SidedPos}es with matching structure as produced and consumed by
+     * {@link #toPacket(FriendlyByteBuf)} and {@link #fromPacket(FriendlyByteBuf)}.
+     *
+     * @see #toPacket(FriendlyByteBuf)
+     * @see #fromPacket(FriendlyByteBuf)
+     */
+    public static final StreamCodec<FriendlyByteBuf, SidedPos> STREAM_CODEC =
+        StreamCodec.ofMember(SidedPos::toPacket, SidedPos::fromPacket);
 }

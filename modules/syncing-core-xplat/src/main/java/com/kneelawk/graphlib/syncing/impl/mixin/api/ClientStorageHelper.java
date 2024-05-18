@@ -27,16 +27,12 @@ package com.kneelawk.graphlib.syncing.impl.mixin.api;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
-import net.minecraft.client.world.ClientWorld;
-
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 
-@Environment(EnvType.CLIENT)
+import net.minecraft.client.multiplayer.ClientLevel;
+
 public class ClientStorageHelper {
-    public static @NotNull ClientGraphWorldStorage getStorage(@NotNull ClientWorld world) {
-        return ((ClientGraphWorldStorageAccess) world.getChunkManager()).graphlib_syncing_getClientGraphWorldStorage();
+    public static @NotNull ClientGraphWorldStorage getStorage(@NotNull ClientLevel world) {
+        return ((ClientGraphWorldStorageAccess) world.getChunkSource()).graphlib_syncing_getClientGraphWorldStorage();
     }
 }

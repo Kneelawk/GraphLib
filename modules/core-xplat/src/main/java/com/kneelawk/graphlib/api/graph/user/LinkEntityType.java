@@ -29,22 +29,49 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.Identifier;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 
+import net.minecraft.resources.ResourceLocation;
+
+import com.kneelawk.codextra.api.codec.CodecOrUnit;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of link entity.
  */
-public class LinkEntityType implements ObjectType {
-    private final @NotNull Identifier id;
-    private final @NotNull LinkEntityDecoder decoder;
+public final class LinkEntityType implements ObjectType {
+    /**
+     * {@link BlockNodeType} static codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final Codec<LinkEntityType> REF_CODEC =
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+            LinkEntityType type = universe.getLinkEntityType(id);
+            if (type == null) return DataResult.error(
+                () -> "Link entity type '" + id + "' does not exist in universe '" + universe.getId() + "'");
+            return DataResult.success(type);
+        }, (_universe, type) -> DataResult.success(type.getId()));
 
-    private LinkEntityType(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder) {
+    /**
+     * {@link LinkEntityType} codec getter.
+     *
+     * @param universe the universe the link entity types to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static Codec<LinkEntityType> refCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, REF_CODEC);
+    }
+
+    private final @NotNull ResourceLocation id;
+    private final @NotNull Codec<? extends LinkEntity> codec;
+
+    private LinkEntityType(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkEntity> codec) {
         this.id = id;
-        this.decoder = decoder;
+        this.codec = codec;
     }
 
     /**
@@ -53,7 +80,7 @@ public class LinkEntityType implements ObjectType {
      * @return this type's id.
      */
     @Override
-    public @NotNull Identifier getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
@@ -62,8 +89,8 @@ public class LinkEntityType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull LinkEntityDecoder getDecoder() {
-        return decoder;
+    public @NotNull Codec<? extends LinkEntity> getCodec() {
+        return codec;
     }
 
     @Override
@@ -83,21 +110,19 @@ public class LinkEntityType implements ObjectType {
 
     @Override
     public String toString() {
-        return "LinkEntityType{" +
-            "id=" + id +
-            '}';
+        return "LinkEntityType[" + id + ']';
     }
 
     /**
      * Creates a new link entity type.
      *
-     * @param id      the id of the new type.
-     * @param decoder the decoder for the new type.
+     * @param id    the id of the new type.
+     * @param codec the codec for the new type.
      * @return a new link entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull LinkEntityDecoder decoder) {
-        return new LinkEntityType(id, decoder);
+    public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkEntity> codec) {
+        return new LinkEntityType(id, codec);
     }
 
     /**
@@ -108,7 +133,7 @@ public class LinkEntityType implements ObjectType {
      * @return a new link entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkEntityType of(@NotNull Identifier id, @NotNull Supplier<LinkEntity> supplier) {
-        return new LinkEntityType(id, nbt -> supplier.get());
+    public static @NotNull LinkEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkEntity> supplier) {
+        return new LinkEntityType(id, Codec.unit(supplier));
     }
 }

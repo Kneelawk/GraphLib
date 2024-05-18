@@ -28,21 +28,25 @@ package com.kneelawk.graphlib.syncing.impl.graph;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.util.math.ChunkPos;
-
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 
+import net.minecraft.world.level.ChunkPos;
+
 public interface ClientGraphWorldImpl extends GraphView {
-    void unload(ChunkPos pos);
+    void drop(ChunkPos pos);
 
-    void setChunkMapCenter(int x, int z);
+    void updateViewCenter(int x, int z);
 
-    void updateLoadDistance(int loadDistance);
+    void updateViewRadius(int loadDistance);
 
-    @NotNull BlockGraphImpl getOrCreateGraph(long graphId);
+    void tick();
 
-    @Nullable BlockGraphImpl getGraph(long id);
+    @NotNull
+    BlockGraphImpl getOrCreateGraph(long graphId);
+
+    @Nullable
+    BlockGraphImpl getGraph(long id);
 
     boolean tryCreateGraphPillar(int chunkX, int chunkZ);
 

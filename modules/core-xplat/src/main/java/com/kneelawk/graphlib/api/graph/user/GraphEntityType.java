@@ -6,9 +6,14 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.util.Identifier;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 
+import net.minecraft.resources.ResourceLocation;
+
+import com.kneelawk.codextra.api.codec.CodecOrUnit;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
@@ -17,23 +22,59 @@ import com.kneelawk.graphlib.api.util.ObjectType;
  * @param <G> the type of graph entity this corresponds to.
  */
 public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectType {
-    private final @NotNull Identifier id;
+    /**
+     * {@link GraphEntityType} static codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final Codec<GraphEntityType<?>> REF_CODEC =
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+            GraphEntityType<?> type = universe.getGraphEntityType(id);
+            if (type == null) return DataResult.error(
+                () -> "Graph entity type '" + id + "' does not exist in universe '" + universe.getId() + "'");
+            return DataResult.success(type);
+        }, (_universe, type) -> DataResult.success(type.getId()));
+
+    /**
+     * {@link GraphEntityType} codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     *
+     * @param <G> the type of graph entity.
+     * @return the codec, but typed.
+     */
+    @SuppressWarnings("unchecked")
+    public static <G extends GraphEntity<G>> Codec<GraphEntityType<G>> refCodec() {
+        return (Codec<GraphEntityType<G>>) (Object) REF_CODEC;
+    }
+
+    /**
+     * {@link GraphEntityType} codec getter.
+     *
+     * @param universe the universe the graph entity types to decode.
+     * @param <G>      the type of graph entity.
+     * @return the codec associated with the given universe.
+     */
+    public static <G extends GraphEntity<G>> Codec<GraphEntityType<G>> refCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, refCodec());
+    }
+
+    private final @NotNull ResourceLocation id;
     private final @NotNull GraphEntityFactory factory;
-    private final @NotNull GraphEntityDecoder decoder;
+    private final @NotNull Codec<G> codec;
     private final @NotNull GraphEntitySplitter<G> splitter;
 
     /**
      * @param id       the id of the graph entity type.
+     * @param codec    a decoder for decoding graph entities of this type.
      * @param factory  a factory for creating new graph entities of this type.
-     * @param decoder  a decoder for decoding graph entities of this type.
      * @param splitter a splitter for splitting graph entities of this type apart.
      */
-    private GraphEntityType(@NotNull Identifier id, @NotNull GraphEntityFactory factory,
-                            @NotNull GraphEntityDecoder decoder,
-                            @NotNull GraphEntitySplitter<G> splitter) {
+    private GraphEntityType(@NotNull ResourceLocation id, @NotNull Codec<G> codec,
+                            @NotNull GraphEntityFactory factory, @NotNull GraphEntitySplitter<G> splitter) {
         this.id = id;
         this.factory = factory;
-        this.decoder = decoder;
+        this.codec = codec;
         this.splitter = splitter;
     }
 
@@ -43,7 +84,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @return this type's id.
      */
     @Override
-    public @NotNull Identifier getId() {return id;}
+    public @NotNull ResourceLocation getId() {return id;}
 
     /**
      * Gets this type's factory.
@@ -57,7 +98,7 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      *
      * @return this type's decoder.
      */
-    public @NotNull GraphEntityDecoder getDecoder() {return decoder;}
+    public @NotNull Codec<G> getCodec() {return codec;}
 
     /**
      * Gets this type's splitter.
@@ -112,27 +153,25 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
 
     @Override
     public String toString() {
-        return "GraphEntityType{" +
-            "id=" + id +
-            '}';
+        return "GraphEntityType[" + id + ']';
     }
 
     /**
      * Creates a new graph entity type.
      *
-     * @param id       the id of the graph entity type.
-     * @param factory  a factory for creating new graph entities of this type.
-     * @param decoder  a decoder for decoding graph entities of this type.
-     * @param splitter a splitter for splitting graph entities of this type apart.
      * @param <G>      The type of graph entity this type is for.
+     * @param id       the id of the graph entity type.
+     * @param codec    a codec for decoding/encoding graph entities of this type.
+     * @param factory  a factory for creating new graph entities of this type.
+     * @param splitter a splitter for splitting graph entities of this type apart.
      * @return a new graph entity type.
      */
     @Contract(value = "_, _, _, _ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
+    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull ResourceLocation id,
+                                                                            @NotNull Codec<G> codec,
                                                                             @NotNull GraphEntityFactory factory,
-                                                                            @NotNull GraphEntityDecoder decoder,
                                                                             @NotNull GraphEntitySplitter<G> splitter) {
-        return new GraphEntityType<>(id, factory, decoder, splitter);
+        return new GraphEntityType<>(id, codec, factory, splitter);
     }
 
     /**
@@ -144,9 +183,9 @@ public final class GraphEntityType<G extends GraphEntity<G>> implements ObjectTy
      * @return a new graph entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull Identifier id,
-                                                                            @NotNull Supplier<GraphEntity<G>> supplier) {
-        return new GraphEntityType<>(id, supplier::get, tag -> supplier.get(),
+    public static <G extends GraphEntity<G>> @NotNull GraphEntityType<G> of(@NotNull ResourceLocation id,
+                                                                            @NotNull Supplier<G> supplier) {
+        return new GraphEntityType<>(id, Codec.unit(supplier), supplier::get,
             (original, originalGraph, newGraph) -> supplier.get());
     }
 }

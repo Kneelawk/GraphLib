@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.level.ChunkPos;
 
 /**
  * An abstract tickable timer that alerts you when a chunk should unload.

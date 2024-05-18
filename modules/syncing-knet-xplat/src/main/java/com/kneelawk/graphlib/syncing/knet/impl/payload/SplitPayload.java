@@ -27,46 +27,32 @@ package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
 import java.util.List;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-import net.minecraft.util.Identifier;
+import com.kneelawk.codextra.api.util.FunctionUtils;
+import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
-import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
-import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.knet.api.channel.NetPayload;
-import com.kneelawk.knet.api.util.NetByteBuf;
-
-public record SplitPayload(PayloadHeader header, long fromId, long intoId, int[] graphEntityIds, List<NodePosSmallPayload> toMove) implements NetPayload {
-    public static SplitPayload decode(NetByteBuf buf) {
-        PayloadHeader header = PayloadHeader.decode(buf);
-        long fromId = buf.readVarUnsignedLong();
-        long intoId = buf.readVarUnsignedLong();
-        int[] graphEntityIds = PayloadUtils.readVarUnsignedIntArray(buf);
-        
-        int nodeCount = buf.readVarUnsignedInt();
-        List<NodePosSmallPayload> toMove = new ObjectArrayList<>();
-        for (int i = 0; i < nodeCount; i++) {
-            toMove.add(NodePosSmallPayload.CODEC.decoder().apply(buf));
-        }
-        
-        return new SplitPayload(header, fromId, intoId, graphEntityIds, toMove);
-    }
-
-    @Override
-    public void write(NetByteBuf buf) {
-        header.encode(buf);
-        buf.writeVarUnsignedLong(fromId);
-        buf.writeVarUnsignedLong(intoId);
-        PayloadUtils.writeVarUnsignedIntArray(graphEntityIds, buf);
-        
-        buf.writeVarUnsignedInt(toMove.size());
-        for (NodePosSmallPayload nodePos : toMove) {
-            NodePosSmallPayload.CODEC.encoder().accept(buf, nodePos);
-        }
-    }
+public record SplitPayload(KNetSyncedUniverse universe, long fromId, long intoId, List<GraphEntity<?>> graphEntities,
+                           List<NodePos> toMove) implements CustomPacketPayload {
+    public static final Type<SplitPayload> ID = new Type<>(SyncingKNetImpl.id("split"));
+    public static final StreamCodec<NetRegistryByteBuf, SplitPayload> CODEC = StreamCodec.composite(
+        KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+        ByteBufCodecs.VAR_LONG, SplitPayload::fromId,
+        ByteBufCodecs.VAR_LONG, SplitPayload::intoId,
+        GraphLibSyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), SplitPayload::graphEntities,
+        GraphLibSyncingKNet.NODE_POS_CODEC.apply(ByteBufCodecs.list()), SplitPayload::toMove,
+        SplitPayload::new
+    ).apply(KNetSyncedUniverse.readAttachingOp(SplitPayload::universe));
 
     @Override
-    public Identifier id() {
-        return KNetChannels.SPLIT.getId();
+    public Type<?> type() {
+        return ID;
     }
 }

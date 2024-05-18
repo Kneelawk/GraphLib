@@ -28,13 +28,13 @@ package com.kneelawk.graphlib.syncing.knet.impl.graph.simple;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphView;
@@ -66,7 +66,7 @@ import com.kneelawk.graphlib.syncing.knet.impl.KNetEncoding;
 import com.kneelawk.graphlib.syncing.knet.impl.graph.KNetWorldListener;
 
 public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUniverseImpl {
-    private final Identifier id;
+    private final ResourceLocation id;
     private final GraphUniverse universe;
     private final SyncProfile syncProfile;
 
@@ -89,7 +89,7 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public @NotNull Identifier getId() {
+    public @NotNull ResourceLocation getId() {
         return id;
     }
 
@@ -99,7 +99,7 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public @Nullable GraphView getSidedGraphView(@NotNull World world) {
+    public @Nullable GraphView getSidedGraphView(@NotNull Level world) {
         GraphWorldStorage storage = CommonProxy.INSTANCE.getSidedStorage(world);
         if (storage == null) return null;
 
@@ -122,16 +122,8 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public boolean hasNodeSyncing(@NotNull BlockNodeType type) {
-        return nodeSyncing.containsKey(type);
-    }
-
-    @Override
-    public @NotNull BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type) {
-        BlockNodeSyncing syncing = nodeSyncing.get(type);
-        if (syncing == null)
-            throw new IllegalStateException("Attempting to sync unregistered node type: " + type.getId());
-        return syncing;
+    public @Nullable BlockNodeSyncing getNodeSyncing(@NotNull BlockNodeType type) {
+        return nodeSyncing.get(type);
     }
 
     @Override
@@ -140,16 +132,8 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public boolean hasNodeEntitySyncing(@NotNull NodeEntityType type) {
-        return nodeEntitySyncing.containsKey(type);
-    }
-
-    @Override
-    public @NotNull NodeEntitySyncing getNodeEntitySyncing(@NotNull NodeEntityType type) {
-        NodeEntitySyncing syncing = nodeEntitySyncing.get(type);
-        if (syncing == null)
-            throw new IllegalStateException("Attempting to sync unregistered node entity type: " + type.getId());
-        return syncing;
+    public @Nullable NodeEntitySyncing getNodeEntitySyncing(@NotNull NodeEntityType type) {
+        return nodeEntitySyncing.get(type);
     }
 
     @Override
@@ -158,16 +142,8 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public boolean hasLinkKeySyncing(@NotNull LinkKeyType type) {
-        return linkKeySyncing.containsKey(type);
-    }
-
-    @Override
-    public @NotNull LinkKeySyncing getLinkKeySyncing(@NotNull LinkKeyType type) {
-        LinkKeySyncing syncing = linkKeySyncing.get(type);
-        if (syncing == null)
-            throw new IllegalStateException("Attempting to sync unregistered link key type: " + type.getId());
-        return syncing;
+    public @Nullable LinkKeySyncing getLinkKeySyncing(@NotNull LinkKeyType type) {
+        return linkKeySyncing.get(type);
     }
 
     @Override
@@ -176,16 +152,8 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public boolean hasLinkEntitySyncing(@NotNull LinkEntityType type) {
-        return linkEntitySyncing.containsKey(type);
-    }
-
-    @Override
-    public @NotNull LinkEntitySyncing getLinkEntitySyncing(@NotNull LinkEntityType type) {
-        LinkEntitySyncing syncing = linkEntitySyncing.get(type);
-        if (syncing == null)
-            throw new IllegalStateException("Attempting to sync unregistered link entity type: " + type.getId());
-        return syncing;
+    public @Nullable LinkEntitySyncing getLinkEntitySyncing(@NotNull LinkEntityType type) {
+        return linkEntitySyncing.get(type);
     }
 
     @Override
@@ -195,18 +163,10 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public boolean hasGraphEntitySyncing(@NotNull GraphEntityType<?> type) {
-        return graphEntitySyncing.containsKey(type);
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
-    public @NotNull <G extends GraphEntity<G>> GraphEntitySyncing<G> getGraphEntitySyncing(
+    public @Nullable <G extends GraphEntity<G>> GraphEntitySyncing<G> getGraphEntitySyncing(
         @NotNull GraphEntityType<G> type) {
-        GraphEntitySyncing<G> syncing = (GraphEntitySyncing<G>) graphEntitySyncing.get(type);
-        if (syncing == null)
-            throw new IllegalStateException("Attempting to sync unregistered graph entity type: " + type.getId());
-        return syncing;
+        return (GraphEntitySyncing<G>) graphEntitySyncing.get(type);
     }
 
     @Override
@@ -225,12 +185,12 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
     }
 
     @Override
-    public ClientGraphWorldImpl createClientGraphWorld(World world, int loadDistance) {
+    public ClientGraphWorldImpl createClientGraphWorld(Level world, int loadDistance) {
         return new SimpleClientGraphWorld(this, world, loadDistance);
     }
 
     @Override
-    public void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayerEntity player, ChunkPos pos) {
+    public void sendChunkDataPacket(ServerGraphWorldImpl world, ServerPlayer player, ChunkPos pos) {
         KNetEncoding.sendChunkData(world, player, pos);
     }
 }

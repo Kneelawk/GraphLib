@@ -5,8 +5,9 @@ import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -28,23 +29,35 @@ import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
  */
 public interface BlockNode {
     /**
-     * Gets this block node's type ID, associated with its decoder.
+     * {@link BlockNode} map codec.
      * <p>
-     * A block node's {@link BlockNodeDecoder} must always be registered with
-     * {@link GraphUniverse#addNodeType(BlockNodeType)} under the same ID as returned here.
-     *
-     * @return the id of this block node.
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * This uses the {@code type} and {@code node} map keys.
      */
-    @NotNull BlockNodeType getType();
+    MapCodec<BlockNode> MAP_CODEC = BlockNodeType.REF_CODEC.dispatchMap(BlockNode::getType,
+        type -> Codextra.unitHandlingFieldOf("node", type.getCodec()));
 
     /**
-     * Encodes this block node's data to an NBT element.
-     * <p>
-     * This can return null if this block node's type is all the data that needs to be stored.
+     * {@link #MAP_CODEC} with universe attached.
      *
-     * @return a (possibly null) NBT element describing this block node's data.
+     * @param universe the universe to attach.
+     * @return the map codec.
      */
-    @Nullable NbtElement toTag();
+    static MapCodec<BlockNode> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
+    /**
+     * Gets this block node's type.
+     * <p>
+     * A block node's {@link BlockNodeType} must always be registered with
+     * {@link GraphUniverse#addNodeType(BlockNodeType)} under the same ID as returned here.
+     *
+     * @return the type of this block node.
+     */
+    @NotNull
+    BlockNodeType getType();
 
     /**
      * Checks if this block node should be automatically removed.
@@ -94,7 +107,8 @@ public interface BlockNode {
      * @return all nodes this node can connect to.
      * @see WireConnectionDiscoverers
      */
-    @NotNull Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self);
+    @NotNull
+    Collection<HalfLink> findConnections(@NotNull NodeHolder<BlockNode> self);
 
     /**
      * Determines whether this node can connect to another node.

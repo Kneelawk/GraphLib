@@ -25,12 +25,12 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 public class SyncingKNetImpl {
     public static final String MOD_ID = "graphlib_syncing_knet";
 
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 }

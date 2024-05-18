@@ -27,7 +27,7 @@ package com.kneelawk.graphlib.syncing.knet.neoforge.impl;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
 import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
@@ -39,7 +39,7 @@ public class GraphLibSyncingKNetNeoforgeMod {
         modBus.addListener(this::onRegisterPayloadHandlers);
     }
 
-    private void onRegisterPayloadHandlers(RegisterPayloadHandlerEvent event) {
+    private void onRegisterPayloadHandlers(RegisterPayloadHandlersEvent event) {
         KNetChannels.register(new KNetRegistrarNeoForge(event.registrar(SyncingKNetImpl.MOD_ID)));
     }
 }

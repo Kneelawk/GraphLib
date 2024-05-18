@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "graphlib_syncing_knet",
+  "version": "${version}",
+  "name": "Graph Lib Syncing KNet",
+  "description": "KNet-based graph syncing.",
+  "authors": [
+    "Kneelawk"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Kneelawk/GraphLib",
+    "issues": "https://github.com/Kneelawk/GraphLib/issues",
+    "sources": "https://github.com/Kneelawk/GraphLib"
+  },
+  "license": "MIT",
+  "icon": "assets/graphlib_syncing_knet/icon-128.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "value": "com.kneelawk.graphlib.syncing.knet.fabric.impl.GraphLibSyncingKNetFabricMod"
+      }
+    ]
+  },
+  "mixins": [ ],
+  "depends": {
+    "graphlib": "*",
+    "graphlib_syncing": "*",
+    "fabricloader": ">=0.15.10",
+    "fabric-api": "*",
+    "minecraft": ">=1.20.6 <1.21-",
+    "java": ">=21"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [ "library" ],
+      "parent": "graphlib"
+    }
+  }
+}

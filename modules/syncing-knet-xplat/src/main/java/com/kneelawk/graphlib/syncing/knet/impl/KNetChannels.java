@@ -33,7 +33,7 @@ import com.kneelawk.graphlib.syncing.knet.impl.payload.NodeRemovePayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.SplitPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.UnlinkPayload;
 import com.kneelawk.knet.api.KNetRegistrar;
-import com.kneelawk.knet.api.channel.NoContextChannel;
+import com.kneelawk.knet.api.channel.NoContextPlayChannel;
 
 public final class KNetChannels {
     private KNetChannels() {}
@@ -48,30 +48,30 @@ public final class KNetChannels {
         registrar.register(NODE_REMOVE);
     }
 
-    public static final NoContextChannel<ChunkDataPayload> CHUNK_DATA =
-        new NoContextChannel<>(SyncingKNetImpl.id("chunk_data"), ChunkDataPayload::decode).recvClient(
+    public static final NoContextPlayChannel<ChunkDataPayload> CHUNK_DATA =
+        NoContextPlayChannel.ofRegistryCodec(ChunkDataPayload.ID, ChunkDataPayload.CODEC).recvClient(
             KNetDecoding::receiveChunkDataPacket);
 
-    public static final NoContextChannel<NodeAddPayload> NODE_ADD =
-        new NoContextChannel<>(SyncingKNetImpl.id("node_add"), NodeAddPayload::decode).recvClient(
+    public static final NoContextPlayChannel<NodeAddPayload> NODE_ADD =
+        NoContextPlayChannel.ofRegistryCodec(NodeAddPayload.ID, NodeAddPayload.CODEC).recvClient(
             KNetDecoding::receiveNodeAdd);
 
-    public static final NoContextChannel<MergePayload> MERGE =
-        new NoContextChannel<>(SyncingKNetImpl.id("merge"), MergePayload::decode).recvClient(
+    public static final NoContextPlayChannel<MergePayload> MERGE =
+        NoContextPlayChannel.ofRegistryCodec(MergePayload.ID, MergePayload.CODEC).recvClient(
             KNetDecoding::receiveMerge);
 
-    public static final NoContextChannel<LinkPayload> LINK =
-        new NoContextChannel<>(SyncingKNetImpl.id("link"), LinkPayload::decode).recvClient(KNetDecoding::receiveLink);
+    public static final NoContextPlayChannel<LinkPayload> LINK =
+        NoContextPlayChannel.ofRegistryCodec(LinkPayload.ID, LinkPayload.CODEC).recvClient(KNetDecoding::receiveLink);
 
-    public static final NoContextChannel<UnlinkPayload> UNLINK =
-        new NoContextChannel<>(SyncingKNetImpl.id("unlink"), UnlinkPayload::decode).recvClient(
+    public static final NoContextPlayChannel<UnlinkPayload> UNLINK =
+        NoContextPlayChannel.ofRegistryCodec(UnlinkPayload.ID, UnlinkPayload.CODEC).recvClient(
             KNetDecoding::receiveUnlink);
 
-    public static final NoContextChannel<SplitPayload> SPLIT =
-        new NoContextChannel<>(SyncingKNetImpl.id("split"), SplitPayload::decode).recvClient(
+    public static final NoContextPlayChannel<SplitPayload> SPLIT =
+        NoContextPlayChannel.ofRegistryCodec(SplitPayload.ID, SplitPayload.CODEC).recvClient(
             KNetDecoding::receiveSplit);
 
-    public static final NoContextChannel<NodeRemovePayload> NODE_REMOVE =
-        new NoContextChannel<>(SyncingKNetImpl.id("node_remove"), NodeRemovePayload::decode).recvClient(
+    public static final NoContextPlayChannel<NodeRemovePayload> NODE_REMOVE =
+        NoContextPlayChannel.ofRegistryCodec(NodeRemovePayload.ID, NodeRemovePayload.CODEC).recvClient(
             KNetDecoding::receiveNodeRemove);
 }

@@ -30,8 +30,8 @@ import net.fabricmc.fabric.api.event.EventFactory;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.Identifier;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.resources.ResourceLocation;
 
 public class InternalEvents {
     public static final Event<AddUniverseSubcommands> ADD_UNIVERSE_SUBCOMMANDS = EventFactory.createArrayBacked(
@@ -42,6 +42,6 @@ public class InternalEvents {
         });
 
     public interface AddUniverseSubcommands {
-        void addUniverseSubcommands(RequiredArgumentBuilder<ServerCommandSource, Identifier> universe);
+        void addUniverseSubcommands(RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe);
     }
 }

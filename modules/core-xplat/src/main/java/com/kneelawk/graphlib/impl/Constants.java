@@ -3,8 +3,8 @@ package com.kneelawk.graphlib.impl;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public final class Constants {
     private Constants() {
@@ -19,17 +19,17 @@ public final class Constants {
     public static final String UNIVERSE_MODIFY_INITIALIZER = MOD_ID + ":universe_modify";
 
     @Contract(value = "_ -> new", pure = true)
-    public static @NotNull Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    public static @NotNull ResourceLocation id(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 
     @Contract(value = "_, _, _ -> new", pure = true)
-    public static @NotNull Text tt(String prefix, String suffix, Object... args) {
-        return Text.translatable(prefix + "." + MOD_ID + "." + suffix, args);
+    public static @NotNull Component tt(String prefix, String suffix, Object... args) {
+        return Component.translatable(prefix + "." + MOD_ID + "." + suffix, args);
     }
 
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull Text command(String suffix, Object... args) {
+    public static @NotNull Component command(String suffix, Object... args) {
         return tt("command", suffix, args);
     }
 

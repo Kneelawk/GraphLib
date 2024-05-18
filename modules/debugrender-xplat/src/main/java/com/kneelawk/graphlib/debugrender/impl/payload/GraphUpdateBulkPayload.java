@@ -27,18 +27,20 @@ package com.kneelawk.graphlib.debugrender.impl.payload;
 
 import java.util.List;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.payload.CustomPayload;
-import net.minecraft.util.Identifier;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
 
-public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> graphs) implements CustomPayload {
-    public static final Identifier ID = GraphLibDebugRenderImpl.id("graph_update_bulk");
+public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> graphs) implements CustomPacketPayload {
+    public static final Type<GraphUpdateBulkPayload> ID = new Type<>(GraphLibDebugRenderImpl.id("graph_update_bulk"));
+    public static final StreamCodec<FriendlyByteBuf, GraphUpdateBulkPayload> CODEC =
+        StreamCodec.ofMember(GraphUpdateBulkPayload::write, GraphUpdateBulkPayload::decode);
 
-    public static GraphUpdateBulkPayload decode(PacketByteBuf buf) {
+    public static GraphUpdateBulkPayload decode(FriendlyByteBuf buf) {
         PayloadHeader header = PayloadHeader.decode(buf);
 
         int graphCount = buf.readVarInt();
@@ -50,8 +52,7 @@ public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> gr
         return new GraphUpdateBulkPayload(header, graphs);
     }
 
-    @Override
-    public void write(PacketByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         header.write(buf);
 
         buf.writeVarInt(graphs.size());
@@ -61,7 +62,7 @@ public record GraphUpdateBulkPayload(PayloadHeader header, List<PayloadGraph> gr
     }
 
     @Override
-    public Identifier id() {
+    public Type<?> type() {
         return ID;
     }
 }

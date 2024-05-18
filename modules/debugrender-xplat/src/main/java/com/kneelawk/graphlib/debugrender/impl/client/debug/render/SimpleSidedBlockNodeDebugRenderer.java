@@ -27,11 +27,10 @@ package com.kneelawk.graphlib.debugrender.impl.client.debug.render;
 
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.phys.Vec3;
 
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Node;
@@ -40,6 +39,8 @@ import com.kneelawk.graphlib.debugrender.api.client.render.BlockNodeDebugRendere
 import com.kneelawk.graphlib.debugrender.api.client.render.RenderUtils;
 import com.kneelawk.graphlib.debugrender.api.client.DebugBlockGraph;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.graph.SimpleDebugSidedBlockNode;
+
+import com.mojang.blaze3d.vertex.PoseStack;
 
 public final class SimpleSidedBlockNodeDebugRenderer implements BlockNodeDebugRenderer<SimpleDebugSidedBlockNode> {
     public static final SimpleSidedBlockNodeDebugRenderer INSTANCE = new SimpleSidedBlockNodeDebugRenderer();
@@ -50,17 +51,17 @@ public final class SimpleSidedBlockNodeDebugRenderer implements BlockNodeDebugRe
     @Override
     public void render(@NotNull SimpleDebugSidedBlockNode node,
                        @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
-                       @NotNull VertexConsumerProvider consumers, @NotNull MatrixStack stack,
-                       @NotNull DebugBlockGraph graph, @NotNull Vec3d endpoint, int graphColor) {
+                       @NotNull MultiBufferSource consumers, @NotNull PoseStack stack,
+                       @NotNull DebugBlockGraph graph, @NotNull Vec3 endpoint, int graphColor) {
         RenderUtils.drawRect(stack, consumers.getBuffer(DebugRenderer.Layers.DEBUG_LINES), (float) endpoint.x,
             (float) endpoint.y, (float) endpoint.z, 3f / 64f, 3f / 64f, node.side(), node.color() | 0xFF000000);
     }
 
     @Override
-    public @NotNull Vec3d getLineEndpoint(@NotNull SimpleDebugSidedBlockNode node,
-                                          @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
-                                          @NotNull DebugBlockGraph graph, int nodesAtPos, int indexAmongNodes,
-                                          @NotNull List<Vec3d> otherEndpoints) {
+    public @NotNull Vec3 getLineEndpoint(@NotNull SimpleDebugSidedBlockNode node,
+                                         @NotNull Node<ClientBlockNodeHolder, EmptyLinkKey> holderNode,
+                                         @NotNull DebugBlockGraph graph, int nodesAtPos, int indexAmongNodes,
+                                         @NotNull List<Vec3> otherEndpoints) {
         return RenderUtils.distributedEndpoint(nodesAtPos, indexAmongNodes, node.side(), 1.0 / 8.0, 1.0 / 8.0,
             1.0 / 32.0);
     }

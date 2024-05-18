@@ -7,29 +7,30 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+
+import com.kneelawk.codextra.api.attach.AttachmentKey;
+import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.graph.user.BlockNodeDecoder;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeDiscoverer;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
-import com.kneelawk.graphlib.api.graph.user.LinkEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyDecoder;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.api.graph.user.NodeEntityDecoder;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.api.world.SaveMode;
 import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 
 /**
- * Represents one {@link GraphWorld} per {@link ServerWorld}. Provides access to each world's associated {@link GraphWorld}.
+ * Represents one {@link GraphWorld} per {@link ServerLevel}. Provides access to each world's associated {@link GraphWorld}.
  * <p>
  * <b>Note: GraphUniverses must be registered with the {@link #register()} method in order to work properly.</b>
  */
@@ -37,26 +38,43 @@ import com.kneelawk.graphlib.impl.graph.simple.SimpleGraphUniverseBuilder;
 public interface GraphUniverse {
 
     /**
-     * Gets the {@link GraphWorld} for the given {@link ServerWorld}.
+     * Graph-Universe attachment key for use in codecs.
+     */
+    AttachmentKey<GraphUniverse> ATTACHMENT_KEY = AttachmentKey.ofStaticFieldName();
+
+    /**
+     * Codec for referencing a graph universe.
+     */
+    Codec<GraphUniverse> REF_CODEC = ResourceLocation.CODEC.comapFlatMap(id -> {
+        if (!GraphLib.universeExists(id))
+            return DataResult.error(() -> "The graph universe '" + id + "' does not exist");
+        return DataResult.success(GraphLib.getUniverse(id));
+    }, GraphUniverse::getId);
+
+    /**
+     * Gets the {@link GraphWorld} for the given {@link ServerLevel}.
      *
      * @param world the world whose graph world is to be obtained.
      * @return the GraphWorld of the given world.
      */
-    @NotNull GraphWorld getGraphWorld(@NotNull ServerWorld world);
+    @NotNull
+    GraphWorld getGraphWorld(@NotNull ServerLevel world);
 
     /**
      * Gets the unique id of this universe.
      *
      * @return this universe's unique id.
      */
-    @NotNull Identifier getId();
+    @NotNull
+    ResourceLocation getId();
 
     /**
      * Gets the save-mode this universe was built with.
      *
      * @return the save-mode this universe was built with.
      */
-    @NotNull SaveMode getSaveMode();
+    @NotNull
+    SaveMode getSaveMode();
 
     /**
      * Adds a {@link BlockNodeDiscoverer} to this graph universe.
@@ -87,7 +105,7 @@ public interface GraphUniverse {
     void addDiscoverers(@NotNull Collection<BlockNodeDiscoverer> discoverers);
 
     /**
-     * Registers a {@link BlockNodeDecoder} for the given block node type id.
+     * Registers a {@link BlockNodeType}.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated block
      * node's {@link BlockNode#getType()}.
@@ -97,7 +115,7 @@ public interface GraphUniverse {
     void addNodeType(@NotNull BlockNodeType type);
 
     /**
-     * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+     * Registers a set of {@link BlockNodeType}.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated block
      * node's {@link BlockNode#getType()}.
@@ -111,7 +129,7 @@ public interface GraphUniverse {
     }
 
     /**
-     * Registers a set of {@link BlockNodeDecoder} with associated block node type ids.
+     * Registers a set of {@link BlockNodeType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated block
      * node's {@link BlockNode#getType()}.
@@ -130,10 +148,11 @@ public interface GraphUniverse {
      * @param typeId the type id of the block node decoder.
      * @return the block node decoder for the given type id.
      */
-    @Nullable BlockNodeType getNodeType(@NotNull Identifier typeId);
+    @Nullable
+    BlockNodeType getNodeType(@NotNull ResourceLocation typeId);
 
     /**
-     * Registers a {@link NodeEntityDecoder} for the given node entity type id.
+     * Registers a {@link NodeEntityType}.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated node
      * entity's {@link NodeEntity#getType()}.
@@ -143,7 +162,7 @@ public interface GraphUniverse {
     void addNodeEntityType(@NotNull NodeEntityType type);
 
     /**
-     * Registers a set of {@link NodeEntityDecoder} with associated node entity type ids.
+     * Registers a set of {@link NodeEntityType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated node
      * entity's {@link NodeEntity#getType()}.
@@ -157,7 +176,7 @@ public interface GraphUniverse {
     }
 
     /**
-     * Registers a set of {@link NodeEntityDecoder} with associated node entity type ids.
+     * Registers a set of {@link NodeEntityType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated node
      * entity's {@link NodeEntity#getType()}.
@@ -176,10 +195,11 @@ public interface GraphUniverse {
      * @param typeId the type id of the node entity decoder.
      * @return the node entity decoder for the given type id.
      */
-    @Nullable NodeEntityType getNodeEntityType(@NotNull Identifier typeId);
+    @Nullable
+    NodeEntityType getNodeEntityType(@NotNull ResourceLocation typeId);
 
     /**
-     * Registers a {@link LinkKeyDecoder} for the given link type id.
+     * Registers a {@link LinkKeyType}.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated link key's
      * {@link LinkKey#getType()}.
@@ -189,7 +209,7 @@ public interface GraphUniverse {
     void addLinkKeyType(@NotNull LinkKeyType type);
 
     /**
-     * Registers a set of {@link LinkKeyDecoder}s with associated link key type ids.
+     * Registers a set of {@link LinkKeyType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link key's
      * {@link LinkKey#getType()}.
@@ -203,7 +223,7 @@ public interface GraphUniverse {
     }
 
     /**
-     * Registers a set of {@link LinkKeyDecoder}s with associated link key type ids.
+     * Registers a set of {@link LinkKeyType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link key's
      * {@link LinkKey#getType()}.
@@ -222,10 +242,11 @@ public interface GraphUniverse {
      * @param typeId the type id of the link key decoder.
      * @return the link key decoder for the given type id.
      */
-    @Nullable LinkKeyType getLinkKeyType(@NotNull Identifier typeId);
+    @Nullable
+    LinkKeyType getLinkKeyType(@NotNull ResourceLocation typeId);
 
     /**
-     * Registers a {@link LinkEntityDecoder} for the given link type id.
+     * Registers a {@link LinkEntityType}.
      * <p>
      * The identifier under which the decoder is registered corresponds to the one returned by the associated link
      * entity's {@link LinkEntity#getType()}.
@@ -235,7 +256,7 @@ public interface GraphUniverse {
     void addLinkEntityType(@NotNull LinkEntityType type);
 
     /**
-     * Registers a set of {@link LinkEntityDecoder}s with associated link entity type ids.
+     * Registers a set of {@link LinkEntityType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link
      * entity's {@link LinkEntity#getType()}.
@@ -249,7 +270,7 @@ public interface GraphUniverse {
     }
 
     /**
-     * Registers a set of {@link LinkEntityDecoder}s with associated link entity type ids.
+     * Registers a set of {@link LinkEntityType}s.
      * <p>
      * The identifier under which a decoder is registered corresponds to the one returned by the associated link
      * entity's {@link LinkEntity#getType()}.
@@ -268,7 +289,8 @@ public interface GraphUniverse {
      * @param typeId the type id of the link entity decoder.
      * @return the link entity decoder for the given type id.
      */
-    @Nullable LinkEntityType getLinkEntityType(@NotNull Identifier typeId);
+    @Nullable
+    LinkEntityType getLinkEntityType(@NotNull ResourceLocation typeId);
 
     /**
      * Registers a {@link GraphEntityType}.
@@ -305,14 +327,16 @@ public interface GraphUniverse {
      * @param typeId the type id of the graph entity type.
      * @return the graph entity type for the given type id.
      */
-    @Nullable GraphEntityType<?> getGraphEntityType(@NotNull Identifier typeId);
+    @Nullable
+    GraphEntityType<?> getGraphEntityType(@NotNull ResourceLocation typeId);
 
     /**
      * Gets all the graph entity types registered.
      *
      * @return all the graph entity types currently registered.
      */
-    @NotNull Collection<GraphEntityType<?>> getAllGraphEntityTypes();
+    @NotNull
+    Collection<GraphEntityType<?>> getAllGraphEntityTypes();
 
     /**
      * Registers a cache category to be auto-initialized on all graphs.
@@ -348,7 +372,8 @@ public interface GraphUniverse {
      *
      * @return all cache categories currently registered.
      */
-    @NotNull Iterable<CacheCategory<?>> getCacheCatetories();
+    @NotNull
+    Iterable<CacheCategory<?>> getCacheCatetories();
 
     /**
      * Registers this graph universe so that it can be found by its id.
@@ -368,7 +393,7 @@ public interface GraphUniverse {
      * @param typeId the type id of the block node to get the registration index of.
      * @return the registration index of the given block node type id.
      */
-    int getNodeTypeIndex(@NotNull Identifier typeId);
+    int getNodeTypeIndex(@NotNull ResourceLocation typeId);
 
     /**
      * Gets the number of block node type ids currently registered.
@@ -400,7 +425,8 @@ public interface GraphUniverse {
          * @param universeId the unique id of the universe to be built.
          * @return the newly created {@link GraphUniverse}.
          */
-        @NotNull GraphUniverse build(@NotNull Identifier universeId);
+        @NotNull
+        GraphUniverse build(@NotNull ResourceLocation universeId);
 
         /**
          * Determines how often graphs and chunks should be saved.
@@ -410,6 +436,7 @@ public interface GraphUniverse {
          * @param saveMode the save mode for this universe.
          * @return this builder for call chaining.
          */
-        @NotNull Builder saveMode(@NotNull SaveMode saveMode);
+        @NotNull
+        Builder saveMode(@NotNull SaveMode saveMode);
     }
 }

@@ -25,7 +25,7 @@
 
 package com.kneelawk.graphlib.syncing.api.graph.user;
 
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Determines which players the server should synchronize graphs to.
@@ -38,5 +38,5 @@ public interface PlayerSyncFilter {
      * @param player the player to potentially synchronize graphs to.
      * @return <code>true</code> if graphs should be synchronized to the given player.
      */
-    boolean shouldSync(ServerPlayerEntity player);
+    boolean shouldSync(ServerPlayer player);
 }

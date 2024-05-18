@@ -4,13 +4,12 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
 
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import com.mojang.serialization.Codec;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -22,27 +21,19 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class LinkPosEqualityTests {
-    private static final BlockNodeType STRING_NODE_TYPE = BlockNodeType.of(new Identifier("test", "string"), nbt -> {
-        if (nbt instanceof NbtString string)
-            return new StringBlockNode(string.asString());
-        return null;
-    });
+    private static final BlockNodeType STRING_NODE_TYPE =
+        BlockNodeType.of(new ResourceLocation("test", "string"), StringBlockNode.CODEC);
 
-    private static final LinkKeyType STRING_LINK_TYPE = LinkKeyType.of(new Identifier("test", "string"), nbt -> {
-        if (nbt instanceof NbtString string)
-            return new StringLinkKey(string.asString());
-        return null;
-    });
+    private static final LinkKeyType STRING_LINK_TYPE =
+        LinkKeyType.of(new ResourceLocation("test", "string"), StringLinkKey.CODEC);
 
     private record StringBlockNode(String str) implements BlockNode {
+        public static final Codec<StringBlockNode> CODEC =
+            Codec.STRING.xmap(StringBlockNode::new, StringBlockNode::str);
+
         @Override
         public @NotNull BlockNodeType getType() {
             return STRING_NODE_TYPE;
-        }
-
-        @Override
-        public @Nullable NbtElement toTag() {
-            return NbtString.of(str);
         }
 
         @Override
@@ -60,21 +51,18 @@ public class LinkPosEqualityTests {
     }
 
     private record StringLinkKey(String str) implements LinkKey {
+        public static final Codec<StringLinkKey> CODEC = Codec.STRING.xmap(StringLinkKey::new, StringLinkKey::str);
+
         @Override
         public @NotNull LinkKeyType getType() {
             return STRING_LINK_TYPE;
-        }
-
-        @Override
-        public @Nullable NbtElement toTag() {
-            return NbtString.of(str);
         }
     }
 
     @Test
     public void testLinksEqualBothWays() {
-        NodePos a = new NodePos(BlockPos.ORIGIN, new StringBlockNode("A"));
-        NodePos b = new NodePos(BlockPos.ORIGIN, new StringBlockNode("B"));
+        NodePos a = new NodePos(BlockPos.ZERO, new StringBlockNode("A"));
+        NodePos b = new NodePos(BlockPos.ZERO, new StringBlockNode("B"));
 
         LinkPos aToB = new LinkPos(a, b, new StringLinkKey("C"));
         LinkPos bToA = new LinkPos(b, a, new StringLinkKey("C"));
@@ -85,8 +73,8 @@ public class LinkPosEqualityTests {
 
     @Test
     public void testLinksWithDifferentKeys() {
-        NodePos a = new NodePos(BlockPos.ORIGIN, new StringBlockNode("A"));
-        NodePos b = new NodePos(BlockPos.ORIGIN, new StringBlockNode("B"));
+        NodePos a = new NodePos(BlockPos.ZERO, new StringBlockNode("A"));
+        NodePos b = new NodePos(BlockPos.ZERO, new StringBlockNode("B"));
 
         LinkPos cLink = new LinkPos(a, b, new StringLinkKey("C"));
         LinkPos dLink = new LinkPos(a, b, new StringLinkKey("D"));

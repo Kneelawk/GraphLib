@@ -1,10 +1,10 @@
 package com.kneelawk.graphlib.api.graph.user;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.NbtElement;
+import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
 
@@ -12,6 +12,24 @@ import com.kneelawk.graphlib.api.graph.LinkEntityContext;
  * Mutable data associated with a link, similar to a BlockEntity.
  */
 public interface LinkEntity {
+    /**
+     * {@link LinkEntity} map codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    MapCodec<LinkEntity> MAP_CODEC = LinkEntityType.REF_CODEC.dispatchMap("entityType", LinkEntity::getType,
+        type -> Codextra.unitHandlingFieldOf("entity", type.getCodec()));
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the map codec.
+     */
+    static MapCodec<LinkEntity> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
     /**
      * Called when this link entity is initialized in a graph, to give this its context.
      *
@@ -24,7 +42,8 @@ public interface LinkEntity {
      *
      * @return this link entity's context.
      */
-    @NotNull LinkEntityContext getContext();
+    @NotNull
+    LinkEntityContext getContext();
 
     /**
      * Get this link entity's type id.
@@ -34,14 +53,8 @@ public interface LinkEntity {
      *
      * @return this link entity's type id.
      */
-    @NotNull LinkEntityType getType();
-
-    /**
-     * Encodes this link entity as an NBT tag.
-     *
-     * @return this link entity as an NBT tag.
-     */
-    @Nullable NbtElement toTag();
+    @NotNull
+    LinkEntityType getType();
 
     /**
      * Called after this link entity has been initialized if it was just newly added instead of just being loaded.

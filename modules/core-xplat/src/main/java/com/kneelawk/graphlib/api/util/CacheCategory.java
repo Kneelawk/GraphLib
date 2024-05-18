@@ -56,7 +56,8 @@ public class CacheCategory<T extends BlockNode> {
      * @return a new cache category.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static <T extends BlockNode> @NotNull CacheCategory<T> of(Class<T> nodeClass, Predicate<NodeHolder<T>> predicate) {
+    public static <T extends BlockNode> @NotNull CacheCategory<T> of(Class<T> nodeClass,
+                                                                     Predicate<NodeHolder<T>> predicate) {
         return new CacheCategory<>(nodeClass, predicate);
     }
 

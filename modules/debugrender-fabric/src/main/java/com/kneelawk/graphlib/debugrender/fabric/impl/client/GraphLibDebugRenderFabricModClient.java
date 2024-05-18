@@ -29,8 +29,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 
 import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
@@ -40,6 +39,8 @@ import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
 import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
 import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
+
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
 @SuppressWarnings("unused")
 public class GraphLibDebugRenderFabricModClient implements ClientModInitializer {
@@ -67,24 +68,25 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
 
         // RenderToOverlay stuff
         RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_LINES,
-            new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.getExpectedBufferSize()));
+            new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.bufferSize()));
         RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
-            new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.getExpectedBufferSize()));
+            new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.bufferSize()));
         RenderToOverlay.EVENT.register(
-            ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.camera().getPos(), ctx.consumers()));
+            ctx -> DebugRenderer.render(ctx.matrixStack(), ctx.positionMatrix(), ctx.camera().getPosition(),
+                ctx.consumers()));
 
         // packet receivers
+        PayloadTypeRegistry.playS2C().register(GraphUpdatePayload.ID, GraphUpdatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(GraphUpdateBulkPayload.ID, GraphUpdateBulkPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(GraphDestroyPayload.ID, GraphDestroyPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(DebuggingStopPayload.ID, DebuggingStopPayload.CODEC);
         ClientPlayNetworking.registerGlobalReceiver(GraphUpdatePayload.ID,
-            (client, handler, buf, responseSender) -> GLClientDebugNet.onGraphUpdate(GraphUpdatePayload.decode(buf),
-                client));
+            (payload, ctx) -> GLClientDebugNet.onGraphUpdate(payload, ctx.client()));
         ClientPlayNetworking.registerGlobalReceiver(GraphUpdateBulkPayload.ID,
-            (client, handler, buf, responseSender) -> GLClientDebugNet.onGraphUpdateBulk(
-                GraphUpdateBulkPayload.decode(buf), client));
+            (payload, ctx) -> GLClientDebugNet.onGraphUpdateBulk(payload, ctx.client()));
         ClientPlayNetworking.registerGlobalReceiver(GraphDestroyPayload.ID,
-            (client, handler, buf, responseSender) -> GLClientDebugNet.onGraphDestroy(new GraphDestroyPayload(buf),
-                client));
+            (payload, ctx) -> GLClientDebugNet.onGraphDestroy(payload, ctx.client()));
         ClientPlayNetworking.registerGlobalReceiver(DebuggingStopPayload.ID,
-            (client, handler, buf, responseSender) -> GLClientDebugNet.onDebugginStop(new DebuggingStopPayload(buf),
-                client));
+            (payload, ctx) -> GLClientDebugNet.onDebugginStop(payload, ctx.client()));
     }
 }

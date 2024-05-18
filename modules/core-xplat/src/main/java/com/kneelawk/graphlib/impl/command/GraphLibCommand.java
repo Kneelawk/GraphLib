@@ -10,21 +10,21 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 
-import net.minecraft.command.CommandBuildContext;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
@@ -32,43 +32,43 @@ import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
 import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 public class GraphLibCommand {
     public static final DynamicCommandExceptionType UNKNOWN_UNIVERSE =
         new DynamicCommandExceptionType(arg -> new LiteralMessage("Unknown universe: " + arg));
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandBuildContext buildContext) {
-        RequiredArgumentBuilder<ServerCommandSource, Identifier> universeBuilder =
-            argument("universe", IdentifierArgumentType.identifier())
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
+        RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universeBuilder =
+            argument("universe", ResourceLocationArgument.id())
                 .suggests((context, builder) -> {
                     String remaining = builder.getRemaining().toLowerCase(Locale.ROOT);
-                    CommandSource.forEachMatching(GraphLibImpl.UNIVERSE.keySet(), remaining,
+                    SharedSuggestionProvider.filterResources(GraphLibImpl.UNIVERSE.keySet(), remaining,
                         Function.identity(), id -> builder.suggest(id.toString()));
                     return builder.buildFuture();
                 })
                 .then(literal("updateblocks")
-                    .then(argument("from", BlockPosArgumentType.blockPos())
-                        .then(argument("to", BlockPosArgumentType.blockPos())
+                    .then(argument("from", BlockPosArgument.blockPos())
+                        .then(argument("to", BlockPosArgument.blockPos())
                             .executes(context -> updateBlocks(context.getSource(),
-                                IdentifierArgumentType.getIdentifier(context, "universe"),
-                                BlockPosArgumentType.getBlockPos(context, "from"),
-                                BlockPosArgumentType.getBlockPos(context, "to")))
+                                ResourceLocationArgument.getId(context, "universe"),
+                                BlockPosArgument.getBlockPos(context, "from"),
+                                BlockPosArgument.getBlockPos(context, "to")))
                         )
                     )
                 )
                 .then(literal("removeemptygraphs")
                     .executes(context -> removeEmptyGraphsCommand(context.getSource(),
-                        IdentifierArgumentType.getIdentifier(context, "universe")))
+                        ResourceLocationArgument.getId(context, "universe")))
                 )
                 .then(literal("rebuildchunks")
-                    .then(argument("from", BlockPosArgumentType.blockPos())
-                        .then(argument("to", BlockPosArgumentType.blockPos())
+                    .then(argument("from", BlockPosArgument.blockPos())
+                        .then(argument("to", BlockPosArgument.blockPos())
                             .executes(context -> rebuildChunks(context.getSource(),
-                                IdentifierArgumentType.getIdentifier(context, "universe"),
-                                BlockPosArgumentType.getBlockPos(context, "from"),
-                                BlockPosArgumentType.getBlockPos(context, "to")))
+                                ResourceLocationArgument.getId(context, "universe"),
+                                BlockPosArgument.getBlockPos(context, "from"),
+                                BlockPosArgument.getBlockPos(context, "to")))
                         )
                     )
                 );
@@ -82,70 +82,70 @@ public class GraphLibCommand {
         );
     }
 
-    private static int listUniverses(ServerCommandSource source) {
-        MutableText msg = Text.literal("Universes:");
+    private static int listUniverses(CommandSourceStack source) {
+        MutableComponent msg = Component.literal("Universes:");
 
-        for (Identifier key : GraphLibImpl.UNIVERSE.keySet()) {
+        for (ResourceLocation key : GraphLibImpl.UNIVERSE.keySet()) {
             msg.append("\n");
-            msg.append(Text.literal(key.toString()).styled(style -> style.withColor(Formatting.AQUA)
+            msg.append(Component.literal(key.toString()).withStyle(style -> style.withColor(ChatFormatting.AQUA)
                 .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key.toString()))));
         }
 
-        source.sendFeedback(() -> msg, false);
+        source.sendSuccess(() -> msg, false);
 
         return GraphLibImpl.UNIVERSE.size();
     }
 
-    private static int updateBlocks(ServerCommandSource source, Identifier universeId, BlockPos from, BlockPos to)
+    private static int updateBlocks(CommandSourceStack source, ResourceLocation universeId, BlockPos from, BlockPos to)
         throws CommandSyntaxException {
-        source.sendFeedback(
+        source.sendSuccess(
             () -> Constants.command("graphlib.updateblocks.starting", blockPosText(from), blockPosText(to)),
             true);
 
-        ServerWorld world = source.getWorld();
+        ServerLevel world = source.getLevel();
 
         GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
-        universe.getGraphWorld(world).updateNodes(BlockPos.stream(from, to));
+        universe.getGraphWorld(world).updateNodes(BlockPos.betweenClosedStream(from, to));
 
-        source.sendFeedback(
+        source.sendSuccess(
             () -> Constants.command("graphlib.updateblocks.success", blockPosText(from), blockPosText(to)),
             true);
 
         return 15;
     }
 
-    private static int removeEmptyGraphsCommand(ServerCommandSource source, Identifier universeId)
+    private static int removeEmptyGraphsCommand(CommandSourceStack source, ResourceLocation universeId)
         throws CommandSyntaxException {
         GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
-        int result = universe.getGraphWorld(source.getWorld()).removeEmptyGraphs();
+        int result = universe.getGraphWorld(source.getLevel()).removeEmptyGraphs();
 
-        source.sendFeedback(() -> Constants.command("graphlib.removeemptygraphs.success", result), true);
+        source.sendSuccess(() -> Constants.command("graphlib.removeemptygraphs.success", result), true);
 
         return result;
     }
 
-    private static int rebuildChunks(ServerCommandSource source, Identifier universeId, BlockPos from, BlockPos to)
+    private static int rebuildChunks(CommandSourceStack source, ResourceLocation universeId, BlockPos from, BlockPos to)
         throws CommandSyntaxException {
-        ServerWorld world = source.getWorld();
+        ServerLevel world = source.getLevel();
 
         GraphUniverseImpl universe = GraphLibImpl.UNIVERSE.get(universeId);
         if (universe == null) throw UNKNOWN_UNIVERSE.create(universeId);
 
-        ChunkSectionPos fromSection = ChunkSectionPos.from(from);
-        ChunkSectionPos toSection = ChunkSectionPos.from(to);
+        SectionPos fromSection = SectionPos.of(from);
+        SectionPos toSection = SectionPos.of(to);
 
-        List<ChunkSectionPos> toRebuild =
-            ChunkSectionPos.stream(fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(),
+        List<SectionPos> toRebuild =
+            SectionPos.betweenClosedStream(fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(),
                 toSection.getY(), toSection.getZ()).toList();
 
         universe.getGraphWorld(world).rebuildChunks(toRebuild, new RebuildChunksListener() {
             @Override
             public void onAlreadyRunning(double progress, int graphCount, int chunkCount) {
-                source.sendFeedback(
+                source.sendSuccess(
                     () -> Constants.command("graphlib.rebuildchunks.alreadyrunning", progress, universeId, graphCount,
                         fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(),
                         toSection.getZ(), chunkCount), false);
@@ -153,7 +153,7 @@ public class GraphLibCommand {
 
             @Override
             public void onBegin(int graphCount, int chunkCount) {
-                source.sendFeedback(
+                source.sendSuccess(
                     () -> Constants.command("graphlib.rebuildchunks.begin", universeId, graphCount, fromSection.getX(),
                         fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(), toSection.getZ(),
                         chunkCount), true);
@@ -161,7 +161,7 @@ public class GraphLibCommand {
 
             @Override
             public void onProgress(double progress, int graphCount, int chunkCount) {
-                source.sendFeedback(
+                source.sendSuccess(
                     () -> Constants.command("graphlib.rebuildchunks.progress", progress, universeId, graphCount,
                         fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(),
                         toSection.getZ(), chunkCount), true);
@@ -169,7 +169,7 @@ public class GraphLibCommand {
 
             @Override
             public void onComplete(int graphCount, int chunkCount) {
-                source.sendFeedback(() -> Constants.command("graphlib.rebuildchunks.complete", universeId, graphCount,
+                source.sendSuccess(() -> Constants.command("graphlib.rebuildchunks.complete", universeId, graphCount,
                     fromSection.getX(), fromSection.getY(), fromSection.getZ(), toSection.getX(), toSection.getY(),
                     toSection.getZ(), chunkCount), true);
             }
@@ -178,14 +178,15 @@ public class GraphLibCommand {
         return toRebuild.size();
     }
 
-    private static MutableText blockPosText(BlockPos pos) {
-        return Texts.bracketed(Text.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()))
-            .styled(
-                style -> style.withColor(Formatting.GREEN)
+    private static MutableComponent blockPosText(BlockPos pos) {
+        return ComponentUtils.wrapInSquareBrackets(
+                Component.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()))
+            .withStyle(
+                style -> style.withColor(ChatFormatting.GREEN)
                     .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
                         "/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ()))
                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        Text.translatable("chat.coordinates.tooltip")))
+                        Component.translatable("chat.coordinates.tooltip")))
             );
     }
 }

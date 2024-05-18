@@ -31,6 +31,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.ChunkPos;
+
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
@@ -38,10 +42,6 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
 
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.graph.Graph;
@@ -76,7 +76,7 @@ public final class GLClientDebugNet {
 
         return switch (type) {
             case 0 -> new SimpleDebugBlockNode(hashCode, color);
-            case 1 -> new SimpleDebugSidedBlockNode(hashCode, color, Direction.byId(buf.readByte()));
+            case 1 -> new SimpleDebugSidedBlockNode(hashCode, color, Direction.from3DDataValue(buf.readByte()));
             default -> {
                 GLLog.error("Attempted default BlockNode decoding but encountered unknown default id: {}", type);
                 yield null;
@@ -108,7 +108,7 @@ public final class GLClientDebugNet {
 
     public static void onGraphDestroy(GraphDestroyPayload payload, Executor clientEx) {
         clientEx.execute(() -> {
-            Identifier universeId = payload.universeId();
+            ResourceLocation universeId = payload.universeId();
             long graphId = payload.graphId();
 
             Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.get(universeId);
@@ -131,7 +131,7 @@ public final class GLClientDebugNet {
 
     public static void onDebugginStop(DebuggingStopPayload payload, Executor clientEx) {
         clientEx.execute(() -> {
-            Identifier universeId = payload.universeId();
+            ResourceLocation universeId = payload.universeId();
 
             Long2ObjectMap<DebugBlockGraph> universe = DebugRenderer.DEBUG_GRAPHS.remove(universeId);
 
@@ -157,7 +157,7 @@ public final class GLClientDebugNet {
 
         for (PayloadNode node : payload.nodes()) {
             int nodeTypeInt = node.typeId();
-            Identifier nodeTypeId = header.palette().get(nodeTypeInt);
+            ResourceLocation nodeTypeId = header.palette().get(nodeTypeInt);
             if (nodeTypeId == null) {
                 GLLog.error("Received unknown BlockNode id: {}", nodeTypeInt);
                 return null;
@@ -179,7 +179,7 @@ public final class GLClientDebugNet {
                 graph.add(new ClientBlockNodeHolder(node.pos(), data, payload.graphId()));
             nodeList.add(debugNode);
 
-            chunks.add(ChunkPos.toLong(node.pos()));
+            chunks.add(ChunkPos.asLong(node.pos()));
         }
 
         for (PayloadLink link : payload.links()) {
@@ -205,7 +205,7 @@ public final class GLClientDebugNet {
         return new SimpleDebugBlockGraph(header.universeId(), payload.graphId(), graph, chunks);
     }
 
-    private static void addBlockGraph(Identifier universeId, DebugBlockGraph debugGraph) {
+    private static void addBlockGraph(ResourceLocation universeId, DebugBlockGraph debugGraph) {
         Long2ObjectMap<DebugBlockGraph> universe =
             DebugRenderer.DEBUG_GRAPHS.computeIfAbsent(universeId, k -> new Long2ObjectLinkedOpenHashMap<>());
 

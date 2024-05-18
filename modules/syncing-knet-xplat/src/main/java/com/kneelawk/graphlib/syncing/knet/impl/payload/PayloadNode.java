@@ -25,30 +25,20 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import java.util.OptionalInt;
+import java.util.Optional;
 
-import com.kneelawk.graphlib.syncing.knet.api.util.NodePosSmallPayload;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
-public record PayloadNode(NodePosSmallPayload nodePos, OptionalInt entityTypeId) {
-    public static PayloadNode decode(NetByteBuf buf) {
-        NodePosSmallPayload nodePos = NodePosSmallPayload.CODEC.decoder().apply(buf);
-        OptionalInt entityTypeId;
-        if (buf.readBoolean()) {
-            entityTypeId = OptionalInt.of(buf.readVarUnsignedInt());
-        } else {
-            entityTypeId = OptionalInt.empty();
-        }
-        return new PayloadNode(nodePos, entityTypeId);
-    }
+import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
-    public void encode(NetByteBuf buf) {
-        NodePosSmallPayload.CODEC.encoder().accept(buf, nodePos);
-        if (entityTypeId.isPresent()) {
-            buf.writeBoolean(true);
-            buf.writeVarUnsignedInt(entityTypeId.getAsInt());
-        } else {
-            buf.writeBoolean(false);
-        }
-    }
+public record PayloadNode(NodePos nodePos, Optional<NodeEntity> entity) {
+    public static final StreamCodec<NetRegistryByteBuf, PayloadNode> CODEC = StreamCodec.composite(
+        GraphLibSyncingKNet.NODE_POS_CODEC, PayloadNode::nodePos,
+        GraphLibSyncingKNet.NODE_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadNode::entity,
+        PayloadNode::new
+    );
 }
