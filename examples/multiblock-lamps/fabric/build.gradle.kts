@@ -32,7 +32,7 @@ submodule {
     setLibsDirectory()
     applyFabricLoaderDependency()
     applyFabricApiDependency()
-    applyXplatConnection(":multiblock-lamps:xplat")
+    applyXplatConnection(":multiblock-lamps:xplat", "fabric")
     generateRuns()
 }
 
@@ -41,6 +41,10 @@ repositories {
 }
 
 dependencies {
+    // Codextra
+    val codextra_version: String by project
+    modRuntimeOnly("com.kneelawk:codextra-fabric:$codextra_version")
+
     // KModLib Overlay
     val kml_version: String by project
     modRuntimeOnly("com.kneelawk:kmodlib-overlay-fabric:$kml_version")

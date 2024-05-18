@@ -32,17 +32,15 @@ plugins {
 submodule {
     setRefmaps("graphlib-core")
     applyFabricLoaderDependency()
+    forceRemap()
+    setupJavadoc()
 }
 
-java {
-    withJavadocJar()
+dependencies {
+    val codextra_version: String by project
+    modApi("com.kneelawk:codextra-xplat-intermediary:$codextra_version")
 }
 
 kpublish {
-    createPublication("intermediary", publicationName = "mavenIntermediary")
-    createPublication(
-        "mojmap",
-        publicationName = "mavenMojmap",
-        tasks = arrayOf(tasks.named("jar"), tasks.named("sourcesJar"), tasks.named("javadocJar"))
-    )
+    createPublication("intermediary")
 }

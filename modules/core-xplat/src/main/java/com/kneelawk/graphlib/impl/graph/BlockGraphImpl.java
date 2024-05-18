@@ -47,9 +47,6 @@ import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.NodePos;
 
 public interface BlockGraphImpl extends BlockGraph {
-    @NotNull
-    CompoundTag toTag();
-
     void initializeGraphEntities(List<GraphEntity<?>> newGraphEntities);
 
     LongSet getChunksImpl();

@@ -3,10 +3,11 @@ package com.kneelawk.graphlib.impl.graph.simple;
 // Translated from 2xsaiko's HCTM-Base WireNetworkState code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/wire/WireNetworkState.kt
 
-import java.util.Objects;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -15,68 +16,35 @@ import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
+import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 
 public final class SimpleNodeWrapper {
-    final @NotNull BlockPos pos;
-    final @NotNull BlockNode node;
+    public static final MapCodec<SimpleNodeWrapper> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+        NodePos.MAP_CODEC.forGetter(SimpleNodeWrapper::pos),
+        SimpleBlockGraph.GRAPH_ID.retrieve()
+    ).apply(instance, SimpleNodeWrapper::new));
+
+    final @NotNull NodePos pos;
 
     long graphId;
 
-    public SimpleNodeWrapper(@NotNull BlockPos pos, @NotNull BlockNode node, long graphId) {
-        this.pos = pos.immutable();
-        this.node = node;
+    public SimpleNodeWrapper(@NotNull NodePos pos, long graphId) {
+        this.pos = pos;
         this.graphId = graphId;
     }
 
-    public @NotNull CompoundTag toTag() {
-        CompoundTag tag = new CompoundTag();
-
-        tag.putInt("x", pos.getX());
-        tag.putInt("y", pos.getY());
-        tag.putInt("z", pos.getZ());
-
-        Tag nodeTag = node.toTag();
-        if (nodeTag != null) {
-            tag.put("node", nodeTag);
-        }
-
-        tag.putString("type", node.getType().getId().toString());
-
-        return tag;
-    }
-
-    @Nullable
-    public static SimpleNodeWrapper fromTag(@NotNull GraphUniverseImpl universe, @NotNull CompoundTag tag,
-                                            long graphId) {
-        BlockPos pos = new BlockPos(tag.getInt("x"), tag.getInt("y"), tag.getInt("z"));
-
-        ResourceLocation typeId = new ResourceLocation(tag.getString("type"));
-        BlockNodeType type = universe.getNodeType(typeId);
-
-        if (type == null) {
-            GLLog.warn("Tried to load unknown BlockNode type: {} @ {}", typeId, pos);
-            return null;
-        }
-
-        Tag nodeTag = tag.get("node");
-        BlockNode node = type.getDecoder().decode(nodeTag);
-
-        if (node == null) {
-            GLLog.warn("Unable to decode BlockNode with type: {} @ {}", typeId, pos);
-            return null;
-        }
-
-        return new SimpleNodeWrapper(pos, node, graphId);
-    }
-
-    public @NotNull BlockPos getPos() {
+    public @NotNull NodePos pos() {
         return pos;
     }
 
-    public @NotNull BlockNode getNode() {
-        return node;
+    public @NotNull BlockPos blockPos() {
+        return pos.pos();
+    }
+
+    public @NotNull BlockNode node() {
+        return pos.node();
     }
 
     public long getGraphId() {
@@ -84,20 +52,21 @@ public final class SimpleNodeWrapper {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (SimpleNodeWrapper) obj;
-        return Objects.equals(this.pos, that.pos) && Objects.equals(this.node, that.node);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SimpleNodeWrapper that = (SimpleNodeWrapper) o;
+        return pos.equals(that.pos);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pos, node);
+        return pos.hashCode();
     }
 
     @Override
     public String toString() {
-        return "BlockNodeWrapper[" + "pos=" + pos + ", " + "graphId=" + graphId + ", " + "node=" + node + ']';
+        return "SimpleNodeWrapper[" + pos + " in graph " + graphId + ']';
     }
 }

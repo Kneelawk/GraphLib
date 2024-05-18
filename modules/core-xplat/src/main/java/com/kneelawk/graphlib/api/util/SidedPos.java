@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 /**
  * Represents both a block-position and the side of that block-position.
@@ -96,15 +97,24 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
 
     /**
      * Codec for encoding and decoding SidedPoses with a matching structure as produced and consumed by
-     * {@link #toNbt(NbtCompound)} and {@link #fromNbt(NbtCompound)}.
+     * {@link #toNbt(CompoundTag)} and {@link #fromNbt(CompoundTag)}.
      *
-     * @see #toNbt(NbtCompound)
+     * @see #toNbt(CompoundTag)
      * @see #toNbt()
-     * @see #fromNbt(NbtCompound)
+     * @see #fromNbt(CompoundTag)
      */
-    public static Codec<SidedPos> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+    public static final Codec<SidedPos> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         BlockPos.CODEC.fieldOf("pos").forGetter(SidedPos::pos),
-        Codec.BYTE.xmap(Direction::from3DDataValue, side -> (byte) side.get3DDataValue()).fieldOf("side")
-            .forGetter(SidedPos::side)
+        DirectionUtils.BYTE_CODEC.fieldOf("side").forGetter(SidedPos::side)
     ).apply(instance, SidedPos::new));
+
+    /**
+     * Stream codec for encoding and decoding {@link SidedPos}es with matching structure as produced and consumed by
+     * {@link #toPacket(FriendlyByteBuf)} and {@link #fromPacket(FriendlyByteBuf)}.
+     *
+     * @see #toPacket(FriendlyByteBuf)
+     * @see #fromPacket(FriendlyByteBuf)
+     */
+    public static final StreamCodec<FriendlyByteBuf, SidedPos> STREAM_CODEC =
+        StreamCodec.ofMember(SidedPos::toPacket, SidedPos::fromPacket);
 }

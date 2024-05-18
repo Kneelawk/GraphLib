@@ -1,17 +1,15 @@
 package com.kneelawk.graphlib.api.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 
 /**
  * Represents a positioned unique link in a way that can be looked up.
@@ -24,6 +22,32 @@ import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
  * @param key    the key of this link that makes it unique among all the links between the same two nodes.
  */
 public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull LinkKey key) {
+    /**
+     * Map codec for link poses.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final MapCodec<LinkPos> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+        NodePos.MAP_CODEC.fieldOf("first").forGetter(LinkPos::first),
+        NodePos.MAP_CODEC.fieldOf("second").forGetter(LinkPos::second),
+        LinkKey.MAP_CODEC.forGetter(LinkPos::key)
+    ).apply(instance, LinkPos::new));
+
+    /**
+     * Map codec for link poses that provides its own universe.
+     */
+    public static final MapCodec<InUniverse<LinkPos>> IN_UNIVERSE_MAP_CODEC = InUniverse.mapCodec(MAP_CODEC);
+
+    /**
+     * Gets a link pos codec for link poses in the given universe.
+     *
+     * @param universe the universe to find link poses in.
+     * @return a link pos codec for link poses in the given universe.
+     */
+    public static MapCodec<LinkPos> codec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
     /**
      * Creates a new link pos from raw positions, nodes, and the link key.
      *
@@ -78,53 +102,8 @@ public record LinkPos(@NotNull NodePos first, @NotNull NodePos second, @NotNull 
         return result;
     }
 
-    /**
-     * Encodes this link pos to the given NBT compound.
-     * <p>
-     * Note: this writes to the {@code first}, {@code second}, {@code keyType}, and {@code key} elements.
-     *
-     * @param nbt the NBT compound to write to.
-     */
-    public void toNbt(@NotNull CompoundTag nbt) {
-        nbt.put("first", first.toNbt());
-        nbt.put("second", second.toNbt());
-        nbt.putString("keyType", key.getType().getId().toString());
-        Tag keyNbt = key.toTag();
-        if (keyNbt != null) {
-            nbt.put("key", keyNbt);
-        }
-    }
-
-    /**
-     * Encodes this link pos to an NBT compound.
-     *
-     * @return the NBT compound containing this link pos's encoded data.
-     */
-    public @NotNull CompoundTag toNbt() {
-        CompoundTag nbt = new CompoundTag();
-        toNbt(nbt);
-        return nbt;
-    }
-
-    /**
-     * Decodes a link pos from an NBT compound.
-     *
-     * @param nbt      the NBT compound to decode from.
-     * @param universe the universe containing the decoders that this will use.
-     * @return a newly decoded link pos.
-     */
-    public static @Nullable LinkPos fromNbt(@NotNull CompoundTag nbt, @NotNull GraphUniverse universe) {
-        NodePos first = NodePos.fromNbt(nbt.getCompound("first"), universe);
-        if (first == null) return null;
-        NodePos second = NodePos.fromNbt(nbt.getCompound("second"), universe);
-        if (second == null) return null;
-
-        ResourceLocation typeId = new ResourceLocation(nbt.getString("keyType"));
-        LinkKeyType type = universe.getLinkKeyType(typeId);
-        if (type == null) return null;
-        LinkKey key = type.getDecoder().decode(nbt.get("key"));
-        if (key == null) return null;
-
-        return new LinkPos(first, second, key);
+    @Override
+    public String toString() {
+        return "(" + first + "<-" + key + "->" + second + ")";
     }
 }

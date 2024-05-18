@@ -32,12 +32,15 @@ plugins {
 submodule {
     setLibsDirectory()
     applyNeoforgeDependency()
-    applyXplatConnection(":core-xplat")
+    applyXplatConnection(":core-xplat", "neoforge")
+    setupJavadoc()
     createDevExport()
 }
 
-java {
-    withJavadocJar()
+dependencies {
+    val codextra_version: String by project
+    modApi("com.kneelawk:codextra-neoforge:$codextra_version")
+    include("com.kneelawk:codextra-neoforge:$codextra_version")
 }
 
 kpublish {

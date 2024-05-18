@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Cyan Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,24 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+plugins {
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
+    id("com.kneelawk.kpublish")
+}
 
-import org.jetbrains.annotations.NotNull;
+submodule {
+    applyFabricLoaderDependency()
+    applyXplatConnection(":core-xplat", "mojmap")
+    setupJavadoc()
+    disableRemap()
+}
 
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.knet.api.util.NetByteBuf;
+dependencies {
+    val codextra_version: String by project
+    api("com.kneelawk:codextra-xplat-mojmap:$codextra_version")
+}
 
-/**
- * Used for encoding a {@link BlockNode} to a {@link NetByteBuf}.
- *
- * @param <N> the type of block node this encoder encodes.
- */
-@FunctionalInterface
-public interface BlockNodePacketEncoder<N extends BlockNode> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of block node to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends BlockNode> BlockNodePacketEncoder<T> noOp() {
-        return (node, buf) -> {};
-    }
-
-    /**
-     * Encodes a {@link BlockNode} to a {@link NetByteBuf}.
-     * <p>
-     * This data will be decoded by {@link BlockNodePacketDecoder#decode(NetByteBuf)}.
-     *
-     * @param node the node to encode.
-     * @param buf  the buffer to write to.
-     */
-    void encode(@NotNull N node, @NotNull NetByteBuf buf);
+kpublish {
+    createPublication()
 }

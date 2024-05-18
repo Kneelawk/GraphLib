@@ -25,30 +25,25 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
-import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
-import com.kneelawk.knet.api.util.NetByteBuf;
-
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
-public record LinkPayload(PayloadHeader header, long graphId, PayloadExternalLink link) implements CustomPacketPayload {
+import com.kneelawk.codextra.api.util.FunctionUtils;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.KNetChannels;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+
+public record LinkPayload(KNetSyncedUniverse universe, long graphId, PayloadExternalLink link)
+    implements CustomPacketPayload {
     public static final Type<LinkPayload> ID = new Type<>(SyncingKNetImpl.id("link"));
-    public static final StreamCodec<NetByteBuf, LinkPayload> CODEC =
-        StreamCodec.ofMember(LinkPayload::encode, LinkPayload::decode);
-
-    public static LinkPayload decode(NetByteBuf buf) {
-        PayloadHeader header = PayloadHeader.decode(buf);
-        long graphId = buf.readVarUnsignedLong();
-        PayloadExternalLink link = PayloadExternalLink.decode(buf);
-        return new LinkPayload(header, graphId, link);
-    }
-
-    public void encode(NetByteBuf buf) {
-        header.encode(buf);
-        buf.writeVarUnsignedLong(graphId);
-        link.encode(buf);
-    }
+    public static final StreamCodec<NetRegistryByteBuf, LinkPayload> CODEC = StreamCodec.composite(
+        KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+        ByteBufCodecs.VAR_LONG, LinkPayload::graphId,
+        PayloadExternalLink.CODEC, LinkPayload::link,
+        LinkPayload::new
+    ).apply(KNetSyncedUniverse.readAttachingOp(LinkPayload::universe));
 
     @Override
     public Type<?> type() {

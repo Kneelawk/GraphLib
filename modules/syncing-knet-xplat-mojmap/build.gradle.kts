@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Cyan Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,27 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+plugins {
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
+    id("com.kneelawk.kpublish")
+}
 
-import org.jetbrains.annotations.NotNull;
+submodule {
+    applyFabricLoaderDependency()
+    applyXplatConnection(":syncing-knet-xplat", "mojmap")
+    setupJavadoc()
+    disableRemap()
+}
 
-import com.kneelawk.graphlib.api.graph.user.GraphEntity;
-import com.kneelawk.knet.api.util.NetByteBuf;
+dependencies {
+    val knet_version: String by project
+    modApi("com.kneelawk:knet-xplat-mojmap:$knet_version")
 
-/**
- * Used for encoding a {@link GraphEntity} to a {@link NetByteBuf}.
- *
- * @param <G> the type of graph entity this encoder encodes.
- */
-@FunctionalInterface
-public interface GraphEntityPacketEncoder<G extends GraphEntity<G>> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of graph entity to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends GraphEntity<T>> GraphEntityPacketEncoder<T> noOp() {
-        return (link, buf) -> {};
-    }
+    val codextra_version: String by project
+    api("com.kneelawk:codextra-xplat-mojmap:$codextra_version")
+}
 
-    /**
-     * Encodes a {@link GraphEntity} to a {@link NetByteBuf}.
-     * <p>
-     * The data will be decoded by {@link GraphEntityPacketDecoder#decode(NetByteBuf)}.
-     *
-     * @param link the graph entity to be encoded.
-     * @param buf  the buffer to write to.
-     */
-    void encode(@NotNull G link, @NotNull NetByteBuf buf);
+kpublish {
+    createPublication()
 }

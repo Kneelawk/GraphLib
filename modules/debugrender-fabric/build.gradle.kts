@@ -33,7 +33,8 @@ submodule {
     setLibsDirectory()
     applyFabricLoaderDependency()
     applyFabricApiDependency()
-    applyXplatConnection(":debugrender-xplat")
+    applyXplatConnection(":debugrender-xplat", "fabric")
+    setupJavadoc()
 }
 
 dependencies {
@@ -45,10 +46,6 @@ dependencies {
     // KModLib RenderLayer
     modImplementation("com.kneelawk:kmodlib-renderlayer:$kml_version")
     include("com.kneelawk:kmodlib-renderlayer:$kml_version")
-}
-
-java {
-    withJavadocJar()
 }
 
 kpublish {

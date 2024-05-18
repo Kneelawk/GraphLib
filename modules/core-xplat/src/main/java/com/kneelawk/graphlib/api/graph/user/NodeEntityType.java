@@ -30,20 +30,48 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.codextra.api.codec.CodecOrUnit;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of node entity.
  */
-public class NodeEntityType implements ObjectType {
-    private final @NotNull ResourceLocation id;
-    private final @NotNull NodeEntityDecoder decoder;
+public final class NodeEntityType implements ObjectType {
+    /**
+     * {@link BlockNodeType} static codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final Codec<NodeEntityType> REF_CODEC =
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+            NodeEntityType type = universe.getNodeEntityType(id);
+            if (type == null) return DataResult.error(
+                () -> "Node entity type '" + id + "' does not exist in universe '" + universe.getId() + "'");
+            return DataResult.success(type);
+        }, (_universe, type) -> DataResult.success(type.getId()));
 
-    private NodeEntityType(@NotNull ResourceLocation id, @NotNull NodeEntityDecoder decoder) {
+    /**
+     * {@link NodeEntityType} codec getter.
+     *
+     * @param universe the universe the node entity types to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static Codec<NodeEntityType> refCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, REF_CODEC);
+    }
+
+    private final @NotNull ResourceLocation id;
+    private final @NotNull Codec<? extends NodeEntity> codec;
+
+    private NodeEntityType(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
         this.id = id;
-        this.decoder = decoder;
+        this.codec = codec;
     }
 
     /**
@@ -61,8 +89,8 @@ public class NodeEntityType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull NodeEntityDecoder getDecoder() {
-        return decoder;
+    public @NotNull Codec<? extends NodeEntity> getCodec() {
+        return codec;
     }
 
     @Override
@@ -82,21 +110,19 @@ public class NodeEntityType implements ObjectType {
 
     @Override
     public String toString() {
-        return "NodeEntityType{" +
-            "id=" + id +
-            '}';
+        return "NodeEntityType[" + id + ']';
     }
 
     /**
      * Creates a new node entity type.
      *
-     * @param id      the id of the new node entity type.
-     * @param decoder the decoder for the new node entity type.
+     * @param id    the id of the new node entity type.
+     * @param codec the codec for the new node entity type.
      * @return a new node entity type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull NodeEntityDecoder decoder) {
-        return new NodeEntityType(id, decoder);
+    public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Codec<? extends NodeEntity> codec) {
+        return new NodeEntityType(id, codec);
     }
 
     /**
@@ -108,6 +134,6 @@ public class NodeEntityType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull NodeEntityType of(@NotNull ResourceLocation id, @NotNull Supplier<NodeEntity> supplier) {
-        return new NodeEntityType(id, nbt -> supplier.get());
+        return new NodeEntityType(id, Codec.unit(supplier));
     }
 }

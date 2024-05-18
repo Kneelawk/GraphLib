@@ -5,8 +5,9 @@ import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.Tag;
+import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.HalfLink;
@@ -28,25 +29,35 @@ import com.kneelawk.graphlib.api.wire.WireConnectionDiscoverers;
  */
 public interface BlockNode {
     /**
-     * Gets this block node's type ID, associated with its decoder.
+     * {@link BlockNode} map codec.
      * <p>
-     * A block node's {@link BlockNodeDecoder} must always be registered with
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * This uses the {@code type} and {@code node} map keys.
+     */
+    MapCodec<BlockNode> MAP_CODEC = BlockNodeType.REF_CODEC.dispatchMap(BlockNode::getType,
+        type -> Codextra.unitHandlingFieldOf("node", type.getCodec()));
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the map codec.
+     */
+    static MapCodec<BlockNode> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
+    /**
+     * Gets this block node's type.
+     * <p>
+     * A block node's {@link BlockNodeType} must always be registered with
      * {@link GraphUniverse#addNodeType(BlockNodeType)} under the same ID as returned here.
      *
-     * @return the id of this block node.
+     * @return the type of this block node.
      */
     @NotNull
     BlockNodeType getType();
-
-    /**
-     * Encodes this block node's data to an NBT element.
-     * <p>
-     * This can return null if this block node's type is all the data that needs to be stored.
-     *
-     * @return a (possibly null) NBT element describing this block node's data.
-     */
-    @Nullable
-    Tag toTag();
 
     /**
      * Checks if this block node should be automatically removed.

@@ -25,32 +25,26 @@
 
 package com.kneelawk.graphlib.syncing.knet.impl.payload;
 
-import com.kneelawk.graphlib.syncing.knet.api.util.LinkPosPayload;
-import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
-import com.kneelawk.knet.api.util.NetByteBuf;
-
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 
-public record UnlinkPayload(ResourceLocation universeId, long graphId, LinkPosPayload linkPos)
+import com.kneelawk.codextra.api.util.FunctionUtils;
+import com.kneelawk.graphlib.api.util.LinkPos;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+
+public record UnlinkPayload(KNetSyncedUniverse universe, long graphId, LinkPos linkPos)
     implements CustomPacketPayload {
     public static final Type<UnlinkPayload> ID = new Type<>(SyncingKNetImpl.id("unlink"));
-    public static final StreamCodec<NetByteBuf, UnlinkPayload> CODEC =
-        StreamCodec.ofMember(UnlinkPayload::encode, UnlinkPayload::decode);
-
-    public static UnlinkPayload decode(NetByteBuf buf) {
-        ResourceLocation universeId = buf.readResourceLocation();
-        long graphId = buf.readVarUnsignedLong();
-        LinkPosPayload linkPos = LinkPosPayload.decode(buf);
-        return new UnlinkPayload(universeId, graphId, linkPos);
-    }
-
-    public void encode(NetByteBuf buf) {
-        buf.writeResourceLocation(universeId);
-        buf.writeVarUnsignedLong(graphId);
-        linkPos.encode(buf);
-    }
+    public static final StreamCodec<NetRegistryByteBuf, UnlinkPayload> CODEC = StreamCodec.composite(
+        KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
+        ByteBufCodecs.VAR_LONG, UnlinkPayload::graphId,
+        GraphLibSyncingKNet.LINK_POS_CODEC, UnlinkPayload::linkPos,
+        UnlinkPayload::new
+    ).apply(KNetSyncedUniverse.readAttachingOp(UnlinkPayload::universe));
 
     @Override
     public Type<?> type() {

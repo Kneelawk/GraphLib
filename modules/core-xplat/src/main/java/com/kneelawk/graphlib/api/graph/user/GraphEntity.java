@@ -5,9 +5,15 @@ import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import net.minecraft.nbt.Tag;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
+import com.mojang.datafixers.util.Unit;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+
+import com.kneelawk.codextra.api.Codextra;
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.util.LinkPos;
@@ -19,6 +25,51 @@ import com.kneelawk.graphlib.api.util.NodePos;
  * @param <G> this graph entity class.
  */
 public interface GraphEntity<G extends GraphEntity<G>> {
+
+    /**
+     * Codec for encoding/decoding all graph entities in a given universe.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     * <p>
+     * Note: if this encounters invalid or missing graph entities when loading,
+     * it will create new graph entities in their place.
+     * Partial graph entity loads will cause this codec to return a partial.
+     */
+    @SuppressWarnings("unchecked")
+    Codec<Map<GraphEntityType<?>, GraphEntity<?>>> ALL_CODEC = GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(
+        Codec.dispatchedMap(GraphEntityType.REF_CODEC,
+            type -> ((Codec<GraphEntity<?>>) Codextra.unitHandlingFieldOf("entity", type.getCodec()).codec()).mapResult(
+                Codextra.codecAddPartial(() -> type.getFactory().createNew()))),
+        (GraphUniverse universe, Map<GraphEntityType<?>, GraphEntity<?>> decodedMap) -> {
+            Map<GraphEntityType<?>, GraphEntity<?>> map = new Object2ObjectOpenHashMap<>(decodedMap);
+            DataResult<Unit> accumulator = DataResult.success(Unit.INSTANCE);
+
+            // fill out missing graph entities
+            for (GraphEntityType<?> type : universe.getAllGraphEntityTypes()) {
+                if (!map.containsKey(type)) {
+                    accumulator.apply2stable((u, o) -> u,
+                        DataResult.error(() -> "Missing entry for key: '" + type + "'"));
+                    map.put(type, type.getFactory().createNew());
+                }
+            }
+
+            return accumulator.map(unit -> map).setPartial(map);
+        }, (universe, map) -> DataResult.success(map));
+
+    /**
+     * Gets a codec for encoding/decoding all graph entities in a given universe.
+     * <p>
+     * Note: if this encounters invalid or missing graph entities when loading,
+     * it will create new graph entities in their place.
+     * Partial graph entity loads will cause this codec to return a partial.
+     *
+     * @param universe the universe to get graph entities from.
+     * @return a codec for encoding/decoding all graph entities in the given universe.
+     */
+    static Codec<Map<GraphEntityType<?>, GraphEntity<?>>> allCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, ALL_CODEC);
+    }
+
     /**
      * Called when the graph entity is initialized in a graph, to give this its context.
      *
@@ -41,14 +92,6 @@ public interface GraphEntity<G extends GraphEntity<G>> {
      */
     @NotNull
     GraphEntityType<?> getType();
-
-    /**
-     * Encodes this graph entity as an NBT tag.
-     *
-     * @return this graph entity as an NBT tag.
-     */
-    @Nullable
-    Tag toTag();
 
     /**
      * Called right before this entity's associated graph is deleted.

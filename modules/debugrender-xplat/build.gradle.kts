@@ -33,22 +33,15 @@ submodule {
     setRefmaps("graphlib-debugrender")
     applyFabricLoaderDependency()
     xplatProjectDependency(":core")
+    forceRemap()
+    setupJavadoc()
 }
 
 dependencies {
     val kml_version: String by project
-    modImplementation("com.kneelawk:kmodlib-renderlayer:$kml_version")
-}
-
-java {
-    withJavadocJar()
+    modCompileOnly("com.kneelawk:kmodlib-renderlayer:$kml_version")
 }
 
 kpublish {
-    createPublication("intermediary", publicationName = "mavenIntermediary")
-    createPublication(
-        "mojmap",
-        publicationName = "mavenMojmap",
-        tasks = arrayOf(tasks.named("jar"), tasks.named("sourcesJar"), tasks.named("javadocJar"))
-    )
+    createPublication("intermediary")
 }

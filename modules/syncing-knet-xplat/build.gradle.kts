@@ -34,22 +34,18 @@ submodule {
     applyFabricLoaderDependency()
     xplatProjectDependency(":core")
     xplatProjectDependency(":syncing-core")
+    forceRemap()
+    setupJavadoc()
 }
 
 dependencies {
     val knet_version: String by project
     modApi("com.kneelawk:knet-xplat-intermediary:$knet_version")
-}
 
-java {
-    withJavadocJar()
+    val codextra_version: String by project
+    modApi("com.kneelawk:codextra-xplat-intermediary:$codextra_version")
 }
 
 kpublish {
-    createPublication("intermediary", publicationName = "mavenIntermediary")
-    createPublication(
-        "mojmap",
-        publicationName = "mavenMojmap",
-        tasks = arrayOf(tasks.named("jar"), tasks.named("sourcesJar"), tasks.named("javadocJar"))
-    )
+    createPublication("intermediary")
 }

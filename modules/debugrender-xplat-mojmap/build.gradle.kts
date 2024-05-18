@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Kneelawk.
+ * Copyright (c) 2024 Cyan Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,24 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.api.graph.user;
+plugins {
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
+    id("com.kneelawk.kpublish")
+}
 
-import org.jetbrains.annotations.NotNull;
+submodule {
+    applyFabricLoaderDependency()
+    applyXplatConnection(":debugrender-xplat", "mojmap")
+    setupJavadoc()
+    disableRemap()
+}
 
-import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.knet.api.util.NetByteBuf;
+dependencies {
+    val kml_version: String by project
+    modCompileOnly("com.kneelawk:kmodlib-renderlayer:$kml_version")
+}
 
-/**
- * Used for encoding a {@link NodeEntity} to a {@link NetByteBuf}.
- *
- * @param <N> the type of node entity this encoder encodes.
- */
-@FunctionalInterface
-public interface NodeEntityPacketEncoder<N extends NodeEntity> {
-    /**
-     * Returns a no-op encoder.
-     *
-     * @param <T> the type of node entity to encode.
-     * @return a no-op encoder.
-     */
-    static <T extends NodeEntity> NodeEntityPacketEncoder<T> noOp() {
-        return (entity, buf) -> {};
-    }
-
-    /**
-     * Encodes a {@link NodeEntity} to a {@link NetByteBuf}.
-     * <p>
-     * The data will be decoded by {@link NodeEntityPacketDecoder#decode(NetByteBuf)}.
-     *
-     * @param entity the entity to be encoded.
-     * @param buf    the buffer to write to.
-     */
-    void encode(@NotNull N entity, @NotNull NetByteBuf buf);
+kpublish {
+    createPublication()
 }

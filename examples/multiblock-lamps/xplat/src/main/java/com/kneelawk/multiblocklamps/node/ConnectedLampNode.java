@@ -52,12 +52,6 @@ public class ConnectedLampNode implements BlockNode, FullWireBlockNode, LampInpu
     }
 
     @Override
-    public @Nullable Tag toTag() {
-        // This node is a singleton so no data needs to be encoded
-        return null;
-    }
-
-    @Override
     public void onConnectionsChanged(@NotNull NodeHolder<BlockNode> self) {
         LampLogic.onLampUpdated(self);
     }

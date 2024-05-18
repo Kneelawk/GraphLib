@@ -29,68 +29,100 @@ import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+
+import com.kneelawk.codextra.api.CodextraStreams;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.knet.api.handling.PayloadHandlingException;
-import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
+import com.kneelawk.knet.api.util.NetBufs;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 
 /**
  * Holds a node entity encoder and decoder.
  */
 public final class NodeEntitySyncing {
-    private final @NotNull NodeEntityPacketEncoder<?> encoder;
-    private final @NotNull NodeEntityPacketDecoder decoder;
+    /**
+     * {@link NodeEntitySyncing} static codec.
+     * <p>
+     * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
+     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     */
+    public static final StreamCodec<FriendlyByteBuf, NodeEntitySyncing> REF_CODEC =
+        StreamCodecHelper.createRefStreamCodec(GraphUniverse::getNodeEntityType,
+            KNetSyncedUniverse::getNodeEntitySyncing, NodeEntitySyncing::getType, "NodeEntity");
 
-    private NodeEntitySyncing(@NotNull NodeEntityPacketEncoder<?> encoder, @NotNull NodeEntityPacketDecoder decoder) {
-        this.encoder = encoder;
-        this.decoder = decoder;
+    /**
+     * {@link NodeEntitySyncing} codec getter.
+     *
+     * @param universe the universe containing the node entities to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static StreamCodec<FriendlyByteBuf, NodeEntitySyncing> refCodec(KNetSyncedUniverse universe) {
+        return KNetSyncedUniverse.ATTACHMENT_KEY.attachingStreamCodec(universe, REF_CODEC);
+    }
+
+    private final @NotNull NodeEntityType type;
+    private final @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends NodeEntity> codec;
+
+    private NodeEntitySyncing(@NotNull NodeEntityType type,
+                              @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends NodeEntity> codec) {
+        this.type = type;
+        this.codec = codec;
     }
 
     /**
-     * Encodes a node entity.
-     * <p>
-     * <b>Note: this does not write the node entity's type id. That must be written separately.</b>
-     * <p>
-     * <b>Note: the node entity being encoded must be of the type that the encoder expects.</b>
-     *
-     * @param node the node entity to encode.
-     * @param buf  the buffer to encode to.
+     * {@return this syncing descriptor's type}
      */
-    @SuppressWarnings("unchecked")
-    public void encode(@NotNull NodeEntity node, @NotNull NetByteBuf buf) {
-        ((NodeEntityPacketEncoder<NodeEntity>) encoder).encode(node, buf);
+    public @NotNull NodeEntityType getType() {
+        return type;
     }
 
     /**
-     * Decodes a node entity.
-     *
-     * @param buf the buffer to decode from.
-     * @return a newly decoded node entity.
-     * @throws PayloadHandlingException if the buffer contained invalid data.
+     * {@return this syncing descriptor's stream codec}
      */
-    public @NotNull NodeEntity decode(@NotNull NetByteBuf buf) throws PayloadHandlingException {
-        return decoder.decode(buf);
+    public @NotNull StreamCodec<? super NetRegistryByteBuf, ? extends NodeEntity> getCodec() {
+        return codec;
     }
 
     /**
      * Makes a {@link NodeEntity} syncing descriptor.
      *
-     * @param encoder the encoder.
-     * @param decoder the decoder.
-     * @param <N>     the type of node entity this descriptor syncs.
+     * @param type  the node entity type this syncing is associated with.
+     * @param codec the node entity's stream codec.
      * @return a new node entity syncing descriptor.
      */
-    public static <N extends NodeEntity> @NotNull NodeEntitySyncing of(@NotNull NodeEntityPacketEncoder<N> encoder,
-                                                                       @NotNull NodeEntityPacketDecoder decoder) {
-        return new NodeEntitySyncing(encoder, decoder);
+    public static @NotNull NodeEntitySyncing ofRegistry(@NotNull NodeEntityType type, @NotNull
+    StreamCodec<? super NetRegistryByteBuf, ? extends NodeEntity> codec) {
+        return new NodeEntitySyncing(type, codec);
+    }
+
+    /**
+     * Makes a {@link NodeEntity} syncing descriptor.
+     *
+     * @param type  the node entity type this syncing is associated with.
+     * @param codec the node entity's stream codec.
+     * @return a new node entity syncing descriptor.
+     */
+    public static @NotNull NodeEntitySyncing ofNet(@NotNull NodeEntityType type, @NotNull
+    StreamCodec<? super RegistryNetByteBuf, ? extends NodeEntity> codec) {
+        return new NodeEntitySyncing(type, codec.mapStream(NetBufs::registryNetOf));
     }
 
     /**
      * Makes a {@link NodeEntity} syncing descriptor that does no encoding or decoding.
      *
+     * @param type     the node entity type this syncing is associated with.
      * @param supplier supplies new instances of node entities.
      * @return a new node entity syncing descriptor.
      */
-    public static @NotNull NodeEntitySyncing ofNoOp(@NotNull Supplier<? extends NodeEntity> supplier) {
-        return new NodeEntitySyncing(NodeEntityPacketEncoder.noOp(), buf -> supplier.get());
+    public static @NotNull NodeEntitySyncing ofNoOp(@NotNull NodeEntityType type,
+                                                    @NotNull Supplier<? extends NodeEntity> supplier) {
+        return new NodeEntitySyncing(type, CodextraStreams.unit(supplier));
     }
 }

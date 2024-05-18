@@ -30,20 +30,48 @@ import java.util.function.Supplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.codextra.api.codec.CodecOrUnit;
+import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
 
 /**
  * Describes a type of link key.
  */
-public class LinkKeyType implements ObjectType {
-    private final @NotNull ResourceLocation id;
-    private final @NotNull LinkKeyDecoder decoder;
+public final class LinkKeyType implements ObjectType {
+    /**
+     * {@link LinkKeyType} static codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
+     */
+    public static final Codec<LinkKeyType> REF_CODEC =
+        GraphUniverse.ATTACHMENT_KEY.retrieveWithCodecResult(ResourceLocation.CODEC, (universe, id) -> {
+            LinkKeyType type = universe.getLinkKeyType(id);
+            if (type == null) return DataResult.error(
+                () -> "Link key type '" + id + "' does not exist in universe '" + universe.getId() + "'");
+            return DataResult.success(type);
+        }, (_universe, type) -> DataResult.success(type.getId()));
 
-    private LinkKeyType(@NotNull ResourceLocation id, @NotNull LinkKeyDecoder decoder) {
+    /**
+     * {@link LinkKeyType} codec getter.
+     *
+     * @param universe the universe the link key types to decode.
+     * @return the codec associated with the given universe.
+     */
+    public static Codec<LinkKeyType> refCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingCodec(universe, REF_CODEC);
+    }
+
+    private final @NotNull ResourceLocation id;
+    private final @NotNull Codec<? extends LinkKey> codec;
+
+    private LinkKeyType(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkKey> codec) {
         this.id = id;
-        this.decoder = decoder;
+        this.codec = codec;
     }
 
     /**
@@ -61,8 +89,8 @@ public class LinkKeyType implements ObjectType {
      *
      * @return this type's decoder.
      */
-    public @NotNull LinkKeyDecoder getDecoder() {
-        return decoder;
+    public @NotNull Codec<? extends LinkKey> getCodec() {
+        return codec;
     }
 
     @Override
@@ -82,21 +110,19 @@ public class LinkKeyType implements ObjectType {
 
     @Override
     public String toString() {
-        return "LinkKeyType{" +
-            "id=" + id +
-            '}';
+        return "LinkKeyType[" + id + ']';
     }
 
     /**
      * Creates a new link key type.
      *
-     * @param id      the id of the type.
-     * @param decoder the decoder of the type.
+     * @param id    the id of the type.
+     * @param codec the codec of the type.
      * @return a new link key type.
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull LinkKeyDecoder decoder) {
-        return new LinkKeyType(id, decoder);
+    public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull Codec<? extends LinkKey> codec) {
+        return new LinkKeyType(id, codec);
     }
 
     /**
@@ -108,6 +134,6 @@ public class LinkKeyType implements ObjectType {
      */
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull LinkKeyType of(@NotNull ResourceLocation id, @NotNull Supplier<LinkKey> supplier) {
-        return new LinkKeyType(id, nbt -> supplier.get());
+        return new LinkKeyType(id, Codec.unit(supplier));
     }
 }

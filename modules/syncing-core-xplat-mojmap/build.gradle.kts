@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 Kneelawk.
+ * Copyright (c) 2024 Cyan Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,19 @@
  *
  */
 
-package com.kneelawk.graphlib.syncing.knet.impl.payload;
+plugins {
+    id("com.kneelawk.submodule")
+    id("com.kneelawk.versioning")
+    id("com.kneelawk.kpublish")
+}
 
-import com.kneelawk.knet.api.util.NetBufs;
-import com.kneelawk.knet.api.util.NetByteBuf;
-import com.kneelawk.knet.api.util.Palette;
+submodule {
+    applyFabricLoaderDependency()
+    applyXplatConnection(":syncing-core-xplat", "mojmap")
+    setupJavadoc()
+    disableRemap()
+}
 
-import net.minecraft.resources.ResourceLocation;
-
-public record PayloadHeader(ResourceLocation universeId, Palette<ResourceLocation> palette, NetByteBuf data) {
-    public static PayloadHeader decode(NetByteBuf buf) {
-        ResourceLocation universeId = buf.readResourceLocation();
-        Palette<ResourceLocation> palette = Palette.decode(buf, NetByteBuf::readResourceLocation);
-        int dataLen = buf.readVarUnsignedInt();
-        NetByteBuf data = NetBufs.netBuf(dataLen);
-        buf.readBytes(data, dataLen);
-
-        return new PayloadHeader(universeId, palette, data);
-    }
-
-    public void encode(NetByteBuf buf) {
-        buf.writeResourceLocation(universeId);
-        palette.encode(buf, NetByteBuf::writeResourceLocation);
-        buf.writeVarUnsignedInt(data.readableBytes());
-        buf.writeBytes(data, data.readerIndex(), data.readableBytes());
-    }
+kpublish {
+    createPublication()
 }

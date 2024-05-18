@@ -11,6 +11,7 @@ submodule {
     applyFabricApiDependency()
     fabricProjectDependency(":core")
     fabricProjectDependency(":syncing-core")
+    setupJavadoc()
 }
 
 dependencies {
@@ -18,10 +19,6 @@ dependencies {
     val lns_version: String by project
     modApi("alexiil.mc.lib:libnetworkstack-base:$lns_version")
     include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
-}
-
-java {
-    withJavadocJar()
 }
 
 kpublish {
