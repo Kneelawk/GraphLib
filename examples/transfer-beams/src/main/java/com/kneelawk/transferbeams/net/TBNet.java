@@ -25,11 +25,6 @@
 
 package com.kneelawk.transferbeams.net;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-
 import alexiil.mc.lib.net.IMsgReadCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
@@ -47,6 +42,10 @@ import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.graph.TransferNodeEntity;
 import com.kneelawk.transferbeams.item.LinkToolItem;
 import com.kneelawk.transferbeams.util.PlayerDropHandler;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 public class TBNet {
     public static void init() {
@@ -69,12 +68,12 @@ public class TBNet {
     private static void receiveNodeActivate(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
 
-        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayerEntity player)) return;
+        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayer player)) return;
 
         // make sure the player is reasonably close
-        if (pos.pos().getSquaredDistanceToCenter(player.getPos()) > 100.0) return;
+        if (pos.pos().distToCenterSqr(player.position()) > 100.0) return;
 
-        ServerWorld serverWorld = player.getServerWorld();
+        ServerLevel serverWorld = player.serverLevel();
 
         // FIXME: no claim detection
 
@@ -97,12 +96,12 @@ public class TBNet {
     private static void receiveNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
 
-        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayerEntity player)) return;
+        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayer player)) return;
 
         // make sure the player is reasonably close
-        if (pos.pos().getSquaredDistanceToCenter(player.getPos()) > 100.0) return;
+        if (pos.pos().distToCenterSqr(player.position()) > 100.0) return;
 
-        ServerWorld serverWorld = player.getServerWorld();
+        ServerLevel serverWorld = player.serverLevel();
 
         // FIXME: no claim detection
 
@@ -127,13 +126,13 @@ public class TBNet {
     private static void receiveNodeLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
         NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
 
-        PlayerEntity player = ctx.getConnection().getPlayer();
+        Player player = ctx.getConnection().getPlayer();
 
         // make sure the player is reasonably close
-        if (pos.pos().getSquaredDistanceToCenter(player.getPos()) > 100.0) return;
+        if (pos.pos().distToCenterSqr(player.position()) > 100.0) return;
 
-        World playerWorld = player.getWorld();
-        if (!(playerWorld instanceof ServerWorld serverWorld)) return;
+        Level playerWorld = player.level();
+        if (!(playerWorld instanceof ServerLevel serverWorld)) return;
 
         // FIXME: no claim detection
 

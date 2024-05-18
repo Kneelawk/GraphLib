@@ -29,9 +29,7 @@ import java.util.concurrent.CompletableFuture;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-
-import net.minecraft.registry.HolderLookup;
-
+import net.minecraft.core.HolderLookup;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 
 public class TransferBeamsItemTagGen extends FabricTagProvider.ItemTagProvider {
@@ -41,10 +39,10 @@ public class TransferBeamsItemTagGen extends FabricTagProvider.ItemTagProvider {
     }
 
     @Override
-    protected void configure(HolderLookup.Provider arg) {
-        getOrCreateTagBuilder(TransferBeamsMod.NODE_VISUALIZERS).add(TransferBeamsMod.ITEM_NODE_ITEMS)
+    protected void addTags(HolderLookup.Provider arg) {
+        tag(TransferBeamsMod.NODE_VISUALIZERS).add(TransferBeamsMod.ITEM_NODE_ITEMS)
             .add(TransferBeamsMod.CONFIG_TOOL_ITEM, TransferBeamsMod.LINK_TOOL_ITEM);
-        getOrCreateTagBuilder(TransferBeamsMod.NODE_SELECTORS).add(TransferBeamsMod.CONFIG_TOOL_ITEM,
+        tag(TransferBeamsMod.NODE_SELECTORS).add(TransferBeamsMod.CONFIG_TOOL_ITEM,
             TransferBeamsMod.LINK_TOOL_ITEM);
     }
 }

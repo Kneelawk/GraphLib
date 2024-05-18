@@ -27,14 +27,11 @@ package com.kneelawk.transferbeams.graph;
 
 import java.util.Collection;
 import java.util.List;
-
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.item.DyeColor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.util.DyeColor;
-
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -47,7 +44,7 @@ import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 public record TransferBlockNode(@NotNull DyeColor color) implements BlockNode {
     public static final BlockNodeType TYPE = BlockNodeType.of(id("transfer_node"), nbt -> {
         if (nbt != null) {
-            return new TransferBlockNode(DyeColor.byName(nbt.asString(), DyeColor.WHITE));
+            return new TransferBlockNode(DyeColor.byName(nbt.getAsString(), DyeColor.WHITE));
         }
         return null;
     });
@@ -61,8 +58,8 @@ public record TransferBlockNode(@NotNull DyeColor color) implements BlockNode {
     }
 
     @Override
-    public @Nullable NbtElement toTag() {
-        return NbtString.of(color.getName());
+    public @Nullable Tag toTag() {
+        return StringTag.valueOf(color.getName());
     }
 
     @Override

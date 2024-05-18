@@ -25,7 +25,7 @@
 
 package com.kneelawk.transferbeams.util;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 public interface DropHandler {
     void drop(ItemStack stack);

@@ -25,17 +25,6 @@
 
 package com.kneelawk.transferbeams.item;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.util.NodePos;
@@ -43,50 +32,60 @@ import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
 import com.kneelawk.transferbeams.util.InventoryUtil;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class NodeItem extends Item implements InteractionCancellerItem {
     private final DyeColor color;
 
-    public NodeItem(DyeColor color, Settings settings) {
+    public NodeItem(DyeColor color, Properties settings) {
         super(settings);
         this.color = color;
     }
 
     @Override
-    public ActionResult interceptBlockUse(ItemStack stack, PlayerEntity player, World world, Hand hand,
+    public InteractionResult interceptBlockUse(ItemStack stack, Player player, Level world, InteractionHand hand,
                                           BlockHitResult hitResult) {
         BlockPos blockPos = hitResult.getBlockPos();
-        if (!InventoryUtil.hasInventory(world, blockPos)) return ActionResult.PASS;
+        if (!InventoryUtil.hasInventory(world, blockPos)) return InteractionResult.PASS;
 
         GraphView syncedView = TransferBeamsMod.SYNCED.getSidedGraphView(world);
         // getSidedGraphView may return null if world is not a ClientWorld or a ServerWorld, like with Create.
-        if (syncedView == null) return ActionResult.FAIL;
+        if (syncedView == null) return InteractionResult.FAIL;
 
         NodePos nodePos = new NodePos(blockPos, new TransferBlockNode(color));
 
-        if (world.isClient()) {
+        if (world.isClientSide()) {
             // The fact that nodes are synced means we can tell client-side if the node of our color already exists.
             if (syncedView.nodeExistsAt(nodePos)) {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             } else {
                 // send event to the server
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             }
-        } else if (world instanceof ServerWorld serverWorld) {
+        } else if (world instanceof ServerLevel serverWorld) {
             // the synced view exists on both client and server
             if (syncedView.nodeExistsAt(nodePos)) {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             } else {
                 // the editable graph world only exists on the server
                 GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getGraphWorld(serverWorld);
 
                 graphWorld.addBlockNode(nodePos, new ItemTransferNodeEntity());
 
-                return ActionResult.CONSUME;
+                return InteractionResult.CONSUME;
             }
         } else {
             // handle weirdness
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
     }
 }

@@ -27,13 +27,10 @@ package com.kneelawk.transferbeams.mixin.api;
 
 import java.util.List;
 import java.util.PrimitiveIterator;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -43,7 +40,7 @@ import com.kneelawk.transferbeams.graph.TransferNodeEntity;
 import com.kneelawk.transferbeams.util.PositionDropHandler;
 
 public class BlockBreakHandler {
-    public static void onBlockChanged(BlockPos pos, BlockState newBlock, ServerWorld world) {
+    public static void onBlockChanged(BlockPos pos, BlockState newBlock, ServerLevel world) {
         GraphWorld graphWorld = TransferBeamsMod.UNIVERSE.getGraphWorld(world);
         PrimitiveIterator.OfLong iter = graphWorld.getAllGraphIdsAt(pos).iterator();
         if (iter.hasNext()) {

@@ -25,20 +25,20 @@
 
 package com.kneelawk.transferbeams.util;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 public class PlayerDropHandler implements DropHandler {
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
 
-    public PlayerDropHandler(ServerPlayerEntity player) {
+    public PlayerDropHandler(ServerPlayer player) {
         this.player = player;
     }
 
     @Override
     public void drop(ItemStack stack) {
-        if (!player.getInventory().insertStack(stack)) {
-            player.dropItem(stack, false);
+        if (!player.getInventory().add(stack)) {
+            player.drop(stack, false);
         }
     }
 

@@ -25,9 +25,8 @@
 
 package com.kneelawk.transferbeams.util;
 
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-
 import com.kneelawk.transferbeams.graph.TransferNodeEntity;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
-public record SelectedNode(TransferNodeEntity entity, Vec3d intersection, Box boundingBox) {}
+public record SelectedNode(TransferNodeEntity entity, Vec3 intersection, AABB boundingBox) {}

@@ -4,10 +4,8 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 
 public class NodeTextureGen extends AbstractTextureGenerator {
@@ -20,8 +18,8 @@ public class NodeTextureGen extends AbstractTextureGenerator {
     @Override
     public void generate(TextureGenerator gen) {
         for (DyeColor color : DyeColor.values()) {
-            Identifier id = TransferBeamsMod.id("block/" + color.getName() + "_item_transfer_node");
-            BufferedImage concrete = loadTexture(new Identifier("block/" + color.getName() + "_concrete"));
+            ResourceLocation id = TransferBeamsMod.id("block/" + color.getName() + "_item_transfer_node");
+            BufferedImage concrete = loadTexture(new ResourceLocation("block/" + color.getName() + "_concrete"));
             Color colorColor = new Color(concrete.getRGB(0, 0));
 
             gen.addTexture(id, gfx -> {

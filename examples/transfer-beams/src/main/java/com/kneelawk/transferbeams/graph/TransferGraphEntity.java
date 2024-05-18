@@ -26,12 +26,9 @@
 package com.kneelawk.transferbeams.graph;
 
 import java.util.Iterator;
-
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractGraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
@@ -56,7 +53,7 @@ public class TransferGraphEntity extends AbstractGraphEntity<TransferGraphEntity
     }
 
     @Override
-    public @Nullable NbtElement toTag() {
+    public @Nullable Tag toTag() {
         return null;
     }
 
@@ -69,7 +66,7 @@ public class TransferGraphEntity extends AbstractGraphEntity<TransferGraphEntity
     public void onTick() {
         GraphEntityContext ctx = getContext();
 
-        if (!ctx.getBlockWorld().isClient) {
+        if (!ctx.getBlockWorld().isClientSide) {
             if (++tickCounter >= TICKS_PER_UPDATE) {
                 tickCounter = 0;
 

@@ -27,14 +27,12 @@ package com.kneelawk.transferbeams.graph;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import net.minecraft.nbt.NbtElement;
-
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkKeySyncing;
+import net.minecraft.nbt.Tag;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
@@ -51,7 +49,7 @@ public class TransferLinkKey implements LinkKey {
     }
 
     @Override
-    public @Nullable NbtElement toTag() {
+    public @Nullable Tag toTag() {
         return null;
     }
 

@@ -25,14 +25,14 @@
 
 package com.kneelawk.transferbeams.item;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 public interface InteractionCancellerItem {
-    ActionResult interceptBlockUse(ItemStack stack, PlayerEntity player, World world, Hand hand,
+    InteractionResult interceptBlockUse(ItemStack stack, Player player, Level world, InteractionHand hand,
                                    BlockHitResult hitResult);
 }

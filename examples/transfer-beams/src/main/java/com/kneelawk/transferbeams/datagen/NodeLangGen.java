@@ -29,9 +29,7 @@ import java.io.IOException;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
-
-import net.minecraft.util.DyeColor;
-
+import net.minecraft.world.item.DyeColor;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 
 public class NodeLangGen extends FabricLanguageProvider {

@@ -29,31 +29,29 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-
 import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.mixin.api.BlockBreakHandler;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Detects when an inventory block has been removed and removes its associated nodes if there are any.
  */
-@Mixin(ServerWorld.class)
+@Mixin(ServerLevel.class)
 public class ServerWorldMixin {
     @Inject(
         method = "onBlockChanged(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/BlockState;)V",
         at = @At("HEAD"))
     private void onBlockChangedHook(BlockPos pos, BlockState oldBlock, BlockState newBlock, CallbackInfo ci) {
-        ServerWorld world = (ServerWorld) (Object) this;
+        ServerLevel world = (ServerLevel) (Object) this;
         // Removing nodes should generally only happen on the server thread,
         // because nodes are generally place by players, meaning they shouldn't
         // appear in worldgen.
         // This method is called *a lot* during worldgen, so we need to be careful.
-        if (world.getServer().isOnThread()) {
+        if (world.getServer().isSameThread()) {
             BlockBreakHandler.onBlockChanged(pos, newBlock, world);
-        } else if (oldBlock.isIn(TransferBeamsMod.WORLDGEN_NODE_HOLDERS)) {
+        } else if (oldBlock.is(TransferBeamsMod.WORLDGEN_NODE_HOLDERS)) {
             world.getServer().execute(() -> BlockBreakHandler.onBlockChanged(pos, newBlock, world));
         }
     }

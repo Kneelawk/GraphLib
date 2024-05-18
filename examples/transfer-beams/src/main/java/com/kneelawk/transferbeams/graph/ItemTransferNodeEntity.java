@@ -32,23 +32,21 @@ import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.screen.NamedScreenHandlerFactory;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
@@ -62,18 +60,18 @@ import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 import static com.kneelawk.transferbeams.TransferBeamsMod.tt;
 
 public class ItemTransferNodeEntity extends AbstractNodeEntity
-    implements TransferNodeEntity, NamedScreenHandlerFactory {
-    private static final Box BOUNDING_BOX =
-        new Box(4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0,
+    implements TransferNodeEntity, MenuProvider {
+    private static final AABB BOUNDING_BOX =
+        new AABB(4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0,
             12.0 / 16.0 / 4.0);
 
     public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), nbt -> {
-        if (!(nbt instanceof NbtCompound root)) return null;
+        if (!(nbt instanceof CompoundTag root)) return null;
 
         ItemTransferNodeEntity entity = new ItemTransferNodeEntity();
-        entity.inputFilter.readNbtList(root.getList("inputFilter", NbtElement.COMPOUND_TYPE));
-        entity.outputFilter.readNbtList(root.getList("outputFilter", NbtElement.COMPOUND_TYPE));
-        entity.signalInventory.readNbtList(root.getList("signalInventory", NbtElement.COMPOUND_TYPE));
+        entity.inputFilter.fromTag(root.getList("inputFilter", Tag.TAG_COMPOUND));
+        entity.outputFilter.fromTag(root.getList("outputFilter", Tag.TAG_COMPOUND));
+        entity.signalInventory.fromTag(root.getList("signalInventory", Tag.TAG_COMPOUND));
 
         return entity;
     });
@@ -95,39 +93,39 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     private boolean outputAllow = true;
     private @Nullable Direction outputSide = null;
 
-    private final SimpleInventory inputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE) {
+    private final SimpleContainer inputFilter = new SimpleContainer(FILTER_INVENTORY_SIZE) {
         @Override
-        public void markDirty() {
-            super.markDirty();
+        public void setChanged() {
+            super.setChanged();
             if (ctx != null) ctx.markDirty();
         }
     };
-    private final SimpleInventory outputFilter = new SimpleInventory(FILTER_INVENTORY_SIZE) {
+    private final SimpleContainer outputFilter = new SimpleContainer(FILTER_INVENTORY_SIZE) {
         @Override
-        public void markDirty() {
-            super.markDirty();
+        public void setChanged() {
+            super.setChanged();
             if (ctx != null) ctx.markDirty();
         }
     };
-    private final SimpleInventory signalInventory = new SimpleInventory(SIGNAL_INVENTORY_SIZE) {
+    private final SimpleContainer signalInventory = new SimpleContainer(SIGNAL_INVENTORY_SIZE) {
         @Override
-        public void markDirty() {
-            super.markDirty();
+        public void setChanged() {
+            super.setChanged();
             if (ctx != null) ctx.markDirty();
         }
     };
-    private final PropertyDelegate properties = new PropertyDelegate() {
+    private final ContainerData properties = new ContainerData() {
         @Override
         public int get(int index) {
             return switch (index) {
                 case INPUT_ALLOW_PROPERTY -> inputAllow ? 1 : 0;
                 case INPUT_SIDE_PROPERTY -> {
-                    if (inputSide != null) yield inputSide.getId();
+                    if (inputSide != null) yield inputSide.get3DDataValue();
                     else yield 6;
                 }
                 case OUTPUT_ALLOW_PROPERTY -> outputAllow ? 1 : 0;
                 case OUTPUT_SIDE_PROPERTY -> {
-                    if (outputSide != null) yield outputSide.getId();
+                    if (outputSide != null) yield outputSide.get3DDataValue();
                     else yield 6;
                 }
                 default -> throw new IllegalStateException("Unexpected value: " + index);
@@ -139,12 +137,12 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
             switch (index) {
                 case INPUT_ALLOW_PROPERTY -> inputAllow = value != 0;
                 case INPUT_SIDE_PROPERTY -> {
-                    if (0 <= value && value < 6) inputSide = Direction.byId(value);
+                    if (0 <= value && value < 6) inputSide = Direction.from3DDataValue(value);
                     else inputSide = null;
                 }
                 case OUTPUT_ALLOW_PROPERTY -> outputAllow = value != 0;
                 case OUTPUT_SIDE_PROPERTY -> {
-                    if (0 <= value && value < 6) outputSide = Direction.byId(value);
+                    if (0 <= value && value < 6) outputSide = Direction.from3DDataValue(value);
                     else outputSide = null;
                 }
                 default -> throw new IllegalStateException("Unexpected value: " + index);
@@ -152,7 +150,7 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
         }
 
         @Override
-        public int size() {
+        public int getCount() {
             return PROPERTY_COUNT;
         }
     };
@@ -160,7 +158,7 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     @Override
     public void onInit(@NotNull NodeEntityContext ctx) {
         super.onInit(ctx);
-        if (ctx.getBlockWorld() instanceof ServerWorld serverWorld) {
+        if (ctx.getBlockWorld() instanceof ServerLevel serverWorld) {
             apiCache = BlockApiCache.create(ItemStorage.SIDED, serverWorld, ctx.getBlockPos());
         }
     }
@@ -171,15 +169,15 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     }
 
     @Override
-    public @Nullable NbtElement toTag() {
-        NbtCompound root = new NbtCompound();
+    public @Nullable Tag toTag() {
+        CompoundTag root = new CompoundTag();
         root.putBoolean("inputAllow", inputAllow);
-        root.putByte("inputSide", (byte) (inputSide != null ? inputSide.getId() : 6));
+        root.putByte("inputSide", (byte) (inputSide != null ? inputSide.get3DDataValue() : 6));
         root.putBoolean("outputAllow", outputAllow);
-        root.putByte("outputSide", (byte) (outputSide != null ? outputSide.getId() : 6));
-        root.put("inputFilter", inputFilter.toNbtList());
-        root.put("outputFilter", outputFilter.toNbtList());
-        root.put("signalInventory", signalInventory.toNbtList());
+        root.putByte("outputSide", (byte) (outputSide != null ? outputSide.get3DDataValue() : 6));
+        root.put("inputFilter", inputFilter.createTag());
+        root.put("outputFilter", outputFilter.createTag());
+        root.put("signalInventory", signalInventory.createTag());
         return root;
     }
 
@@ -198,25 +196,25 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     }
 
     @Override
-    public Box getBoundingBox() {
+    public AABB getBoundingBox() {
         return BOUNDING_BOX;
     }
 
     @Override
-    public void onActivate(ServerPlayerEntity player) {
-        player.openHandledScreen(this);
+    public void onActivate(ServerPlayer player) {
+        player.openMenu(this);
     }
 
     @Override
-    public Text getDisplayName() {
+    public Component getDisplayName() {
         if (!(getContext().getNode() instanceof TransferBlockNode node)) return tt("title", "item_transfer_node");
 
-        return TransferBeamsMod.ITEM_NODE_ITEMS[node.color().getId()].getName();
+        return TransferBeamsMod.ITEM_NODE_ITEMS[node.color().getId()].getDescription();
     }
 
     @Nullable
     @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+    public AbstractContainerMenu createMenu(int syncId, Inventory playerInventory, Player playerEntity) {
         return new ItemNodeScreenHandler(syncId, playerInventory, inputFilter, outputFilter, signalInventory,
             properties);
     }

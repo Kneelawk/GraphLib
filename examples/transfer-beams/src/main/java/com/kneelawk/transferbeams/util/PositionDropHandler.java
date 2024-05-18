@@ -25,25 +25,25 @@
 
 package com.kneelawk.transferbeams.util;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 public class PositionDropHandler implements DropHandler {
-    private final ServerWorld world;
+    private final ServerLevel world;
     private final BlockPos pos;
 
-    public PositionDropHandler(ServerWorld world, BlockPos pos) {
+    public PositionDropHandler(ServerLevel world, BlockPos pos) {
         this.world = world;
         this.pos = pos;
     }
 
     @Override
     public void drop(ItemStack stack) {
-        Vec3d dropPos = pos.ofCenter();
-        world.spawnEntity(new ItemEntity(world, dropPos.x, dropPos.y, dropPos.z, stack));
+        Vec3 dropPos = pos.getCenter();
+        world.addFreshEntity(new ItemEntity(world, dropPos.x, dropPos.y, dropPos.z, stack));
     }
 
     @Override

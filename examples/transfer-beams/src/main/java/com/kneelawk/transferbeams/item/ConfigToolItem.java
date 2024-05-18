@@ -25,45 +25,44 @@
 
 package com.kneelawk.transferbeams.item;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
-
 import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.transferbeams.net.TBNet;
 import com.kneelawk.transferbeams.proxy.CommonProxy;
 import com.kneelawk.transferbeams.util.SelectedNode;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class ConfigToolItem extends Item implements InteractionCancellerItem {
-    public ConfigToolItem(Settings settings) {
+    public ConfigToolItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult interceptBlockUse(ItemStack stack, PlayerEntity player, World world, Hand hand,
+    public InteractionResult interceptBlockUse(ItemStack stack, Player player, Level world, InteractionHand hand,
                                           BlockHitResult hitResult) {
-        if (world.isClient()) {
+        if (world.isClientSide()) {
             SelectedNode node = CommonProxy.INSTANCE.getClientSelectedNode();
             if (node != null) {
                 // sneaking means we remove the node
                 NodePos pos = node.entity().getContext().getPos();
-                if (player.isSneaking()) {
+                if (player.isShiftKeyDown()) {
                     TBNet.sendNodeRemove(pos);
                 } else {
                     TBNet.sendNodeActivate(pos);
                 }
 
-                return ActionResult.SUCCESS;
+                return InteractionResult.SUCCESS;
             } else {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
         } else {
             // This should not be processed on the server, as node clicks will be handled via a separate packet.
-            return ActionResult.FAIL;
+            return InteractionResult.FAIL;
         }
     }
 }

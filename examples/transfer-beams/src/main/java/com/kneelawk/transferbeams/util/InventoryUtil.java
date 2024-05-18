@@ -31,11 +31,10 @@ import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class InventoryUtil {
     public static boolean hasInventory(BlockApiCache<?, Direction> cache,
@@ -43,7 +42,7 @@ public class InventoryUtil {
         return cache.find(cachedState, null) != null;
     }
 
-    public static boolean hasInventory(World world, BlockPos pos) {
+    public static boolean hasInventory(Level world, BlockPos pos) {
         return ItemStorage.SIDED.find(world, pos, null) != null;
     }
 }

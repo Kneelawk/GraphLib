@@ -26,7 +26,21 @@
 package com.kneelawk.transferbeams.client;
 
 import java.math.RoundingMode;
-
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.ModelBlockRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import com.google.common.math.IntMath;
 
 import org.jetbrains.annotations.NotNull;
@@ -36,51 +50,34 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.BlockModelRenderer;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.client.render.model.BakedModelManager;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class RenderUtils {
-    private static final Identifier TRANSFER_BEAM_ID = id("block/beam");
-    private static final MinecraftClient MC = MinecraftClient.getInstance();
+    private static final ResourceLocation TRANSFER_BEAM_ID = id("block/beam");
+    private static final Minecraft MC = Minecraft.getInstance();
 
-    public static BakedModel getBakedModel(Identifier id) {
-        BakedModelManager manager = MC.getBakedModelManager();
+    public static BakedModel getBakedModel(ResourceLocation id) {
+        ModelManager manager = MC.getModelManager();
         return manager.getModel(id);
     }
 
-    public static Sprite getBlockSprite(Identifier id) {
-        return MC.getSpriteAtlas(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).apply(id);
+    public static TextureAtlasSprite getBlockSprite(ResourceLocation id) {
+        return MC.getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(id);
     }
 
-    public static void renderModel(BakedModel model, BlockState state, MatrixStack stack, VertexConsumer consumer,
+    public static void renderModel(BakedModel model, BlockState state, PoseStack stack, VertexConsumer consumer,
                                    int light) {
-        BlockModelRenderer renderer = MC.getBlockRenderManager().getModelRenderer();
-        renderer.render(stack.peek(), consumer, state, model, 1f, 1f, 1f, light, OverlayTexture.DEFAULT_UV);
+        ModelBlockRenderer renderer = MC.getBlockRenderer().getModelRenderer();
+        renderer.renderModel(stack.last(), consumer, state, model, 1f, 1f, 1f, light, OverlayTexture.NO_OVERLAY);
     }
 
-    public static void renderBeam(MatrixStack stack, VertexConsumerProvider provider, Vec3d offset, int topColor,
+    public static void renderBeam(PoseStack stack, MultiBufferSource provider, Vec3 offset, int topColor,
                                   int bottomColor, long worldTime,
                                   float tickDelta) {
-        Sprite beamSprite = getBlockSprite(TRANSFER_BEAM_ID);
+        TextureAtlasSprite beamSprite = getBlockSprite(TRANSFER_BEAM_ID);
 
         float xzLen = (float) Math.sqrt(offset.x * offset.x + offset.z * offset.z);
         float len = (float) Math.sqrt(offset.x * offset.x + offset.y * offset.y + offset.z * offset.z);
@@ -90,32 +87,32 @@ public class RenderUtils {
         float yawShift = (float) (-Math.atan2(offset.z, offset.x) - Math.PI / 2.0);
         float rollShift = animationAmount * 0.16f;
 
-        stack.push();
+        stack.pushPose();
 
-        stack.multiply(new Quaternionf().rotationY(yawShift).rotateX(pitchShift).rotateY(rollShift));
+        stack.mulPose(new Quaternionf().rotationY(yawShift).rotateX(pitchShift).rotateY(rollShift));
 
         stack.translate(0.015625f, 0f, 0.015625f);
         renderBeam(stack, provider, topColor, bottomColor, len, beamSprite);
         stack.translate(-0.03125f, 0f, -0.03125f);
         renderBeam(stack, provider, topColor, bottomColor, len, beamSprite);
 
-        stack.pop();
+        stack.popPose();
     }
 
-    private static void renderBeam(MatrixStack stack, VertexConsumerProvider provider, int topColor, int bottomColor,
-                                  float len, Sprite beamSprite) {
-        renderBeamSquare(stack.peek(),
-            provider.getBuffer(RenderLayer.getBeaconBeam(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false)),
-            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.015625f, beamSprite.getFrameU(0f),
-            beamSprite.getFrameU(1f), beamSprite.getFrameV(0f), beamSprite.getFrameV(1f));
-        renderBeamEnds(stack.peek(),
-            provider.getBuffer(RenderLayer.getBeaconBeam(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false)),
-            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.015625f, beamSprite.getFrameU(0f),
-            beamSprite.getFrameU(1f), beamSprite.getFrameV(0f), beamSprite.getFrameV(1f));
+    private static void renderBeam(PoseStack stack, MultiBufferSource provider, int topColor, int bottomColor,
+                                  float len, TextureAtlasSprite beamSprite) {
+        renderBeamSquare(stack.last(),
+            provider.getBuffer(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, false)),
+            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.015625f, beamSprite.getU(0f),
+            beamSprite.getU(1f), beamSprite.getV(0f), beamSprite.getV(1f));
+        renderBeamEnds(stack.last(),
+            provider.getBuffer(RenderType.beaconBeam(TextureAtlas.LOCATION_BLOCKS, false)),
+            topColor | 0xFF000000, bottomColor | 0xFF000000, len, 0.015625f, beamSprite.getU(0f),
+            beamSprite.getU(1f), beamSprite.getV(0f), beamSprite.getV(1f));
     }
 
-    public static void drawBox(MatrixStack stack, VertexConsumer consumer, Box box, int color) {
-        Vec3d center = box.getCenter();
+    public static void drawBox(PoseStack stack, VertexConsumer consumer, AABB box, int color) {
+        Vec3 center = box.getCenter();
         drawCube(stack, consumer, (float) center.x, (float) center.y, (float) center.z,
             (float) (box.maxX - box.minX) / 2f, (float) (box.maxY - box.minY) / 2f, (float) (box.maxZ - box.minZ) / 2f,
             color);
@@ -123,7 +120,7 @@ public class RenderUtils {
 
     // translated from heart of the machine
 
-    private static void renderBeamSquare(MatrixStack.Entry entry, VertexConsumer consumer, int topColor,
+    private static void renderBeamSquare(PoseStack.Pose entry, VertexConsumer consumer, int topColor,
                                          int bottomColor, float height,
                                          float radius, float u1, float u2, float v1, float v2) {
         renderBeamFace(entry, consumer, topColor, bottomColor, height, 0f, radius, radius, 0f, u1, u2, v1, v2);
@@ -132,7 +129,7 @@ public class RenderUtils {
         renderBeamFace(entry, consumer, topColor, bottomColor, height, -radius, 0f, 0f, radius, u1, u2, v1, v2);
     }
 
-    private static void renderBeamFace(MatrixStack.Entry entry, VertexConsumer consumer, int topColor, int bottomColor,
+    private static void renderBeamFace(PoseStack.Pose entry, VertexConsumer consumer, int topColor, int bottomColor,
                                        float height,
                                        float x1, float z1, float x2, float z2, float u1, float u2, float v1, float v2) {
         renderBeamVertex(entry, consumer, topColor, height, x1, z1, u2, v1);
@@ -141,14 +138,14 @@ public class RenderUtils {
         renderBeamVertex(entry, consumer, topColor, height, x2, z2, u1, v1);
     }
 
-    private static void renderBeamEnds(MatrixStack.Entry entry, VertexConsumer consumer, int topColor, int bottomColor,
+    private static void renderBeamEnds(PoseStack.Pose entry, VertexConsumer consumer, int topColor, int bottomColor,
                                        float height,
                                        float radius, float u1, float u2, float v1, float v2) {
         renderBeamEnd(entry, consumer, topColor, height, radius, u1, u2, v1, v2, true);
         renderBeamEnd(entry, consumer, bottomColor, 0f, radius, u1, u2, v1, v2, false);
     }
 
-    private static void renderBeamEnd(MatrixStack.Entry entry, VertexConsumer consumer, int color, float y,
+    private static void renderBeamEnd(PoseStack.Pose entry, VertexConsumer consumer, int color, float y,
                                       float radius, float u1, float u2, float v1, float v2, boolean top) {
         float zRadius = top ? radius : -radius;
         renderBeamVertex(entry, consumer, color, y, 0f, zRadius, u2, v1);
@@ -157,11 +154,11 @@ public class RenderUtils {
         renderBeamVertex(entry, consumer, color, y, -radius, 0f, u2, v2);
     }
 
-    private static void renderBeamVertex(MatrixStack.Entry entry, VertexConsumer consumer, int color, float y,
+    private static void renderBeamVertex(PoseStack.Pose entry, VertexConsumer consumer, int color, float y,
                                          float x, float z, float u, float v) {
-        consumer.vertex(entry.getModel(), x, y, z).color(color).uv(u, v)
-            .overlay(OverlayTexture.DEFAULT_UV).light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
-            .normal(entry.getNormal(), 0f, 1f, 0f).next();
+        consumer.vertex(entry.pose(), x, y, z).color(color).uv(u, v)
+            .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
+            .normal(entry.normal(), 0f, 1f, 0f).endVertex();
     }
 
     // ripped from the debug-renderer module
@@ -179,7 +176,7 @@ public class RenderUtils {
      * @param depth    the z-dimension radius of the cube.
      * @param color    the color of the cube as an ARGB integer.
      */
-    public static void drawCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
+    public static void drawCube(@NotNull PoseStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
                                 float width, float height, float depth, int color) {
         drawCube(stack, consumer, x, y, z, width, 0f, 0f, 0f, height, 0f, 0f, 0f, depth, color);
     }
@@ -203,7 +200,7 @@ public class RenderUtils {
      * @param radZ2    the z-component of the third radius vector.
      * @param color    the color as an ARGB integer.
      */
-    public static void drawCube(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
+    public static void drawCube(@NotNull PoseStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
                                 float radX0, float radY0, float radZ0, float radX1, float radY1, float radZ1,
                                 float radX2, float radY2, float radZ2, int color) {
         drawRect(stack, consumer, x - radX2, y - radY2, z - radZ2, radX0, radY0, radZ0, radX1, radY1, radZ1, color);
@@ -234,7 +231,7 @@ public class RenderUtils {
      * @param radZ1    the z-component of the second radius vector.
      * @param color    the color as an ARGB integer.
      */
-    public static void drawRect(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
+    public static void drawRect(@NotNull PoseStack stack, @NotNull VertexConsumer consumer, float x, float y, float z,
                                 float radX0, float radY0, float radZ0, float radX1, float radY1, float radZ1,
                                 int color) {
         drawLine(stack, consumer, x - radX0 - radX1, y - radY0 - radY1, z - radZ0 - radZ1, x - radX0 + radX1,
@@ -260,24 +257,24 @@ public class RenderUtils {
      * @param z1       the z position of the second endpoint.
      * @param color    the color as an ARGB integer.
      */
-    public static void drawLine(@NotNull MatrixStack stack, @NotNull VertexConsumer consumer, float x0, float y0,
+    public static void drawLine(@NotNull PoseStack stack, @NotNull VertexConsumer consumer, float x0, float y0,
                                 float z0, float x1, float y1, float z1, int color) {
-        Matrix4f model = stack.peek().getModel();
-        Matrix3f normal = stack.peek().getNormal();
+        Matrix4f model = stack.last().pose();
+        Matrix3f normal = stack.last().normal();
 
         float dx = x1 - x0;
         float dy = y1 - y0;
         float dz = z1 - z0;
-        float fact = MathHelper.inverseSqrt(dx * dx + dy * dy + dz * dz);
+        float fact = Mth.invSqrt(dx * dx + dy * dy + dz * dz);
         dx *= fact;
         dy *= fact;
         dz *= fact;
 
         Vector4f pos = model.transform(new Vector4f(x0, y0, z0, 1f));
         Vector3f norm = normal.transform(new Vector3f(dx, dy, dz));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).normal(norm.x, norm.y, norm.z).next();
+        consumer.vertex(pos.x, pos.y, pos.z).color(color).normal(norm.x, norm.y, norm.z).endVertex();
         model.transform(pos.set(x1, y1, z1, 1f));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).normal(norm.x, norm.y, norm.z).next();
+        consumer.vertex(pos.x, pos.y, pos.z).color(color).normal(norm.x, norm.y, norm.z).endVertex();
     }
 
     /**
@@ -290,7 +287,7 @@ public class RenderUtils {
      *                        clipping through nodes in other rows.
      * @return the visual position of the block-node.
      */
-    public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double spacing,
+    public static Vec3 distributedEndpoint(int nodesAtPos, int indexAmongNodes, double spacing,
                                             double verticalSpacing) {
         return distributedEndpoint(nodesAtPos, indexAmongNodes, 0.5, 0.5, 0.5, spacing, 0.0, 0.0, 0.0, 0.0, spacing,
             0.0, verticalSpacing, 0.0);
@@ -315,12 +312,12 @@ public class RenderUtils {
      * @param offsetZ         the z-component of the vertical spacing between rows.
      * @return the visual position of the block-node.
      */
-    public static Vec3d distributedEndpoint(int nodesAtPos, int indexAmongNodes, double centerX, double centerY,
+    public static Vec3 distributedEndpoint(int nodesAtPos, int indexAmongNodes, double centerX, double centerY,
                                             double centerZ, double spaceX0, double spaceY0, double spaceZ0,
                                             double spaceX1, double spaceY1, double spaceZ1, double offsetX,
                                             double offsetY, double offsetZ) {
         if (nodesAtPos < 2) {
-            return new Vec3d(centerX, centerY, centerZ);
+            return new Vec3(centerX, centerY, centerZ);
         }
 
         int width = IntMath.sqrt(nodesAtPos, RoundingMode.CEILING);
@@ -331,7 +328,7 @@ public class RenderUtils {
         double posY = (double) indexY - (double) (width - 1) / 2.0;
         double posZ = (double) indexX + (double) indexY - (double) (width - 1);
 
-        return new Vec3d(centerX + posX * spaceX0 + posY * spaceX1 + posZ * offsetX,
+        return new Vec3(centerX + posX * spaceX0 + posY * spaceX1 + posZ * offsetX,
             centerY + posX * spaceY0 + posY * spaceY1 + posZ * offsetY,
             centerZ + posX * spaceZ0 + posY * spaceZ1 + posZ * offsetZ);
     }

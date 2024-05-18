@@ -26,9 +26,7 @@
 package com.kneelawk.transferbeams.client;
 
 import net.fabricmc.api.ClientModInitializer;
-
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
-
+import net.minecraft.client.gui.screens.MenuScreens;
 import com.kneelawk.transferbeams.client.screen.ItemNodeScreen;
 import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 
@@ -42,6 +40,6 @@ public class TransferBeamsModClient implements ClientModInitializer {
     }
 
     private void registerScreens() {
-        HandledScreens.register(ItemNodeScreenHandler.TYPE, ItemNodeScreen::new);
+        MenuScreens.register(ItemNodeScreenHandler.TYPE, ItemNodeScreen::new);
     }
 }

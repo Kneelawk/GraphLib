@@ -32,21 +32,19 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
@@ -70,10 +68,10 @@ public class TransferBeamsMod implements ModInitializer {
     public static final GraphUniverse UNIVERSE = GraphUniverse.builder().build(id("beams"));
     public static final LNSSyncedUniverse SYNCED = LNSSyncedUniverse.builder().build(UNIVERSE);
 
-    public static final TagKey<Item> NODE_VISUALIZERS = TagKey.of(RegistryKeys.ITEM, id("node_visualizers"));
-    public static final TagKey<Item> NODE_SELECTORS = TagKey.of(RegistryKeys.ITEM, id("node_selectors"));
+    public static final TagKey<Item> NODE_VISUALIZERS = TagKey.create(Registries.ITEM, id("node_visualizers"));
+    public static final TagKey<Item> NODE_SELECTORS = TagKey.create(Registries.ITEM, id("node_selectors"));
     public static final TagKey<Block> WORLDGEN_NODE_HOLDERS =
-        TagKey.of(RegistryKeys.BLOCK, id("worldgen_node_holders"));
+        TagKey.create(Registries.BLOCK, id("worldgen_node_holders"));
 
     public static final Item[] ITEM_NODE_ITEMS = new Item[DyeColor.values().length];
 
@@ -119,47 +117,47 @@ public class TransferBeamsMod implements ModInitializer {
 
     private static void registerItems() {
         for (DyeColor color : DyeColor.values()) {
-            Registry.register(Registries.ITEM, id(color.getName() + "_item_transfer_node"),
+            Registry.register(BuiltInRegistries.ITEM, id(color.getName() + "_item_transfer_node"),
                 ITEM_NODE_ITEMS[color.getId()]);
         }
 
-        Registry.register(Registries.ITEM, id("config_tool"), CONFIG_TOOL_ITEM);
-        Registry.register(Registries.ITEM, id("link_tool"), LINK_TOOL_ITEM);
+        Registry.register(BuiltInRegistries.ITEM, id("config_tool"), CONFIG_TOOL_ITEM);
+        Registry.register(BuiltInRegistries.ITEM, id("link_tool"), LINK_TOOL_ITEM);
 
-        ItemGroup itemGroup = FabricItemGroup.builder().name(tt("itemGroup", "main")).entries((params, collector) -> {
-            collector.addItem(CONFIG_TOOL_ITEM);
-            collector.addItem(LINK_TOOL_ITEM);
+        CreativeModeTab itemGroup = FabricItemGroup.builder().title(tt("itemGroup", "main")).displayItems((params, collector) -> {
+            collector.accept(CONFIG_TOOL_ITEM);
+            collector.accept(LINK_TOOL_ITEM);
             for (DyeColor color : DyeColor.values()) {
-                collector.addItem(ITEM_NODE_ITEMS[color.getId()]);
+                collector.accept(ITEM_NODE_ITEMS[color.getId()]);
             }
         }).icon(() -> new ItemStack(ITEM_NODE_ITEMS[DyeColor.GRAY.getId()])).build();
-        Registry.register(Registries.ITEM_GROUP, id("main"), itemGroup);
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id("main"), itemGroup);
     }
 
     private static void registerEvents() {
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-            if (player.isSpectator()) return ActionResult.PASS;
-            ItemStack stack = player.getStackInHand(hand);
+            if (player.isSpectator()) return InteractionResult.PASS;
+            ItemStack stack = player.getItemInHand(hand);
             if (stack.getItem() instanceof InteractionCancellerItem canceller) {
                 return canceller.interceptBlockUse(stack, player, world, hand, hitResult);
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
     }
 
     private static void registerScreens() {
-        Registry.register(Registries.SCREEN_HANDLER_TYPE, id("item_node"), ItemNodeScreenHandler.TYPE);
+        Registry.register(BuiltInRegistries.MENU, id("item_node"), ItemNodeScreenHandler.TYPE);
     }
 
-    public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+    public static ResourceLocation id(String path) {
+        return new ResourceLocation(MOD_ID, path);
     }
 
-    public static MutableText tt(String prefix, String suffix, Object... args) {
-        return Text.translatable(prefix + "." + MOD_ID + "." + suffix, args);
+    public static MutableComponent tt(String prefix, String suffix, Object... args) {
+        return Component.translatable(prefix + "." + MOD_ID + "." + suffix, args);
     }
 
-    public static MutableText gui(String suffix, Object... args) {
+    public static MutableComponent gui(String suffix, Object... args) {
         return tt("gui", suffix, args);
     }
 

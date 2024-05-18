@@ -26,25 +26,22 @@
 package com.kneelawk.transferbeams.screen;
 
 import java.util.List;
-
+import net.minecraft.core.Direction;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.SimpleContainerData;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.feature_flags.FeatureFlags;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ArrayPropertyDelegate;
-import net.minecraft.screen.PropertyDelegate;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-
 import alexiil.mc.lib.net.NetIdDataK;
 import alexiil.mc.lib.net.ParentNetIdCast;
 import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil;
@@ -59,54 +56,54 @@ import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.OUTPUT_SID
 import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.PROPERTY_COUNT;
 import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.SIGNAL_INVENTORY_SIZE;
 
-public class ItemNodeScreenHandler extends ScreenHandler {
-    public static final ScreenHandlerType<ItemNodeScreenHandler> TYPE =
-        new ScreenHandlerType<>(ItemNodeScreenHandler::new, FeatureFlags.DEFAULT_SET);
+public class ItemNodeScreenHandler extends AbstractContainerMenu {
+    public static final MenuType<ItemNodeScreenHandler> TYPE =
+        new MenuType<>(ItemNodeScreenHandler::new, FeatureFlags.VANILLA_SET);
 
-    private static final ParentNetIdCast<ScreenHandler, ItemNodeScreenHandler> NET_PARENT =
+    private static final ParentNetIdCast<AbstractContainerMenu, ItemNodeScreenHandler> NET_PARENT =
         McNetworkStack.SCREEN_HANDLER.subType(ItemNodeScreenHandler.class, str("item_node"));
     private static final NetIdDataK<ItemNodeScreenHandler> INPUT_ALLOW_ID = NET_PARENT.idData("input_allow", 1)
         .setReceiver((handler, buf, ctx) -> handler.setInputAllow(buf.readByte() != 0)).toServerOnly();
     private static final NetIdDataK<ItemNodeScreenHandler> INPUT_SIDE_ID =
         NET_PARENT.idData("input_side", 1).setReceiver((handler, buf, ctx) -> {
             byte value = buf.readByte();
-            handler.setInputSide(0 <= value && value < 6 ? Direction.byId(value) : null);
+            handler.setInputSide(0 <= value && value < 6 ? Direction.from3DDataValue(value) : null);
         }).toServerOnly();
     private static final NetIdDataK<ItemNodeScreenHandler> OUTPUT_ALLOW_ID = NET_PARENT.idData("output_allow", 1)
         .setReceiver((handler, buf, ctx) -> handler.setOutputAllow(buf.readByte() != 0)).toServerOnly();
     private static final NetIdDataK<ItemNodeScreenHandler> OUTPUT_SIDE_ID =
         NET_PARENT.idData("output_side", 1).setReceiver((handler, buf, ctx) -> {
             byte value = buf.readByte();
-            handler.setOutputSide(0 <= value && value < 6 ? Direction.byId(value) : null);
+            handler.setOutputSide(0 <= value && value < 6 ? Direction.from3DDataValue(value) : null);
         }).toServerOnly();
 
-    public final World world;
-    public final Inventory outputFilter;
-    public final Inventory inputFilter;
-    public final Inventory signalInventory;
-    public final PropertyDelegate properties;
+    public final Level world;
+    public final Container outputFilter;
+    public final Container inputFilter;
+    public final Container signalInventory;
+    public final ContainerData properties;
 
     public final List<TabSlot> tabSlots = new ObjectArrayList<>();
     public final List<FilterSlot> outputSlots = new ObjectArrayList<>();
     public final List<FilterSlot> inputSlots = new ObjectArrayList<>();
     public final List<SignalSlot> signalSlots = new ObjectArrayList<>();
 
-    public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, playerInventory, new SimpleInventory(FILTER_INVENTORY_SIZE),
-            new SimpleInventory(FILTER_INVENTORY_SIZE),
-            new SimpleInventory(SIGNAL_INVENTORY_SIZE),
-            new ArrayPropertyDelegate(PROPERTY_COUNT));
+    public ItemNodeScreenHandler(int syncId, Inventory playerInventory) {
+        this(syncId, playerInventory, new SimpleContainer(FILTER_INVENTORY_SIZE),
+            new SimpleContainer(FILTER_INVENTORY_SIZE),
+            new SimpleContainer(SIGNAL_INVENTORY_SIZE),
+            new SimpleContainerData(PROPERTY_COUNT));
     }
 
-    public ItemNodeScreenHandler(int syncId, PlayerInventory playerInventory, Inventory inputFilter,
-                                 Inventory outputFilter, Inventory signalInventory, PropertyDelegate properties) {
+    public ItemNodeScreenHandler(int syncId, Inventory playerInventory, Container inputFilter,
+                                 Container outputFilter, Container signalInventory, ContainerData properties) {
         super(TYPE, syncId);
-        this.world = playerInventory.player.getWorld();
+        this.world = playerInventory.player.level();
         this.outputFilter = outputFilter;
         this.inputFilter = inputFilter;
         this.signalInventory = signalInventory;
         this.properties = properties;
-        addProperties(properties);
+        addDataSlots(properties);
 
         // add player inventory
         for (int i = 0; i < 3; ++i) {
@@ -145,12 +142,12 @@ public class ItemNodeScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public ItemStack quickTransfer(PlayerEntity player, int fromIndex) {
+    public ItemStack quickMoveStack(Player player, int fromIndex) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         return true;
     }
 
@@ -159,7 +156,7 @@ public class ItemNodeScreenHandler extends ScreenHandler {
     }
 
     public void setInputAllow(boolean allow) {
-        if (world.isClient) {
+        if (world.isClientSide) {
             INPUT_ALLOW_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
                 (obj, buf, ctx) -> buf.writeByte(allow ? 1 : 0));
         } else {
@@ -169,15 +166,15 @@ public class ItemNodeScreenHandler extends ScreenHandler {
 
     public @Nullable Direction getInputSide() {
         int value = properties.get(INPUT_SIDE_PROPERTY);
-        return 0 <= value && value < 6 ? Direction.byId(value) : null;
+        return 0 <= value && value < 6 ? Direction.from3DDataValue(value) : null;
     }
 
     public void setInputSide(@Nullable Direction side) {
-        if (world.isClient) {
+        if (world.isClientSide) {
             INPUT_SIDE_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
-                (obj, buf, ctx) -> buf.writeByte(side != null ? side.getId() : 6));
+                (obj, buf, ctx) -> buf.writeByte(side != null ? side.get3DDataValue() : 6));
         } else {
-            properties.set(INPUT_SIDE_PROPERTY, side != null ? side.getId() : 6);
+            properties.set(INPUT_SIDE_PROPERTY, side != null ? side.get3DDataValue() : 6);
         }
     }
 
@@ -186,7 +183,7 @@ public class ItemNodeScreenHandler extends ScreenHandler {
     }
 
     public void setOutputAllow(boolean allow) {
-        if (world.isClient) {
+        if (world.isClientSide) {
             OUTPUT_ALLOW_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
                 (obj, buf, ctx) -> buf.writeByte(allow ? 1 : 0));
         } else {
@@ -196,15 +193,15 @@ public class ItemNodeScreenHandler extends ScreenHandler {
 
     public @Nullable Direction getOutputSide() {
         int value = properties.get(OUTPUT_SIDE_PROPERTY);
-        return 0 <= value && value < 6 ? Direction.byId(value) : null;
+        return 0 <= value && value < 6 ? Direction.from3DDataValue(value) : null;
     }
 
     public void setOutputSide(@Nullable Direction side) {
-        if (world.isClient) {
+        if (world.isClientSide) {
             OUTPUT_SIDE_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
-                (obj, buf, ctx) -> buf.writeByte(side != null ? side.getId() : 6));
+                (obj, buf, ctx) -> buf.writeByte(side != null ? side.get3DDataValue() : 6));
         } else {
-            properties.set(OUTPUT_SIDE_PROPERTY, side != null ? side.getId() : 6);
+            properties.set(OUTPUT_SIDE_PROPERTY, side != null ? side.get3DDataValue() : 6);
         }
     }
 
@@ -215,7 +212,7 @@ public class ItemNodeScreenHandler extends ScreenHandler {
     public static class FilterSlot extends Slot implements TabSlot {
         private boolean enabled = false;
 
-        public FilterSlot(Inventory inventory, int index, int x, int y) {
+        public FilterSlot(Container inventory, int index, int x, int y) {
             super(inventory, index, x, y);
         }
 
@@ -225,7 +222,7 @@ public class ItemNodeScreenHandler extends ScreenHandler {
         }
 
         @Override
-        public boolean isEnabled() {
+        public boolean isActive() {
             return enabled;
         }
     }
@@ -233,7 +230,7 @@ public class ItemNodeScreenHandler extends ScreenHandler {
     public static class SignalSlot extends Slot implements TabSlot {
         private boolean enabled = false;
 
-        public SignalSlot(Inventory inventory, int index, int x, int y) {
+        public SignalSlot(Container inventory, int index, int x, int y) {
             super(inventory, index, x, y);
         }
 
@@ -243,7 +240,7 @@ public class ItemNodeScreenHandler extends ScreenHandler {
         }
 
         @Override
-        public boolean isEnabled() {
+        public boolean isActive() {
             return enabled;
         }
     }

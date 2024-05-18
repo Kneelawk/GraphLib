@@ -20,32 +20,31 @@ import org.slf4j.Logger;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 
 import com.mojang.logging.LogUtils;
-
-import net.minecraft.data.DataPackOutput;
+import net.minecraft.Util;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.DataWriter;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
+import net.minecraft.data.PackOutput;
+import net.minecraft.resources.ResourceLocation;
 
 public abstract class AbstractTextureGenerator implements DataProvider {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    protected final DataPackOutput.PathResolver resolver;
+    protected final PackOutput.PathProvider resolver;
 
     public AbstractTextureGenerator(FabricDataOutput output) {
-        this.resolver = output.createPathResolver(DataPackOutput.Type.RESOURCE_PACK, "textures");
+        this.resolver = output.createPathProvider(PackOutput.Target.RESOURCE_PACK, "textures");
     }
 
     public abstract void generate(TextureGenerator gen);
 
     @Override
-    public CompletableFuture<?> run(DataWriter writer) {
+    public CompletableFuture<?> run(CachedOutput writer) {
         List<CompletableFuture<?>> instances = new ArrayList<>();
 
         generate((id, width, height, creator) -> {
             BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             creator.draw(image.createGraphics());
-            instances.add(writeToPath(writer, image, resolver.resolveFile(id, "png")));
+            instances.add(writeToPath(writer, image, resolver.file(id, "png")));
         });
 
         return CompletableFuture.allOf(instances.toArray(CompletableFuture[]::new));
@@ -56,7 +55,7 @@ public abstract class AbstractTextureGenerator implements DataProvider {
         return "Textures";
     }
 
-    protected static CompletableFuture<?> writeToPath(DataWriter writer, BufferedImage image, Path path) {
+    protected static CompletableFuture<?> writeToPath(CachedOutput writer, BufferedImage image, Path path) {
         return CompletableFuture.runAsync(() -> {
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
                  HashingOutputStream hos = new HashingOutputStream(Hashing.sha1(), baos)) {
@@ -67,10 +66,10 @@ public abstract class AbstractTextureGenerator implements DataProvider {
             } catch (IOException e) {
                 LOGGER.error("Failed to save file to {}", path, e);
             }
-        }, Util.getMainWorkerExecutor());
+        }, Util.backgroundExecutor());
     }
 
-    protected static BufferedImage loadTexture(Identifier id) {
+    protected static BufferedImage loadTexture(ResourceLocation id) {
         ClassLoader loader = AbstractTextureGenerator.class.getClassLoader();
         String path = "assets/" + id.getNamespace() + "/textures/" + id.getPath() + ".png";
         URL url = loader.getResource(path);
@@ -84,9 +83,9 @@ public abstract class AbstractTextureGenerator implements DataProvider {
     }
 
     public interface TextureGenerator {
-        void addTexture(Identifier id, int width, int height, TextureCreator creator);
+        void addTexture(ResourceLocation id, int width, int height, TextureCreator creator);
 
-        default void addTexture(Identifier id, TextureCreator creator) {
+        default void addTexture(ResourceLocation id, TextureCreator creator) {
             addTexture(id, 16, 16, creator);
         }
     }
