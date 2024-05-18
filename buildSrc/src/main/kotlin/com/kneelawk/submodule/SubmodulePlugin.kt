@@ -117,6 +117,9 @@ class SubmodulePlugin : Plugin<Project> {
                 filesMatching(metadataFiles) {
                     expand(properties)
                 }
+
+                exclude("**/*.xcf")
+                exclude("**/*.bbmodel")
             }
 
             withType<JavaCompile>().configureEach {
