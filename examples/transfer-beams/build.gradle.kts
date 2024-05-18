@@ -15,10 +15,6 @@ submodule {
     generateRuns()
 }
 
-repositories {
-    maven("https://maven.terraformersmc.com/releases/") { name = "TerraformersMC" }
-}
-
 dependencies {
     // GraphLib Syncing LNS
     implementation(project(":syncing-lns", configuration = "namedElements"))
