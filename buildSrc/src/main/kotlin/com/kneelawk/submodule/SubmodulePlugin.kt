@@ -90,6 +90,7 @@ class SubmodulePlugin : Plugin<Project> {
             maven("https://kneelawk.com/maven") { name = "Kneelawk" }
             maven("https://maven.alexiil.uk/") { name = "AlexIIL" }
             maven("https://maven.parchmentmc.org") { name = "ParchmentMC" }
+            maven("https://maven.terraformersmc.com/releases/") { name = "TerraformersMC" }
 
             mavenLocal()
         }

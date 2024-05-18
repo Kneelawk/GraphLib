@@ -36,10 +36,6 @@ submodule {
     generateRuns()
 }
 
-repositories {
-    maven("https://maven.terraformersmc.com/releases/") { name = "TerraformersMC" }
-}
-
 dependencies {
     // Codextra
     val codextra_version: String by project
