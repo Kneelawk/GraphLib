@@ -35,6 +35,12 @@ import org.jetbrains.annotations.Nullable;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
+
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -53,9 +59,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphView;
 import com.kneelawk.graphlib.api.graph.LinkEntityContext;
@@ -145,6 +149,9 @@ public class NodeRenderer {
         MultiBufferSource provider = ctx.consumers();
         Vec3 cameraPos = ctx.camera().getPosition();
         assert provider != null;
+
+        stack.pushPose();
+        stack.mulPose(ctx.positionMatrix());
 
         // We want the nodes to always be positioned by color.
         Map<BlockPos, SortedEntities> sorted = sortNodeEntities(view);
@@ -254,6 +261,8 @@ public class NodeRenderer {
         } else {
             selectedNode = null;
         }
+
+        stack.popPose();
     }
 
     private static Map<BlockPos, SortedEntities> sortNodeEntities(GraphView view) {

@@ -41,7 +41,7 @@ import net.minecraft.world.level.block.state.BlockState;
 @Mixin(ServerLevel.class)
 public class ServerWorldMixin {
     @Inject(
-        method = "onBlockChanged(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/BlockState;)V",
+        method = "onBlockStateChange",
         at = @At("HEAD"))
     private void onBlockChangedHook(BlockPos pos, BlockState oldBlock, BlockState newBlock, CallbackInfo ci) {
         ServerLevel world = (ServerLevel) (Object) this;

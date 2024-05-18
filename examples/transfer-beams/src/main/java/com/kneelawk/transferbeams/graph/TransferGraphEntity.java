@@ -53,11 +53,6 @@ public class TransferGraphEntity extends AbstractGraphEntity<TransferGraphEntity
     }
 
     @Override
-    public @Nullable Tag toTag() {
-        return null;
-    }
-
-    @Override
     public void merge(@NotNull TransferGraphEntity other) {
         // nothing to merge at the moment
     }

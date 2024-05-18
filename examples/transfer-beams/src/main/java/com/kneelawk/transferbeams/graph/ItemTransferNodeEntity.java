@@ -25,6 +25,8 @@
 
 package com.kneelawk.transferbeams.graph;
 
+import java.util.Optional;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,9 +34,11 @@ import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -47,6 +51,7 @@ import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
@@ -55,6 +60,7 @@ import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 import com.kneelawk.transferbeams.util.DropHandler;
 import com.kneelawk.transferbeams.util.InventoryUtil;
+import com.kneelawk.transferbeams.util.SimpleContainerCodec;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 import static com.kneelawk.transferbeams.TransferBeamsMod.tt;
@@ -65,18 +71,6 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
         new AABB(4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 4.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0, 12.0 / 16.0 / 4.0,
             12.0 / 16.0 / 4.0);
 
-    public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), nbt -> {
-        if (!(nbt instanceof CompoundTag root)) return null;
-
-        ItemTransferNodeEntity entity = new ItemTransferNodeEntity();
-        entity.inputFilter.fromTag(root.getList("inputFilter", Tag.TAG_COMPOUND));
-        entity.outputFilter.fromTag(root.getList("outputFilter", Tag.TAG_COMPOUND));
-        entity.signalInventory.fromTag(root.getList("signalInventory", Tag.TAG_COMPOUND));
-
-        return entity;
-    });
-    public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(ItemTransferNodeEntity::new);
-
     public static final int FILTER_INVENTORY_SIZE = 6 * 2;
     public static final int SIGNAL_INVENTORY_SIZE = 3;
     public static final int PROPERTY_COUNT = 4;
@@ -85,35 +79,31 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     public static final int OUTPUT_ALLOW_PROPERTY = 2;
     public static final int OUTPUT_SIDE_PROPERTY = 3;
 
+    public static final Codec<ItemTransferNodeEntity> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+        Codec.BOOL.fieldOf("inputAllow").forGetter(e -> e.inputAllow),
+        Direction.CODEC.lenientOptionalFieldOf("inputSide").forGetter(e -> Optional.ofNullable(e.inputSide)),
+        Codec.BOOL.fieldOf("outputAllow").forGetter(e -> e.outputAllow),
+        Direction.CODEC.lenientOptionalFieldOf("outputSide").forGetter(e -> Optional.ofNullable(e.outputSide)),
+        new SimpleContainerCodec(FILTER_INVENTORY_SIZE).fieldOf("inputFilter").forGetter(e -> e.inputFilter),
+        new SimpleContainerCodec(FILTER_INVENTORY_SIZE).fieldOf("outputFilter").forGetter(e -> e.outputFilter),
+        new SimpleContainerCodec(SIGNAL_INVENTORY_SIZE).fieldOf("signalInventory").forGetter(e -> e.signalInventory)
+    ).apply(instance, ItemTransferNodeEntity::new));
+
+    public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), CODEC);
+    public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(ItemTransferNodeEntity::new);
+
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
 
     // input filter is an allow-list
-    private boolean inputAllow = true;
-    private @Nullable Direction inputSide = null;
-    private boolean outputAllow = true;
-    private @Nullable Direction outputSide = null;
+    private boolean inputAllow;
+    private @Nullable Direction inputSide;
+    private boolean outputAllow;
+    private @Nullable Direction outputSide;
 
-    private final SimpleContainer inputFilter = new SimpleContainer(FILTER_INVENTORY_SIZE) {
-        @Override
-        public void setChanged() {
-            super.setChanged();
-            if (ctx != null) ctx.markDirty();
-        }
-    };
-    private final SimpleContainer outputFilter = new SimpleContainer(FILTER_INVENTORY_SIZE) {
-        @Override
-        public void setChanged() {
-            super.setChanged();
-            if (ctx != null) ctx.markDirty();
-        }
-    };
-    private final SimpleContainer signalInventory = new SimpleContainer(SIGNAL_INVENTORY_SIZE) {
-        @Override
-        public void setChanged() {
-            super.setChanged();
-            if (ctx != null) ctx.markDirty();
-        }
-    };
+    private final SimpleContainer inputFilter;
+    private final SimpleContainer outputFilter;
+    private final SimpleContainer signalInventory;
+
     private final ContainerData properties = new ContainerData() {
         @Override
         public int get(int index) {
@@ -155,6 +145,57 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
         }
     };
 
+    public ItemTransferNodeEntity() {
+        inputAllow = true;
+        inputSide = null;
+        outputAllow = true;
+        outputSide = null;
+
+        inputFilter = new SimpleContainer(FILTER_INVENTORY_SIZE) {
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                if (ctx != null) ctx.markDirty();
+            }
+        };
+        outputFilter = new SimpleContainer(FILTER_INVENTORY_SIZE) {
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                if (ctx != null) ctx.markDirty();
+            }
+        };
+        signalInventory = new SimpleContainer(SIGNAL_INVENTORY_SIZE) {
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                if (ctx != null) ctx.markDirty();
+            }
+        };
+    }
+
+    public ItemTransferNodeEntity(boolean inputAllow, Optional<Direction> inputSide, boolean outputAllow,
+                                  Optional<Direction> outputSide, SimpleContainer inputFilter,
+                                  SimpleContainer outputFilter, SimpleContainer signalInventory) {
+        this.inputFilter = inputFilter;
+        this.outputFilter = outputFilter;
+        this.signalInventory = signalInventory;
+        this.outputSide = outputSide.orElse(null);
+        this.outputAllow = outputAllow;
+        this.inputSide = inputSide.orElse(null);
+        this.inputAllow = inputAllow;
+
+        inputFilter.addListener((a) -> {
+            if (ctx != null) ctx.markDirty();
+        });
+        outputFilter.addListener((a) -> {
+            if (ctx != null) ctx.markDirty();
+        });
+        signalInventory.addListener((a) -> {
+            if (ctx != null) ctx.markDirty();
+        });
+    }
+
     @Override
     public void onInit(@NotNull NodeEntityContext ctx) {
         super.onInit(ctx);
@@ -166,19 +207,6 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     @Override
     public @NotNull NodeEntityType getType() {
         return TYPE;
-    }
-
-    @Override
-    public @Nullable Tag toTag() {
-        CompoundTag root = new CompoundTag();
-        root.putBoolean("inputAllow", inputAllow);
-        root.putByte("inputSide", (byte) (inputSide != null ? inputSide.get3DDataValue() : 6));
-        root.putBoolean("outputAllow", outputAllow);
-        root.putByte("outputSide", (byte) (outputSide != null ? outputSide.get3DDataValue() : 6));
-        root.put("inputFilter", inputFilter.createTag());
-        root.put("outputFilter", outputFilter.createTag());
-        root.put("signalInventory", signalInventory.createTag());
-        return root;
     }
 
     @Override

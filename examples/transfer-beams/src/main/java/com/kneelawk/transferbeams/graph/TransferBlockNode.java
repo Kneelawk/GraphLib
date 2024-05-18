@@ -27,11 +27,11 @@ package com.kneelawk.transferbeams.graph;
 
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.item.DyeColor;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.world.item.DyeColor;
+
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
@@ -42,12 +42,8 @@ import com.kneelawk.graphlib.syncing.lns.api.graph.user.BlockNodeSyncing;
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public record TransferBlockNode(@NotNull DyeColor color) implements BlockNode {
-    public static final BlockNodeType TYPE = BlockNodeType.of(id("transfer_node"), nbt -> {
-        if (nbt != null) {
-            return new TransferBlockNode(DyeColor.byName(nbt.getAsString(), DyeColor.WHITE));
-        }
-        return null;
-    });
+    public static final BlockNodeType TYPE =
+        BlockNodeType.of(id("transfer_node"), DyeColor.CODEC.xmap(TransferBlockNode::new, TransferBlockNode::color));
     public static final BlockNodeSyncing SYNCING =
         BlockNodeSyncing.<TransferBlockNode>of((node, buf, ctx) -> buf.writeVarInt(node.color.getId()),
             (buf, ctx) -> new TransferBlockNode(DyeColor.byId(buf.readVarInt())));
@@ -55,11 +51,6 @@ public record TransferBlockNode(@NotNull DyeColor color) implements BlockNode {
     @Override
     public @NotNull BlockNodeType getType() {
         return TYPE;
-    }
-
-    @Override
-    public @Nullable Tag toTag() {
-        return StringTag.valueOf(color.getName());
     }
 
     @Override

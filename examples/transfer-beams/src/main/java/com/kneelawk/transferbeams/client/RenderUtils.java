@@ -158,7 +158,7 @@ public class RenderUtils {
                                          float x, float z, float u, float v) {
         consumer.vertex(entry.pose(), x, y, z).color(color).uv(u, v)
             .overlayCoords(OverlayTexture.NO_OVERLAY).uv2(LightTexture.FULL_BRIGHT)
-            .normal(entry.normal(), 0f, 1f, 0f).endVertex();
+            .normal(entry, 0f, 1f, 0f).endVertex();
     }
 
     // ripped from the debug-renderer module

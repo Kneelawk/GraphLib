@@ -42,9 +42,4 @@ public class TransferLinkEntity extends AbstractLinkEntity {
     public @NotNull LinkEntityType getType() {
         return TYPE;
     }
-
-    @Override
-    public @Nullable Tag toTag() {
-        return null;
-    }
 }

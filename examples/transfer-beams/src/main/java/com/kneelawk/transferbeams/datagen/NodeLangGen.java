@@ -26,10 +26,14 @@
 package com.kneelawk.transferbeams.datagen;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
+
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.DyeColor;
+
 import com.kneelawk.transferbeams.TransferBeamsMod;
 
 public class NodeLangGen extends FabricLanguageProvider {
@@ -38,18 +42,21 @@ public class NodeLangGen extends FabricLanguageProvider {
         "Blue", "Brown", "Green", "Red", "Black"
     };
 
-    protected NodeLangGen(FabricDataOutput dataOutput) {
-        super(dataOutput);
+    public NodeLangGen(FabricDataOutput dataOutput,
+                       CompletableFuture<HolderLookup.Provider> registryLookup) {
+        super(dataOutput, registryLookup);
     }
 
     @Override
-    public void generateTranslations(TranslationBuilder translationBuilder) {
+    public void generateTranslations(HolderLookup.Provider registryLookup, TranslationBuilder translationBuilder) {
         for (DyeColor color : DyeColor.values()) {
-            translationBuilder.add(TransferBeamsMod.ITEM_NODE_ITEMS[color.getId()], DYE_COLOR_NAMES[color.getId()] + " Item Transfer Node");
+            translationBuilder.add(TransferBeamsMod.ITEM_NODE_ITEMS[color.getId()],
+                DYE_COLOR_NAMES[color.getId()] + " Item Transfer Node");
         }
 
         try {
-            translationBuilder.add(dataOutput.getModContainer().findPath("assets/transfer_beams/lang/en_us.existing.json").get());
+            translationBuilder.add(
+                dataOutput.getModContainer().findPath("assets/transfer_beams/lang/en_us.existing.json").get());
         } catch (IOException e) {
             throw new RuntimeException("Filed to load existing language file", e);
         }

@@ -307,12 +307,6 @@ public class ItemNodeScreen extends AbstractContainerScreen<ItemNodeScreenHandle
         }
 
         @Override
-        protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
-            super.renderWidget(graphics, mouseX, mouseY, delta);
-            getTooltip().refreshTooltipForNextRenderPass(isHovered(), isFocused(), getRectangle());
-        }
-
-        @Override
         protected ResourceLocation getIcon() {
             return allow.getAsBoolean() ? ALLOW : DENY;
         }

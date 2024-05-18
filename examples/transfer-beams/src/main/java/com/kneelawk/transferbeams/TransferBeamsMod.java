@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -45,8 +45,8 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
@@ -77,12 +77,12 @@ public class TransferBeamsMod implements ModInitializer {
 
     static {
         for (DyeColor color : DyeColor.values()) {
-            ITEM_NODE_ITEMS[color.getId()] = new NodeItem(color, new FabricItemSettings());
+            ITEM_NODE_ITEMS[color.getId()] = new NodeItem(color, new Item.Properties());
         }
     }
 
-    public static final Item CONFIG_TOOL_ITEM = new ConfigToolItem(new FabricItemSettings());
-    public static final Item LINK_TOOL_ITEM = new LinkToolItem(new FabricItemSettings());
+    public static final Item CONFIG_TOOL_ITEM = new ConfigToolItem(new Item.Properties());
+    public static final Item LINK_TOOL_ITEM = new LinkToolItem(new Item.Properties());
 
     @Override
     public void onInitialize() {
@@ -124,13 +124,14 @@ public class TransferBeamsMod implements ModInitializer {
         Registry.register(BuiltInRegistries.ITEM, id("config_tool"), CONFIG_TOOL_ITEM);
         Registry.register(BuiltInRegistries.ITEM, id("link_tool"), LINK_TOOL_ITEM);
 
-        CreativeModeTab itemGroup = FabricItemGroup.builder().title(tt("itemGroup", "main")).displayItems((params, collector) -> {
-            collector.accept(CONFIG_TOOL_ITEM);
-            collector.accept(LINK_TOOL_ITEM);
-            for (DyeColor color : DyeColor.values()) {
-                collector.accept(ITEM_NODE_ITEMS[color.getId()]);
-            }
-        }).icon(() -> new ItemStack(ITEM_NODE_ITEMS[DyeColor.GRAY.getId()])).build();
+        CreativeModeTab itemGroup =
+            FabricItemGroup.builder().title(tt("itemGroup", "main")).displayItems((params, collector) -> {
+                collector.accept(CONFIG_TOOL_ITEM);
+                collector.accept(LINK_TOOL_ITEM);
+                for (DyeColor color : DyeColor.values()) {
+                    collector.accept(ITEM_NODE_ITEMS[color.getId()]);
+                }
+            }).icon(() -> new ItemStack(ITEM_NODE_ITEMS[DyeColor.GRAY.getId()])).build();
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, id("main"), itemGroup);
     }
 

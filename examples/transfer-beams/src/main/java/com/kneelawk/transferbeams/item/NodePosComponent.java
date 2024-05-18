@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Kneelawk.
+ * Copyright (c) 2024 Cyan Kneelawk.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,38 @@
  *
  */
 
-package com.kneelawk.transferbeams.util;
+package com.kneelawk.transferbeams.item;
 
 import org.jetbrains.annotations.Nullable;
 
-import net.fabricmc.fabric.api.lookup.v1.block.BlockApiCache;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
+import com.mojang.serialization.Codec;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.item.ItemStack;
 
-public class InventoryUtil {
-    public static boolean hasInventory(BlockApiCache<?, Direction> cache,
-                                       @Nullable BlockState cachedState) {
-        return cache.find(cachedState, null) != null;
+import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.transferbeams.TransferBeamsMod;
+
+public record NodePosComponent(NodePos pos) {
+    public static final Codec<NodePosComponent> CODEC =
+        NodePos.mapCodec(TransferBeamsMod.UNIVERSE).codec().xmap(NodePosComponent::new, NodePosComponent::pos);
+    public static final DataComponentType<NodePosComponent> TYPE =
+        DataComponentType.<NodePosComponent>builder().persistent(CODEC).build();
+
+    static boolean hasNodePos(ItemStack stack) {
+        return stack.has(TYPE);
     }
 
-    public static boolean hasInventory(Level world, BlockPos pos) {
-        return ItemStorage.SIDED.find(world, pos, null) != null;
+    static void setNodePos(ItemStack stack, NodePos pos) {
+        stack.set(TYPE, new NodePosComponent(pos));
+    }
+
+    static @Nullable NodePos getNodePos(ItemStack stack) {
+        NodePosComponent component = stack.get(TYPE);
+        return component == null ? null : component.pos();
+    }
+
+    static void removeNodePos(ItemStack stack) {
+        stack.remove(TYPE);
     }
 }

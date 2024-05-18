@@ -29,7 +29,10 @@ import java.util.concurrent.CompletableFuture;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+
 import net.minecraft.core.HolderLookup;
+import net.minecraft.world.item.Item;
+
 import com.kneelawk.transferbeams.TransferBeamsMod;
 
 public class TransferBeamsItemTagGen extends FabricTagProvider.ItemTagProvider {
@@ -40,9 +43,16 @@ public class TransferBeamsItemTagGen extends FabricTagProvider.ItemTagProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider arg) {
-        tag(TransferBeamsMod.NODE_VISUALIZERS).add(TransferBeamsMod.ITEM_NODE_ITEMS)
-            .add(TransferBeamsMod.CONFIG_TOOL_ITEM, TransferBeamsMod.LINK_TOOL_ITEM);
-        tag(TransferBeamsMod.NODE_SELECTORS).add(TransferBeamsMod.CONFIG_TOOL_ITEM,
-            TransferBeamsMod.LINK_TOOL_ITEM);
+        TagAppender<Item> nodeVisualizers = tag(TransferBeamsMod.NODE_VISUALIZERS);
+        add(nodeVisualizers, TransferBeamsMod.ITEM_NODE_ITEMS);
+        add(nodeVisualizers, TransferBeamsMod.CONFIG_TOOL_ITEM, TransferBeamsMod.LINK_TOOL_ITEM);
+        TagAppender<Item> nodeSelectors = tag(TransferBeamsMod.NODE_SELECTORS);
+        add(nodeSelectors, TransferBeamsMod.CONFIG_TOOL_ITEM, TransferBeamsMod.LINK_TOOL_ITEM);
+    }
+
+    private void add(TagAppender<Item> appender, Item... items) {
+        for (Item item : items) {
+            appender.add(item.builtInRegistryHolder().key());
+        }
     }
 }

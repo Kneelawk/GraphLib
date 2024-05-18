@@ -27,7 +27,7 @@ package com.kneelawk.transferbeams.item;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.nbt.CompoundTag;
+
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +35,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
-import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
@@ -49,28 +49,7 @@ import com.kneelawk.transferbeams.net.TBNet;
 import com.kneelawk.transferbeams.proxy.CommonProxy;
 import com.kneelawk.transferbeams.util.SelectedNode;
 
-import static com.kneelawk.transferbeams.TransferBeamsMod.str;
-
 public class LinkToolItem extends Item implements InteractionCancellerItem {
-    private static final String NODE_POS_KEY = str("node_pos");
-
-    private static boolean hasNodePos(ItemStack stack) {
-        return stack.getTagElement(NODE_POS_KEY) != null;
-    }
-
-    private static void setNodePos(ItemStack stack, NodePos pos) {
-        stack.addTagElement(NODE_POS_KEY, pos.toNbt());
-    }
-
-    private static @Nullable NodePos getNodePos(ItemStack stack) {
-        CompoundTag nbt = stack.getTagElement(NODE_POS_KEY);
-        return nbt == null ? null : NodePos.fromNbt(nbt, TransferBeamsMod.UNIVERSE);
-    }
-
-    private static void removeNodePos(ItemStack stack) {
-        stack.removeTagKey(NODE_POS_KEY);
-    }
-
     public static void onNodeClick(Player player, GraphWorld world, NodePos pos) {
         ItemStack stack = player.getMainHandItem();
 
@@ -87,7 +66,7 @@ public class LinkToolItem extends Item implements InteractionCancellerItem {
                     }
                 } else {
                     // normal right-click connects two nodes
-                    NodePos prevPos = getNodePos(stack);
+                    NodePos prevPos = NodePosComponent.getNodePos(stack);
                     if (prevPos != null) {
                         if (!prevPos.equals(pos)) {
                             LinkPos linkPos = new LinkPos(prevPos, pos, TransferLinkKey.INSTANCE);
@@ -98,9 +77,9 @@ public class LinkToolItem extends Item implements InteractionCancellerItem {
                             }
                         }
 
-                        removeNodePos(stack);
+                        NodePosComponent.removeNodePos(stack);
                     } else {
-                        setNodePos(stack, pos);
+                        NodePosComponent.setNodePos(stack, pos);
                     }
                 }
             } else {
@@ -115,7 +94,7 @@ public class LinkToolItem extends Item implements InteractionCancellerItem {
 
     @Override
     public InteractionResult interceptBlockUse(ItemStack stack, Player player, Level world, InteractionHand hand,
-                                          BlockHitResult hitResult) {
+                                               BlockHitResult hitResult) {
         if (world.isClientSide()) {
             SelectedNode node = CommonProxy.INSTANCE.getClientSelectedNode();
             if (node != null) {
@@ -133,6 +112,6 @@ public class LinkToolItem extends Item implements InteractionCancellerItem {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return hasNodePos(stack);
+        return NodePosComponent.hasNodePos(stack);
     }
 }

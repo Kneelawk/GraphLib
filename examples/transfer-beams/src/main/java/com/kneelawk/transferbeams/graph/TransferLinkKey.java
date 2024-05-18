@@ -49,11 +49,6 @@ public class TransferLinkKey implements LinkKey {
     }
 
     @Override
-    public @Nullable Tag toTag() {
-        return null;
-    }
-
-    @Override
     public boolean shouldHaveLinkEntity(@NotNull LinkHolder<LinkKey> holder) {
         return true;
     }
