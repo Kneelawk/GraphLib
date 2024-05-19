@@ -33,14 +33,14 @@ import net.minecraft.network.codec.StreamCodec;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 public record PayloadGraph(long graphId, List<GraphEntity<?>> entities, List<PayloadNode> nodes,
                            List<PayloadInternalLink> internalLinks, List<PayloadExternalLink> externalLinks) {
     public static final StreamCodec<NetRegistryByteBuf, PayloadGraph> CODEC = StreamCodec.composite(
         ByteBufCodecs.VAR_LONG, PayloadGraph::graphId,
-        GraphLibSyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), PayloadGraph::entities,
+        SyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), PayloadGraph::entities,
         PayloadNode.CODEC.apply(ByteBufCodecs.list()), PayloadGraph::nodes,
         PayloadInternalLink.CODEC.apply(ByteBufCodecs.list()), PayloadGraph::internalLinks,
         PayloadExternalLink.CODEC.apply(ByteBufCodecs.list()), PayloadGraph::externalLinks,

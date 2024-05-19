@@ -32,13 +32,13 @@ import net.minecraft.network.codec.StreamCodec;
 
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.util.LinkPos;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 public record PayloadExternalLink(LinkPos linkPos, Optional<LinkEntity> entity) {
     public static final StreamCodec<NetRegistryByteBuf, PayloadExternalLink> CODEC = StreamCodec.composite(
-        GraphLibSyncingKNet.LINK_POS_CODEC, PayloadExternalLink::linkPos,
-        GraphLibSyncingKNet.LINK_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadExternalLink::entity,
+        SyncingKNet.LINK_POS_CODEC, PayloadExternalLink::linkPos,
+        SyncingKNet.LINK_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadExternalLink::entity,
         PayloadExternalLink::new
     );
 }

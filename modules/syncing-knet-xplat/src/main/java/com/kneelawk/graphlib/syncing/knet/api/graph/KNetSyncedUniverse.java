@@ -49,13 +49,12 @@ import com.kneelawk.graphlib.api.util.CacheCategory;
 import com.kneelawk.graphlib.syncing.api.GraphLibSyncing;
 import com.kneelawk.graphlib.syncing.api.graph.SyncedUniverse;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
-import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.graphlib.syncing.knet.impl.graph.simple.SimpleKNetSyncedUniverseBuilder;
 
 /**
@@ -70,10 +69,10 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     /**
      * Codec for referencing a specific {@link KNetSyncedUniverse}.
      */
-    StreamCodec<FriendlyByteBuf, KNetSyncedUniverse> REF_CODEC = StreamCodecHelper.PALETTED_ID_CODEC.map(id -> {
+    StreamCodec<FriendlyByteBuf, KNetSyncedUniverse> REF_CODEC = SyncingKNet.PALETTED_ID_CODEC.map(id -> {
         if (!GraphLibSyncing.syncingEnabled(id))
             throw new DecoderException("There is no synced universe called '" + id + "'");
-        return GraphLibSyncingKNet.getUniverse(id);
+        return SyncingKNet.getUniverse(id);
     }, KNetSyncedUniverse::getId);
 
     /**

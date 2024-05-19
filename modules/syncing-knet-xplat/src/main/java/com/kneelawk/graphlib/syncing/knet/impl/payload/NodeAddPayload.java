@@ -33,7 +33,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 import com.kneelawk.codextra.api.util.FunctionUtils;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
@@ -46,7 +46,7 @@ public record NodeAddPayload(KNetSyncedUniverse universe, long graphId, PayloadN
         KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
         ByteBufCodecs.VAR_LONG, NodeAddPayload::graphId,
         PayloadNode.CODEC, NodeAddPayload::node,
-        GraphLibSyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), NodeAddPayload::graphEntities,
+        SyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), NodeAddPayload::graphEntities,
         NodeAddPayload::new
     ).apply(KNetSyncedUniverse.readAttachingOp(NodeAddPayload::universe));
 

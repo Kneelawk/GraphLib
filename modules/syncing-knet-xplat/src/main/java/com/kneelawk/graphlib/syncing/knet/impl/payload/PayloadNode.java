@@ -32,13 +32,13 @@ import net.minecraft.network.codec.StreamCodec;
 
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 public record PayloadNode(NodePos nodePos, Optional<NodeEntity> entity) {
     public static final StreamCodec<NetRegistryByteBuf, PayloadNode> CODEC = StreamCodec.composite(
-        GraphLibSyncingKNet.NODE_POS_CODEC, PayloadNode::nodePos,
-        GraphLibSyncingKNet.NODE_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadNode::entity,
+        SyncingKNet.NODE_POS_CODEC, PayloadNode::nodePos,
+        SyncingKNet.NODE_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadNode::entity,
         PayloadNode::new
     );
 }

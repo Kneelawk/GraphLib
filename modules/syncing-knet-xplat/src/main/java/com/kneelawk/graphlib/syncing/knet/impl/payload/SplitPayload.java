@@ -34,7 +34,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import com.kneelawk.codextra.api.util.FunctionUtils;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
@@ -46,8 +46,8 @@ public record SplitPayload(KNetSyncedUniverse universe, long fromId, long intoId
         KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
         ByteBufCodecs.VAR_LONG, SplitPayload::fromId,
         ByteBufCodecs.VAR_LONG, SplitPayload::intoId,
-        GraphLibSyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), SplitPayload::graphEntities,
-        GraphLibSyncingKNet.NODE_POS_CODEC.apply(ByteBufCodecs.list()), SplitPayload::toMove,
+        SyncingKNet.GRAPH_ENTITY_CODEC.apply(ByteBufCodecs.list()), SplitPayload::graphEntities,
+        SyncingKNet.NODE_POS_CODEC.apply(ByteBufCodecs.list()), SplitPayload::toMove,
         SplitPayload::new
     ).apply(KNetSyncedUniverse.readAttachingOp(SplitPayload::universe));
 

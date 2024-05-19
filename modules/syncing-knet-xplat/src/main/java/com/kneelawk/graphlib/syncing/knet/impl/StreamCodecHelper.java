@@ -13,19 +13,15 @@ import net.minecraft.resources.ResourceLocation;
 import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 public class StreamCodecHelper {
-    public static final StreamCodec<FriendlyByteBuf, ResourceLocation> PALETTED_ID_CODEC =
-        GraphLibSyncingKNet.ID_PALETTE.dispatchIfPresentStreamCodec(palette -> palette.asCodec("id palette"),
-            ResourceLocation.STREAM_CODEC);
-
     public static <S, T extends ObjectType> StreamCodec<FriendlyByteBuf, S> createRefStreamCodec(
         BiFunction<GraphUniverse, ResourceLocation, T> typeGetter, BiFunction<KNetSyncedUniverse, T, S> syncingGetter,
         Function<S, T> syncingToType, String name) {
-        return KNetSyncedUniverse.ATTACHMENT_KEY.retrieveWithStreamCodec(PALETTED_ID_CODEC,
+        return KNetSyncedUniverse.ATTACHMENT_KEY.retrieveWithStreamCodec(SyncingKNet.PALETTED_ID_CODEC,
             (universe, id) -> {
                 T type = typeGetter.apply(universe.getUniverse(), id);
                 if (type == null) throw new DecoderException(

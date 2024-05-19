@@ -31,7 +31,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 import com.kneelawk.codextra.api.util.FunctionUtils;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.SyncingKNetImpl;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
@@ -42,7 +42,7 @@ public record NodeRemovePayload(KNetSyncedUniverse universe, long graphId, NodeP
     public static final StreamCodec<NetRegistryByteBuf, NodeRemovePayload> CODEC = StreamCodec.composite(
         KNetSyncedUniverse.ATTACHMENT_KEY.retrieveStream(), FunctionUtils.nullFunc(),
         ByteBufCodecs.VAR_LONG, NodeRemovePayload::graphId,
-        GraphLibSyncingKNet.NODE_POS_CODEC, NodeRemovePayload::nodePos,
+        SyncingKNet.NODE_POS_CODEC, NodeRemovePayload::nodePos,
         NodeRemovePayload::new
     ).apply(KNetSyncedUniverse.readAttachingOp(NodeRemovePayload::universe));
 

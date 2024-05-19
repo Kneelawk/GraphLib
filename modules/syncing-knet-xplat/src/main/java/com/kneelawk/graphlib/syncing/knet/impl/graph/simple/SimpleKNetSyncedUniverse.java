@@ -54,7 +54,7 @@ import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.simple.SimpleClientGraphWorld;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
@@ -80,7 +80,7 @@ public class SimpleKNetSyncedUniverse implements KNetSyncedUniverse, SyncedUnive
         this.universe = universe;
         syncProfile = builder.profile;
 
-        addLinkKeySyncing(GraphLibSyncingKNet.EMPTY_KEY_SYNCING);
+        addLinkKeySyncing(SyncingKNet.EMPTY_KEY_SYNCING);
 
         if (syncProfile.getNodeFilter() != null) {
             universe.addCacheCategory(syncProfile.getNodeFilter());
