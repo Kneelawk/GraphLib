@@ -32,15 +32,15 @@ import net.minecraft.network.codec.StreamCodec;
 
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
 
 public record PayloadInternalLink(int firstIndex, int secondIndex, LinkKey key, Optional<LinkEntity> entity) {
     public static final StreamCodec<NetRegistryByteBuf, PayloadInternalLink> CODEC = StreamCodec.composite(
         ByteBufCodecs.VAR_INT, PayloadInternalLink::firstIndex,
         ByteBufCodecs.VAR_INT, PayloadInternalLink::secondIndex,
-        GraphLibSyncingKNet.LINK_KEY_CODEC, PayloadInternalLink::key,
-        GraphLibSyncingKNet.LINK_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadInternalLink::entity,
+        SyncingKNet.LINK_KEY_CODEC, PayloadInternalLink::key,
+        SyncingKNet.LINK_ENTITY_CODEC.apply(ByteBufCodecs::optional), PayloadInternalLink::entity,
         PayloadInternalLink::new
     );
 }

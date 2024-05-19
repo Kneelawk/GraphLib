@@ -60,7 +60,7 @@ import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.api.graph.user.SyncProfile;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.ChunkDataPayload;
 import com.kneelawk.graphlib.syncing.knet.impl.payload.LinkPayload;
@@ -100,7 +100,7 @@ public final class KNetEncoding {
 
     @SuppressWarnings("unchecked")
     public static void sendChunkData(ServerGraphWorldImpl world, ServerPlayer player, ChunkPos chunkPos) {
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        KNetSyncedUniverse universe = SyncingKNet.getUniverse(world);
         // SyncProfile checking happens before this method is called
 
         // collect graphs to encode
@@ -206,7 +206,7 @@ public final class KNetEncoding {
         if (!(graph.getGraphView() instanceof GraphWorld world))
             throw new IllegalArgumentException("sendNodeAdd should only be called on the logical server");
 
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        KNetSyncedUniverse universe = SyncingKNet.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -221,7 +221,7 @@ public final class KNetEncoding {
         if (!(into.getGraphView() instanceof GraphWorld world))
             throw new IllegalArgumentException("sendMerge should only be called on the logical server");
 
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        KNetSyncedUniverse universe = SyncingKNet.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -248,7 +248,7 @@ public final class KNetEncoding {
         if (!(graph.getGraphView() instanceof GraphWorld world))
             throw new IllegalArgumentException("sendLink should only be called on the logical server");
 
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        KNetSyncedUniverse universe = SyncingKNet.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -275,7 +275,7 @@ public final class KNetEncoding {
         if (!(graph.getGraphView() instanceof GraphWorld world))
             throw new IllegalArgumentException("sendUnlink should only be called on the logical server");
 
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        KNetSyncedUniverse universe = SyncingKNet.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -302,7 +302,7 @@ public final class KNetEncoding {
         if (!(from.getGraphView() instanceof GraphWorld world))
             throw new IllegalArgumentException("sendSplit should only be called on the logical server");
 
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        KNetSyncedUniverse universe = SyncingKNet.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 
@@ -337,7 +337,7 @@ public final class KNetEncoding {
         if (!(graph.getGraphView() instanceof GraphWorld world))
             throw new IllegalArgumentException("sendNodeRemove should only be called on the logical server");
 
-        KNetSyncedUniverse universe = GraphLibSyncingKNet.getUniverse(world);
+        KNetSyncedUniverse universe = SyncingKNet.getUniverse(world);
         SyncProfile sp = universe.getSyncProfile();
         if (!sp.isEnabled()) return;
 

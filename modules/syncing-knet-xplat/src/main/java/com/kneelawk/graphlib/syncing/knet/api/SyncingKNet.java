@@ -69,8 +69,8 @@ import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 /**
  * KNet-based synchronization library.
  */
-public final class GraphLibSyncingKNet {
-    private GraphLibSyncingKNet() {}
+public final class SyncingKNet {
+    private SyncingKNet() {}
 
     /**
      * Attachment key for a palette of {@link ResourceLocation}s.
@@ -136,7 +136,7 @@ public final class GraphLibSyncingKNet {
      * Stream codec that encodes/decodes an entire {@link BlockNode}.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<NetRegistryByteBuf, BlockNode> BLOCK_NODE_CODEC =
         StreamCodecHelper.createObjStreamCodec(BlockNodeSyncing.REF_CODEC, BlockNode::getType,
@@ -146,7 +146,7 @@ public final class GraphLibSyncingKNet {
      * Stream codec that encodes/decodes an entire {@link LinkKey}.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<NetRegistryByteBuf, LinkKey> LINK_KEY_CODEC =
         StreamCodecHelper.createObjStreamCodec(LinkKeySyncing.REF_CODEC, LinkKey::getType,
@@ -156,7 +156,7 @@ public final class GraphLibSyncingKNet {
      * Stream codec that encodes/decodes an entire {@link NodeEntity}.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<NetRegistryByteBuf, NodeEntity> NODE_ENTITY_CODEC =
         StreamCodecHelper.createObjStreamCodec(NodeEntitySyncing.REF_CODEC, NodeEntity::getType,
@@ -166,7 +166,7 @@ public final class GraphLibSyncingKNet {
      * Stream codec that encodes/decodes an entire {@link LinkEntity}.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<NetRegistryByteBuf, LinkEntity> LINK_ENTITY_CODEC =
         StreamCodecHelper.createObjStreamCodec(LinkEntitySyncing.REF_CODEC, LinkEntity::getType,
@@ -176,7 +176,7 @@ public final class GraphLibSyncingKNet {
      * Stream codec that encodes/decodes an entire {@link GraphEntity}.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<NetRegistryByteBuf, GraphEntity<?>> GRAPH_ENTITY_CODEC =
         StreamCodecHelper.createObjStreamCodec(GraphEntitySyncing.REF_CODEC, GraphEntity::getType,
@@ -186,7 +186,7 @@ public final class GraphLibSyncingKNet {
      * Stream codec for a {@link NodePos}.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<NetRegistryByteBuf, NodePos> NODE_POS_CODEC =
         StreamCodec.composite(NetCodecs.BLOCK_POS.mapStream(NetBufs::netOf), NodePos::pos, BLOCK_NODE_CODEC,
@@ -196,7 +196,7 @@ public final class GraphLibSyncingKNet {
      * Stream codec for a {@link LinkPos}.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link GraphLibSyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
      */
     public static final StreamCodec<NetRegistryByteBuf, LinkPos> LINK_POS_CODEC =
         StreamCodec.composite(NODE_POS_CODEC, LinkPos::first, NODE_POS_CODEC, LinkPos::second, LINK_KEY_CODEC,
