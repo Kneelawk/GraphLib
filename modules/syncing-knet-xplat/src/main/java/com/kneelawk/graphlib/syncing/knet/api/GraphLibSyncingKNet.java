@@ -78,6 +78,13 @@ public final class GraphLibSyncingKNet {
     public static final AttachmentKey<Palette<ResourceLocation>> ID_PALETTE = AttachmentKey.ofStaticFieldName();
 
     /**
+     * {@link ResourceLocation} codec that can use an {@link #ID_PALETTE} attachment if present.
+     */
+    public static final StreamCodec<FriendlyByteBuf, ResourceLocation> PALETTED_ID_CODEC =
+        ID_PALETTE.dispatchIfPresentStreamCodec(palette -> palette.asCodec("id palette"),
+            ResourceLocation.STREAM_CODEC);
+
+    /**
      * Wraps the given {@link StreamCodec} codec in a palette that will be used in both encoding and decoding.
      * <p>
      * This provides the {@link #ID_PALETTE} attachment.
