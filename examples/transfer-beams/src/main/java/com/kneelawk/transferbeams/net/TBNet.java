@@ -38,7 +38,7 @@ import com.kneelawk.graphlib.api.graph.GraphWorld;
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.knet.api.KNetRegistrar;
 import com.kneelawk.knet.api.channel.NoContextPlayChannel;
 import com.kneelawk.knet.api.handling.PlayPayloadHandlingContext;
@@ -149,7 +149,7 @@ public class TBNet {
     private record NodeActivatePayload(NodePos pos) implements CustomPacketPayload {
         public static final Type<NodeActivatePayload> TYPE = new Type<>(id("node_activate"));
         public static final StreamCodec<NetRegistryByteBuf, NodeActivatePayload> CODEC =
-            GraphLibSyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED).map(
+            SyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED).map(
                 NodeActivatePayload::new, NodeActivatePayload::pos);
 
         @Override
@@ -161,7 +161,7 @@ public class TBNet {
     private record NodeRemovePayload(NodePos pos) implements CustomPacketPayload {
         public static final Type<NodeRemovePayload> TYPE = new Type<>(id("node_remove"));
         public static final StreamCodec<NetRegistryByteBuf, NodeRemovePayload> CODEC =
-            GraphLibSyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED)
+            SyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED)
                 .map(NodeRemovePayload::new, NodeRemovePayload::pos);
 
         @Override
@@ -173,7 +173,7 @@ public class TBNet {
     private record NodeLinkPayload(NodePos pos) implements CustomPacketPayload {
         public static final Type<NodeLinkPayload> TYPE = new Type<>(id("node_link"));
         public static final StreamCodec<NetRegistryByteBuf, NodeLinkPayload> CODEC =
-            GraphLibSyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED).map(NodeLinkPayload::new, NodeLinkPayload::pos);
+            SyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED).map(NodeLinkPayload::new, NodeLinkPayload::pos);
 
         @Override
         public @NotNull Type<? extends CustomPacketPayload> type() {
