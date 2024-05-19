@@ -10,21 +10,13 @@ submodule {
     applyFabricLoaderDependency()
     applyFabricApiDependency()
     fabricProjectDependency(":core")
-    xplatProjectDependency(":debugrender")
+    fabricProjectDependency(":debugrender")
     fabricProjectDependency(":syncing-core")
+    fabricProjectDependency(":syncing-knet")
     generateRuns()
 }
 
 dependencies {
-    // GraphLib Syncing LNS
-    implementation(project(":syncing-lns", configuration = "namedElements"))
-    include(project(":syncing-lns"))
-
-    // LibNetworkStack
-    val lns_version: String by project
-    modImplementation("alexiil.mc.lib:libnetworkstack-base:$lns_version")
-    include("alexiil.mc.lib:libnetworkstack-base:$lns_version")
-    
     // We actually use KModLib Overlay in order to make nodes visible through blocks
     val kml_version: String by project
     modImplementation("com.kneelawk:kmodlib-overlay-fabric:$kml_version")

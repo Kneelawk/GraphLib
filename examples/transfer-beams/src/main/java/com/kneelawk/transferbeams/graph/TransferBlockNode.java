@@ -37,7 +37,7 @@ import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.util.HalfLink;
-import com.kneelawk.graphlib.syncing.lns.api.graph.user.BlockNodeSyncing;
+import com.kneelawk.graphlib.syncing.knet.api.graph.user.BlockNodeSyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
@@ -45,8 +45,7 @@ public record TransferBlockNode(@NotNull DyeColor color) implements BlockNode {
     public static final BlockNodeType TYPE =
         BlockNodeType.of(id("transfer_node"), DyeColor.CODEC.xmap(TransferBlockNode::new, TransferBlockNode::color));
     public static final BlockNodeSyncing SYNCING =
-        BlockNodeSyncing.<TransferBlockNode>of((node, buf, ctx) -> buf.writeVarInt(node.color.getId()),
-            (buf, ctx) -> new TransferBlockNode(DyeColor.byId(buf.readVarInt())));
+        BlockNodeSyncing.ofRegistry(TYPE, DyeColor.STREAM_CODEC.map(TransferBlockNode::new, TransferBlockNode::color));
 
     @Override
     public @NotNull BlockNodeType getType() {

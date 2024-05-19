@@ -47,7 +47,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
-import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
 import com.kneelawk.transferbeams.graph.TransferGraphEntity;
@@ -66,7 +66,7 @@ public class TransferBeamsMod implements ModInitializer {
     public static final Logger LOG = LoggerFactory.getLogger(MOD_ID);
 
     public static final GraphUniverse UNIVERSE = GraphUniverse.builder().build(id("beams"));
-    public static final LNSSyncedUniverse SYNCED = LNSSyncedUniverse.builder().build(UNIVERSE);
+    public static final KNetSyncedUniverse SYNCED = KNetSyncedUniverse.builder().build(UNIVERSE);
 
     public static final TagKey<Item> NODE_VISUALIZERS = TagKey.create(Registries.ITEM, id("node_visualizers"));
     public static final TagKey<Item> NODE_SELECTORS = TagKey.create(Registries.ITEM, id("node_selectors"));
