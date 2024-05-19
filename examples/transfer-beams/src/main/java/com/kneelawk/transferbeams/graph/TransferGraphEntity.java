@@ -26,14 +26,14 @@
 package com.kneelawk.transferbeams.graph;
 
 import java.util.Iterator;
-import net.minecraft.nbt.Tag;
+
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.api.graph.GraphEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractGraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
-import com.kneelawk.graphlib.syncing.lns.api.graph.user.GraphEntitySyncing;
+import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
@@ -43,7 +43,7 @@ public class TransferGraphEntity extends AbstractGraphEntity<TransferGraphEntity
     public static final GraphEntityType<TransferGraphEntity> TYPE =
         GraphEntityType.of(id("transfer"), TransferGraphEntity::new);
     public static final GraphEntitySyncing<TransferGraphEntity> SYNCING =
-        GraphEntitySyncing.ofNoOp(TransferGraphEntity::new);
+        GraphEntitySyncing.ofNoOp(TYPE, TransferGraphEntity::new);
 
     private int tickCounter = 0;
 

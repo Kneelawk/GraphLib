@@ -26,17 +26,16 @@
 package com.kneelawk.transferbeams.graph;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.api.graph.user.AbstractLinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
-import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkEntitySyncing;
-import net.minecraft.nbt.Tag;
+import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class TransferLinkEntity extends AbstractLinkEntity {
     public static final LinkEntityType TYPE = LinkEntityType.of(id("transfer_link"), TransferLinkEntity::new);
-    public static final LinkEntitySyncing SYNCING = LinkEntitySyncing.ofNoOp(TransferLinkEntity::new);
+    public static final LinkEntitySyncing SYNCING = LinkEntitySyncing.ofNoOp(TYPE, TransferLinkEntity::new);
 
     @Override
     public @NotNull LinkEntityType getType() {

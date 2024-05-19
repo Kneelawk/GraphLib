@@ -26,7 +26,13 @@
 package com.kneelawk.transferbeams.screen;
 
 import java.util.List;
+
+import org.jetbrains.annotations.Nullable;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
 import net.minecraft.core.Direction;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -39,15 +45,15 @@ import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.jetbrains.annotations.Nullable;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import alexiil.mc.lib.net.NetIdDataK;
-import alexiil.mc.lib.net.ParentNetIdCast;
-import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil;
-import alexiil.mc.lib.net.impl.McNetworkStack;
+import com.kneelawk.knet.api.KNet;
+import com.kneelawk.knet.api.KNetRegistrar;
+import com.kneelawk.knet.api.channel.context.ContextualPlayChannel;
+import com.kneelawk.knet.api.channel.context.PlayChannelContext;
+import com.kneelawk.knet.api.util.NetByteBuf;
+import com.kneelawk.knet.api.util.NetCodecs;
 
-import static com.kneelawk.transferbeams.TransferBeamsMod.str;
+import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.FILTER_INVENTORY_SIZE;
 import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.INPUT_ALLOW_PROPERTY;
 import static com.kneelawk.transferbeams.graph.ItemTransferNodeEntity.INPUT_SIDE_PROPERTY;
@@ -60,22 +66,27 @@ public class ItemNodeScreenHandler extends AbstractContainerMenu {
     public static final MenuType<ItemNodeScreenHandler> TYPE =
         new MenuType<>(ItemNodeScreenHandler::new, FeatureFlags.VANILLA_SET);
 
-    private static final ParentNetIdCast<AbstractContainerMenu, ItemNodeScreenHandler> NET_PARENT =
-        McNetworkStack.SCREEN_HANDLER.subType(ItemNodeScreenHandler.class, str("item_node"));
-    private static final NetIdDataK<ItemNodeScreenHandler> INPUT_ALLOW_ID = NET_PARENT.idData("input_allow", 1)
-        .setReceiver((handler, buf, ctx) -> handler.setInputAllow(buf.readByte() != 0)).toServerOnly();
-    private static final NetIdDataK<ItemNodeScreenHandler> INPUT_SIDE_ID =
-        NET_PARENT.idData("input_side", 1).setReceiver((handler, buf, ctx) -> {
-            byte value = buf.readByte();
-            handler.setInputSide(0 <= value && value < 6 ? Direction.from3DDataValue(value) : null);
-        }).toServerOnly();
-    private static final NetIdDataK<ItemNodeScreenHandler> OUTPUT_ALLOW_ID = NET_PARENT.idData("output_allow", 1)
-        .setReceiver((handler, buf, ctx) -> handler.setOutputAllow(buf.readByte() != 0)).toServerOnly();
-    private static final NetIdDataK<ItemNodeScreenHandler> OUTPUT_SIDE_ID =
-        NET_PARENT.idData("output_side", 1).setReceiver((handler, buf, ctx) -> {
-            byte value = buf.readByte();
-            handler.setOutputSide(0 <= value && value < 6 ? Direction.from3DDataValue(value) : null);
-        }).toServerOnly();
+    private static final PlayChannelContext<ItemNodeScreenHandler> CONTEXT =
+        KNet.SCREEN_HANDLER_CONTEXT.cast(ItemNodeScreenHandler.class);
+    private static final ContextualPlayChannel<ItemNodeScreenHandler, AllowPayload> INPUT_ALLOW =
+        ContextualPlayChannel.ofNetCodec(id("screen/item_node/input_allow"), CONTEXT, AllowPayload.CODEC)
+            .recvServer((handler, allow, ctx) -> handler.setInputAllow(allow.allow()));
+    private static final ContextualPlayChannel<ItemNodeScreenHandler, SidePayload> INPUT_SIDE =
+        ContextualPlayChannel.ofNetCodec(id("screen/item_node/input_side"), CONTEXT, SidePayload.CODEC)
+            .recvServer((handler, side, ctx) -> handler.setInputSide(side.side()));
+    private static final ContextualPlayChannel<ItemNodeScreenHandler, AllowPayload> OUTPUT_ALLOW =
+        ContextualPlayChannel.ofNetCodec(id("screen/item_node/output_allow"), CONTEXT, AllowPayload.CODEC)
+            .recvServer((handler, allow, ctx) -> handler.setOutputAllow(allow.allow()));
+    private static final ContextualPlayChannel<ItemNodeScreenHandler, SidePayload> OUTPUT_SIDE =
+        ContextualPlayChannel.ofNetCodec(id("screen/item_node/output_side"), CONTEXT, SidePayload.CODEC)
+            .recvServer((handler, side, ctx) -> handler.setOutputSide(side.side()));
+
+    public static void init(KNetRegistrar registrar) {
+        registrar.register(INPUT_ALLOW);
+        registrar.register(INPUT_SIDE);
+        registrar.register(OUTPUT_ALLOW);
+        registrar.register(OUTPUT_SIDE);
+    }
 
     public final Level world;
     public final Container outputFilter;
@@ -157,8 +168,7 @@ public class ItemNodeScreenHandler extends AbstractContainerMenu {
 
     public void setInputAllow(boolean allow) {
         if (world.isClientSide) {
-            INPUT_ALLOW_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
-                (obj, buf, ctx) -> buf.writeByte(allow ? 1 : 0));
+            INPUT_ALLOW.sendToServer(this, new AllowPayload(allow));
         } else {
             properties.set(INPUT_ALLOW_PROPERTY, allow ? 1 : 0);
         }
@@ -171,8 +181,7 @@ public class ItemNodeScreenHandler extends AbstractContainerMenu {
 
     public void setInputSide(@Nullable Direction side) {
         if (world.isClientSide) {
-            INPUT_SIDE_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
-                (obj, buf, ctx) -> buf.writeByte(side != null ? side.get3DDataValue() : 6));
+            INPUT_SIDE.sendToServer(this, new SidePayload(side));
         } else {
             properties.set(INPUT_SIDE_PROPERTY, side != null ? side.get3DDataValue() : 6);
         }
@@ -184,8 +193,7 @@ public class ItemNodeScreenHandler extends AbstractContainerMenu {
 
     public void setOutputAllow(boolean allow) {
         if (world.isClientSide) {
-            OUTPUT_ALLOW_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
-                (obj, buf, ctx) -> buf.writeByte(allow ? 1 : 0));
+            OUTPUT_ALLOW.sendToServer(this, new AllowPayload(allow));
         } else {
             properties.set(OUTPUT_ALLOW_PROPERTY, allow ? 1 : 0);
         }
@@ -198,8 +206,7 @@ public class ItemNodeScreenHandler extends AbstractContainerMenu {
 
     public void setOutputSide(@Nullable Direction side) {
         if (world.isClientSide) {
-            OUTPUT_SIDE_ID.send(CoreMinecraftNetUtil.getClientConnection(), this,
-                (obj, buf, ctx) -> buf.writeByte(side != null ? side.get3DDataValue() : 6));
+            OUTPUT_SIDE.sendToServer(this, new SidePayload(side));
         } else {
             properties.set(OUTPUT_SIDE_PROPERTY, side != null ? side.get3DDataValue() : 6);
         }
@@ -243,5 +250,21 @@ public class ItemNodeScreenHandler extends AbstractContainerMenu {
         public boolean isActive() {
             return enabled;
         }
+    }
+
+    private record AllowPayload(boolean allow) {
+        public static final StreamCodec<NetByteBuf, AllowPayload> CODEC =
+            NetCodecs.BOOL.map(AllowPayload::new, AllowPayload::allow);
+    }
+
+    private record SidePayload(@Nullable Direction side) {
+        public static final StreamCodec<NetByteBuf, SidePayload> CODEC = StreamCodec.of((buf, payload) -> {
+            if (payload.side() != null) buf.writeFixedBits(payload.side().get3DDataValue(), 3);
+            else buf.writeFixedBits(6, 3);
+        }, buf -> {
+            int data = buf.readFixedBits(3);
+            if (data >= 6) return new SidePayload(null);
+            else return new SidePayload(Direction.from3DDataValue(data));
+        });
     }
 }

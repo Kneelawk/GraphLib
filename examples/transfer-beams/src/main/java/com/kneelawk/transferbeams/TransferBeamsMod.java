@@ -48,6 +48,8 @@ import net.minecraft.world.level.block.Block;
 
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.knet.api.KNetRegistrar;
+import com.kneelawk.knet.fabric.api.KNetRegistrarFabric;
 import com.kneelawk.transferbeams.graph.ItemTransferNodeEntity;
 import com.kneelawk.transferbeams.graph.TransferBlockNode;
 import com.kneelawk.transferbeams.graph.TransferGraphEntity;
@@ -88,11 +90,11 @@ public class TransferBeamsMod implements ModInitializer {
     public void onInitialize() {
         LOG.info("Transfer Beams initializing...");
 
-        TBNet.init();
         registerUniverse();
         registerItems();
         registerEvents();
         registerScreens();
+        registerNetworking(new KNetRegistrarFabric());
 
         LOG.info("Transfer Beams initialized.");
     }
@@ -102,17 +104,17 @@ public class TransferBeamsMod implements ModInitializer {
         SYNCED.register();
 
         UNIVERSE.addNodeType(TransferBlockNode.TYPE);
-        SYNCED.addNodeSyncing(TransferBlockNode.TYPE, TransferBlockNode.SYNCING);
+        SYNCED.addNodeSyncing(TransferBlockNode.SYNCING);
         UNIVERSE.addNodeEntityType(ItemTransferNodeEntity.TYPE);
-        SYNCED.addNodeEntitySyncing(ItemTransferNodeEntity.TYPE, ItemTransferNodeEntity.SYNCING);
+        SYNCED.addNodeEntitySyncing(ItemTransferNodeEntity.SYNCING);
 
         UNIVERSE.addLinkKeyType(TransferLinkKey.TYPE);
-        SYNCED.addLinkKeySyncing(TransferLinkKey.TYPE, TransferLinkKey.SYNCING);
+        SYNCED.addLinkKeySyncing(TransferLinkKey.SYNCING);
         UNIVERSE.addLinkEntityType(TransferLinkEntity.TYPE);
-        SYNCED.addLinkEntitySyncing(TransferLinkEntity.TYPE, TransferLinkEntity.SYNCING);
+        SYNCED.addLinkEntitySyncing(TransferLinkEntity.SYNCING);
 
         UNIVERSE.addGraphEntityType(TransferGraphEntity.TYPE);
-        SYNCED.addGraphEntitySyncing(TransferGraphEntity.TYPE, TransferGraphEntity.SYNCING);
+        SYNCED.addGraphEntitySyncing(TransferGraphEntity.SYNCING);
     }
 
     private static void registerItems() {
@@ -148,6 +150,11 @@ public class TransferBeamsMod implements ModInitializer {
 
     private static void registerScreens() {
         Registry.register(BuiltInRegistries.MENU, id("item_node"), ItemNodeScreenHandler.TYPE);
+    }
+
+    private static void registerNetworking(KNetRegistrar registrar) {
+        TBNet.init(registrar);
+        ItemNodeScreenHandler.init(registrar);
     }
 
     public static ResourceLocation id(String path) {

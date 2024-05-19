@@ -55,7 +55,7 @@ import net.minecraft.world.phys.AABB;
 import com.kneelawk.graphlib.api.graph.NodeEntityContext;
 import com.kneelawk.graphlib.api.graph.user.AbstractNodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
-import com.kneelawk.graphlib.syncing.lns.api.graph.user.NodeEntitySyncing;
+import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
 import com.kneelawk.transferbeams.TransferBeamsMod;
 import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 import com.kneelawk.transferbeams.util.DropHandler;
@@ -90,7 +90,7 @@ public class ItemTransferNodeEntity extends AbstractNodeEntity
     ).apply(instance, ItemTransferNodeEntity::new));
 
     public static final NodeEntityType TYPE = NodeEntityType.of(id("transfer_node"), CODEC);
-    public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(ItemTransferNodeEntity::new);
+    public static final NodeEntitySyncing SYNCING = NodeEntitySyncing.ofNoOp(TYPE, ItemTransferNodeEntity::new);
 
     private @Nullable BlockApiCache<Storage<ItemVariant>, Direction> apiCache;
 

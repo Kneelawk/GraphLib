@@ -27,19 +27,19 @@ package com.kneelawk.transferbeams.graph;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import com.kneelawk.graphlib.api.graph.LinkHolder;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
-import com.kneelawk.graphlib.syncing.lns.api.graph.user.LinkKeySyncing;
-import net.minecraft.nbt.Tag;
+import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 
 import static com.kneelawk.transferbeams.TransferBeamsMod.id;
 
 public class TransferLinkKey implements LinkKey {
     public static final TransferLinkKey INSTANCE = new TransferLinkKey();
     public static final LinkKeyType TYPE = LinkKeyType.of(id("transfer_link"), () -> INSTANCE);
-    public static final LinkKeySyncing SYNCING = LinkKeySyncing.ofNoOp(() -> INSTANCE);
+    public static final LinkKeySyncing SYNCING = LinkKeySyncing.ofNoOp(TYPE, () -> INSTANCE);
 
     private TransferLinkKey() {}
 

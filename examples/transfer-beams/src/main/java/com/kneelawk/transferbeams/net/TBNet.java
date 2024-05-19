@@ -25,50 +25,57 @@
 
 package com.kneelawk.transferbeams.net;
 
-import alexiil.mc.lib.net.IMsgReadCtx;
-import alexiil.mc.lib.net.InvalidInputDataException;
-import alexiil.mc.lib.net.NetByteBuf;
-import alexiil.mc.lib.net.NetIdData;
-import alexiil.mc.lib.net.ParentNetId;
-import alexiil.mc.lib.net.impl.CoreMinecraftNetUtil;
-import alexiil.mc.lib.net.impl.McNetworkStack;
+import org.jetbrains.annotations.NotNull;
 
-import com.kneelawk.graphlib.api.graph.GraphWorld;
-import com.kneelawk.graphlib.api.graph.NodeHolder;
-import com.kneelawk.graphlib.api.graph.user.BlockNode;
-import com.kneelawk.graphlib.api.util.NodePos;
-import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
-import com.kneelawk.transferbeams.TransferBeamsMod;
-import com.kneelawk.transferbeams.graph.TransferNodeEntity;
-import com.kneelawk.transferbeams.item.LinkToolItem;
-import com.kneelawk.transferbeams.util.PlayerDropHandler;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-public class TBNet {
-    public static void init() {
-        // performs static initialization
-    }
+import com.kneelawk.graphlib.api.graph.GraphWorld;
+import com.kneelawk.graphlib.api.graph.NodeHolder;
+import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.util.NodePos;
+import com.kneelawk.graphlib.syncing.knet.api.GraphLibSyncingKNet;
+import com.kneelawk.knet.api.KNetRegistrar;
+import com.kneelawk.knet.api.channel.NoContextPlayChannel;
+import com.kneelawk.knet.api.handling.PlayPayloadHandlingContext;
+import com.kneelawk.knet.api.util.NetRegistryByteBuf;
+import com.kneelawk.transferbeams.TransferBeamsMod;
+import com.kneelawk.transferbeams.graph.TransferNodeEntity;
+import com.kneelawk.transferbeams.item.LinkToolItem;
+import com.kneelawk.transferbeams.util.PlayerDropHandler;
 
-    public static final ParentNetId TRANSFER_BEAMS = McNetworkStack.ROOT.child(TransferBeamsMod.MOD_ID);
-    public static final NetIdData NODE_ACTIVATE =
-        TRANSFER_BEAMS.idData("node_activate").toServerOnly().setReceiver(TBNet::receiveNodeActivate);
-    public static final NetIdData NODE_REMOVE =
-        TRANSFER_BEAMS.idData("node_remove").toServerOnly().setReceiver(TBNet::receiveNodeRemove);
-    public static final NetIdData NODE_LINK =
-        TRANSFER_BEAMS.idData("node_link").toServerOnly().setReceiver(TBNet::receiveNodeLink);
+import static com.kneelawk.transferbeams.TransferBeamsMod.id;
+
+public class TBNet {
+    private static final NoContextPlayChannel<NodeActivatePayload> NODE_ACTIVATE =
+        NoContextPlayChannel.ofRegistryCodec(NodeActivatePayload.TYPE, NodeActivatePayload.CODEC)
+            .recvServer(TBNet::receiveNodeActivate);
+    private static final NoContextPlayChannel<NodeRemovePayload> NODE_REMOVE =
+        NoContextPlayChannel.ofRegistryCodec(NodeRemovePayload.TYPE, NodeRemovePayload.CODEC)
+            .recvServer(TBNet::receiveNodeRemove);
+    private static final NoContextPlayChannel<NodeLinkPayload> NODE_LINK =
+        NoContextPlayChannel.ofRegistryCodec(NodeLinkPayload.TYPE, NodeLinkPayload.CODEC)
+            .recvServer(TBNet::receiveNodeLink);
+
+    public static void init(KNetRegistrar registrar) {
+        registrar.register(NODE_ACTIVATE);
+        registrar.register(NODE_REMOVE);
+        registrar.register(NODE_LINK);
+    }
 
     public static void sendNodeActivate(NodePos pos) {
-        NODE_ACTIVATE.send(CoreMinecraftNetUtil.getClientConnection(),
-            (buf, ctx) -> GraphLibSyncingLNS.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+        NODE_ACTIVATE.sendToServer(new NodeActivatePayload(pos));
     }
 
-    private static void receiveNodeActivate(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+    private static void receiveNodeActivate(NodeActivatePayload payload,
+                                            PlayPayloadHandlingContext ctx) {
+        NodePos pos = payload.pos();
 
-        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayer player)) return;
+        if (!(ctx.getPlayer() instanceof ServerPlayer player)) return;
 
         // make sure the player is reasonably close
         if (pos.pos().distToCenterSqr(player.position()) > 100.0) return;
@@ -89,14 +96,13 @@ public class TBNet {
     }
 
     public static void sendNodeRemove(NodePos pos) {
-        NODE_REMOVE.send(CoreMinecraftNetUtil.getClientConnection(),
-            (buf, ctx) -> GraphLibSyncingLNS.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+        NODE_REMOVE.sendToServer(new NodeRemovePayload(pos));
     }
 
-    private static void receiveNodeRemove(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+    private static void receiveNodeRemove(NodeRemovePayload payload, PlayPayloadHandlingContext ctx) {
+        NodePos pos = payload.pos();
 
-        if (!(ctx.getConnection().getPlayer() instanceof ServerPlayer player)) return;
+        if (!(ctx.getPlayer() instanceof ServerPlayer player)) return;
 
         // make sure the player is reasonably close
         if (pos.pos().distToCenterSqr(player.position()) > 100.0) return;
@@ -119,14 +125,13 @@ public class TBNet {
     }
 
     public static void sendNodeLink(NodePos pos) {
-        NODE_LINK.send(CoreMinecraftNetUtil.getClientConnection(),
-            (buf, ctx) -> GraphLibSyncingLNS.encodeNodePos(pos, buf, ctx, TransferBeamsMod.SYNCED));
+        NODE_LINK.sendToServer(new NodeLinkPayload(pos));
     }
 
-    private static void receiveNodeLink(NetByteBuf buf, IMsgReadCtx ctx) throws InvalidInputDataException {
-        NodePos pos = GraphLibSyncingLNS.decodeNodePos(buf, ctx, TransferBeamsMod.SYNCED);
+    private static void receiveNodeLink(NodeLinkPayload payload, PlayPayloadHandlingContext ctx) {
+        NodePos pos = payload.pos();
 
-        Player player = ctx.getConnection().getPlayer();
+        Player player = ctx.mustGetPlayer();
 
         // make sure the player is reasonably close
         if (pos.pos().distToCenterSqr(player.position()) > 100.0) return;
@@ -139,5 +144,40 @@ public class TBNet {
         GraphWorld world = TransferBeamsMod.UNIVERSE.getGraphWorld(serverWorld);
 
         LinkToolItem.onNodeClick(player, world, pos);
+    }
+
+    private record NodeActivatePayload(NodePos pos) implements CustomPacketPayload {
+        public static final Type<NodeActivatePayload> TYPE = new Type<>(id("node_activate"));
+        public static final StreamCodec<NetRegistryByteBuf, NodeActivatePayload> CODEC =
+            GraphLibSyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED).map(
+                NodeActivatePayload::new, NodeActivatePayload::pos);
+
+        @Override
+        public @NotNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    private record NodeRemovePayload(NodePos pos) implements CustomPacketPayload {
+        public static final Type<NodeRemovePayload> TYPE = new Type<>(id("node_remove"));
+        public static final StreamCodec<NetRegistryByteBuf, NodeRemovePayload> CODEC =
+            GraphLibSyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED)
+                .map(NodeRemovePayload::new, NodeRemovePayload::pos);
+
+        @Override
+        public @NotNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+    }
+
+    private record NodeLinkPayload(NodePos pos) implements CustomPacketPayload {
+        public static final Type<NodeLinkPayload> TYPE = new Type<>(id("node_link"));
+        public static final StreamCodec<NetRegistryByteBuf, NodeLinkPayload> CODEC =
+            GraphLibSyncingKNet.nodePosCodec(TransferBeamsMod.SYNCED).map(NodeLinkPayload::new, NodeLinkPayload::pos);
+
+        @Override
+        public @NotNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
     }
 }
