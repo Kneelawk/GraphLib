@@ -129,14 +129,14 @@ public class NodeRenderer {
     }
 
     private static void plainRender(WorldRenderContext ctx) {
-        if (!shouldRenderToOverlay()) render(ctx);
+        if (!shouldRenderToOverlay()) render(ctx, false);
     }
 
     private static void overlayRender(WorldRenderContext ctx) {
-        if (shouldRenderToOverlay()) render(ctx);
+        if (shouldRenderToOverlay()) render(ctx, true);
     }
 
-    private static void render(WorldRenderContext ctx) {
+    private static void render(WorldRenderContext ctx, boolean mulPos) {
         GraphView view = TransferBeamsMod.SYNCED.getClientGraphView();
         if (view == null) return;
 
@@ -149,9 +149,10 @@ public class NodeRenderer {
         MultiBufferSource provider = ctx.consumers();
         Vec3 cameraPos = ctx.camera().getPosition();
         assert provider != null;
+        assert stack != null;
 
         stack.pushPose();
-        stack.mulPose(ctx.positionMatrix());
+        if (mulPos) stack.mulPose(ctx.positionMatrix());
 
         // We want the nodes to always be positioned by color.
         Map<BlockPos, SortedEntities> sorted = sortNodeEntities(view);

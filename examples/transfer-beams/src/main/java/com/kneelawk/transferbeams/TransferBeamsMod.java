@@ -59,6 +59,7 @@ import com.kneelawk.transferbeams.item.ConfigToolItem;
 import com.kneelawk.transferbeams.item.InteractionCancellerItem;
 import com.kneelawk.transferbeams.item.LinkToolItem;
 import com.kneelawk.transferbeams.item.NodeItem;
+import com.kneelawk.transferbeams.item.NodePosComponent;
 import com.kneelawk.transferbeams.net.TBNet;
 import com.kneelawk.transferbeams.screen.ItemNodeScreenHandler;
 
@@ -125,6 +126,8 @@ public class TransferBeamsMod implements ModInitializer {
 
         Registry.register(BuiltInRegistries.ITEM, id("config_tool"), CONFIG_TOOL_ITEM);
         Registry.register(BuiltInRegistries.ITEM, id("link_tool"), LINK_TOOL_ITEM);
+
+        Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, id("node_pos"), NodePosComponent.TYPE);
 
         CreativeModeTab itemGroup =
             FabricItemGroup.builder().title(tt("itemGroup", "main")).displayItems((params, collector) -> {
