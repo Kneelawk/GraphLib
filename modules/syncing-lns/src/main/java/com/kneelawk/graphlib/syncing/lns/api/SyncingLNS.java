@@ -59,13 +59,14 @@ import com.kneelawk.graphlib.syncing.lns.impl.LNSNetworking;
 /**
  * LibNetworkStack-based synchronization library.
  */
-public final class GraphLibSyncingLNS {
-    private GraphLibSyncingLNS() {}
+public final class SyncingLNS {
+    private SyncingLNS() {}
 
     /**
      * Syncing for {@link EmptyLinkKey}.
      */
-    public static final LinkKeySyncing EMPTY_KEY_SYNCING = LinkKeySyncing.ofNoOp(() -> EmptyLinkKey.INSTANCE);
+    public static final LinkKeySyncing EMPTY_KEY_SYNCING =
+        LinkKeySyncing.ofNoOp(EmptyLinkKey.TYPE, () -> EmptyLinkKey.INSTANCE);
 
     /**
      * Net parent for all node entities.

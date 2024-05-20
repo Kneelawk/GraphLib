@@ -36,6 +36,7 @@ import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
+import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 
 /**
  * Holds a graph entity encoder and decoder.
@@ -43,13 +44,22 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntity;
  * @param <G> the type of graph entity this syncs.
  */
 public final class GraphEntitySyncing<G extends GraphEntity<G>> {
+    private final @NotNull GraphEntityType<G> type;
     private final @NotNull GraphEntityPacketEncoder<G> encoder;
     private final @NotNull GraphEntityPacketDecoder decoder;
 
-    private GraphEntitySyncing(@NotNull GraphEntityPacketEncoder<G> encoder,
+    private GraphEntitySyncing(@NotNull GraphEntityType<G> type, @NotNull GraphEntityPacketEncoder<G> encoder,
                                @NotNull GraphEntityPacketDecoder decoder) {
+        this.type = type;
         this.encoder = encoder;
         this.decoder = decoder;
+    }
+
+    /**
+     * {@return the type associated with this syncing}
+     */
+    public @NotNull GraphEntityType<G> getType() {
+        return type;
     }
 
     /**
@@ -84,26 +94,32 @@ public final class GraphEntitySyncing<G extends GraphEntity<G>> {
     /**
      * Makes a new {@link GraphEntity} syncing descriptor.
      *
+     * @param <G>     the type of graph entity this descriptor syncs.
+     * @param type    the type associated with this syncing.
      * @param encoder the encoder for the graph entity.
      * @param decoder the decoder for the graph entity.
-     * @param <G>     the type of graph entity this descriptor syncs.
      * @return a new graph entity syncing descriptor.
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> of(
-        @NotNull GraphEntityPacketEncoder<G> encoder, @NotNull GraphEntityPacketDecoder decoder) {
-        return new GraphEntitySyncing<>(encoder, decoder);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> of(@NotNull GraphEntityType<G> type,
+                                                                               @NotNull
+                                                                               GraphEntityPacketEncoder<G> encoder,
+                                                                               @NotNull
+                                                                               GraphEntityPacketDecoder decoder) {
+        return new GraphEntitySyncing<>(type, encoder, decoder);
     }
 
     /**
      * Makes a new {@link GraphEntity} syncing descriptor that does no encoding or decoding.
      *
-     * @param supplier supplies instances of the graph entity.
      * @param <G>      the type of graph entity this descriptor syncs.
+     * @param type     the type associated with this syncing.
+     * @param supplier supplies instances of the graph entity.
      * @return a new graph entity syncing descriptor.
      */
     @Contract(value = "_ -> new", pure = true)
-    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofNoOp(@NotNull Supplier<G> supplier) {
-        return new GraphEntitySyncing<G>(GraphEntityPacketEncoder.noOp(), (buf, msgCtx) -> supplier.get());
+    public static <G extends GraphEntity<G>> @NotNull GraphEntitySyncing<G> ofNoOp(@NotNull GraphEntityType<G> type,
+                                                                                   @NotNull Supplier<G> supplier) {
+        return new GraphEntitySyncing<G>(type, GraphEntityPacketEncoder.noOp(), (buf, msgCtx) -> supplier.get());
     }
 }

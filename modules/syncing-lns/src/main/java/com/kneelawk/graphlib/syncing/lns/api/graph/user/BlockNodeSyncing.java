@@ -36,17 +36,28 @@ import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 
 /**
  * Holds a block node encoder and decoder.
  */
 public final class BlockNodeSyncing {
+    private final @NotNull BlockNodeType type;
     private final @NotNull BlockNodePacketEncoder<?> encoder;
     private final @NotNull BlockNodePacketDecoder decoder;
 
-    private BlockNodeSyncing(@NotNull BlockNodePacketEncoder<?> encoder, @NotNull BlockNodePacketDecoder decoder) {
+    private BlockNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodePacketEncoder<?> encoder,
+                             @NotNull BlockNodePacketDecoder decoder) {
+        this.type = type;
         this.encoder = encoder;
         this.decoder = decoder;
+    }
+
+    /**
+     * {@return the type associated with this syncing}
+     */
+    public @NotNull BlockNodeType getType() {
+        return type;
     }
 
     /**
@@ -81,25 +92,29 @@ public final class BlockNodeSyncing {
     /**
      * Makes a {@link BlockNode} syncing descriptor.
      *
+     * @param <N>     the type of block node this descriptor syncs.
+     * @param type    the type associated with this syncing.
      * @param encoder the encoder.
      * @param decoder the decoder.
-     * @param <N>     the type of block node this descriptor syncs.
      * @return a new block node syncing descriptor.
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static <N extends BlockNode> @NotNull BlockNodeSyncing of(@NotNull BlockNodePacketEncoder<N> encoder,
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static <N extends BlockNode> @NotNull BlockNodeSyncing of(@NotNull BlockNodeType type,
+                                                                     @NotNull BlockNodePacketEncoder<N> encoder,
                                                                      @NotNull BlockNodePacketDecoder decoder) {
-        return new BlockNodeSyncing(encoder, decoder);
+        return new BlockNodeSyncing(type, encoder, decoder);
     }
 
     /**
      * Makes a {@link BlockNode} syncing descriptor that does no encoding or decoding.
      *
+     * @param type     the type associated with this syncing.
      * @param supplier supplies the instance(s) of the block node.
      * @return a new block node syncing descriptor.
      */
-    @Contract(value = "_ -> new", pure = true)
-    public static @NotNull BlockNodeSyncing ofNoOp(@NotNull Supplier<? extends BlockNode> supplier) {
-        return new BlockNodeSyncing(BlockNodePacketEncoder.noOp(), (buf, ctx) -> supplier.get());
+    @Contract(value = "_, _ -> new", pure = true)
+    public static @NotNull BlockNodeSyncing ofNoOp(@NotNull BlockNodeType type,
+                                                   @NotNull Supplier<? extends BlockNode> supplier) {
+        return new BlockNodeSyncing(type, BlockNodePacketEncoder.noOp(), (buf, ctx) -> supplier.get());
     }
 }

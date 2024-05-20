@@ -44,7 +44,6 @@ import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
-import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.impl.graph.GraphWorldStorage;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
@@ -55,7 +54,7 @@ import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.ClientGraphWorldStorage;
 import com.kneelawk.graphlib.syncing.impl.graph.SyncedUniverseImpl;
 import com.kneelawk.graphlib.syncing.impl.graph.simple.SimpleClientGraphWorld;
-import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
+import com.kneelawk.graphlib.syncing.lns.api.SyncingLNS;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.BlockNodeSyncing;
 import com.kneelawk.graphlib.syncing.lns.api.graph.user.GraphEntitySyncing;
@@ -81,7 +80,7 @@ public class SimpleLNSSyncedUniverse implements LNSSyncedUniverse, SyncedUnivers
         this.universe = universe;
         syncProfile = builder.profile;
 
-        addLinkKeySyncing(EmptyLinkKey.TYPE, GraphLibSyncingLNS.EMPTY_KEY_SYNCING);
+        addLinkKeySyncing(SyncingLNS.EMPTY_KEY_SYNCING);
 
         if (syncProfile.getNodeFilter() != null) {
             universe.addCacheCategory(syncProfile.getNodeFilter());
@@ -117,8 +116,8 @@ public class SimpleLNSSyncedUniverse implements LNSSyncedUniverse, SyncedUnivers
     }
 
     @Override
-    public void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodeSyncing syncing) {
-        nodeSyncing.put(type, syncing);
+    public void addNodeSyncing(@NotNull BlockNodeSyncing syncing) {
+        nodeSyncing.put(syncing.getType(), syncing);
     }
 
     @Override
@@ -135,8 +134,8 @@ public class SimpleLNSSyncedUniverse implements LNSSyncedUniverse, SyncedUnivers
     }
 
     @Override
-    public void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntitySyncing syncing) {
-        nodeEntitySyncing.put(type, syncing);
+    public void addNodeEntitySyncing(@NotNull NodeEntitySyncing syncing) {
+        nodeEntitySyncing.put(syncing.getType(), syncing);
     }
 
     @Override
@@ -153,8 +152,8 @@ public class SimpleLNSSyncedUniverse implements LNSSyncedUniverse, SyncedUnivers
     }
 
     @Override
-    public void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeySyncing syncing) {
-        linkKeySyncing.put(type, syncing);
+    public void addLinkKeySyncing(@NotNull LinkKeySyncing syncing) {
+        linkKeySyncing.put(syncing.getType(), syncing);
     }
 
     @Override
@@ -171,8 +170,8 @@ public class SimpleLNSSyncedUniverse implements LNSSyncedUniverse, SyncedUnivers
     }
 
     @Override
-    public void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntitySyncing syncing) {
-        linkEntitySyncing.put(type, syncing);
+    public void addLinkEntitySyncing(@NotNull LinkEntitySyncing syncing) {
+        linkEntitySyncing.put(syncing.getType(), syncing);
     }
 
     @Override
@@ -189,9 +188,8 @@ public class SimpleLNSSyncedUniverse implements LNSSyncedUniverse, SyncedUnivers
     }
 
     @Override
-    public <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type,
-                                                                 @NotNull GraphEntitySyncing<G> syncing) {
-        graphEntitySyncing.put(type, syncing);
+    public <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntitySyncing<G> syncing) {
+        graphEntitySyncing.put(syncing.getType(), syncing);
     }
 
     @Override

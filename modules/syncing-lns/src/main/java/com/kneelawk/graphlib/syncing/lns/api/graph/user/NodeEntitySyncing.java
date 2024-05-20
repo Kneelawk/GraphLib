@@ -35,17 +35,28 @@ import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
+import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
 
 /**
  * Holds a node entity encoder and decoder.
  */
 public final class NodeEntitySyncing {
+    private final @NotNull NodeEntityType type;
     private final @NotNull NodeEntityPacketEncoder<?> encoder;
     private final @NotNull NodeEntityPacketDecoder decoder;
 
-    private NodeEntitySyncing(@NotNull NodeEntityPacketEncoder<?> encoder, @NotNull NodeEntityPacketDecoder decoder) {
+    private NodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntityPacketEncoder<?> encoder,
+                              @NotNull NodeEntityPacketDecoder decoder) {
+        this.type = type;
         this.encoder = encoder;
         this.decoder = decoder;
+    }
+
+    /**
+     * {@return the type associated with this syncing}
+     */
+    public @NotNull NodeEntityType getType() {
+        return type;
     }
 
     /**
@@ -80,23 +91,27 @@ public final class NodeEntitySyncing {
     /**
      * Makes a {@link NodeEntity} syncing descriptor.
      *
+     * @param <N>     the type of node entity this descriptor syncs.
+     * @param type    the type this syncing is associated with.
      * @param encoder the encoder.
      * @param decoder the decoder.
-     * @param <N>     the type of node entity this descriptor syncs.
      * @return a new node entity syncing descriptor.
      */
-    public static <N extends NodeEntity> @NotNull NodeEntitySyncing of(@NotNull NodeEntityPacketEncoder<N> encoder,
+    public static <N extends NodeEntity> @NotNull NodeEntitySyncing of(@NotNull NodeEntityType type,
+                                                                       @NotNull NodeEntityPacketEncoder<N> encoder,
                                                                        @NotNull NodeEntityPacketDecoder decoder) {
-        return new NodeEntitySyncing(encoder, decoder);
+        return new NodeEntitySyncing(type, encoder, decoder);
     }
 
     /**
      * Makes a {@link NodeEntity} syncing descriptor that does no encoding or decoding.
      *
+     * @param type     the type this syncing is associated with.
      * @param supplier supplies new instances of node entities.
      * @return a new node entity syncing descriptor.
      */
-    public static @NotNull NodeEntitySyncing ofNoOp(@NotNull Supplier<? extends NodeEntity> supplier) {
-        return new NodeEntitySyncing(NodeEntityPacketEncoder.noOp(), (buf, msgCtx) -> supplier.get());
+    public static @NotNull NodeEntitySyncing ofNoOp(@NotNull NodeEntityType type,
+                                                    @NotNull Supplier<? extends NodeEntity> supplier) {
+        return new NodeEntitySyncing(type, NodeEntityPacketEncoder.noOp(), (buf, msgCtx) -> supplier.get());
     }
 }

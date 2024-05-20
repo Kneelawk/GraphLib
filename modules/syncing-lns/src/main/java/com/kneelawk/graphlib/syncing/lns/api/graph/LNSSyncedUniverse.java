@@ -52,10 +52,9 @@ public interface LNSSyncedUniverse extends SyncedUniverse {
     /**
      * Registers an encoder and decoder for the given block node type.
      *
-     * @param type    the type of block node to associate the encoder and decoder with.
      * @param syncing the syncing for the block node.
      */
-    void addNodeSyncing(@NotNull BlockNodeType type, @NotNull BlockNodeSyncing syncing);
+    void addNodeSyncing(@NotNull BlockNodeSyncing syncing);
 
     /**
      * Gets whether the given block node type has had encoders and decoders registered with this universe.
@@ -77,10 +76,9 @@ public interface LNSSyncedUniverse extends SyncedUniverse {
     /**
      * Registers an encoder and decoder for the given node entity type.
      *
-     * @param type    the type of node entity to associate the encoder and decoder with.
      * @param syncing the node entity syncing.
      */
-    void addNodeEntitySyncing(@NotNull NodeEntityType type, @NotNull NodeEntitySyncing syncing);
+    void addNodeEntitySyncing(@NotNull NodeEntitySyncing syncing);
 
     /**
      * Gets whether the given node entity type has had encoders and decoders registered with this universe.
@@ -102,10 +100,9 @@ public interface LNSSyncedUniverse extends SyncedUniverse {
     /**
      * Registers an encoder and decoder for the given link key type.
      *
-     * @param type    the type of link key to associate the encoder and decoder with.
      * @param syncing the link key syncing.
      */
-    void addLinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeySyncing syncing);
+    void addLinkKeySyncing(@NotNull LinkKeySyncing syncing);
 
     /**
      * Gets whether the given link key type has had encoders and decoders registered with this universe.
@@ -127,10 +124,9 @@ public interface LNSSyncedUniverse extends SyncedUniverse {
     /**
      * Registers an encoder and decoder for the given link entity type.
      *
-     * @param type    the type of link entity to associate the encoder and decoder with.
      * @param syncing the link entity syncing.
      */
-    void addLinkEntitySyncing(@NotNull LinkEntityType type, @NotNull LinkEntitySyncing syncing);
+    void addLinkEntitySyncing(@NotNull LinkEntitySyncing syncing);
 
     /**
      * Gets whether the given link entity type has had encoders and decoders registered with this universe.
@@ -153,11 +149,9 @@ public interface LNSSyncedUniverse extends SyncedUniverse {
      * Registers an encoder and decoder for the given graph entity type.
      *
      * @param <G>     the type of graph entity to add syncing for.
-     * @param type    the type of graph entity to associate the encoder and decoder with.
      * @param syncing the graph entity syncing.
      */
-    <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntityType<G> type,
-                                                          @NotNull GraphEntitySyncing<G> syncing);
+    <G extends GraphEntity<G>> void addGraphEntitySyncing(@NotNull GraphEntitySyncing<G> syncing);
 
     /**
      * Gets whether the given graph entity type has had encoders and decoders registered with this universe.

@@ -34,18 +34,30 @@ import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
+import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
+import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 
 /**
  * Holds a link key encoder and decoder.
  */
 public final class LinkKeySyncing {
+    private final @NotNull LinkKeyType type;
     private final @NotNull LinkKeyPacketEncoder<?> encoder;
     private final @NotNull LinkKeyPacketDecoder decoder;
 
-    private LinkKeySyncing(@NotNull LinkKeyPacketEncoder<?> encoder, @NotNull LinkKeyPacketDecoder decoder) {
+    private LinkKeySyncing(@NotNull LinkKeyType type, @NotNull LinkKeyPacketEncoder<?> encoder,
+                           @NotNull LinkKeyPacketDecoder decoder) {
+        this.type = type;
         this.encoder = encoder;
         this.decoder = decoder;
+    }
+
+    /**
+     * {@return the type associated with this syncing}
+     */
+    public @NotNull LinkKeyType getType() {
+        return type;
     }
 
     /**
@@ -79,23 +91,27 @@ public final class LinkKeySyncing {
     /**
      * Makes a {@link LinkKey} syncing descriptor.
      *
+     * @param <L>     the type of link key this descriptor syncs.
+     * @param type    the type this syncing is associated with.
      * @param encoder the encoder.
      * @param decoder the decoder.
-     * @param <L>     the type of link key this descriptor syncs.
      * @return a link key syncing descriptor.
      */
-    public static <L extends LinkKey> @NotNull LinkKeySyncing of(@NotNull LinkKeyPacketEncoder<L> encoder,
+    public static <L extends LinkKey> @NotNull LinkKeySyncing of(@NotNull LinkKeyType type,
+                                                                 @NotNull LinkKeyPacketEncoder<L> encoder,
                                                                  @NotNull LinkKeyPacketDecoder decoder) {
-        return new LinkKeySyncing(encoder, decoder);
+        return new LinkKeySyncing(type, encoder, decoder);
     }
 
     /**
      * Makes a {@link LinkKey} syncing descriptor that does not do any encoding or decoding.
      *
+     * @param type     the type this syncing is associated with.
      * @param supplier supplies the instance(s) of the link key.
      * @return a link key syncing descriptor.
      */
-    public static @NotNull LinkKeySyncing ofNoOp(@NotNull Supplier<? extends LinkKey> supplier) {
-        return new LinkKeySyncing(LinkKeyPacketEncoder.noOp(), (buf, ctx) -> supplier.get());
+    public static @NotNull LinkKeySyncing ofNoOp(@NotNull LinkKeyType type,
+                                                 @NotNull Supplier<? extends LinkKey> supplier) {
+        return new LinkKeySyncing(type, LinkKeyPacketEncoder.noOp(), (buf, ctx) -> supplier.get());
     }
 }

@@ -60,7 +60,7 @@ import com.kneelawk.graphlib.api.util.NodePos;
 import com.kneelawk.graphlib.impl.GLLog;
 import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
-import com.kneelawk.graphlib.syncing.lns.api.GraphLibSyncingLNS;
+import com.kneelawk.graphlib.syncing.lns.api.SyncingLNS;
 import com.kneelawk.graphlib.syncing.lns.api.graph.LNSSyncedUniverse;
 
 public final class LNSEncoding {
@@ -69,7 +69,7 @@ public final class LNSEncoding {
     @SuppressWarnings("unchecked")
     public static void writeChunkPillar(ChunkPos chunkPos, ServerGraphWorldImpl world, NetByteBuf buf,
                                         IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(world);
+        LNSSyncedUniverse universe = SyncingLNS.getUniverse(world);
 
         // collect graphs to encode
         Long2ObjectMap<BlockGraphImpl> toEncode = new Long2ObjectLinkedOpenHashMap<>();
@@ -127,7 +127,7 @@ public final class LNSEncoding {
                     continue;
                 }
 
-                GraphLibSyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
+                SyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
 
                 writeNodeEntity(holder, buf, ctx, graph, universe);
 
@@ -190,7 +190,7 @@ public final class LNSEncoding {
             // write external links
             buf.writeVarUnsignedInt(externalLinks.size());
             for (LinkPos link : externalLinks) {
-                GraphLibSyncingLNS.encodeLinkPos(link, buf, ctx, universe);
+                SyncingLNS.encodeLinkPos(link, buf, ctx, universe);
 
                 // quarantine link entities
                 writeLinkEntity(buf, ctx, link, graph, universe);
@@ -241,9 +241,9 @@ public final class LNSEncoding {
 
     public static void writeNodeAdd(BlockGraphImpl graph, NodeHolder<BlockNode> node, NetByteBuf buf,
                                     IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = SyncingLNS.getUniverse(graph.getGraphView());
 
-        GraphLibSyncingLNS.encodeNodePos(node.getPos(), buf, ctx, universe);
+        SyncingLNS.encodeNodePos(node.getPos(), buf, ctx, universe);
 
         buf.writeVarUnsignedLong(graph.getId());
 
@@ -253,7 +253,7 @@ public final class LNSEncoding {
     }
 
     public static void writeMerge(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(from.getGraphView());
+        LNSSyncedUniverse universe = SyncingLNS.getUniverse(from.getGraphView());
 
         buf.writeVarUnsignedLong(from.getId());
 
@@ -263,29 +263,29 @@ public final class LNSEncoding {
     }
 
     public static void writeLink(BlockGraphImpl graph, LinkHolder<LinkKey> link, NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = SyncingLNS.getUniverse(graph.getGraphView());
 
         buf.writeVarUnsignedLong(graph.getId());
 
         LinkPos linkPos = link.getPos();
-        GraphLibSyncingLNS.encodeLinkPos(linkPos, buf, ctx, universe);
+        SyncingLNS.encodeLinkPos(linkPos, buf, ctx, universe);
 
         writeLinkEntity(buf, ctx, linkPos, graph, universe);
     }
 
     public static void writeUnlink(BlockGraphImpl graph, NodeHolder<BlockNode> a, NodeHolder<BlockNode> b, LinkKey key,
                                    NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = SyncingLNS.getUniverse(graph.getGraphView());
 
         buf.writeVarUnsignedLong(graph.getId());
 
         LinkPos linkPos = new LinkPos(a.getPos(), b.getPos(), key);
-        GraphLibSyncingLNS.encodeLinkPos(linkPos, buf, ctx, universe);
+        SyncingLNS.encodeLinkPos(linkPos, buf, ctx, universe);
     }
 
     @SuppressWarnings("unchecked")
     public static void writeSplitInto(BlockGraphImpl from, BlockGraphImpl into, NetByteBuf buf, IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(from.getGraphView());
+        LNSSyncedUniverse universe = SyncingLNS.getUniverse(from.getGraphView());
 
         buf.writeVarUnsignedLong(from.getId());
 
@@ -309,16 +309,16 @@ public final class LNSEncoding {
         buf.writeVarUnsignedInt(nodeCount);
         while (iter.hasNext()) {
             NodeHolder<BlockNode> holder = iter.next();
-            GraphLibSyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
+            SyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
         }
     }
 
     public static void writeNodeRemove(BlockGraphImpl graph, NodeHolder<BlockNode> holder, NetByteBuf buf,
                                        IMsgWriteCtx ctx) {
-        LNSSyncedUniverse universe = GraphLibSyncingLNS.getUniverse(graph.getGraphView());
+        LNSSyncedUniverse universe = SyncingLNS.getUniverse(graph.getGraphView());
 
         buf.writeVarUnsignedLong(graph.getId());
 
-        GraphLibSyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
+        SyncingLNS.encodeNodePos(holder.getPos(), buf, ctx, universe);
     }
 }
