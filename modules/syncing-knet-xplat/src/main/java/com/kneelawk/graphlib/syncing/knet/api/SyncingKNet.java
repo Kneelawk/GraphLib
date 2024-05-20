@@ -226,52 +226,58 @@ public final class SyncingKNet {
      * Channel context for referencing a node entity.
      */
     public static final PlayChannelContext<NodeEntity> NODE_ENTITY_CONTEXT =
-        RootPlayChannelContext.ofRegistryCodec(InSyncedUniverse.codec(NODE_POS_CODEC), (payload, ctx) -> {
-            GraphView view = payload.universe().getSidedGraphView(ctx.mustGetLevel());
-            if (view == null) throw new PayloadHandlingErrorException(
-                "Unable to get the graph view associated with: " + ctx.mustGetLevel());
+        RootPlayChannelContext.ofRegistryCodec("graphlib_node_entity", InSyncedUniverse.codec(NODE_POS_CODEC),
+            (payload, ctx) -> {
+                GraphView view = payload.universe().getSidedGraphView(ctx.mustGetLevel());
+                if (view == null) throw new PayloadHandlingErrorException(
+                    "Unable to get the graph view associated with: " + ctx.mustGetLevel());
 
-            NodeEntity entity = view.getNodeEntity(payload.obj());
-            if (entity == null) throw new PayloadHandlingErrorException("No node entity present at: " + payload.obj());
+                NodeEntity entity = view.getNodeEntity(payload.obj());
+                if (entity == null)
+                    throw new PayloadHandlingErrorException("No node entity present at: " + payload.obj());
 
-            return entity;
-        }, entity -> new InSyncedUniverse<>(getUniverse(entity.getContext().getGraphWorld()),
-            entity.getContext().getPos()));
+                return entity;
+            }, entity -> new InSyncedUniverse<>(getUniverse(entity.getContext().getGraphWorld()),
+                entity.getContext().getPos()));
 
     /**
      * Channel context for referencing a link entity.
      */
     public static final PlayChannelContext<LinkEntity> LINK_ENTITY_CONTEXT =
-        RootPlayChannelContext.ofRegistryCodec(InSyncedUniverse.codec(LINK_POS_CODEC), (payload, ctx) -> {
-            GraphView view = payload.universe().getSidedGraphView(ctx.mustGetLevel());
-            if (view == null) throw new PayloadHandlingErrorException(
-                "Unable to get the graph view associated with: " + ctx.mustGetLevel());
+        RootPlayChannelContext.ofRegistryCodec("graphlib_link_entity", InSyncedUniverse.codec(LINK_POS_CODEC),
+            (payload, ctx) -> {
+                GraphView view = payload.universe().getSidedGraphView(ctx.mustGetLevel());
+                if (view == null) throw new PayloadHandlingErrorException(
+                    "Unable to get the graph view associated with: " + ctx.mustGetLevel());
 
-            LinkEntity entity = view.getLinkEntity(payload.obj());
-            if (entity == null) throw new PayloadHandlingErrorException("No link entity present at " + payload.obj());
+                LinkEntity entity = view.getLinkEntity(payload.obj());
+                if (entity == null)
+                    throw new PayloadHandlingErrorException("No link entity present at " + payload.obj());
 
-            return entity;
-        }, entity -> new InSyncedUniverse<>(getUniverse(entity.getContext().getGraphWorld()),
-            entity.getContext().getPos()));
+                return entity;
+            }, entity -> new InSyncedUniverse<>(getUniverse(entity.getContext().getGraphWorld()),
+                entity.getContext().getPos()));
 
     /**
      * Channel context for referencing a graph entity.
      */
     public static final PlayChannelContext<GraphEntity<?>> GRAPH_ENTITY_CONTEXT =
-        RootPlayChannelContext.ofNetCodec(InSyncedUniverse.codec(GraphEntityPayload.CODEC), (payload, ctx) -> {
-            GraphView view = payload.universe().getSidedGraphView(ctx.mustGetLevel());
-            if (view == null) throw new PayloadHandlingErrorException(
-                "Unable to get the graph view associated with: " + ctx.mustGetLevel());
+        RootPlayChannelContext.ofNetCodec("graphlib_graph_entity", InSyncedUniverse.codec(GraphEntityPayload.CODEC),
+            (payload, ctx) -> {
+                GraphView view = payload.universe().getSidedGraphView(ctx.mustGetLevel());
+                if (view == null) throw new PayloadHandlingErrorException(
+                    "Unable to get the graph view associated with: " + ctx.mustGetLevel());
 
-            BlockGraph graph = view.getGraph(payload.obj().graphId());
-            if (graph == null) throw new PayloadHandlingErrorException("No graph with id: " + payload.obj().graphId());
+                BlockGraph graph = view.getGraph(payload.obj().graphId());
+                if (graph == null)
+                    throw new PayloadHandlingErrorException("No graph with id: " + payload.obj().graphId());
 
-            return graph.getGraphEntity(payload.obj().syncing().getType());
-        }, entity -> {
-            KNetSyncedUniverse universe = getUniverse(entity.getContext().getGraphWorld());
-            return new InSyncedUniverse<>(universe, new GraphEntityPayload(entity.getContext().getGraph().getId(),
-                universe.getGraphEntitySyncing(entity.getType())));
-        });
+                return graph.getGraphEntity(payload.obj().syncing().getType());
+            }, entity -> {
+                KNetSyncedUniverse universe = getUniverse(entity.getContext().getGraphWorld());
+                return new InSyncedUniverse<>(universe, new GraphEntityPayload(entity.getContext().getGraph().getId(),
+                    universe.getGraphEntitySyncing(entity.getType())));
+            });
 
     /**
      * Syncing for {@link EmptyLinkKey}.
@@ -313,10 +319,8 @@ public final class SyncingKNet {
     }
 
     private record GraphEntityPayload(long graphId, GraphEntitySyncing<?> syncing) {
-        public static final StreamCodec<NetByteBuf, GraphEntityPayload> CODEC = StreamCodec.composite(
-            ByteBufCodecs.VAR_LONG, GraphEntityPayload::graphId,
-            GraphEntitySyncing.REF_CODEC, GraphEntityPayload::syncing,
-            GraphEntityPayload::new
-        );
+        public static final StreamCodec<NetByteBuf, GraphEntityPayload> CODEC =
+            StreamCodec.composite(ByteBufCodecs.VAR_LONG, GraphEntityPayload::graphId, GraphEntitySyncing.REF_CODEC,
+                GraphEntityPayload::syncing, GraphEntityPayload::new);
     }
 }
