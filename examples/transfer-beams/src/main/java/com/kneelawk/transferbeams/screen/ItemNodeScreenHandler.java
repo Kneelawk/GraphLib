@@ -67,18 +67,18 @@ public class ItemNodeScreenHandler extends AbstractContainerMenu {
         new MenuType<>(ItemNodeScreenHandler::new, FeatureFlags.VANILLA_SET);
 
     private static final PlayChannelContext<ItemNodeScreenHandler> CONTEXT =
-        KNet.SCREEN_HANDLER_CONTEXT.cast(ItemNodeScreenHandler.class);
+        KNet.SCREEN_HANDLER_CONTEXT.cast("item_node", ItemNodeScreenHandler.class);
     private static final ContextualPlayChannel<ItemNodeScreenHandler, AllowPayload> INPUT_ALLOW =
-        ContextualPlayChannel.ofNetCodec(id("screen/item_node/input_allow"), CONTEXT, AllowPayload.CODEC)
+        ContextualPlayChannel.ofNetCodec(id("input_allow"), CONTEXT, AllowPayload.CODEC)
             .recvServer((handler, allow, ctx) -> handler.setInputAllow(allow.allow()));
     private static final ContextualPlayChannel<ItemNodeScreenHandler, SidePayload> INPUT_SIDE =
-        ContextualPlayChannel.ofNetCodec(id("screen/item_node/input_side"), CONTEXT, SidePayload.CODEC)
+        ContextualPlayChannel.ofNetCodec(id("input_side"), CONTEXT, SidePayload.CODEC)
             .recvServer((handler, side, ctx) -> handler.setInputSide(side.side()));
     private static final ContextualPlayChannel<ItemNodeScreenHandler, AllowPayload> OUTPUT_ALLOW =
-        ContextualPlayChannel.ofNetCodec(id("screen/item_node/output_allow"), CONTEXT, AllowPayload.CODEC)
+        ContextualPlayChannel.ofNetCodec(id("output_allow"), CONTEXT, AllowPayload.CODEC)
             .recvServer((handler, allow, ctx) -> handler.setOutputAllow(allow.allow()));
     private static final ContextualPlayChannel<ItemNodeScreenHandler, SidePayload> OUTPUT_SIDE =
-        ContextualPlayChannel.ofNetCodec(id("screen/item_node/output_side"), CONTEXT, SidePayload.CODEC)
+        ContextualPlayChannel.ofNetCodec(id("output_side"), CONTEXT, SidePayload.CODEC)
             .recvServer((handler, side, ctx) -> handler.setOutputSide(side.side()));
 
     public static void init(KNetRegistrar registrar) {
