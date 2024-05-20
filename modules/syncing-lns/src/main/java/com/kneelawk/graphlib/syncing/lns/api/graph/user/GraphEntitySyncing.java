@@ -37,13 +37,14 @@ import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
 
 /**
  * Holds a graph entity encoder and decoder.
  *
  * @param <G> the type of graph entity this syncs.
  */
-public final class GraphEntitySyncing<G extends GraphEntity<G>> {
+public final class GraphEntitySyncing<G extends GraphEntity<G>> implements ObjectSyncing<GraphEntityType<G>> {
     private final @NotNull GraphEntityType<G> type;
     private final @NotNull GraphEntityPacketEncoder<G> encoder;
     private final @NotNull GraphEntityPacketDecoder decoder;
@@ -58,6 +59,7 @@ public final class GraphEntitySyncing<G extends GraphEntity<G>> {
     /**
      * {@return the type associated with this syncing}
      */
+    @Override
     public @NotNull GraphEntityType<G> getType() {
         return type;
     }

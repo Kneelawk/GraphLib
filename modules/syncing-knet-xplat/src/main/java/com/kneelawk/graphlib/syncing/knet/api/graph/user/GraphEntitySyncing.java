@@ -37,6 +37,7 @@ import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.GraphEntity;
 import com.kneelawk.graphlib.api.graph.user.GraphEntityType;
+import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
@@ -49,7 +50,7 @@ import com.kneelawk.knet.api.util.RegistryNetByteBuf;
  *
  * @param <G> the type of graph entity this syncs.
  */
-public final class GraphEntitySyncing<G extends GraphEntity<G>> {
+public final class GraphEntitySyncing<G extends GraphEntity<G>> implements ObjectSyncing<GraphEntityType<G>> {
     /**
      * {@link GraphEntitySyncing} static codec.
      * <p>
@@ -95,6 +96,7 @@ public final class GraphEntitySyncing<G extends GraphEntity<G>> {
     /**
      * {@return this syncing descriptor's type}
      */
+    @Override
     public @NotNull GraphEntityType<G> getType() {
         return type;
     }

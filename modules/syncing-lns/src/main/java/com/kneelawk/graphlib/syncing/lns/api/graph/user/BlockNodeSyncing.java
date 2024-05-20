@@ -37,11 +37,12 @@ import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
+import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
 
 /**
  * Holds a block node encoder and decoder.
  */
-public final class BlockNodeSyncing {
+public final class BlockNodeSyncing implements ObjectSyncing<BlockNodeType> {
     private final @NotNull BlockNodeType type;
     private final @NotNull BlockNodePacketEncoder<?> encoder;
     private final @NotNull BlockNodePacketDecoder decoder;
@@ -56,6 +57,7 @@ public final class BlockNodeSyncing {
     /**
      * {@return the type associated with this syncing}
      */
+    @Override
     public @NotNull BlockNodeType getType() {
         return type;
     }

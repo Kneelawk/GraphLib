@@ -34,14 +34,14 @@ import alexiil.mc.lib.net.IMsgWriteCtx;
 import alexiil.mc.lib.net.InvalidInputDataException;
 import alexiil.mc.lib.net.NetByteBuf;
 
-import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
 
 /**
  * Holds a link entity encoder and decoder.
  */
-public final class LinkEntitySyncing {
+public final class LinkEntitySyncing implements ObjectSyncing<LinkEntityType> {
     private final @NotNull LinkEntityType type;
     private final @NotNull LinkEntityPacketEncoder<?> encoder;
     private final @NotNull LinkEntityPacketDecoder decoder;
@@ -56,6 +56,7 @@ public final class LinkEntitySyncing {
     /**
      * {@return the type associated with this syncing}
      */
+    @Override
     public @NotNull LinkEntityType getType() {
         return type;
     }

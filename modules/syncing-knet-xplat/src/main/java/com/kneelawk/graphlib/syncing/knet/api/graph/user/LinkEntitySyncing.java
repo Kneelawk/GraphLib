@@ -36,6 +36,7 @@ import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.LinkEntity;
 import com.kneelawk.graphlib.api.graph.user.LinkEntityType;
+import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
@@ -46,7 +47,7 @@ import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 /**
  * Holds a link entity encoder and decoder.
  */
-public final class LinkEntitySyncing {
+public final class LinkEntitySyncing implements ObjectSyncing<LinkEntityType> {
     /**
      * {@link LinkEntitySyncing} static codec.
      * <p>
@@ -79,6 +80,7 @@ public final class LinkEntitySyncing {
     /**
      * {@return this syncing descriptor's type}
      */
+    @Override
     public @NotNull LinkEntityType getType() {
         return type;
     }

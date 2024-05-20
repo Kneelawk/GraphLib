@@ -36,11 +36,12 @@ import alexiil.mc.lib.net.NetByteBuf;
 
 import com.kneelawk.graphlib.api.graph.user.NodeEntity;
 import com.kneelawk.graphlib.api.graph.user.NodeEntityType;
+import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
 
 /**
  * Holds a node entity encoder and decoder.
  */
-public final class NodeEntitySyncing {
+public final class NodeEntitySyncing implements ObjectSyncing<NodeEntityType> {
     private final @NotNull NodeEntityType type;
     private final @NotNull NodeEntityPacketEncoder<?> encoder;
     private final @NotNull NodeEntityPacketDecoder decoder;
@@ -55,6 +56,7 @@ public final class NodeEntitySyncing {
     /**
      * {@return the type associated with this syncing}
      */
+    @Override
     public @NotNull NodeEntityType getType() {
         return type;
     }

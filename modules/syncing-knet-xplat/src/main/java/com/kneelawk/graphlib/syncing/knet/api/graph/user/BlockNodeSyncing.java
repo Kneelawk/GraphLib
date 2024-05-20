@@ -37,6 +37,7 @@ import com.kneelawk.codextra.api.CodextraStreams;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
+import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
 import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
@@ -47,7 +48,7 @@ import com.kneelawk.knet.api.util.RegistryNetByteBuf;
 /**
  * Holds a block node encoder and decoder.
  */
-public final class BlockNodeSyncing {
+public final class BlockNodeSyncing implements ObjectSyncing<BlockNodeType> {
     /**
      * {@link BlockNodeSyncing} static stream codec.
      * <p>
@@ -80,6 +81,7 @@ public final class BlockNodeSyncing {
     /**
      * {@return this syncing descriptor's type}
      */
+    @Override
     public @NotNull BlockNodeType getType() {
         return type;
     }
