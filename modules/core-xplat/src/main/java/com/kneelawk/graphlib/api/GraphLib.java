@@ -18,22 +18,6 @@ public final class GraphLib {
     }
 
     /**
-     * The unique id of the universe representing the data managed by pre-1.0 versions of GraphLib.
-     *
-     * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder()}.
-     */
-    @Deprecated
-    public static final ResourceLocation LEGACY_UNIVERSE_ID = Constants.id(Constants.GRAPHDATA_DIRNAME);
-
-    /**
-     * The universe representing the data managed by pre-1.0 versions of GraphLib.
-     *
-     * @deprecated It is recommended for mods to build and use their own universes with {@link GraphUniverse#builder()}.
-     */
-    @Deprecated
-    public static final GraphUniverse LEGACY_UNIVERSE = GraphUniverse.builder().build(LEGACY_UNIVERSE_ID);
-
-    /**
      * Gets whether the given universe has been registered.
      *
      * @param universeId the id of the universe to check.
