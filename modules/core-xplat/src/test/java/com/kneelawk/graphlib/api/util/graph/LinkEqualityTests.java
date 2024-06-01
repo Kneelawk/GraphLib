@@ -1,9 +1,9 @@
 package com.kneelawk.graphlib.api.util.graph;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class LinkEqualityTests {
     @Test
@@ -14,8 +14,8 @@ public class LinkEqualityTests {
         Link<String, String> aToB = new Link<>(a, b, "C");
         Link<String, String> bToA = new Link<>(b, a, "C");
 
-        assertEquals("The links should equal each other", aToB, bToA);
-        assertEquals("The links' hashCodes should equal each other", aToB.hashCode(), bToA.hashCode());
+        assertEquals(aToB, bToA, "The links should equal each other");
+        assertEquals(aToB.hashCode(), bToA.hashCode(), "The links' hashCodes should equal each other");
     }
 
     @Test
@@ -26,6 +26,6 @@ public class LinkEqualityTests {
         Link<String, String> cLink = new Link<>(a, b, "C");
         Link<String, String> dLink = new Link<>(a, b, "D");
 
-        assertNotEquals("The links should not be equal", cLink, dLink);
+        assertNotEquals(cLink, dLink, "The links should not be equal");
     }
 }

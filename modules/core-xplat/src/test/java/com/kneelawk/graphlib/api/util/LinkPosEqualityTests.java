@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.mojang.serialization.Codec;
 
@@ -17,8 +17,8 @@ import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.api.graph.user.LinkKey;
 import com.kneelawk.graphlib.api.graph.user.LinkKeyType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class LinkPosEqualityTests {
     private static final BlockNodeType STRING_NODE_TYPE =
@@ -67,8 +67,8 @@ public class LinkPosEqualityTests {
         LinkPos aToB = new LinkPos(a, b, new StringLinkKey("C"));
         LinkPos bToA = new LinkPos(b, a, new StringLinkKey("C"));
 
-        assertEquals("The link poses should be equal", aToB, bToA);
-        assertEquals("The link poses' hashCodes should be equal", aToB.hashCode(), bToA.hashCode());
+        assertEquals(aToB, bToA, "The link poses should be equal");
+        assertEquals(aToB.hashCode(), bToA.hashCode(), "The link poses' hashCodes should be equal");
     }
 
     @Test
@@ -79,6 +79,6 @@ public class LinkPosEqualityTests {
         LinkPos cLink = new LinkPos(a, b, new StringLinkKey("C"));
         LinkPos dLink = new LinkPos(a, b, new StringLinkKey("D"));
 
-        assertNotEquals("The links should not be equal", cLink, dLink);
+        assertNotEquals(cLink, dLink, "The links should not be equal");
     }
 }

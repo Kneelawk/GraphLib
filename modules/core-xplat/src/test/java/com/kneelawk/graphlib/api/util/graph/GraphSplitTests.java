@@ -1,10 +1,10 @@
 package com.kneelawk.graphlib.api.util.graph;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GraphSplitTests {
     private static final Object PRESENT = new Object();
@@ -21,16 +21,16 @@ public class GraphSplitTests {
 
         var newGraphs = graph.split();
 
-        assertEquals("There should be one new graph.", 1, newGraphs.size());
+        assertEquals(1, newGraphs.size(), "There should be one new graph.");
 
-        Graph<String, Object> newGraph = newGraphs.get(0);
+        Graph<String, Object> newGraph = newGraphs.getFirst();
 
-        assertTrue("Either the new graph or the old graph should contain C.",
-            newGraph.contains(c) || graph.contains(c));
-        assertTrue("Either the new graph or the old graph should contain both A and B.",
-            newGraph.contains(a, b) || graph.contains(a, b));
+        assertTrue(newGraph.contains(c) || graph.contains(c),
+            "Either the new graph or the old graph should contain C.");
+        assertTrue(newGraph.contains(a, b) || graph.contains(a, b),
+            "Either the new graph or the old graph should contain both A and B.");
 
-        assertFalse("The same graph should not contain both A and C.", newGraph.contains(a, c) || graph.contains(a, c));
+        assertFalse(newGraph.contains(a, c) || graph.contains(a, c), "The same graph should not contain both A and C.");
     }
 
     @Test
@@ -47,12 +47,12 @@ public class GraphSplitTests {
 
         var newGraphs = graph.split();
 
-        assertEquals("There should be one new graph.", 1, newGraphs.size());
+        assertEquals(1, newGraphs.size(), "There should be one new graph.");
 
-        Graph<String, Object> newGraph = newGraphs.get(0);
+        Graph<String, Object> newGraph = newGraphs.getFirst();
 
-        assertTrue("The new graph should contain C.", newGraph.contains(c));
-        assertTrue("The old graph should contain both A and B.", graph.contains(a, b));
+        assertTrue(newGraph.contains(c), "The new graph should contain C.");
+        assertTrue(graph.contains(a, b), "The old graph should contain both A and B.");
     }
 
     @Test
@@ -71,11 +71,11 @@ public class GraphSplitTests {
 
         var newGraphs = graph.split();
 
-        assertEquals("There should be one new graph.", 1, newGraphs.size());
+        assertEquals(1, newGraphs.size(), "There should be one new graph.");
 
-        Graph<String, Object> newGraph = newGraphs.get(0);
+        Graph<String, Object> newGraph = newGraphs.getFirst();
 
-        assertTrue("The old graph should contain C, D, and E.", graph.contains(c, d, e));
-        assertTrue("The new graph should contain both A and B.", newGraph.contains(a, b));
+        assertTrue(graph.contains(c, d, e), "The old graph should contain C, D, and E.");
+        assertTrue(newGraph.contains(a, b), "The new graph should contain both A and B.");
     }
 }

@@ -22,6 +22,12 @@ pluginManagement {
         id("dev.architectury.loom") version architectury_loom_version
         val remapcheck_version: String by settings
         id("com.kneelawk.remapcheck") version remapcheck_version
+        val versioning_version: String by settings
+        id("com.kneelawk.versioning") version versioning_version
+        val kpublish_version: String by settings
+        id("com.kneelawk.kpublish") version kpublish_version
+        val submodule_version: String by settings
+        id("com.kneelawk.submodule") version submodule_version
     }
 }
 

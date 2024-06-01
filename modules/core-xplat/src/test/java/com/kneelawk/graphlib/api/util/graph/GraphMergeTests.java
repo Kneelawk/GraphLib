@@ -1,9 +1,9 @@
 package com.kneelawk.graphlib.api.util.graph;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GraphMergeTests {
     private static final Object PRESENT = new Object();
@@ -20,11 +20,11 @@ public class GraphMergeTests {
 
         graphA.join(graphB);
 
-        assertEquals("Graph A should have 3 nodes.", 3, graphA.size());
-        assertEquals("Graph B should have 0 nodes.", 0, graphB.size());
+        assertEquals(3, graphA.size(), "Graph A should have 3 nodes.");
+        assertEquals(0, graphB.size(), "Graph B should have 0 nodes.");
 
-        assertTrue("Graph A should contain A, B, and C.",
-            graphA.contains(a) && graphA.contains(b) && graphA.contains(c));
-        assertTrue("B and C should stay linked.", b.connections().contains(link) && c.connections().contains(link));
+        assertTrue(graphA.contains(a) && graphA.contains(b) && graphA.contains(c),
+            "Graph A should contain A, B, and C.");
+        assertTrue(b.connections().contains(link) && c.connections().contains(link), "B and C should stay linked.");
     }
 }

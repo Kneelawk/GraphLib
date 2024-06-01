@@ -21,18 +21,6 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        create("versioningPlugin") {
-            id = "com.kneelawk.versioning"
-            implementationClass = "com.kneelawk.versioning.VersioningPlugin"
-        }
-        create("submodulePlugin") {
-            id = "com.kneelawk.submodule"
-            implementationClass = "com.kneelawk.submodule.SubmodulePlugin"
-        }
-        create("kpublishPlugin") {
-            id = "com.kneelawk.kpublish"
-            implementationClass = "com.kneelawk.kpublish.KPublishPlugin"
-        }
         create("mojmapPlugin") {
             id = "com.kneelawk.mojmap"
             implementationClass = "com.kneelawk.mojmap.MojmapPlugin"
