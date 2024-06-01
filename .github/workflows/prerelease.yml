@@ -2,7 +2,8 @@ name: prerelease
 
 env:
   PROJECT_NAME: GraphLib
-  MAVEN_URL: 'https://kneelawk.com/maven#com/kneelawk/graphlib'
+  JAVADOC_DIR: com/kneelawk/graphlib/graphlib-javadoc-xplat
+  MAVEN_IDENTIFIER: 'com.kneelawk.graphlib:graphlib-core-xplat-intermediary'
   ROLE_ID: '1239437674058879047'
 
 on:
@@ -25,77 +26,35 @@ jobs:
   prerelease:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Tag Version
-        uses: dawidd6/action-get-tag@v1
-        id: tag_version
-      - name: Get Project Version
-        # script to remove the 'v' from the beginning of the tag version
-        uses: actions/github-script@v6
-        id: project_version
-        env:
-          TAG_VERSION: ${{ steps.tag_version.outputs.tag }}
-        with:
-          script: return process.env.TAG_VERSION.substring(1)
-          result-encoding: string
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Setup JDK 21
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
+          distribution: 'temurin'
           java-version: 21
       - name: Make Gradle Wrapper Executable
         run: chmod +x ./gradlew
       - name: Build
         run: ./gradlew build
         env:
-          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
+          RELEASE_TAG: ${{ github.ref_name }}
       - name: Github Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: build/libs/*
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-      # Next is the rather cursed maven and javadoc deployment mechanism
-      - name: Checkout Deployment Repository
-        uses: actions/checkout@v2
-        with:
-          repository: Kneelawk/kneelawk.github.io
-          ref: src
-          path: deploy
-          persist-credentials: false
-      - name: Publish To Deployment Repository Maven
-        run: ./gradlew publishAllPublicationsToPublishRepoRepository
+      - name: Maven Release
+        run: ./gradlew publish -PkneelawkUsername=${{ secrets.MAVEN_USERNAME }} -PkneelawkPassword=${{ secrets.MAVEN_PASSWORD }}
         env:
-          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
-          PUBLISH_REPO: deploy/src/maven/
-      - name: Generate Javadocs
-        run: ./gradlew javadoc
-        env:
-          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
-      - name: Create Docs Directory
-        run: mkdir -p deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}
-      - name: Copy To Deployment Repository Javadocs
-        run: cp -rf build/docs/* deploy/src/docs/graphlib/${{ steps.project_version.outputs.result }}/
-      - name: Commit Deployment Repository Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m 'Publish GraphLib ${{ steps.tag_version.outputs.tag }}'
-        working-directory: deploy
-      - name: Push Deployment Repository
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          branch: src
-          directory: deploy
-          repository: Kneelawk/kneelawk.github.io
+          RELEASE_TAG: ${{ github.ref_name }}
       # This is the mess that publishes discord notifications
       - name: Process for Announcement
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: announcement_text
         env:
-          TAG_VERSION: ${{ steps.tag_version.outputs.tag }}
+          TAG_VERSION: ${{ github.ref_name }}
         with:
           script: |
             let fullVersion = process.env.TAG_VERSION;
@@ -104,13 +63,8 @@ jobs:
             let lines = [];
             lines.push(`# ${process.env.PROJECT_NAME} Prerelease`);
             lines.push(`**<@&${process.env.ROLE_ID}> ${process.env.PROJECT_NAME} prerelease ${versions[0]} has been published for Minecraft ${versions[1]}!**`);
-            lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", "With identifiers:");
-            lines.push(`\`com.kneelawk.graphlib:core-xplat-intermediary:${mavenVersion}\``);
-            lines.push(`\`com.kneelawk.graphlib:core-xplat-mojmap:${mavenVersion}\``);
-            lines.push(`\`com.kneelawk.graphlib:core-fabric:${mavenVersion}\``);
-            lines.push(`\`com.kneelawk.graphlib:core-neoforge:${mavenVersion}\``);
-            lines.push(`Find more more at ${process.env.MAVEN_URL}`);
-            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/xplat/javadoc/index.html`);
+            lines.push("Available on Kneelawk's maven: https://maven.kneelawk.com/releases/", `With the identifier: \`${process.env.MAVEN_IDENTIFIER}:${mavenVersion}\``);
+            lines.push(`Javadoc available at: https://maven.kneelawk.com/javadoc/releases/${process.env.JAVADOC_DIR}/${mavenVersion}`);
             return lines.join('\n');
           result-encoding: string
       - name: Make Release Announcement

@@ -32,87 +32,49 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Get Tag Version
-        uses: dawidd6/action-get-tag@v1
-        id: tag_version
-      - name: Get Project Version
-        # script to remove the 'v' from the beginning of the tag version
-        uses: actions/github-script@v6
-        id: project_version
-        env:
-          TAG_VERSION: ${{ steps.tag_version.outputs.tag }}
-        with:
-          script: return process.env.TAG_VERSION.substring(1)
-          result-encoding: string
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Validate Gradle Wrapper
         uses: gradle/wrapper-validation-action@v1
       - name: Setup JDK 21
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
+          distribution: 'temurin'
           java-version: 21
       - name: Make Gradle Wrapper Executable
         run: chmod +x ./gradlew
       - name: Build
-        run: ./gradlew build --no-daemon
+        run: ./gradlew build
         env:
-          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
+          RELEASE_TAG: ${{ github.ref_name }}
       - name: Capture Build Directory
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: build-dir
           path: build/
       - name: Github Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          body_path: changelogs/changelog-${{ steps.tag_version.outputs.tag }}.md
+          body_path: changelogs/changelog-${{ github.ref_name }}.md
           files: build/libs/*
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-      # Next is the rather cursed maven and javadoc deployment mechanism
-      - name: Checkout Deployment Repository
-        uses: actions/checkout@v3
-        with:
-          repository: Kneelawk/kneelawk.github.io
-          ref: src
-          path: deploy
-          persist-credentials: false
-      - name: Do Javadoc & Maven
-        run: ./gradlew javadoc publish --no-daemon
+      - name: Maven Release
+        run: ./gradlew publish -PkneelawkUsername=${{ secrets.MAVEN_USERNAME }} -PkneelawkPassword=${{ secrets.MAVEN_PASSWORD }}
         env:
-          RELEASE_TAG: ${{ steps.tag_version.outputs.tag }}
-          PUBLISH_REPO: deploy/src/maven/
-      - name: Create Docs Directory
-        run: mkdir -p deploy/src/docs/${{ env.JAVADOC_NAME }}/${{ steps.project_version.outputs.result }}
-      - name: Copy To Deployment Repository Javadocs
-        run: cp -rf build/docs/* deploy/src/docs/${{ env.JAVADOC_NAME }}/${{ steps.project_version.outputs.result }}/
-      - name: Commit Deployment Repository Changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m 'Publish ${{ env.PROJECT_NAME }} ${{ steps.tag_version.outputs.tag }}'
-        working-directory: deploy
-      - name: Push Deployment Repository
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.PUBLISH_TOKEN }}
-          branch: src
-          directory: deploy
-          repository: Kneelawk/kneelawk.github.io
+          RELEASE_TAG: ${{ github.ref_name }}
       # This is the mess that publishes discord notifications
       - name: Read Changelog File
         uses: juliangruber/read-file-action@v1
         id: changelog
         with:
-          path: changelogs/changelog-${{ steps.tag_version.outputs.tag }}.md
+          path: changelogs/changelog-${{ github.ref_name }}.md
       - name: Process Changelog for Announcement
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: announcement_text
         env:
           CHANGELOG: ${{ steps.changelog.outputs.content }}
-          TAG_VERSION: ${{ steps.tag_version.outputs.tag }}
+          TAG_VERSION: ${{ github.ref_name }}
         with:
           script: |
             let fullVersion = process.env.TAG_VERSION;
@@ -122,13 +84,8 @@ jobs:
             let changesStart = lines.findIndex(line => line.startsWith('*'));
             lines.splice(0, changesStart);
             lines.unshift(`# ${process.env.PROJECT_NAME} Release`, `**<@&${process.env.ROLE_ID}> ${process.env.PROJECT_NAME} ${versions[0]} has been released for Minecraft ${versions[1]}!**`, '', '__Changes:__');
-            lines.push("Available on Kneelawk's maven: https://kneelawk.com/maven/", "With identifiers:");
-            lines.push(`\`com.kneelawk.graphlib:core-xplat-intermediary:${mavenVersion}\``);
-            lines.push(`\`com.kneelawk.graphlib:core-xplat-mojmap:${mavenVersion}\``);
-            lines.push(`\`com.kneelawk.graphlib:core-fabric:${mavenVersion}\``);
-            lines.push(`\`com.kneelawk.graphlib:core-neoforge:${mavenVersion}\``);
-            lines.push(`Find more more at ${process.env.MAVEN_URL}`);
-            lines.push(`Javadoc available at: https://kneelawk.com/docs/graphlib/${mavenVersion}/xplat/javadoc/index.html`);
+            lines.push("Available on Kneelawk's maven: https://maven.kneelawk.com/releases/", `With the identifier: \`${process.env.MAVEN_IDENTIFIER}:${mavenVersion}\``);
+            lines.push(`Javadoc available at: https://maven.kneelawk.com/javadoc/releases/${process.env.JAVADOC_DIR}/${mavenVersion}`);
             return lines.join('\n');
           result-encoding: string
       - name: Make Release Announcement
