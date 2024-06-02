@@ -36,11 +36,6 @@ submodule {
     disableRemap()
 }
 
-dependencies {
-    val codextra_version: String by project
-    api("com.kneelawk:codextra-xplat-mojmap:$codextra_version")
-}
-
 kpublish {
     createPublication()
 }

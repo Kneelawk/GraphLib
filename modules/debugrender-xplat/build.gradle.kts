@@ -35,11 +35,13 @@ submodule {
     xplatProjectDependency(":core")
     forceRemap()
     setupJavadoc()
+    val kml_version: String by project
+    xplatExternalDependency { "com.kneelawk.kmodlib:kmodlib-overlay-$it:$kml_version" }
 }
 
 dependencies {
     val kml_version: String by project
-    modCompileOnly("com.kneelawk:kmodlib-renderlayer:$kml_version")
+    modCompileOnly("com.kneelawk.kmodlib:kmodlib-renderlayer:$kml_version")
 }
 
 kpublish {

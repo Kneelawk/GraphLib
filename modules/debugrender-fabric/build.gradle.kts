@@ -38,14 +38,10 @@ submodule {
 }
 
 dependencies {
-    // KModLib Overlay
-    val kml_version: String by project
-    modImplementation("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
-    include("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
-
     // KModLib RenderLayer
-    modImplementation("com.kneelawk:kmodlib-renderlayer:$kml_version")
-    include("com.kneelawk:kmodlib-renderlayer:$kml_version")
+    val kml_version: String by project
+    modImplementation("com.kneelawk.kmodlib:kmodlib-renderlayer:$kml_version")
+    include("com.kneelawk.kmodlib:kmodlib-renderlayer:$kml_version")
 }
 
 kpublish {

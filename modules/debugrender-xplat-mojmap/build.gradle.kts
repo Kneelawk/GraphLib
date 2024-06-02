@@ -38,7 +38,7 @@ submodule {
 
 dependencies {
     val kml_version: String by project
-    modCompileOnly("com.kneelawk:kmodlib-renderlayer:$kml_version")
+    modCompileOnly("com.kneelawk.kmodlib:kmodlib-renderlayer:$kml_version")
 }
 
 kpublish {

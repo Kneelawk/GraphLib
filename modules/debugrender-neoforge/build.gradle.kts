@@ -37,13 +37,6 @@ submodule {
     createDevExport()
 }
 
-dependencies {
-    // KModLib Overlay
-    val kml_version: String by project
-    modImplementation("com.kneelawk:kmodlib-overlay-neoforge:$kml_version")
-    include("com.kneelawk:kmodlib-overlay-neoforge:$kml_version")
-}
-
 kpublish {
     createPublication()
 }

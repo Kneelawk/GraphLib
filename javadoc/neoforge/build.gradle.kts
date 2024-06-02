@@ -55,7 +55,7 @@ dependencies {
 
     // KModLib Overlay
     val kml_version: String by project
-    modCompileOnly("com.kneelawk:kmodlib-overlay-neoforge:$kml_version")
+    modCompileOnly("com.kneelawk.kmodlib:kmodlib-overlay-neoforge:$kml_version")
 }
 
 tasks.javadoc {

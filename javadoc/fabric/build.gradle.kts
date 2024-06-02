@@ -58,7 +58,7 @@ dependencies {
 
     // KModLib Overlay
     val kml_version: String by project
-    modCompileOnly("com.kneelawk:kmodlib-overlay-fabric:$kml_version")
+    modCompileOnly("com.kneelawk.kmodlib:kmodlib-overlay-fabric:$kml_version")
 
     // LibNetworkStack
     val lns_version: String by project

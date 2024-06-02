@@ -34,11 +34,8 @@ submodule {
     applyFabricLoaderDependency()
     forceRemap()
     setupJavadoc()
-}
-
-dependencies {
     val codextra_version: String by project
-    modApi("com.kneelawk:codextra-xplat-intermediary:$codextra_version")
+    xplatExternalDependency { "com.kneelawk.codextra:codextra-$it:$codextra_version" }
 }
 
 kpublish {

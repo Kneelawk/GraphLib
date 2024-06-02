@@ -33,63 +33,73 @@ pluginManagement {
 
 rootProject.name = "graphlib"
 
-fun module(name: String) {
+fun module(enabled: Boolean, name: String) {
+    if (!enabled) return
     include(name)
     project(":$name").projectDir = File(rootDir, "modules/${name.replace(':', '/')}")
 }
 
-fun module(name: String, vararg submodules: String) {
+fun module(name: String, vararg submodules: Pair<Boolean, String>) {
     include(name)
     project(":$name").projectDir = File(rootDir, "modules/$name")
 
-    for (submodule in submodules) {
+    for ((enabled, submodule) in submodules) {
+        if (!enabled) continue
         include("$name:$submodule")
         project(":$name:$submodule").projectDir = File(rootDir, "modules/$name/${submodule.replace(':', '/')}")
     }
 }
 
-fun example(name: String) {
+fun example(enabled: Boolean, name: String) {
+    if (!enabled) return
     include(name)
     project(":$name").projectDir = File(rootDir, "examples/${name.replace(':', '/')}")
 }
 
-fun example(name: String, vararg submodules: String) {
+fun example(name: String, vararg submodules: Pair<Boolean, String>) {
     include(name)
     project(":$name").projectDir = File(rootDir, "examples/$name")
 
-    for (submodule in submodules) {
+    for ((enabled, submodule) in submodules) {
+        if (!enabled) continue
         include("$name:$submodule")
         project(":$name:$submodule").projectDir = File(rootDir, "examples/$name/${submodule.replace(':', '/')}")
     }
 }
 
-fun javadoc(name: String) {
+fun javadoc(enabled: Boolean, name: String) {
+    if (!enabled) return
     include("javadoc-$name")
     project(":javadoc-$name").projectDir = File(rootDir, "javadoc/$name")
 }
 
-module("core-xplat")
-module("core-xplat-mojmap")
-module("core-fabric")
-module("core-neoforge")
-module("debugrender-xplat")
-module("debugrender-xplat-mojmap")
-module("debugrender-fabric")
-module("debugrender-neoforge")
-module("syncing-core-xplat")
-module("syncing-core-xplat-mojmap")
-module("syncing-core-fabric")
-module("syncing-core-neoforge")
-module("syncing-knet-xplat")
-module("syncing-knet-xplat-mojmap")
-module("syncing-knet-fabric")
-module("syncing-knet-neoforge")
-module("syncing-lns")
+val xplat = true
+val mojmap = true
+val fabric = true
+val neoforge = false
 
-example("multiblock-lamps", "xplat", "fabric", "neoforge")
+module(xplat, "core-xplat")
+module(mojmap, "core-xplat-mojmap")
+module(fabric, "core-fabric")
+module(neoforge, "core-neoforge")
+module(xplat, "debugrender-xplat")
+module(mojmap, "debugrender-xplat-mojmap")
+module(fabric, "debugrender-fabric")
+module(neoforge, "debugrender-neoforge")
+module(xplat, "syncing-core-xplat")
+module(mojmap, "syncing-core-xplat-mojmap")
+module(fabric, "syncing-core-fabric")
+module(neoforge, "syncing-core-neoforge")
+module(xplat, "syncing-knet-xplat")
+module(mojmap, "syncing-knet-xplat-mojmap")
+module(fabric, "syncing-knet-fabric")
+module(neoforge, "syncing-knet-neoforge")
+module(fabric, "syncing-lns")
 
-javadoc("xplat")
-javadoc("fabric")
-javadoc("neoforge")
+example("multiblock-lamps", xplat to "xplat", fabric to "fabric", neoforge to "neoforge")
+
+javadoc(xplat, "xplat")
+javadoc(fabric, "fabric")
+javadoc(neoforge, "neoforge")
 
 include(":remapCheck")

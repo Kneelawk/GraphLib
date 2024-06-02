@@ -37,12 +37,6 @@ submodule {
     createDevExport()
 }
 
-dependencies {
-    val codextra_version: String by project
-    modApi("com.kneelawk:codextra-neoforge:$codextra_version")
-    include("com.kneelawk:codextra-neoforge:$codextra_version")
-}
-
 kpublish {
     createPublication()
 }

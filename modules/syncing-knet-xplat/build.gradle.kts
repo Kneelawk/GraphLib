@@ -36,14 +36,12 @@ submodule {
     xplatProjectDependency(":syncing-core")
     forceRemap()
     setupJavadoc()
-}
 
-dependencies {
     val knet_version: String by project
-    modApi("com.kneelawk:knet-xplat-intermediary:$knet_version")
+    xplatExternalDependency { "com.kneelawk.knet:knet-$it:$knet_version" }
 
     val codextra_version: String by project
-    modApi("com.kneelawk:codextra-xplat-intermediary:$codextra_version")
+    xplatExternalDependency { "com.kneelawk.codextra:codextra-$it:$codextra_version" }
 }
 
 kpublish {
