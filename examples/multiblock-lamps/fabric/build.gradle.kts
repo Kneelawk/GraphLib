@@ -47,6 +47,6 @@ dependencies {
     modRuntimeOnly("com.kneelawk.kmodlib:kmodlib-renderlayer:$kml_version")
 
     // Mod Menu
-    val mod_menu_version: String by project
-    modLocalRuntime("com.terraformersmc:modmenu:$mod_menu_version")
+//    val mod_menu_version: String by project
+//    modLocalRuntime("com.terraformersmc:modmenu:$mod_menu_version")
 }
