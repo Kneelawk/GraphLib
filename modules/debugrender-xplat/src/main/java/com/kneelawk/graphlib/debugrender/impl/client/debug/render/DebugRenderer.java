@@ -32,13 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.OptionalDouble;
 
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec3;
-
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -46,6 +39,19 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 import org.joml.Matrix4f;
+
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
+
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 
 import com.kneelawk.graphlib.api.util.EmptyLinkKey;
 import com.kneelawk.graphlib.api.util.SidedPos;
@@ -58,11 +64,7 @@ import com.kneelawk.graphlib.debugrender.api.graph.DebugBlockNode;
 import com.kneelawk.graphlib.debugrender.api.graph.SidedDebugBlockNode;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.mixin.api.RenderLayerHelper;
-
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
 
 public final class DebugRenderer {
     /**
@@ -104,6 +106,15 @@ public final class DebugRenderer {
                     .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
                     .setWriteMaskState(RenderStateShard.COLOR_DEPTH_WRITE)
                     .setCullState(RenderStateShard.NO_CULL).createCompositeState(false));
+    }
+
+    public static void init() {
+        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_LINES,
+            new ByteBufferBuilder(Layers.DEBUG_LINES.bufferSize()));
+        RenderToOverlay.LAYER_MAP.put(Layers.DEBUG_QUADS,
+            new ByteBufferBuilder(Layers.DEBUG_QUADS.bufferSize()));
+        RenderToOverlay.EVENT.register(
+            ctx -> render(ctx.stack(), ctx.modelViewMatrix(), ctx.camera().getPosition(), ctx.buffers()));
     }
 
     public static void render(PoseStack stack, Matrix4f modelViewMatrix, Vec3 camPos, MultiBufferSource consumers) {

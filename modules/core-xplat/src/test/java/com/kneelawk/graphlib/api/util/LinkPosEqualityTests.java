@@ -22,10 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class LinkPosEqualityTests {
     private static final BlockNodeType STRING_NODE_TYPE =
-        BlockNodeType.of(new ResourceLocation("test", "string"), StringBlockNode.CODEC);
+        BlockNodeType.of(ResourceLocation.fromNamespaceAndPath("test", "string"), StringBlockNode.CODEC);
 
     private static final LinkKeyType STRING_LINK_TYPE =
-        LinkKeyType.of(new ResourceLocation("test", "string"), StringLinkKey.CODEC);
+        LinkKeyType.of(ResourceLocation.fromNamespaceAndPath("test", "string"), StringLinkKey.CODEC);
 
     private record StringBlockNode(String str) implements BlockNode {
         public static final Codec<StringBlockNode> CODEC =

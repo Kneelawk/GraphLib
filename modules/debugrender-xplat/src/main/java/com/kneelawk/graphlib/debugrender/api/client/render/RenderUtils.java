@@ -27,10 +27,6 @@ package com.kneelawk.graphlib.debugrender.api.client.render;
 
 import java.math.RoundingMode;
 
-import net.minecraft.core.Direction;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.Vec3;
-
 import com.google.common.math.IntMath;
 
 import org.jetbrains.annotations.NotNull;
@@ -40,10 +36,14 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import com.kneelawk.graphlib.api.util.ColorUtils;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+
+import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
+
+import com.kneelawk.graphlib.api.util.ColorUtils;
 
 /**
  * Assorted utilities for rendering debug block-nodes.
@@ -187,9 +187,9 @@ public final class RenderUtils {
 
         Vector4f pos = model.transform(new Vector4f(x0, y0, z0, 1f));
         Vector3f norm = normal.transform(new Vector3f(dx, dy, dz));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).normal(norm.x, norm.y, norm.z).endVertex();
+        consumer.addVertex(pos.x, pos.y, pos.z).setColor(color).setNormal(norm.x, norm.y, norm.z);
         model.transform(pos.set(x1, y1, z1, 1f));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).normal(norm.x, norm.y, norm.z).endVertex();
+        consumer.addVertex(pos.x, pos.y, pos.z).setColor(color).setNormal(norm.x, norm.y, norm.z);
     }
 
     /**
@@ -282,13 +282,13 @@ public final class RenderUtils {
         Matrix4f model = stack.last().pose();
 
         Vector4f pos = model.transform(new Vector4f(x - radX0 + radX1, y - radY0 + radY1, z - radZ0 + radZ1, 1f));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).endVertex();
+        consumer.addVertex(pos.x, pos.y, pos.z).setColor(color);
         model.transform(pos.set(x - radX0 - radX1, y - radY0 - radY1, z - radZ0 - radZ1, 1f));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).endVertex();
+        consumer.addVertex(pos.x, pos.y, pos.z).setColor(color);
         model.transform(pos.set(x + radX0 - radX1, y + radY0 - radY1, z + radZ0 - radZ1, 1f));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).endVertex();
+        consumer.addVertex(pos.x, pos.y, pos.z).setColor(color);
         model.transform(pos.set(x + radX0 + radX1, y + radY0 + radY1, z + radZ0 + radZ1, 1f));
-        consumer.vertex(pos.x, pos.y, pos.z).color(color).endVertex();
+        consumer.addVertex(pos.x, pos.y, pos.z).setColor(color);
     }
 
     /**

@@ -31,6 +31,6 @@ public class SyncingKNetImpl {
     public static final String MOD_ID = "graphlib_syncing_knet";
 
     public static ResourceLocation id(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 }

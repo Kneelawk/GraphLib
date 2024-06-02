@@ -33,6 +33,6 @@ public class SyncedConstants {
     public static final ResourceLocation LISTENER_KEY = id("synchronizer");
 
     public static ResourceLocation id(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 }

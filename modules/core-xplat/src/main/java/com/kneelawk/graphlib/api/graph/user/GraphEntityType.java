@@ -11,7 +11,6 @@ import com.mojang.serialization.DataResult;
 
 import net.minecraft.resources.ResourceLocation;
 
-import com.kneelawk.codextra.api.codec.CodecOrUnit;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.util.ObjectType;

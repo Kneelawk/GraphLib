@@ -20,7 +20,7 @@ public final class Constants {
 
     @Contract(value = "_ -> new", pure = true)
     public static @NotNull ResourceLocation id(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 
     @Contract(value = "_, _, _ -> new", pure = true)
