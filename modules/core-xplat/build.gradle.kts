@@ -36,6 +36,8 @@ submodule {
     setupJavadoc()
     val codextra_version: String by project
     xplatExternalDependency { "com.kneelawk.codextra:codextra-$it:$codextra_version" }
+    val common_events_version: String by project
+    xplatExternalDependency { "com.kneelawk.common-events:common-events-$it:$common_events_version" }
 }
 
 kpublish {

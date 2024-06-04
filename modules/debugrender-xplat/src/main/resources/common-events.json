@@ -1,0 +1,6 @@
+{
+  "scan": [
+    "com.kneelawk.graphlib.debugrender.impl.command.GraphLibDebugRenderCommand",
+    "com.kneelawk.graphlib.debugrender.impl.GLDebugNet"
+  ]
+}

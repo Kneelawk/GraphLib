@@ -23,23 +23,18 @@
  *
  */
 
-package com.kneelawk.graphlib.fabric.impl.event;
-
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
+package com.kneelawk.graphlib.impl.event;
 
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.commonevents.api.Event;
+
 public class InternalEvents {
-    public static final Event<AddUniverseSubcommands> ADD_UNIVERSE_SUBCOMMANDS = EventFactory.createArrayBacked(
-        AddUniverseSubcommands.class, listeners -> universe -> {
-            for (AddUniverseSubcommands listener : listeners) {
-                listener.addUniverseSubcommands(universe);
-            }
-        });
+    public static final Event<AddUniverseSubcommands> ADD_UNIVERSE_SUBCOMMANDS = Event.createSimple(
+        AddUniverseSubcommands.class);
 
     public interface AddUniverseSubcommands {
         void addUniverseSubcommands(RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe);

@@ -54,6 +54,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.ChunkPos;
 
+import com.kneelawk.commonevents.api.Listen;
+import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
@@ -115,14 +117,17 @@ public final class GLDebugNet {
         debuggingPlayers.removeAll(playerId);
     }
 
+    @Listen(GraphLibEvents.GraphCreatedListener.class)
     public static void onGraphCreated(ServerLevel serverWorld, GraphWorld graphWorld, BlockGraph blockGraph) {
         sendBlockGraph(serverWorld, graphWorld, blockGraph);
     }
 
+    @Listen(GraphLibEvents.GraphUpdatedListener.class)
     public static void onGraphUpdated(ServerLevel world, GraphWorld graphWorld, BlockGraph graph) {
         sendBlockGraph(world, graphWorld, graph);
     }
 
+    @Listen(GraphLibEvents.GraphDestroyedListener.class)
     public static void onGraphDestroyed(ServerLevel world, GraphWorld graphWorld, long id) {
         ResourceLocation universeId = graphWorld.getUniverse().getId();
         sendToDebuggingPlayers(world, universeId, new GraphDestroyPayload(universeId, id));

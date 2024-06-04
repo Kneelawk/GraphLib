@@ -57,6 +57,7 @@ import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import net.minecraft.world.level.storage.LevelStorageSource;
 
 import com.kneelawk.codextra.api.attach.AttachmentKey;
+import com.kneelawk.graphlib.api.event.GraphLibEvents;
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.GraphWorld;
@@ -80,7 +81,6 @@ import com.kneelawk.graphlib.impl.graph.BlockGraphImpl;
 import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
 import com.kneelawk.graphlib.impl.graph.ServerGraphWorldImpl;
 import com.kneelawk.graphlib.impl.graph.listener.WorldListener;
-import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 /**
  * Holds and manages all block graphs for a given world.
@@ -525,7 +525,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
                 LinkHolder<LinkKey> holder = mergedGraph.link(aHolder, bHolder, key, entity, true);
 
                 // send updated event
-                GraphLibPlatform.INSTANCE.fireGraphUpdated(world, this, mergedGraph);
+                GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
 
                 return holder;
             }
@@ -831,7 +831,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         loadedGraphs.put(graph.getId(), graph);
 
         // Fire graph created event
-        GraphLibPlatform.INSTANCE.fireGraphCreated(world, this, graph);
+        GraphLibEvents.GRAPH_CREATED.invoker().graphCreated(world, this, graph);
 
         return graph;
     }
@@ -848,7 +848,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         destroyGraphImpl(graph);
 
         // Fire the event
-        GraphLibPlatform.INSTANCE.fireGraphDestroyed(world, this, id);
+        GraphLibEvents.GRAPH_DESTROYED.invoker().graphDestroyed(world, this, id);
     }
 
     @Override
@@ -911,7 +911,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
 
     @Override
     public void graphUpdated(SimpleBlockGraph graph) {
-        GraphLibPlatform.INSTANCE.fireGraphUpdated(world, this, graph);
+        GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, graph);
     }
 
     @Override
@@ -1149,7 +1149,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             // Split should never leave graph empty. It also should clean up after itself.
             mergedGraph.split();
         } else {
-            GraphLibPlatform.INSTANCE.fireGraphUpdated(world, this, mergedGraph);
+            GraphLibEvents.GRAPH_UPDATED.invoker().graphUpdated(world, this, mergedGraph);
         }
     }
 
@@ -1283,7 +1283,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
             for (long id : toUnload) {
                 // unload the graphs
                 SimpleBlockGraph graph = loadedGraphs.remove(id);
-                GraphLibPlatform.INSTANCE.fireGraphUnloading(world, this, graph);
+                GraphLibEvents.GRAPH_UNLOADING.invoker().graphUnloading(world, this, graph);
                 graph.onUnload();
                 writeGraph(graph);
                 unsavedGraphs.remove(id);

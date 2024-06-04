@@ -30,9 +30,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
 import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
-import com.kneelawk.graphlib.debugrender.impl.command.GraphLibDebugRenderCommand;
-import com.kneelawk.graphlib.fabric.api.event.GraphLibEvents;
-import com.kneelawk.graphlib.fabric.impl.event.InternalEvents;
 import com.kneelawk.graphlib.impl.GLLog;
 
 public class GraphLibDebugRenderFabricMod implements ModInitializer {
@@ -40,16 +37,10 @@ public class GraphLibDebugRenderFabricMod implements ModInitializer {
     public void onInitialize() {
         GLLog.info("Initializing GraphLib Debug Render...");
 
-        InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.register(GraphLibDebugRenderCommand::addUniverseSubcommands);
-
         ServerLifecycleEvents.SERVER_STARTING.register(server -> GLDebugNet.onServerStart());
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> GLDebugNet.onServerStop());
         ServerPlayConnectionEvents.DISCONNECT.register(
             (handler, server) -> GLDebugNet.onDisconnect(handler.getPlayer().getUUID()));
-
-        GraphLibEvents.GRAPH_CREATED.register(GLDebugNet::onGraphCreated);
-        GraphLibEvents.GRAPH_UPDATED.register(GLDebugNet::onGraphUpdated);
-        GraphLibEvents.GRAPH_DESTROYED.register(GLDebugNet::onGraphDestroyed);
 
         GLLog.info("GraphLib Debug Render initialized.");
     }

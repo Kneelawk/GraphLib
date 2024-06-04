@@ -28,9 +28,9 @@ import net.minecraft.server.level.ServerLevel;
 
 import com.kneelawk.graphlib.impl.Constants;
 import com.kneelawk.graphlib.impl.GraphLibImpl;
+import com.kneelawk.graphlib.impl.event.InternalEvents;
 import com.kneelawk.graphlib.impl.graph.GraphUniverseImpl;
 import com.kneelawk.graphlib.impl.graph.RebuildChunksListener;
-import com.kneelawk.graphlib.impl.platform.GraphLibPlatform;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -73,7 +73,7 @@ public class GraphLibCommand {
                     )
                 );
 
-        GraphLibPlatform.INSTANCE.fireAddUniverseSubcommands(universeBuilder);
+        InternalEvents.ADD_UNIVERSE_SUBCOMMANDS.invoker().addUniverseSubcommands(universeBuilder);
 
         dispatcher.register(literal("graphlib")
             .requires(source -> source.hasPermission(2))

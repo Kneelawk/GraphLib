@@ -86,7 +86,7 @@ public final class DebugRenderer {
         List<Vec3> endpoints = new ArrayList<>();
     }
 
-    public static final class Layers extends RenderStateShard {
+    static final class Layers extends RenderStateShard {
         private Layers(String string, Runnable runnable, Runnable runnable2) {
             super(string, runnable, runnable2);
         }

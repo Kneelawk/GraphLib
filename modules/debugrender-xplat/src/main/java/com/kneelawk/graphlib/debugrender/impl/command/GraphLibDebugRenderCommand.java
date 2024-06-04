@@ -32,14 +32,17 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.resources.ResourceLocation;
 
+import com.kneelawk.commonevents.api.Listen;
 import com.kneelawk.graphlib.api.GraphLib;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
 import com.kneelawk.graphlib.impl.command.GraphLibCommand;
+import com.kneelawk.graphlib.impl.event.InternalEvents;
 
 import static net.minecraft.commands.Commands.literal;
 
 public class GraphLibDebugRenderCommand {
+    @Listen(InternalEvents.AddUniverseSubcommands.class)
     public static void addUniverseSubcommands(RequiredArgumentBuilder<CommandSourceStack, ResourceLocation> universe) {
         universe.then(literal("debugrender")
             .then(literal("start")
