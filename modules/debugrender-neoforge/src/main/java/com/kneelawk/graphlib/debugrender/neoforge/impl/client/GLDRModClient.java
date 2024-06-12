@@ -29,20 +29,9 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
-import com.kneelawk.graphlib.debugrender.impl.GraphLibDebugRenderImpl;
-import com.kneelawk.graphlib.debugrender.impl.client.GLClientDebugNet;
 import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
-import com.kneelawk.graphlib.debugrender.impl.payload.DebuggingStopPayload;
-import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
-import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
-import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
-import com.kneelawk.kmodlib.client.overlay.RenderToOverlay;
-
-import com.mojang.blaze3d.vertex.BufferBuilder;
 
 @EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class GLDRModClient {
@@ -52,23 +41,7 @@ public class GLDRModClient {
             GraphLibDebugRenderClientImpl.register();
 
             // Render to overlay stuff
-            RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_LINES,
-                new BufferBuilder(DebugRenderer.Layers.DEBUG_LINES.bufferSize()));
-            RenderToOverlay.LAYER_MAP.put(DebugRenderer.Layers.DEBUG_QUADS,
-                new BufferBuilder(DebugRenderer.Layers.DEBUG_QUADS.bufferSize()));
+            DebugRenderer.init();
         });
-    }
-
-    @SubscribeEvent
-    public static void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        PayloadRegistrar registrar = event.registrar(GraphLibDebugRenderImpl.MOD_ID);
-        registrar.playToClient(GraphUpdatePayload.ID, GraphUpdatePayload.CODEC,
-            (payload, ctx) -> GLClientDebugNet.onGraphUpdate(payload, ctx::enqueueWork));
-        registrar.playToClient(GraphUpdateBulkPayload.ID, GraphUpdateBulkPayload.CODEC,
-            (payload, ctx) -> GLClientDebugNet.onGraphUpdateBulk(payload, ctx::enqueueWork));
-        registrar.playToClient(GraphDestroyPayload.ID, GraphDestroyPayload.CODEC,
-            (payload, ctx) -> GLClientDebugNet.onGraphDestroy(payload, ctx::enqueueWork));
-        registrar.playToClient(DebuggingStopPayload.ID, DebuggingStopPayload.CODEC,
-            (payload, ctx) -> GLClientDebugNet.onDebugginStop(payload, ctx::enqueueWork));
     }
 }

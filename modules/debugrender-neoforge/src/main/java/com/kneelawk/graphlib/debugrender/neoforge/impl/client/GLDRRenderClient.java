@@ -28,15 +28,33 @@ package com.kneelawk.graphlib.debugrender.neoforge.impl.client;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.event.level.ChunkEvent;
 
+import com.kneelawk.graphlib.debugrender.impl.client.GraphLibDebugRenderClientImpl;
 import com.kneelawk.graphlib.debugrender.impl.client.debug.render.DebugRenderer;
-import com.kneelawk.kmodlib.client.overlay.RenderToOverlayEvent;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class GLDRRenderClient {
     @SubscribeEvent
-    public static void onRenderToOverlay(RenderToOverlayEvent event) {
-        DebugRenderer.render(event.getPoseStack(), event.getModelViewMatrix(), event.getCamera().getPosition(),
-            event.getProvider());
+    public static void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+        DebugRenderer.DEBUG_GRAPHS.clear();
+        GraphLibDebugRenderClientImpl.GRAPHS_PER_CHUNK.clear();
+    }
+
+    @SubscribeEvent
+    public static void onDisconnect(ClientPlayerNetworkEvent.LoggingOut event) {
+        DebugRenderer.DEBUG_GRAPHS.clear();
+        GraphLibDebugRenderClientImpl.GRAPHS_PER_CHUNK.clear();
+    }
+
+    @SubscribeEvent
+    public static void onChunkLoad(ChunkEvent.Load event) {
+        GraphLibDebugRenderClientImpl.chunkLoad(event.getChunk().getPos().toLong());
+    }
+
+    @SubscribeEvent
+    public static void onChunkUnload(ChunkEvent.Unload event) {
+        GraphLibDebugRenderClientImpl.chunkUnload(event.getChunk().getPos().toLong());
     }
 }

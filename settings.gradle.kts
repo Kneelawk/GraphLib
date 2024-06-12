@@ -12,7 +12,7 @@ pluginManagement {
         maven("https://maven.neoforged.net/releases/") {
             name = "NeoForged"
         }
-        maven("https://kneelawk.com/maven") {
+        maven("https://maven.kneelawk.com/releases/") {
             name = "Kneelawk"
         }
         gradlePluginPortal()
@@ -76,7 +76,7 @@ fun javadoc(enabled: Boolean, name: String) {
 val xplat = true
 val mojmap = true
 val fabric = true
-val neoforge = false
+val neoforge = true
 
 module(xplat, "core-xplat")
 module(mojmap, "core-xplat-mojmap")
