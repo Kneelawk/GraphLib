@@ -3,8 +3,8 @@ name: release
 
 env:
   PROJECT_NAME: GraphLib
-  JAVADOC_NAME: graphlib
-  MAVEN_URL: 'https://kneelawk.com/maven#com/kneelawk/graphlib'
+  JAVADOC_DIR: com/kneelawk/graphlib/graphlib-javadoc-xplat
+  MAVEN_IDENTIFIER: 'com.kneelawk.graphlib:graphlib-core-xplat-intermediary'
   ROLE_ID: '1239437674058879047'
 
 # Variant: github, maven+javadoc, discord
