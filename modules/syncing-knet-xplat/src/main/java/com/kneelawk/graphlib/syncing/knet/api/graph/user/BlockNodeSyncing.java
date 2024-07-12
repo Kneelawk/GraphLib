@@ -38,8 +38,8 @@ import com.kneelawk.graphlib.api.graph.GraphUniverse;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
 import com.kneelawk.graphlib.api.graph.user.BlockNodeType;
 import com.kneelawk.graphlib.syncing.api.util.ObjectSyncing;
-import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.api.util.IdPaletteUtils;
 import com.kneelawk.graphlib.syncing.knet.impl.StreamCodecHelper;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
@@ -53,7 +53,7 @@ public final class BlockNodeSyncing implements ObjectSyncing<BlockNodeType> {
      * {@link BlockNodeSyncing} static stream codec.
      * <p>
      * <b>This requires the {@link KNetSyncedUniverse#ATTACHMENT_KEY} attachment.</b>
-     * This can optionally make use of the {@link SyncingKNet#ID_PALETTE} attachment.
+     * This can optionally make use of the {@link IdPaletteUtils#ID_PALETTE} attachment.
      */
     public static final StreamCodec<FriendlyByteBuf, BlockNodeSyncing> REF_CODEC =
         StreamCodecHelper.createRefStreamCodec(GraphUniverse::getNodeType, KNetSyncedUniverse::getNodeSyncing,

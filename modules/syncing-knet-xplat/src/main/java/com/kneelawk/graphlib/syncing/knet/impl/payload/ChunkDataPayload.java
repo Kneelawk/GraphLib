@@ -35,8 +35,8 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.level.ChunkPos;
 
 import com.kneelawk.codextra.api.util.FunctionUtils;
-import com.kneelawk.graphlib.syncing.knet.api.SyncingKNet;
 import com.kneelawk.graphlib.syncing.knet.api.graph.KNetSyncedUniverse;
+import com.kneelawk.graphlib.syncing.knet.api.util.IdPaletteUtils;
 import com.kneelawk.knet.api.util.NetBufs;
 import com.kneelawk.knet.api.util.NetCodecs;
 import com.kneelawk.knet.api.util.NetRegistryByteBuf;
@@ -52,7 +52,7 @@ public record ChunkDataPayload(KNetSyncedUniverse universe, ChunkPos chunkPos, L
             PayloadGraph.CODEC.apply(ByteBufCodecs.list()), ChunkDataPayload::graphs,
             ChunkDataPayload::new
         ).apply(KNetSyncedUniverse.readAttachingOp(ChunkDataPayload::universe))
-        .apply(SyncingKNet::registryAttachPalette);
+        .apply(IdPaletteUtils::registryAttachPalette);
 
     public void discard() {
         graphs.forEach(graph -> graph.discard());

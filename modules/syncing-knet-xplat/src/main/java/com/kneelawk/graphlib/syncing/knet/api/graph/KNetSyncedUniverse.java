@@ -55,6 +55,7 @@ import com.kneelawk.graphlib.syncing.knet.api.graph.user.GraphEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkEntitySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.LinkKeySyncing;
 import com.kneelawk.graphlib.syncing.knet.api.graph.user.NodeEntitySyncing;
+import com.kneelawk.graphlib.syncing.knet.api.util.IdPaletteUtils;
 import com.kneelawk.graphlib.syncing.knet.impl.graph.simple.SimpleKNetSyncedUniverseBuilder;
 
 /**
@@ -69,7 +70,7 @@ public interface KNetSyncedUniverse extends SyncedUniverse {
     /**
      * Codec for referencing a specific {@link KNetSyncedUniverse}.
      */
-    StreamCodec<FriendlyByteBuf, KNetSyncedUniverse> REF_CODEC = SyncingKNet.PALETTED_ID_CODEC.map(id -> {
+    StreamCodec<FriendlyByteBuf, KNetSyncedUniverse> REF_CODEC = IdPaletteUtils.PALETTED_ID_CODEC.map(id -> {
         if (!GraphLibSyncing.syncingEnabled(id))
             throw new DecoderException("There is no synced universe called '" + id + "'");
         return SyncingKNet.getUniverse(id);
