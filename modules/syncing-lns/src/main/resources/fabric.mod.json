@@ -27,6 +27,7 @@
   "depends": {
     "graphlib": "*",
     "graphlib_syncing": "*",
+    "libnetworkstack": "*",
     "fabricloader": ">=0.15.10",
     "fabric-api": "*",
     "minecraft": ">=1.21- <1.22-",

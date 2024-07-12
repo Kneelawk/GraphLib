@@ -27,6 +27,8 @@
     "graphlib-common.mixins.json"
   ],
   "depends": {
+    "codextra": "*",
+    "common_events": "*",
     "fabricloader": ">=0.15.10",
     "fabric-api": "*",
     "minecraft": ">=1.21- <1.22-",
