@@ -30,11 +30,6 @@ import java.util.function.Function;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +38,11 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.LongIterable;
 import it.unimi.dsi.fastutil.longs.LongLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 
 import com.kneelawk.graphlib.api.graph.BlockGraph;
 import com.kneelawk.graphlib.api.graph.GraphUniverse;
@@ -187,7 +187,10 @@ public class SimpleClientGraphWorld implements GraphView, ClientGraphWorldImpl, 
         SimpleBlockGraphChunk chunk = manager.getIfExists(SectionPos.of(pos));
         if (chunk == null) return LongStream.empty();
 
-        return chunk.getGraphsAt(pos).longStream();
+        LongSet graphsAt = chunk.getGraphsAt(pos);
+        if (graphsAt == null) return LongStream.empty();
+
+        return graphsAt.longStream();
     }
 
     @Override
