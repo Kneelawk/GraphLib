@@ -27,9 +27,14 @@ package com.kneelawk.graphlib.debugrender.fabric.impl;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 
 import com.kneelawk.graphlib.debugrender.impl.GLDebugNet;
+import com.kneelawk.graphlib.debugrender.impl.payload.DebuggingStopPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphDestroyPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdateBulkPayload;
+import com.kneelawk.graphlib.debugrender.impl.payload.GraphUpdatePayload;
 import com.kneelawk.graphlib.impl.GLLog;
 
 public class GraphLibDebugRenderFabricMod implements ModInitializer {
@@ -41,6 +46,12 @@ public class GraphLibDebugRenderFabricMod implements ModInitializer {
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> GLDebugNet.onServerStop());
         ServerPlayConnectionEvents.DISCONNECT.register(
             (handler, server) -> GLDebugNet.onDisconnect(handler.getPlayer().getUUID()));
+
+        // register packet ids on both server and client
+        PayloadTypeRegistry.playS2C().register(GraphUpdatePayload.ID, GraphUpdatePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(GraphUpdateBulkPayload.ID, GraphUpdateBulkPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(GraphDestroyPayload.ID, GraphDestroyPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(DebuggingStopPayload.ID, DebuggingStopPayload.CODEC);
 
         GLLog.info("GraphLib Debug Render initialized.");
     }

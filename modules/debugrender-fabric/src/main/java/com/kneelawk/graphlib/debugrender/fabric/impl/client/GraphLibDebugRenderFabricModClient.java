@@ -70,10 +70,6 @@ public class GraphLibDebugRenderFabricModClient implements ClientModInitializer 
         DebugRenderer.init();
 
         // packet receivers
-        PayloadTypeRegistry.playS2C().register(GraphUpdatePayload.ID, GraphUpdatePayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(GraphUpdateBulkPayload.ID, GraphUpdateBulkPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(GraphDestroyPayload.ID, GraphDestroyPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(DebuggingStopPayload.ID, DebuggingStopPayload.CODEC);
         ClientPlayNetworking.registerGlobalReceiver(GraphUpdatePayload.ID,
             (payload, ctx) -> GLClientDebugNet.onGraphUpdate(payload, ctx.client()));
         ClientPlayNetworking.registerGlobalReceiver(GraphUpdateBulkPayload.ID,
