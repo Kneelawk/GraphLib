@@ -31,9 +31,7 @@ plugins {
 
 submodule {
     setRefmaps("graphlib-debugrender")
-    applyFabricLoaderDependency()
     xplatProjectDependency(":core")
-    forceRemap()
     setupJavadoc()
     val kml_version: String by project
     xplatExternalDependency { "com.kneelawk.kmodlib:kmodlib-overlay-$it:$kml_version" }

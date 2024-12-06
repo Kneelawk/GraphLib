@@ -31,9 +31,7 @@ plugins {
 
 submodule {
     setLibsDirectory()
-    applyFabricLoaderDependency()
-    applyFabricApiDependency()
-    applyXplatConnection(":core-xplat", "fabric")
+    applyXplatConnection(":core-xplat")
     setupJavadoc()
 }
 

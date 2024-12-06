@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "graphlib",
+  "id": "${mod_id}",
   "version": "${version}",
   "name": "Graph Lib",
   "description": "Library for helping mods that use graph networks, like Wired Redstone.",
@@ -14,7 +14,7 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/graphlib/icon-128.png",
+  "icon": "assets/${mod_id}/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [

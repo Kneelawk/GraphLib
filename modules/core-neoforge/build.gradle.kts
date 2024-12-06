@@ -31,10 +31,8 @@ plugins {
 
 submodule {
     setLibsDirectory()
-    applyNeoforgeDependency()
-    applyXplatConnection(":core-xplat", "neoforge")
+    applyXplatConnection(":core-xplat")
     setupJavadoc()
-    createDevExport()
 }
 
 kpublish {

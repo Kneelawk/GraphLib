@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "graphlib_syncing",
+  "id": "${mod_id}",
   "version": "${version}",
   "name": "Graph Lib Syncing",
   "description": "Server to client synchronization of graphs for client-side rendering.",
@@ -13,7 +13,7 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/graphlib_syncing/icon-128.png",
+  "icon": "assets/${mod_id}/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -28,7 +28,7 @@
     ]
   },
   "mixins": [
-    "graphlib_syncing.mixins.json"
+    "${mod_id}.mixins.json"
   ],
   "depends": {
     "graphlib": "*",

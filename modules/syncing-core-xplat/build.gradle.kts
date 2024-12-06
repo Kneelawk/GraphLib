@@ -31,9 +31,7 @@ plugins {
 
 submodule {
     setRefmaps("graphlib-syncing-core")
-    applyFabricLoaderDependency()
     xplatProjectDependency(":core")
-    forceRemap()
     setupJavadoc()
 }
 

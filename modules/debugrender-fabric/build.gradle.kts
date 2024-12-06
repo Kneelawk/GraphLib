@@ -31,9 +31,7 @@ plugins {
 
 submodule {
     setLibsDirectory()
-    applyFabricLoaderDependency()
-    applyFabricApiDependency()
-    applyXplatConnection(":debugrender-xplat", "fabric")
+    applyXplatConnection(":debugrender-xplat")
     setupJavadoc()
 }
 

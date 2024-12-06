@@ -30,7 +30,6 @@ plugins {
 
 submodule {
     setRefmaps("multiblock-lamps")
-    applyFabricLoaderDependency()
     xplatProjectDependency(":core")
     xplatProjectDependency(":debugrender")
 }

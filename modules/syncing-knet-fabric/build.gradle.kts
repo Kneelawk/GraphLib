@@ -31,9 +31,7 @@ plugins {
 
 submodule {
     setLibsDirectory()
-    applyFabricLoaderDependency()
-    applyFabricApiDependency()
-    applyXplatConnection(":syncing-knet-xplat", "fabric")
+    applyXplatConnection(":syncing-knet-xplat")
     setupJavadoc()
 }
 

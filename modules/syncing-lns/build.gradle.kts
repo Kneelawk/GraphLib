@@ -7,8 +7,6 @@ plugins {
 submodule {
     setLibsDirectory()
     setRefmaps("graphlib-syncing-lns")
-    applyFabricLoaderDependency()
-    applyFabricApiDependency()
     fabricProjectDependency(":core")
     fabricProjectDependency(":syncing-core")
     setupJavadoc()

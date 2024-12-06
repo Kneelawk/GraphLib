@@ -31,8 +31,6 @@ plugins {
 
 submodule {
     setRefmaps("graphlib-core")
-    applyFabricLoaderDependency()
-    forceRemap()
     setupJavadoc()
     val codextra_version: String by project
     xplatExternalDependency { "com.kneelawk.codextra:codextra-$it:$codextra_version" }

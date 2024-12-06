@@ -30,10 +30,8 @@ plugins {
 }
 
 submodule {
-    applyFabricLoaderDependency()
-    applyXplatConnection(":debugrender-xplat", "mojmap")
+    applyXplatConnection(":debugrender-xplat")
     setupJavadoc()
-    disableRemap()
 }
 
 dependencies {

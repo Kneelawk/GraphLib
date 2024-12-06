@@ -3,34 +3,34 @@ loaderVersion = "[1,)"
 license = "MIT"
 
 [[mixins]]
-config = "graphlib_debugrender.mixins.json"
+config = "${mod_id}.mixins.json"
 
 [[accessTransformers]]
 file = "META-INF/accesstransformer.cfg"
 
 [[mods]]
-modId = "graphlib_debugrender"
+modId = "${mod_id}"
 version = "${version}"
 displayName = "GraphLib Debug Render"
 authors = "Kneelawk"
 description = "Client-side rendering of graphs for debugging server-side graphs."
-logoFile = "assets/graphlib_debugrender/icon-128.png"
+logoFile = "assets/${mod_id}/icon-128.png"
 
-[[dependencies.graphlib_debugrender]]
+[[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "REQUIRED"
 versionRange = "[20.4.148-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.graphlib_debugrender]]
+[[dependencies.${mod_id}]]
 modId = "graphlib"
 type = "REQUIRED"
 versionRange = "[2-alpha,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.graphlib_debugrender]]
+[[dependencies.${mod_id}]]
 modId = "kmodlib_overlay"
 type = "REQUIRED"
 versionRange = "[0,)"

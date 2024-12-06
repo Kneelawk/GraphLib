@@ -30,17 +30,16 @@ plugins {
 
 submodule {
     setLibsDirectory()
-    applyNeoforgeDependency()
-    applyXplatConnection(":multiblock-lamps:xplat", "neoforge")
+    applyXplatConnection(":multiblock-lamps:xplat")
     generateRuns()
 }
 
 dependencies {
     // Codextra
     val codextra_version: String by project
-    modRuntimeOnly("com.kneelawk.codextra:codextra-neoforge:$codextra_version")
+    runtimeOnly("com.kneelawk.codextra:codextra-neoforge:$codextra_version")
 
     // KModLib Overlay
     val kml_version: String by project
-    modRuntimeOnly("com.kneelawk.kmodlib:kmodlib-overlay-neoforge:$kml_version")
+    runtimeOnly("com.kneelawk.kmodlib:kmodlib-overlay-neoforge:$kml_version")
 }

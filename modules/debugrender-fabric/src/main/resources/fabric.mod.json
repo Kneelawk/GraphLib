@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "graphlib_debugrender",
+  "id": "${mod_id}",
   "version": "${version}",
   "name": "Graph Lib Debug Render",
   "description": "Client-side rendering of graphs for debugging server-side graphs.",
@@ -13,7 +13,7 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/graphlib_debugrender/icon-128.png",
+  "icon": "assets/${mod_id}/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -24,7 +24,7 @@
     ]
   },
   "mixins": [
-    "graphlib_debugrender.mixins.json"
+    "${mod_id}.mixins.json"
   ],
   "depends": {
     "graphlib": "*",

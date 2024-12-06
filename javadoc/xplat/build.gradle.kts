@@ -33,7 +33,6 @@ evaluationDependsOn(":debugrender-xplat")
 evaluationDependsOn(":syncing-core-xplat")
 
 submodule {
-    applyFabricLoaderDependency()
     setupJavadoc()
 }
 

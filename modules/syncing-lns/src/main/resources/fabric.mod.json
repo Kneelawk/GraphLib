@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "graphlib_syncing_lns",
+  "id": "${mod_id}",
   "version": "${version}",
   "name": "Graph Lib Syncing LNS",
   "description": "LibNetworkStack-based graph syncing.",
@@ -13,7 +13,7 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/graphlib_syncing_lns/icon-128.png",
+  "icon": "assets/${mod_id}/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [

@@ -36,7 +36,6 @@ evaluationDependsOn(":syncing-core-xplat")
 evaluationDependsOn(":syncing-core-neoforge")
 
 submodule {
-    applyNeoforgeDependency()
     setupJavadoc()
 }
 
@@ -44,18 +43,26 @@ java.docsDir.set(rootProject.layout.buildDirectory.map { it.dir("docs").dir("neo
 
 dependencies {
     // modules
-    compileOnly(project(":core-xplat", configuration = "namedElements"))
-    compileOnly(project(":core-neoforge", configuration = "namedElements"))
-    compileOnly(project(":debugrender-xplat", configuration = "namedElements"))
-    compileOnly(project(":debugrender-neoforge", configuration = "namedElements"))
-    compileOnly(project(":syncing-core-xplat", configuration = "namedElements"))
-    compileOnly(project(":syncing-core-neoforge", configuration = "namedElements"))
-    compileOnly(project(":syncing-knet-xplat", configuration = "namedElements"))
-    compileOnly(project(":syncing-knet-neoforge", configuration = "namedElements"))
+    compileOnly(project(":core-xplat", configuration = "namedElements")) {
+        isTransitive = false
+    }
+    compileOnly(project(":core-neoforge"))
+    compileOnly(project(":debugrender-xplat", configuration = "namedElements")) {
+        isTransitive = false
+    }
+    compileOnly(project(":debugrender-neoforge"))
+    compileOnly(project(":syncing-core-xplat", configuration = "namedElements")) {
+        isTransitive = false
+    }
+    compileOnly(project(":syncing-core-neoforge"))
+    compileOnly(project(":syncing-knet-xplat", configuration = "namedElements")) {
+        isTransitive = false
+    }
+    compileOnly(project(":syncing-knet-neoforge"))
 
     // KModLib Overlay
     val kml_version: String by project
-    modCompileOnly("com.kneelawk.kmodlib:kmodlib-overlay-neoforge:$kml_version")
+    compileOnly("com.kneelawk.kmodlib:kmodlib-overlay-neoforge:$kml_version")
 }
 
 tasks.javadoc {

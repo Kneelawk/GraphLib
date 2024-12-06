@@ -3,21 +3,21 @@ loaderVersion = "[1,)"
 license = "MIT"
 
 [[mods]]
-modId = "multiblock_lamps"
+modId = "${mod_id}"
 version = "${version}"
 displayName = "Multiblock Lamps"
 authors = "Kneelawk"
 description = "A simple GraphLib example mod that adds connected lamps."
-logoFile = "assets/multiblock_lamps/icon-128.png"
+logoFile = "assets/${mod_id}/icon-128.png"
 
-[[dependencies.multiblock_lamps]]
+[[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "REQUIRED"
 versionRange = "[20.4.148-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.multiblock_lamps]]
+[[dependencies.${mod_id}]]
 modId = "graphlib"
 type = "REQUIRED"
 versionRange = "[2-alpha,)"

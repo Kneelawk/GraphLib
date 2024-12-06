@@ -30,9 +30,7 @@ plugins {
 
 submodule {
     setLibsDirectory()
-    applyFabricLoaderDependency()
-    applyFabricApiDependency()
-    applyXplatConnection(":multiblock-lamps:xplat", "fabric")
+    applyXplatConnection(":multiblock-lamps:xplat")
     generateRuns()
 }
 

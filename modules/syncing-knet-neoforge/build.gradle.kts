@@ -31,10 +31,8 @@ plugins {
 
 submodule {
     setLibsDirectory()
-    applyNeoforgeDependency()
-    applyXplatConnection(":syncing-knet-xplat", "neoforge")
+    applyXplatConnection(":syncing-knet-xplat")
     setupJavadoc()
-    createDevExport()
 }
 
 kpublish {

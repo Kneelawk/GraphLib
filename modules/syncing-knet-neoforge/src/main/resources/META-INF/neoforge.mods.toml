@@ -3,21 +3,21 @@ loaderVersion = "[1,)"
 license = "MIT"
 
 [[mods]]
-modId = "graphlib_syncing_knet"
+modId = "${mod_id}"
 version = "${version}"
 displayName = "GraphLib Syncing KNet"
 authors = "Kneelawk"
 description = "KNet-based graph syncing."
-logoFile = "assets/graphlib_syncing_knet/icon-128.png"
+logoFile = "assets/${mod_id}/icon-128.png"
 
-[[dependencies.graphlib_syncing_knet]]
+[[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "REQUIRED"
 versionRange = "[20.4.148-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.graphlib_syncing_knet]]
+[[dependencies.${mod_id}]]
 modId = "graphlib"
 type = "REQUIRED"
 versionRange = "[2-alpha,)"

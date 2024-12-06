@@ -1,5 +1,5 @@
 plugins { 
-    id("dev.architectury.loom")
+    id("fabric-loom")
     id("com.kneelawk.remapcheck")
 }
 

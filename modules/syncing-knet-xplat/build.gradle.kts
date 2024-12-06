@@ -31,10 +31,8 @@ plugins {
 
 submodule {
     setRefmaps("graphlib-syncing-knet")
-    applyFabricLoaderDependency()
     xplatProjectDependency(":core")
     xplatProjectDependency(":syncing-core")
-    forceRemap()
     setupJavadoc()
 
     val knet_version: String by project

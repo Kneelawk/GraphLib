@@ -30,10 +30,8 @@ plugins {
 }
 
 submodule {
-    applyFabricLoaderDependency()
-    applyXplatConnection(":syncing-knet-xplat", "mojmap")
+    applyXplatConnection(":syncing-knet-xplat")
     setupJavadoc()
-    disableRemap()
 }
 
 kpublish {

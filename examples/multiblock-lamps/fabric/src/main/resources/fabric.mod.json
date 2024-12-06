@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "multiblock_lamps",
+  "id": "${mod_id}",
   "version": "${version}",
   "name": "Multiblock Lamps",
   "description": "A simple GraphLib example mod that adds connected lamps.",
@@ -13,7 +13,7 @@
     "sources": "https://github.com/Kneelawk/GraphLib"
   },
   "license": "MIT",
-  "icon": "assets/multiblock_lamps/icon-128.png",
+  "icon": "assets/${mod_id}/icon-128.png",
   "environment": "*",
   "entrypoints": {
     "main": [

@@ -37,8 +37,6 @@ evaluationDependsOn(":syncing-core-fabric")
 evaluationDependsOn(":syncing-lns")
 
 submodule {
-    applyFabricLoaderDependency()
-    applyFabricApiDependency()
     setupJavadoc()
 }
 

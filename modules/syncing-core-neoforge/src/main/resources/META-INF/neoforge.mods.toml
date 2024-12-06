@@ -3,24 +3,24 @@ loaderVersion = "[1,)"
 license = "MIT"
 
 [[mixins]]
-config = "graphlib_syncing.mixins.json"
+config = "${mod_id}.mixins.json"
 
 [[mods]]
-modId = "graphlib_syncing"
+modId = "${mod_id}"
 version = "${version}"
 displayName = "GraphLib Syncing"
 authors = "Kneelawk"
 description = "Server to client synchronization of graphs for client-side rendering."
-logoFile = "assets/graphlib_syncing/icon-128.png"
+logoFile = "assets/${mod_id}/icon-128.png"
 
-[[dependencies.graphlib_syncing]]
+[[dependencies.${mod_id}]]
 modId = "neoforge"
 type = "REQUIRED"
 versionRange = "[20.4.148-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
-[[dependencies.graphlib_syncing]]
+[[dependencies.${mod_id}]]
 modId = "graphlib"
 type = "REQUIRED"
 versionRange = "[2-alpha,)"
