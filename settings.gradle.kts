@@ -33,6 +33,10 @@ pluginManagement {
     }
 }
 
+plugins {
+    id("fabric-loom") apply false
+}
+
 rootProject.name = "graphlib"
 
 fun module(enabled: Boolean, name: String) {
@@ -84,24 +88,24 @@ module(xplat, "core-xplat")
 module(mojmap, "core-xplat-mojmap")
 module(fabric, "core-fabric")
 module(neoforge, "core-neoforge")
-module(xplat, "debugrender-xplat")
-module(mojmap, "debugrender-xplat-mojmap")
-module(fabric, "debugrender-fabric")
-module(neoforge, "debugrender-neoforge")
-module(xplat, "syncing-core-xplat")
-module(mojmap, "syncing-core-xplat-mojmap")
-module(fabric, "syncing-core-fabric")
-module(neoforge, "syncing-core-neoforge")
-module(xplat, "syncing-knet-xplat")
-module(mojmap, "syncing-knet-xplat-mojmap")
-module(fabric, "syncing-knet-fabric")
-module(neoforge, "syncing-knet-neoforge")
-module(fabric, "syncing-lns")
+//module(xplat, "debugrender-xplat")
+//module(mojmap, "debugrender-xplat-mojmap")
+//module(fabric, "debugrender-fabric")
+//module(neoforge, "debugrender-neoforge")
+//module(xplat, "syncing-core-xplat")
+//module(mojmap, "syncing-core-xplat-mojmap")
+//module(fabric, "syncing-core-fabric")
+//module(neoforge, "syncing-core-neoforge")
+//module(xplat, "syncing-knet-xplat")
+//module(mojmap, "syncing-knet-xplat-mojmap")
+//module(fabric, "syncing-knet-fabric")
+//module(neoforge, "syncing-knet-neoforge")
+//module(fabric, "syncing-lns")
+//
+//example("multiblock-lamps", xplat to "xplat", fabric to "fabric", neoforge to "neoforge")
+//
+//javadoc(xplat, "xplat")
+//javadoc(fabric, "fabric")
+//javadoc(neoforge, "neoforge")
 
-example("multiblock-lamps", xplat to "xplat", fabric to "fabric", neoforge to "neoforge")
-
-javadoc(xplat, "xplat")
-javadoc(fabric, "fabric")
-javadoc(neoforge, "neoforge")
-
-include(":remapCheck")
+//include(":remapCheck")

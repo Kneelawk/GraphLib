@@ -6,7 +6,7 @@ plugins {
     id("com.kneelawk.kpublish") apply false
 }
 
-tasks.create("clean", Delete::class) {
+tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
 
