@@ -151,7 +151,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromDelta(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.getNearest(posDiff.getX(), posDiff.getY(), posDiff.getZ(), null);
 
         if (other instanceof SidedWireBlockNode otherSidedNode) {
             Direction otherSide = otherSidedNode.getSide();
@@ -175,7 +175,7 @@ public final class WireConnectionDiscoverers {
             BlockPos under = pos.relative(side);
             BlockPos underPosDiff = otherPos.subtract(under);
             Direction underPosDiffDir =
-                Direction.fromDelta(underPosDiff.getX(), underPosDiff.getY(), underPosDiff.getZ());
+                Direction.getNearest(underPosDiff.getX(), underPosDiff.getY(), underPosDiff.getZ(), null);
 
             if (underPosDiffDir != null) {
                 return !underPosDiffDir.getAxis().equals(side.getAxis()) &&
@@ -289,7 +289,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromDelta(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.getNearest(posDiff.getX(), posDiff.getY(), posDiff.getZ(), null);
 
         if (posDiffDir == null) {
             return false;
@@ -404,7 +404,7 @@ public final class WireConnectionDiscoverers {
         BlockNode other = link.other().getNode();
 
         BlockPos posDiff = otherPos.subtract(pos);
-        Direction posDiffDir = Direction.fromDelta(posDiff.getX(), posDiff.getY(), posDiff.getZ());
+        Direction posDiffDir = Direction.getNearest(posDiff.getX(), posDiff.getY(), posDiff.getZ(), null);
 
         if (other instanceof CenterWireBlockNode || other instanceof FullWireBlockNode) {
             return posDiffDir != null && (filter == null || filter.canConnect(self, holder, posDiffDir, link)) &&

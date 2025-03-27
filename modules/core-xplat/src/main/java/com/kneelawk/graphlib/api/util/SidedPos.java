@@ -1,5 +1,7 @@
 package com.kneelawk.graphlib.api.util;
 
+import java.util.Optional;
+
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -79,8 +81,13 @@ public record SidedPos(@NotNull BlockPos pos, @NotNull Direction side) {
      */
     @Contract("_ -> new")
     public static @NotNull SidedPos fromNbt(@NotNull CompoundTag nbt) {
-        int[] pos = nbt.getIntArray("pos");
-        return new SidedPos(new BlockPos(pos[0], pos[1], pos[2]), Direction.from3DDataValue(nbt.getByte("side")));
+        Optional<int[]> posOpt = nbt.getIntArray("pos");
+        if (posOpt.isEmpty())
+            throw new IllegalArgumentException("Attempted to decode a SidedPos that has no block-pos");
+
+        int[] pos = posOpt.get();
+        return new SidedPos(new BlockPos(pos[0], pos[1], pos[2]),
+            Direction.from3DDataValue(nbt.getByteOr("side", (byte) 0)));
     }
 
     /**

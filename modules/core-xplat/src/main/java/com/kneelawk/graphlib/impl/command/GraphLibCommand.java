@@ -88,7 +88,7 @@ public class GraphLibCommand {
         for (ResourceLocation key : GraphLibImpl.UNIVERSE.keySet()) {
             msg.append("\n");
             msg.append(Component.literal(key.toString()).withStyle(style -> style.withColor(ChatFormatting.AQUA)
-                .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, key.toString()))));
+                .withClickEvent(new ClickEvent.CopyToClipboard(key.toString()))));
         }
 
         source.sendSuccess(() -> msg, false);
@@ -183,10 +183,9 @@ public class GraphLibCommand {
                 Component.translatable("chat.coordinates", pos.getX(), pos.getY(), pos.getZ()))
             .withStyle(
                 style -> style.withColor(ChatFormatting.GREEN)
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,
-                        "/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ()))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        Component.translatable("chat.coordinates.tooltip")))
+                    .withClickEvent(
+                        new ClickEvent.SuggestCommand("/tp @s " + pos.getX() + " " + pos.getY() + " " + pos.getZ()))
+                    .withHoverEvent(new HoverEvent.ShowText(Component.translatable("chat.coordinates.tooltip")))
             );
     }
 }

@@ -1068,8 +1068,8 @@ public class SimpleBlockGraph implements BlockGraph, BlockGraphImpl {
         Set<BlockPos> removedPoses = new LinkedHashSet<>();
         LongSet removedChunks = new LongLinkedOpenHashSet();
 
-        for (int sectionY = world.getWorld().getMinSection();
-             sectionY < world.getWorld().getMaxSection(); sectionY++) {
+        for (int sectionY = world.getWorld().getMinSectionY();
+             sectionY < world.getWorld().getMaxSectionY(); sectionY++) {
             long longPos = SectionPos.asLong(chunkX, sectionY, chunkZ);
             Set<NodeHolder<BlockNode>> inRemovedChunk = nodesInChunk.get(longPos);
             if (inRemovedChunk != null) {

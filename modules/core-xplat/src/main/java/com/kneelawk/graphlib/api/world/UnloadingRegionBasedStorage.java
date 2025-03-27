@@ -218,25 +218,32 @@ public class UnloadingRegionBasedStorage<R> implements RegionBasedStorage<R> {
     private void loadChunkPillar(@NotNull ChunkPos chunkPos, @NotNull Int2ObjectMap<R> pillar,
                                  @NotNull CompoundTag root) {
         // TODO: move this over to dynamics and DFU fix it
-        CompoundTag sectionsTag = root.getCompound("Sections");
-        for (int sectionY = world.getMinSection(); sectionY < world.getMaxSection(); sectionY++) {
-            if (sectionsTag.contains(String.valueOf(sectionY), Tag.TAG_COMPOUND)) {
-                CompoundTag sectionTag = sectionsTag.getCompound(String.valueOf(sectionY));
-                try {
-                    DynamicOps<Tag> ops = createOps(SectionPos.of(chunkPos, sectionY), () -> markDirty(chunkPos));
-                    DataResult<R> res = sectionCodec.parse(ops, sectionTag);
-                    final int y = sectionY;
-                    Optional<R> opt = res.resultOrPartial(
-                        err -> GLLog.error("Error loading chunk {}, section {}: {}", chunkPos, y, err));
+        
+        Optional<CompoundTag> sectionsOpt = root.getCompound("Sections");
+        if (sectionsOpt.isPresent()) {
+            CompoundTag sectionsTag = sectionsOpt.get();
+            for (int sectionY = world.getMinSectionY(); sectionY < world.getMaxSectionY(); sectionY++) {
+                Optional<CompoundTag> sectionOpt = sectionsTag.getCompound(String.valueOf(sectionY));
+                if (sectionOpt.isPresent()) {
+                    CompoundTag sectionTag = sectionOpt.get();
+                    try {
+                        DynamicOps<Tag> ops = createOps(SectionPos.of(chunkPos, sectionY), () -> markDirty(chunkPos));
+                        DataResult<R> res = sectionCodec.parse(ops, sectionTag);
+                        final int y = sectionY;
+                        Optional<R> opt = res.resultOrPartial(
+                            err -> GLLog.error("Error loading chunk {}, section {}: {}", chunkPos, y, err));
 
-                    if (opt.isPresent()) {
-                        R section = opt.get();
-                        pillar.put(sectionY, section);
-                    } else {
-                        GLLog.error("Unable to load chunk {}, section {} due to previous errors.", chunkPos, sectionY);
+                        if (opt.isPresent()) {
+                            R section = opt.get();
+                            pillar.put(sectionY, section);
+                        } else {
+                            GLLog.error("Unable to load chunk {}, section {} due to previous errors.", chunkPos,
+                                sectionY);
+                        }
+                    } catch (Exception e) {
+                        GLLog.error("Error loading chunk {} section {}. Discarding chunk section.", chunkPos, sectionY,
+                            e);
                     }
-                } catch (Exception e) {
-                    GLLog.error("Error loading chunk {} section {}. Discarding chunk section.", chunkPos, sectionY, e);
                 }
             }
         }
@@ -293,7 +300,7 @@ public class UnloadingRegionBasedStorage<R> implements RegionBasedStorage<R> {
             CompoundTag root = new CompoundTag();
 
             CompoundTag sectionsTag = new CompoundTag();
-            for (int sectionY = world.getMinSection(); sectionY < world.getMaxSection(); sectionY++) {
+            for (int sectionY = world.getMinSectionY(); sectionY < world.getMaxSectionY(); sectionY++) {
                 R section = sections.get(sectionY);
                 if (section != null) {
                     try {
@@ -317,7 +324,7 @@ public class UnloadingRegionBasedStorage<R> implements RegionBasedStorage<R> {
 
             worker.store(pos, root);
         } else {
-            worker.store(pos, null);
+            worker.store(pos, (CompoundTag) null);
         }
     }
 

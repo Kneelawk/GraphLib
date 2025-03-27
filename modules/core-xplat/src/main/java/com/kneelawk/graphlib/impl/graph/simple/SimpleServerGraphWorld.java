@@ -146,7 +146,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         this.saveMode = universe.saveMode;
         graphsDir = path.resolve(Constants.GRAPHS_DIRNAME);
         stateFile = path.resolve(Constants.STATE_FILENAME);
-        timer = new ChunkSectionUnloadTimer(world.getMinSection(), world.getMaxSection(), MAX_AGE);
+        timer = new ChunkSectionUnloadTimer(world.getMinSectionY(), world.getMaxSectionY(), MAX_AGE);
 
         try {
             Files.createDirectories(graphsDir);
@@ -696,7 +696,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
      */
     @Override
     public @NotNull LongStream getAllGraphIdsInChunk(@NotNull ChunkPos pos) {
-        return LongStream.range(world.getMinSection(), world.getMaxSection())
+        return LongStream.range(world.getMinSectionY(), world.getMaxSectionY())
             .flatMap(y -> getAllGraphIdsInChunkSection(SectionPos.of(pos, (int) y))).distinct();
     }
 
@@ -1236,7 +1236,7 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     private void loadGraphs(@NotNull ChunkPos pos) {
-        for (int y = world.getMinSection(); y < world.getMaxSection(); y++) {
+        for (int y = world.getMinSectionY(); y < world.getMaxSectionY(); y++) {
             SimpleBlockGraphChunk chunk = chunks.getIfExists(SectionPos.of(pos.x, y, pos.z));
             if (chunk != null) {
                 for (long id : chunk.getGraphs()) {
@@ -1247,8 +1247,8 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
     }
 
     private void saveGraphs(@NotNull ChunkPos pos) {
-        LongSet chunkSectionPillar = new LongOpenHashSet(world.getMaxSection() - world.getMinSection());
-        for (int y = world.getMinSection(); y < world.getMaxSection(); y++) {
+        LongSet chunkSectionPillar = new LongOpenHashSet(world.getMaxSectionY() - world.getMinSectionY());
+        for (int y = world.getMinSectionY(); y < world.getMaxSectionY(); y++) {
             chunkSectionPillar.add(SectionPos.asLong(pos.x, y, pos.z));
         }
 
@@ -1494,8 +1494,11 @@ public class SimpleServerGraphWorld implements AutoCloseable, GraphWorld, Server
         if (Files.exists(stateFile)) {
             try (InputStream is = Files.newInputStream(stateFile)) {
                 CompoundTag root = NbtIo.readCompressed(is, NbtAccounter.unlimitedHeap());
-                CompoundTag data = root.getCompound("data");
-                prevGraphId = data.getLong("prevGraphId");
+                Optional<CompoundTag> dataOpt = root.getCompound("data");
+                if (dataOpt.isEmpty())
+                    throw new IllegalStateException("graph controller state file missing data root compound");
+                CompoundTag data = dataOpt.get();
+                prevGraphId = data.getLongOr("prevGraphId", 0);
             } catch (Exception e) {
                 GLLog.error("Error loading graph controller state file.", e);
             }

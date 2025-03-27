@@ -38,8 +38,8 @@ public class SimpleBlockGraphPillar {
     public final int bottomSectionCoord;
 
     public SimpleBlockGraphPillar(int x, int z, Level world) {
-        this(x, z, new SimpleBlockGraphChunk[world.getMaxSection() - world.getMinSection()],
-            world.getMinSection());
+        this(x, z, new SimpleBlockGraphChunk[world.getMaxSectionY() - world.getMinSectionY()],
+            world.getMinSectionY());
     }
 
     public SimpleBlockGraphPillar(int x, int z, @Nullable SimpleBlockGraphChunk @NotNull [] pillar,
