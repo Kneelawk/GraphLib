@@ -40,6 +40,6 @@ dependencies {
     runtimeOnly("com.kneelawk.codextra:codextra-neoforge:$codextra_version")
 
     // KModLib Overlay
-    val kml_version: String by project
-    runtimeOnly("com.kneelawk.kmodlib:kmodlib-overlay-neoforge:$kml_version")
+//    val kml_version: String by project
+//    runtimeOnly("com.kneelawk.kmodlib:kmodlib-overlay-neoforge:$kml_version")
 }

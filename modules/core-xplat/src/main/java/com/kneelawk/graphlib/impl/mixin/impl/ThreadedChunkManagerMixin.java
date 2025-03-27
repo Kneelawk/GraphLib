@@ -18,6 +18,7 @@ import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.util.thread.BlockableEventLoop;
+import net.minecraft.world.level.TicketStorage;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LightChunkGetter;
 import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
@@ -40,16 +41,14 @@ public class ThreadedChunkManagerMixin implements GraphWorldStorageAccess {
     private ServerGraphWorldStorage storage;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onCreate(ServerLevel world, LevelStorageSource.LevelStorageAccess session, DataFixer dataFixer,
-                          StructureTemplateManager structureTemplateManager, Executor executor,
-                          BlockableEventLoop<Runnable> mainThreadExecutor, LightChunkGetter chunkProvider,
-                          ChunkGenerator chunkGenerator,
-                          ChunkProgressListener worldGenerationProgressListener,
-                          ChunkStatusUpdateListener chunkStatusChangeListener,
-                          Supplier<DimensionDataStorage> persistentStateManagerFactory, int viewDistance,
-                          boolean dsync, CallbackInfo ci) {
-        storage = new ServerGraphWorldStorage(session, world,
-            session.getDimensionPath(world.dimension()).resolve(Constants.DATA_DIRNAME), dsync);
+    private void onCreate(ServerLevel serverLevel, LevelStorageSource.LevelStorageAccess levelStorageAccess,
+                          DataFixer dataFixer, StructureTemplateManager structureTemplateManager, Executor executor,
+                          BlockableEventLoop blockableEventLoop, LightChunkGetter lightChunkGetter,
+                          ChunkGenerator chunkGenerator, ChunkProgressListener chunkProgressListener,
+                          ChunkStatusUpdateListener chunkStatusUpdateListener, Supplier supplier,
+                          TicketStorage ticketStorage, int i, boolean bl, CallbackInfo ci) {
+        storage = new ServerGraphWorldStorage(levelStorageAccess, serverLevel,
+            levelStorageAccess.getDimensionPath(serverLevel.dimension()).resolve(Constants.DATA_DIRNAME), bl);
     }
 
     @Inject(method = "saveAllChunks", at = @At("HEAD"))
