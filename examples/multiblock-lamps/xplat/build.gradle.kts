@@ -31,5 +31,5 @@ plugins {
 submodule {
     setRefmaps("multiblock-lamps")
     xplatProjectDependency(":core")
-    xplatProjectDependency(":debugrender")
+//    xplatProjectDependency(":debugrender")
 }

@@ -101,9 +101,9 @@ module(neoforge, "core-neoforge")
 //module(fabric, "syncing-knet-fabric")
 //module(neoforge, "syncing-knet-neoforge")
 //module(fabric, "syncing-lns")
-//
-//example("multiblock-lamps", xplat to "xplat", fabric to "fabric", neoforge to "neoforge")
-//
+
+example("multiblock-lamps", xplat to "xplat", fabric to "fabric", neoforge to "neoforge")
+
 //javadoc(xplat, "xplat")
 //javadoc(fabric, "fabric")
 //javadoc(neoforge, "neoforge")

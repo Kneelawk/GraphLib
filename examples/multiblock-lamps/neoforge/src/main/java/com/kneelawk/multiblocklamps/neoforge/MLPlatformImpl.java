@@ -25,12 +25,15 @@
 
 package com.kneelawk.multiblocklamps.neoforge;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import net.neoforged.neoforge.registries.DeferredBlock;
 
 import com.mojang.serialization.MapCodec;
 
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -39,10 +42,12 @@ import com.kneelawk.multiblocklamps.MLPlatform;
 
 public class MLPlatformImpl implements MLPlatform {
     @Override
-    public <T extends Block> Supplier<T> registerBlockWithItem(String path, Supplier<T> creator,
+    public <T extends Block> Supplier<T> registerBlockWithItem(String path, Function<ResourceKey<Block>, T> creator,
                                                                MapCodec<? extends Block> codec) {
-        DeferredBlock<T> block = MultiblockLampsNeoForge.BLOCKS.register(path, creator);
-        MultiblockLampsNeoForge.ITEMS.register(path, () -> new BlockItem(block.get(), new Item.Properties()));
+        DeferredBlock<T> block = MultiblockLampsNeoForge.BLOCKS.register(path,
+            id -> creator.apply(ResourceKey.create(Registries.BLOCK, id)));
+        MultiblockLampsNeoForge.ITEMS.register(path,
+            id -> new BlockItem(block.get(), new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id))));
         MultiblockLampsNeoForge.BLOCK_TYPES.register(path, () -> codec);
         return block;
     }

@@ -28,6 +28,8 @@ package com.kneelawk.multiblocklamps.block;
 import java.util.Collection;
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
@@ -36,6 +38,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.redstone.Orientation;
 
 import com.kneelawk.graphlib.api.graph.NodeHolder;
 import com.kneelawk.graphlib.api.graph.user.BlockNode;
@@ -74,9 +77,9 @@ public class LampConnectorBlock extends Block implements ConnectableBlock {
     }
 
     @Override
-    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos fromPos,
-                                boolean notify) {
-        if (world instanceof ServerLevel serverWorld) {
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock,
+                                   @Nullable Orientation orientation, boolean movedByPiston) {
+        if (level instanceof ServerLevel serverWorld) {
             // grab a node holder for the node that *should* be at our current position and update it
             NodeHolder<BlockNode> node = MultiblockLamps.UNIVERSE.getGraphWorld(serverWorld)
                 .getNodeAt(new NodePos(pos, LampConnectorNode.INSTANCE));

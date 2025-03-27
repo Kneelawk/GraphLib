@@ -54,13 +54,13 @@ public class MultiblockLamps {
     public static final CacheCategory<LampNode> LAMP_CACHE = CacheCategory.of(LampNode.class);
 
     public static final Supplier<Block> CONNECTED_LAMP_BLOCK =
-        MLPlatform.INSTANCE.registerBlockWithItem("connected_lamp", () -> new ConnectedLampBlock(
-                BlockBehaviour.Properties.of().lightLevel(state -> state.getValue(ConnectedLampBlock.LIT) ? 15 : 0)
-                    .strength(0.3f).sound(SoundType.GLASS).isValidSpawn((_state, _view, _pos, _type) -> true)),
-            ConnectedLampBlock.CODEC);
+        MLPlatform.INSTANCE.registerBlockWithItem("connected_lamp", key -> new ConnectedLampBlock(
+            BlockBehaviour.Properties.of().setId(key)
+                .lightLevel(state -> state.getValue(ConnectedLampBlock.LIT) ? 15 : 0).strength(0.3f)
+                .sound(SoundType.GLASS).isValidSpawn((_state, _view, _pos, _type) -> true)), ConnectedLampBlock.CODEC);
     public static final Supplier<Block> LAMP_CONNECTOR_BLOCK =
-        MLPlatform.INSTANCE.registerBlockWithItem("lamp_connector",
-            () -> new LampConnectorBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
+        MLPlatform.INSTANCE.registerBlockWithItem("lamp_connector", key -> new LampConnectorBlock(
+                BlockBehaviour.Properties.of().setId(key).mapColor(MapColor.STONE).strength(1.5f, 6.0f)),
             LampConnectorBlock.CODEC);
 
     public static void init() {}
