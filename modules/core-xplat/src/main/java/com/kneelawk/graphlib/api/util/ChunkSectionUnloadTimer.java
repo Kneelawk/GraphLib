@@ -27,8 +27,8 @@ public class ChunkSectionUnloadTimer extends ChunkUnloadTimer {
     /**
      * Constructs a chunk section unload timer.
      *
-     * @param bottomSectionCoord the section coordinate of the bottom of the world ({@link Level#getMinSection()}).
-     * @param topSectionCoord    the section coordinate of the top of the world ({@link Level#getMaxSection()}).
+     * @param bottomSectionCoord the section coordinate of the bottom of the world ({@link Level#getMinSectionY()}).
+     * @param topSectionCoord    the section coordinate of the top of the world ({@link Level#getMaxSectionY()}).
      * @param maxAge             the maximum age chunks sections are allowed to be before they're unloaded.
      */
     public ChunkSectionUnloadTimer(int bottomSectionCoord, int topSectionCoord, long maxAge) {
