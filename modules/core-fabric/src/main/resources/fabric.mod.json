@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "Graph Lib",
+  "description": "Library for helping mods that use graph networks, like Wired Redstone.",
+  "authors": [
+    "2xsaiko",
+    "Kneelawk"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Kneelawk/GraphLib",
+    "issues": "https://github.com/Kneelawk/GraphLib/issues",
+    "sources": "https://github.com/Kneelawk/GraphLib"
+  },
+  "license": "MIT",
+  "icon": "assets/${mod_id}/icon-128.png",
+  "environment": "*",
+  "entrypoints": {
+  },
+  "mixins": [
+  ],
+  "depends": {
+    "codextra": "*",
+    "common_events": "*",
+    "fabricloader": ">=0.15.10",
+    "fabric-api": "*",
+    "minecraft": ">=1.21- <1.22-",
+    "java": ">=21"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": [ "library" ]
+    }
+  }
+}
