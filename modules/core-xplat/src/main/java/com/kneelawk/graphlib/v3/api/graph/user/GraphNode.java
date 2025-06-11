@@ -2,6 +2,8 @@ package com.kneelawk.graphlib.v3.api.graph.user;
 
 import com.mojang.serialization.MapCodec;
 
+import com.kneelawk.graphlib.v3.api.graph.GraphUniverse;
+
 /**
  * Interface that all graph nodes should implement.
  * <p>
@@ -12,9 +14,30 @@ import com.mojang.serialization.MapCodec;
  * to uniquely identify their node. In order to store arbitrary data in a node, please use a node entity.
  */
 public interface GraphNode {
-    // TODO: universe lookups
     /**
      * {@link GraphNode} map codec.
+     * <p>
+     * <b>This requires the {@link GraphUniverse#ATTACHMENT_KEY} attachment.</b>
      */
-    MapCodec<GraphNode> MAP_CODEC = MapCodec.unit(() -> {throw new AssertionError("Stub");});
+    MapCodec<GraphNode> MAP_CODEC = GraphNodeType.REF_CODEC.dispatchMap(GraphNode::getType, GraphNodeType::getCodec);
+
+    /**
+     * {@link #MAP_CODEC} with universe attached.
+     *
+     * @param universe the universe to attach.
+     * @return the map codec.
+     */
+    static MapCodec<GraphNode> mapCodec(GraphUniverse universe) {
+        return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
+    }
+
+    /**
+     * Gets this graph node's type.
+     * <p>
+     * A graph node's {@link GraphNodeType} must always be registered with
+     * {@link GraphUniverse#addNodeType(GraphNodeType)} under the same ID as returned here.
+     *
+     * @return the type of this graph node.
+     */
+    GraphNodeType getType();
 }
