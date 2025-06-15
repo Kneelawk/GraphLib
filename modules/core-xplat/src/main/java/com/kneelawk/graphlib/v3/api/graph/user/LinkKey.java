@@ -23,13 +23,10 @@ public interface LinkKey {
      */
     static MapCodec<LinkKey> mapCodec(GraphUniverse universe) {
         return GraphUniverse.ATTACHMENT_KEY.attachingMapCodec(universe, MAP_CODEC);
-    } 
-    
+    }
+
     /**
      * Gets the type id of this link key.
-     * <p>
-     * Note: this is the same type id as is used in registering link key decoders,
-     * {@link GraphUniverse#addLinkKeyType(LinkKeyType)}.
      *
      * @return this link key's type id.
      */

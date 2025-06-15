@@ -25,8 +25,6 @@
 
 package com.kneelawk.graphlib.v3.api.util;
 
-import org.jetbrains.annotations.NotNull;
-
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -38,6 +36,5 @@ public interface ObjectType {
      *
      * @return this type's id.
      */
-    @NotNull
     ResourceLocation getId();
 }

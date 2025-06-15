@@ -1,12 +1,10 @@
 /**
- * GraphLib positioning.
- * <p>
- * These are the constructs for referencing a specific node in a graph.
+ * GraphLib utilities.
  */
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 @FieldsAreNonnullByDefault
-package com.kneelawk.graphlib.v3.api.pos;
+package com.kneelawk.graphlib.v3.api.util;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

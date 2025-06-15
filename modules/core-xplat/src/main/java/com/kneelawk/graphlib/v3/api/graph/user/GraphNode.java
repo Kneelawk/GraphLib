@@ -33,9 +33,6 @@ public interface GraphNode {
 
     /**
      * Gets this graph node's type.
-     * <p>
-     * A graph node's {@link GraphNodeType} must always be registered with
-     * {@link GraphUniverse#addNodeType(GraphNodeType)} under the same ID as returned here.
      *
      * @return the type of this graph node.
      */

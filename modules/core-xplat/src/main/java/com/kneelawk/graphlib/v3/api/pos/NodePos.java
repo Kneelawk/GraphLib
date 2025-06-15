@@ -1,5 +1,7 @@
 package com.kneelawk.graphlib.v3.api.pos;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
@@ -27,6 +29,41 @@ public interface NodePos {
      * {@return the graph node of this node pos}
      */
     GraphNode node();
+
+    /**
+     * {@return whether this node pos is associated with a single static dimension}
+     * <p>
+     * This returns {@code true} if and only if what ever this node pos is associated with cannot move to another
+     * dimension. Blocks, even if pushed by pistons, cannot be moved between dimensions under normal circumstances.
+     * Entities on the other hand, can be "teleported" to another dimension.
+     */
+    default boolean isStaticDimension() {
+        return false;
+    }
+
+    /**
+     * {@return the dimension that this node pos is associated with, if any}
+     */
+    default @Nullable DimensionRef dimension() {
+        return null;
+    }
+
+    /**
+     * {@return whether this node pos is associated with a single static block pos}
+     * <p>
+     * This returns {@code true} if and only if what ever this node pos is associated with cannot move to another
+     * block pos.
+     */
+    default boolean isStaticBlockPos() {
+        return false;
+    }
+
+    /**
+     * {@return the block pos this node pos is associated with, if any}
+     */
+    default @Nullable BlockPos blockPos() {
+        return null;
+    }
 
     /**
      * {@return this dimension ref's type}
