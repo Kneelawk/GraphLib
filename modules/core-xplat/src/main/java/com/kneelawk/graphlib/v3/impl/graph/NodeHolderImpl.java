@@ -12,10 +12,15 @@ import com.kneelawk.graphlib.v3.api.pos.NodePos;
  * @param keyedNode the keyed node that holds the node pos and connection information.
  * @param graphView the graph view that the node is from.
  */
-public record NodeHolderImpl(KeyedNode<NodePos, LinkKey> keyedNode, GraphView graphView) implements NodeHolder {
+public record NodeHolderImpl(KeyedNode<NodePos, NodeMetadata, LinkKey, LinkMetadata> keyedNode, GraphView graphView)
+    implements NodeHolder {
     @Override
     public NodePos pos() {
         return keyedNode.key();
     }
 
+    @Override
+    public long graphId() {
+        return keyedNode.value().getGraphId();
+    }
 }

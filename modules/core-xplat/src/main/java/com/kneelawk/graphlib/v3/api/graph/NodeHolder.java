@@ -26,6 +26,11 @@ public interface NodeHolder {
     GraphView graphView();
 
     /**
+     * {@return the current graph id of this node}
+     */
+    long graphId();
+
+    /**
      * {@return the graph node within the node pos}
      */
     default GraphNode node() {

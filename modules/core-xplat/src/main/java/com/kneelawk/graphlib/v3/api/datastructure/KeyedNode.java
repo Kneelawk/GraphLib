@@ -1,9 +1,10 @@
 package com.kneelawk.graphlib.v3.api.datastructure;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.Map;
 
-import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
+import org.jetbrains.annotations.Nullable;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 
 // Translated from 2xsaiko's HCTM-Base Graph code:
 // https://github.com/2xsaiko/hctm-base/blob/119df440743543b8b4979b450452d73f2c3c4c47/src/main/kotlin/common/graph/Graph.kt
@@ -11,21 +12,26 @@ import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 /**
  * Node in a general purpose graph data structure.
  *
- * @param <K> the key of this node.
- * @param <L> the type of link data contained in links between nodes.
+ * @param <K>  the key of this node.
+ * @param <V>  the value contained within this node.
+ * @param <LK> the type of link data contained in links between nodes.
+ * @param <LV> the type of data contained within each link.
  */
-public final class KeyedNode<K, L> {
+public final class KeyedNode<K, V, LK, LV> {
     private final K key;
-    private final Set<KeyedLink<K, L>> connections;
+    private final V value;
+    private final Map<KeyedLink.Key<K, LK>, KeyedLink<K, V, LK, LV>> connections;
 
     /**
      * Constructs a new node containing the given data.
      *
-     * @param key the data for this node to contain.
+     * @param key   the key that is used to find this node.
+     * @param value the data for this node to contain.
      */
-    public KeyedNode(K key) {
+    public KeyedNode(K key, V value) {
         this.key = key;
-        this.connections = new ObjectLinkedOpenHashSet<>();
+        this.value = value;
+        this.connections = new Object2ObjectLinkedOpenHashMap<>();
     }
 
     /**
@@ -38,12 +44,48 @@ public final class KeyedNode<K, L> {
     }
 
     /**
+     * Gets this node's value.
+     *
+     * @return this node's value.
+     */
+    public V value() {
+        return value;
+    }
+
+    /**
      * Gets this node's connections.
+     * <p>
+     * Care must be taken when mutating this map. It is best to use the methods provided by {@link KeyedNode} and
+     * {@link KeyedLink} instead.
      *
      * @return this node's connections.
      */
-    public Set<KeyedLink<K, L>> connections() {
+    public Map<KeyedLink.Key<K, LK>, KeyedLink<K, V, LK, LV>> connections() {
         return connections;
+    }
+
+    /**
+     * Unlinks the link attaching this node to the other node with the given key.
+     *
+     * @param otherKey the key of the other node the link is attached to.
+     * @param linkKey  the key of the link itself that makes it unique from other links connecting to the other node.
+     * @return the unlinked link.
+     */
+    public @Nullable KeyedLink<K, V, LK, LV> unlink(K otherKey, LK linkKey) {
+        return unlink(new KeyedLink.Key<>(key, otherKey, linkKey));
+    }
+
+    /**
+     * Unlinks a link attached to this node with the given key.
+     *
+     * @param key the key of the link to unlink.
+     * @return the unlinked link if present.
+     */
+    public @Nullable KeyedLink<K, V, LK, LV> unlink(KeyedLink.Key<K, LK> key) {
+        KeyedLink<K, V, LK, LV> link = connections.get(key);
+        if (link == null) return null;
+        link.unlink();
+        return link;
     }
 
     /**
@@ -51,7 +93,7 @@ public final class KeyedNode<K, L> {
      *
      * @param other the other node added to the graph.
      */
-    public void onAdded(KeyedNode<K, L> other) {
+    void onAdded(KeyedNode<K, V, LK, LV> other) {
     }
 
     /**
@@ -59,44 +101,28 @@ public final class KeyedNode<K, L> {
      *
      * @param other the other node removed from the graph.
      */
-    public void onRemoved(KeyedNode<K, L> other) {
-        connections.removeIf(link -> link.contains(other));
+    void onRemoved(K other) {
+        connections.keySet().removeIf(link -> link.contains(other));
     }
 
     /**
-     * Adds the given link as a connection this node has.
+     * Adds the given link as a connection this node has, if this node does not already have a link with the given key.
      *
      * @param link the link between this node and another node.
-     * @return <code>true</code> if the link did not already exist.
+     * @return the current value associated with the link's key, if any.
      */
-    public boolean onLink(KeyedLink<K, L> link) {
-        return connections.add(link);
+    @Nullable KeyedLink<K, V, LK, LV> onLink(KeyedLink<K, V, LK, LV> link) {
+        return connections.putIfAbsent(link.key(), link);
     }
 
     /**
      * Removes the given link as a connection this node has.
-     * <p>
-     * Note: links are technically directional and must be removed twice, once in each direction, to make sure the link
-     * has actually been removed.
      *
      * @param link the link to remove.
-     * @return <code>true</code> if the link existed before being removed.
+     * @return the keyed link associated with the given key.
      */
-    public boolean onUnlink(KeyedLink<K, L> link) {
+    @Nullable KeyedLink<K, V, LK, LV> onUnlink(KeyedLink.Key<K, LK> link) {
         return connections.remove(link);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        @SuppressWarnings("rawtypes") var that = (KeyedNode) obj;
-        return Objects.equals(this.key, that.key);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key);
     }
 
     @Override

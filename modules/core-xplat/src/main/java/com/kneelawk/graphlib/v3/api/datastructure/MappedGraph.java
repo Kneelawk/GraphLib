@@ -21,11 +21,13 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap;
 /**
  * General purpose graph data structure.
  *
- * @param <K> the type of key used to index each node.
- * @param <L> the type of link data this graph contains between nodes.
+ * @param <K>  the type of key used to index each node.
+ * @param <V>  the type of data held within each node.
+ * @param <LK> the type of link data this graph contains between nodes.
+ * @param <LV> the type of data held within each link.
  */
-public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
-    private final Map<K, KeyedNode<K, L>> nodes = new Object2ObjectLinkedOpenHashMap<>();
+public final class MappedGraph<K, V, LK, LV> implements Iterable<KeyedNode<K, V, LK, LV>> {
+    private final Map<K, KeyedNode<K, V, LK, LV>> nodes = new Object2ObjectLinkedOpenHashMap<>();
 
     /**
      * Constructs an empty graph.
@@ -36,11 +38,12 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
     /**
      * Adds a node to this graph containing the given data.
      *
-     * @param key the key of the new node.
+     * @param key   the key of the new node.
+     * @param value the value contained within the new node.
      * @return the new node.
      */
-    public KeyedNode<K, L> add(K key) {
-        KeyedNode<K, L> node = new KeyedNode<>(key);
+    public KeyedNode<K, V, LK, LV> add(K key, V value) {
+        KeyedNode<K, V, LK, LV> node = new KeyedNode<>(key, value);
         nodes.forEach((_k, n) -> n.onAdded(node));
         nodes.put(key, node);
         return node;
@@ -52,7 +55,7 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      * @param key the key of the node to find.
      * @return the found node or {@code null} if none was found.
      */
-    public @Nullable KeyedNode<K, L> get(K key) {
+    public @Nullable KeyedNode<K, V, LK, LV> get(K key) {
         return nodes.get(key);
     }
 
@@ -63,8 +66,8 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      * @return the found node.
      * @throws NoSuchElementException if no node is present with the given key.
      */
-    public KeyedNode<K, L> getOrThrow(K key) {
-        KeyedNode<K, L> node = get(key);
+    public KeyedNode<K, V, LK, LV> getOrThrow(K key) {
+        KeyedNode<K, V, LK, LV> node = get(key);
         if (node == null) throw new NoSuchElementException("No node present with key: " + key);
         return node;
     }
@@ -103,8 +106,8 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      */
     public void remove(K key) {
         if (nodes.containsKey(key)) {
-            KeyedNode<K, L> node = nodes.remove(key);
-            nodes.forEach((_k, n) -> n.onRemoved(node));
+            nodes.remove(key);
+            nodes.forEach((_k, n) -> n.onRemoved(key));
         }
     }
 
@@ -115,20 +118,20 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      *
      * @return the new graphs made from the disconnected nodes.
      */
-    public List<MappedGraph<K, L>> split() {
-        List<MappedGraph<K, L>> result = new ArrayList<>();
+    public List<MappedGraph<K, V, LK, LV>> split() {
+        List<MappedGraph<K, V, LK, LV>> result = new ArrayList<>();
         int largestGraphSize = 0;
         int largestGraphIndex = 0;
 
-        Map<K, KeyedNode<K, L>> toBeChecked = new Object2ObjectLinkedOpenHashMap<>(nodes);
-        Map<K, KeyedNode<K, L>> connected = new Object2ObjectLinkedOpenHashMap<>();
+        Map<K, KeyedNode<K, V, LK, LV>> toBeChecked = new Object2ObjectLinkedOpenHashMap<>(nodes);
+        Map<K, KeyedNode<K, V, LK, LV>> connected = new Object2ObjectLinkedOpenHashMap<>();
 
         while (!toBeChecked.isEmpty()) {
             connected.clear();
             descend(connected, toBeChecked, toBeChecked.values().iterator().next());
 
             if (!toBeChecked.isEmpty()) {
-                MappedGraph<K, L> newGraph = new MappedGraph<>();
+                MappedGraph<K, V, LK, LV> newGraph = new MappedGraph<>();
                 moveBulkUnchecked(newGraph, connected);
 
                 if (newGraph.size() > largestGraphSize) {
@@ -142,27 +145,28 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
 
         if (connected.size() < largestGraphSize) {
             // find the largest graph and make it ours
-            MappedGraph<K, L> newGraph = new MappedGraph<>();
+            MappedGraph<K, V, LK, LV> newGraph = new MappedGraph<>();
             moveBulkUnchecked(newGraph, connected);
-            MappedGraph<K, L> largestGraph = result.set(largestGraphIndex, newGraph);
+            MappedGraph<K, V, LK, LV> largestGraph = result.set(largestGraphIndex, newGraph);
             join(largestGraph);
         }
 
         return result;
     }
 
-    private void descend(Map<K, KeyedNode<K, L>> connected, Map<K, KeyedNode<K, L>> toBeChecked, KeyedNode<K, L> node) {
-        Deque<KeyedNode<K, L>> stack = new ArrayDeque<>();
+    private void descend(Map<K, KeyedNode<K, V, LK, LV>> connected, Map<K, KeyedNode<K, V, LK, LV>> toBeChecked,
+                         KeyedNode<K, V, LK, LV> node) {
+        Deque<KeyedNode<K, V, LK, LV>> stack = new ArrayDeque<>();
         stack.push(node);
 
         connected.put(node.key(), node);
         toBeChecked.remove(node.key());
 
         while (!stack.isEmpty()) {
-            KeyedNode<K, L> cur = stack.pop();
+            KeyedNode<K, V, LK, LV> cur = stack.pop();
 
-            for (KeyedLink<K, L> link : cur.connections()) {
-                KeyedNode<K, L> a = link.other(cur);
+            for (KeyedLink<K, V, LK, LV> link : cur.connections().values()) {
+                KeyedNode<K, V, LK, LV> a = link.other(cur);
 
                 if (toBeChecked.containsKey(a.key())) {
                     stack.push(a);
@@ -183,7 +187,7 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      * @param into  the graph nodes are being moved into.
      * @param nodes the nodes to be moved.
      */
-    public void moveBulkUnchecked(MappedGraph<K, L> into, Map<K, KeyedNode<K, L>> nodes) {
+    public void moveBulkUnchecked(MappedGraph<K, V, LK, LV> into, Map<K, KeyedNode<K, V, LK, LV>> nodes) {
         this.nodes.keySet().removeAll(nodes.keySet());
         into.nodes.putAll(nodes);
     }
@@ -193,49 +197,51 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      *
      * @param other the other graph to join with.
      */
-    public void join(MappedGraph<K, L> other) {
+    public void join(MappedGraph<K, V, LK, LV> other) {
         this.nodes.putAll(other.nodes);
         other.nodes.clear();
     }
 
     /**
+     * Gets a link by its link key, if it exists within this graph.
+     *
+     * @param key the key of the link to find.
+     * @return the found link.
+     */
+    public @Nullable KeyedLink<K, V, LK, LV> getLink(KeyedLink.Key<K, LK> key) {
+        var a = get(key.first());
+        var b = get(key.second());
+        if (a == null || b == null) return null;
+        return a.connections().get(key);
+    }
+
+    /**
      * Links the nodes with the two given keys.
      *
-     * @param aKey    the key of the first node to link.
-     * @param bKey    the key of the second node to link.
-     * @param linkKey the key of the link itself.
+     * @param aKey      the key of the first node to link.
+     * @param bKey      the key of the second node to link.
+     * @param linkKey   the key of the link itself.
+     * @param linkValue the value stored within the link.
      * @return the link object if both nodes are actually present in this graph.
      */
-    public @Nullable KeyedLink<K, L> link(K aKey, K bKey, L linkKey) {
-        KeyedNode<K, L> a = get(aKey);
-        KeyedNode<K, L> b = get(bKey);
+    public @Nullable KeyedLink<K, V, LK, LV> link(K aKey, K bKey, LK linkKey, LV linkValue) {
+        return link(new KeyedLink.Key<>(aKey, bKey, linkKey), linkValue);
+    }
+
+    /**
+     * Links the two nodes referenced by the link key.
+     *
+     * @param key       the link key to create the link for.
+     * @param linkValue the value stored within the link.
+     * @return the newly created link if none was present with the given key previously.
+     */
+    public @Nullable KeyedLink<K, V, LK, LV> link(KeyedLink.Key<K, LK> key, LV linkValue) {
+        var a = get(key.first());
+        var b = get(key.second());
         if (a == null || b == null) return null;
-        return link(a, b, linkKey);
-    }
-
-    /**
-     * Links two nodes.
-     *
-     * @param a       the first node to link.
-     * @param b       the second node to link.
-     * @param linkKey the key for the new link.
-     * @return the link between the two nodes.
-     */
-    public KeyedLink<K, L> link(KeyedNode<K, L> a, KeyedNode<K, L> b, L linkKey) {
-        KeyedLink<K, L> link = new KeyedLink<>(a, b, linkKey);
-        a.onLink(link);
-        b.onLink(link);
-        return link;
-    }
-
-    /**
-     * Links the two nodes in a link object.
-     *
-     * @param newLink the link object describing the link to be created.
-     * @return <code>true</code> the two nodes were not previously linked already, <code>false</code> otherwise.
-     */
-    public boolean link(KeyedLink<K, L> newLink) {
-        return newLink.first().onLink(newLink) & newLink.second().onLink(newLink);
+        KeyedLink<K, V, LK, LV> link = new KeyedLink<>(a, b, key, linkValue);
+        if (link.link()) return link;
+        return null;
     }
 
     /**
@@ -246,40 +252,23 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      * @param aKey    the key of the first node to unlink.
      * @param bKey    the key of the second node to unlink.
      * @param linkKey the key of the link itself.
-     * @return {@code true} if a link was removed from both nodes, {@code false} otherwise.
+     * @return the link that was just unlinked, if present.
      */
-    public boolean unlink(K aKey, K bKey, L linkKey) {
-        KeyedNode<K, L> a = get(aKey);
-        KeyedNode<K, L> b = get(bKey);
-        if (a == null || b == null) return false;
-        return unlink(a, b, linkKey);
+    public @Nullable KeyedLink<K, V, LK, LV> unlink(K aKey, K bKey, LK linkKey) {
+        return unlink(new KeyedLink.Key<>(aKey, bKey, linkKey));
     }
 
     /**
-     * Unlinks two nodes.
-     * <p>
-     * Note: this tries unlinking in both directions, so node order is not an issue.
+     * Unlinks the link with the given key.
      *
-     * @param a       the first node to unlink.
-     * @param b       the second node to unlink.
-     * @param linkKey the key of the link to be removed.
-     * @return <code>true</code> if a link was removed from both nodes, <code>false</code> otherwise.
+     * @param key the key of the link to unlink.
+     * @return the link that was just unlinked, if present.
      */
-    public boolean unlink(KeyedNode<K, L> a, KeyedNode<K, L> b, L linkKey) {
-        KeyedLink<K, L> link1 = new KeyedLink<>(a, b, linkKey);
-        return a.onUnlink(link1) & b.onUnlink(link1);
-    }
-
-    /**
-     * Unlinks the two nodes in a link object.
-     * <p>
-     * Note: this tries unlinking in both directions, so node order is not an issue.
-     *
-     * @param link the link object describing the link to be removed.
-     * @return <code>true</code> if a link was removed from both nodes, <code>false</code> otherwise.
-     */
-    public boolean unlink(KeyedLink<K, L> link) {
-        return link.first().onUnlink(link) & link.second().onUnlink(link);
+    public @Nullable KeyedLink<K, V, LK, LV> unlink(KeyedLink.Key<K, LK> key) {
+        var link = getLink(key);
+        if (link == null) return null;
+        link.unlink();
+        return link;
     }
 
     /**
@@ -290,12 +279,8 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      * @param linkKey the key of the link itself.
      * @return {@code true} if the described link is present in this graph.
      */
-    public boolean containsLink(K aKey, K bKey, L linkKey) {
-        KeyedNode<K, L> a = get(aKey);
-        KeyedNode<K, L> b = get(bKey);
-        if (a == null || b == null) return false;
-        KeyedLink<K, L> link = new KeyedLink<>(a, b, linkKey);
-        return containsLink(link);
+    public boolean containsLink(K aKey, K bKey, LK linkKey) {
+        return containsLink(new KeyedLink.Key<>(aKey, bKey, linkKey));
     }
 
     /**
@@ -304,22 +289,25 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      * @param link the link to check.
      * @return whether this graph contains the given link.
      */
-    public boolean containsLink(KeyedLink<K, L> link) {
-        return link.first().connections().contains(link) && link.second().connections().contains(link);
+    public boolean containsLink(KeyedLink.Key<K, LK> link) {
+        var a = get(link.first());
+        var b = get(link.second());
+        if (a == null || b == null) return false;
+        return a.connections().containsKey(link) && b.connections().containsKey(link);
     }
 
     @Override
-    public Iterator<KeyedNode<K, L>> iterator() {
+    public Iterator<KeyedNode<K, V, LK, LV>> iterator() {
         return nodes.values().iterator();
     }
 
     @Override
-    public void forEach(Consumer<? super KeyedNode<K, L>> action) {
+    public void forEach(Consumer<? super KeyedNode<K, V, LK, LV>> action) {
         nodes.values().forEach(action);
     }
 
     @Override
-    public Spliterator<KeyedNode<K, L>> spliterator() {
+    public Spliterator<KeyedNode<K, V, LK, LV>> spliterator() {
         return nodes.values().spliterator();
     }
 
@@ -328,7 +316,7 @@ public final class MappedGraph<K, L> implements Iterable<KeyedNode<K, L>> {
      *
      * @return a stream of all the nodes in this graph.
      */
-    public Stream<KeyedNode<K, L>> stream() {
+    public Stream<KeyedNode<K, V, LK, LV>> stream() {
         return nodes.values().stream();
     }
 
